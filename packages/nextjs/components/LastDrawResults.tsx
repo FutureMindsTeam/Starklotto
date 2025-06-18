@@ -19,7 +19,7 @@ async function fetchLatestDraw(): Promise<DrawResult> {
       resolve({
         id: "draw-123456",
         drawDate: new Date("2025-10-02T18:00:00Z"),
-        winningNumbers: [3, 7, 12, 24, 31, 40],
+        winningNumbers: [3, 7, 12, 24, 31],
         jackpotAmount: 1250000,
         winnerCount: 0,
       });
