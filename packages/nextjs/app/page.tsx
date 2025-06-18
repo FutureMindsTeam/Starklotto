@@ -10,7 +10,7 @@ import {
   HeroSection,
   FeaturesSection,
   HowItWorksSection,
-  FAQSection,
+    FAQSection,
   CTASection,
 } from "~~/components/sections";
 import { useAccount } from "@starknet-react/core";
@@ -35,12 +35,30 @@ export default function Home() {
     type: "success" | "error" | "info";
   } | null>(null);
 
+  const [showTicketSelector, setShowTicketSelector] = useState(false);
+  const [selectedNumbers, setSelectedNumbers] = useState<number[]>([]);
+
   const jackpot = 250295;
   const targetDate = new Date();
   targetDate.setDate(targetDate.getDate() + 1);
 
   const handleBuyTicket = () => {
     router.push("/buy-tickets");
+  };
+
+  const handleScroll = (sectionId: string) => {
+    const section = document.getElementById(sectionId);
+    if (section) {
+      section.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  const handleSelectNumbers = (numbers: number[]) => {
+    setSelectedNumbers(numbers);
+  };
+
+  const handlePurchase = (quantity: number, totalPrice: number) => {
+    console.log("Purchasing", quantity, "tickets for", totalPrice);
   };
 
   return (
