@@ -2406,7 +2406,7 @@ __metadata:
     framer-motion: ^12.5.0
     get-starknet-core: ^4.0.0
     jsdom: ^25.0.1
-    lucide-react: ^0.483.0
+    lucide-react: ^0.518.0
     next: 14.1.3
     next-themes: ^0.2.1
     nprogress: ^0.2.0
@@ -7499,12 +7499,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lucide-react@npm:^0.483.0":
-  version: 0.483.0
-  resolution: "lucide-react@npm:0.483.0"
+"lucide-react@npm:^0.518.0":
+  version: 0.518.0
+  resolution: "lucide-react@npm:0.518.0"
   peerDependencies:
     react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
-  checksum: 03870326d499b532d6d3f09e641142ebb5b24acd0d7e56d3365d322dc1ad93a4409631da221cdbaa3d6ae5d1603ee735fc5790ae931c28c14fb0ef5470f57c21
+  checksum: ddbd13437348e398e9e5a4207804347fb0a02765d96e947e840ed68abb5c8faa6e39879ad99d395c6c22787e28ebbc47d68560380144a1e592aa44b8ee6a7ba7
   languageName: node
   linkType: hard
 
