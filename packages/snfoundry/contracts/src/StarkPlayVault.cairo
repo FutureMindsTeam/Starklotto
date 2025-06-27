@@ -1,3 +1,11 @@
+#[starknet::interface]
+pub trait IStarkPlayVault<TContractState> {
+    //=======================================================================================
+    //get functions
+    fn GetFeePercentage(self: @TContractState) -> u64;
+}
+
+
 #[starknet::contract]
 mod StarkPlayVault {
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -16,6 +24,7 @@ mod StarkPlayVault {
         IBurnableDispatcher, IBurnableDispatcherTrait, IMintable, IMintableDispatcher,
         IMintableDispatcherTrait, IPrizeTokenDispatcher, IPrizeTokenDispatcherTrait,
     };
+    use super::IStarkPlayVault;
 
     component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
 
@@ -30,7 +39,8 @@ mod StarkPlayVault {
 
     const TOKEN_STRK_ADDRESS: felt252 =
         0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d;
-    const Initial_Fee_Percentage: u64 = 5;
+    const Initial_Fee_Percentage: u64 = 50_u64; // 50 basis points = 0.5%
+    const BASIS_POINTS_DENOMINATOR: u256 = 10000_u256; // 10000 basis points = 100%
     const DECIMALS_FACTOR: u256 = 1_000_000_000_000_000_000; // 10^18
     const MAX_MINT_AMOUNT: u256 = 1_000_000 * 1_000_000_000_000_000_000; // 1 millón de tokens
     const MAX_BURN_AMOUNT: u256 = 1_000_000 * 1_000_000_000_000_000_000; // 1 millón de tokens
@@ -171,6 +181,9 @@ mod StarkPlayVault {
         ConvertedToSTRK: ConvertedToSTRK,
     }
 
+       
+
+
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //modifiers
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -213,7 +226,7 @@ mod StarkPlayVault {
         let balance = strk_dispatcher.balance_of(user);
 
         // set mount with fee
-        let fee = (amountSTRK * self.feePercentage.read().into()) / 100;
+        let fee = (amountSTRK * self.feePercentage.read().into()) / BASIS_POINTS_DENOMINATOR.into();
         let total_amount_with_fee = amountSTRK + fee;
 
         //if balance is greater than total_amount_with_fee return true
@@ -221,7 +234,7 @@ mod StarkPlayVault {
     }
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     fn _amount_to_mint(self: @ContractState, amountSTRK: u256) -> u256 {
-        let fee = (amountSTRK * self.feePercentage.read().into()) / 100;
+        let fee = (amountSTRK * self.feePercentage.read().into()) / BASIS_POINTS_DENOMINATOR.into();
         let total_amount_with_fee = amountSTRK - fee;
         total_amount_with_fee
     }
@@ -269,7 +282,7 @@ mod StarkPlayVault {
         assert(transfer_result, 'Error al transferir el STRK');
 
         //recollect fee
-        let fee = (amountSTRK * self.feePercentage.read().into()) / 100;
+        let fee = (amountSTRK * self.feePercentage.read().into()) / BASIS_POINTS_DENOMINATOR.into();
         self.accumulatedFee.write(self.accumulatedFee.read() + fee);
         self.emit(FeeCollected { user, amount: fee, accumulatedFee: self.accumulatedFee.read() });
 
@@ -331,7 +344,7 @@ mod StarkPlayVault {
 
     //fn setFee(ref self: ContractState, new_fee: u64) -> bool {
 //    self.assert_only_owner();
-//   assert(new_fee <= 10000, 'Fee too high'); // Máximo 100%
+//   assert(new_fee <= BASIS_POINTS_DENOMINATOR, 'Fee too high'); // Máximo 100% (10000 basis points)
 //   self.feePercentage.write(new_fee);
 //    true
 //}
@@ -373,5 +386,12 @@ mod StarkPlayVault {
     //}
 
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    #[abi(embed_v0)]
+    impl StarkPlayVaultImpl of IStarkPlayVault<ContractState> {
+        fn GetFeePercentage(self: @ContractState) -> u64 {
+            self.feePercentage.read()
+        }
+    }
 
 }
