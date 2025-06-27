@@ -181,8 +181,6 @@ mod StarkPlayVault {
         ConvertedToSTRK: ConvertedToSTRK,
     }
 
-       
-
 
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //modifiers
@@ -324,17 +322,17 @@ mod StarkPlayVault {
         self.emit(ConvertedToSTRK { user, amount });
     }
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//private functions
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    //private functions
+    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     //fn depositSTRK(ref self: ContractState, user: ContractAddress, amount: u256) -> bool {
-//deposit strk to vault
-//emit event STRKDeposited
-//return true
+    //deposit strk to vault
+    //emit event STRKDeposited
+    //return true
 
     //in case of error al depositar el STRK
-//return false
-//}
+    //return false
+    //}
 
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -343,11 +341,12 @@ mod StarkPlayVault {
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     //fn setFee(ref self: ContractState, new_fee: u64) -> bool {
-//    self.assert_only_owner();
-//   assert(new_fee <= BASIS_POINTS_DENOMINATOR, 'Fee too high'); // Máximo 100% (10000 basis points)
-//   self.feePercentage.write(new_fee);
-//    true
-//}
+    //    self.assert_only_owner();
+    //   assert(new_fee <= BASIS_POINTS_DENOMINATOR, 'Fee too high'); // Máximo 100% (10000 basis
+    //   points)
+    //   self.feePercentage.write(new_fee);
+    //    true
+    //}
 
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -393,5 +392,4 @@ mod StarkPlayVault {
             self.feePercentage.read()
         }
     }
-
 }

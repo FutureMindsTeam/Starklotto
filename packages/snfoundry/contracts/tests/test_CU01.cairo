@@ -1,8 +1,8 @@
-use starknet::ContractAddress;
-use contracts::StarkPlayVault::{IStarkPlayVaultDispatcher, IStarkPlayVaultDispatcherTrait};	
+use contracts::StarkPlayVault::{IStarkPlayVaultDispatcher, IStarkPlayVaultDispatcherTrait};
 use openzeppelin_testing::declare_and_deploy;
 use openzeppelin_utils::serde::SerializedAppend;
-use snforge_std::{CheatSpan, cheat_caller_address,spy_events};
+use snforge_std::{CheatSpan, cheat_caller_address, spy_events};
+use starknet::ContractAddress;
 
 // Direcciones de prueba
 const OWNER: ContractAddress = 0x02dA5254690b46B9C4059C25366D1778839BE63C142d899F0306fd5c312A5918
@@ -17,36 +17,37 @@ const Initial_Fee_Percentage: u64 = 50; // 50 basis points = 0.5%
 const BASIS_POINTS_DENOMINATOR: u256 = 10000_u256; // 10000 basis points = 100%
 
 //helper function
-fn owner_address() -> ContractAddress{
+fn owner_address() -> ContractAddress {
     OWNER
 }
 
-fn user_address() -> ContractAddress{
+fn user_address() -> ContractAddress {
     USER
 }
 
-fn deploy_contract_lottery() -> ContractAddress{
-  let contract_lotery: ContractAddress = 0x02dA5254690b46B9C4059C25366D1778839BE63C142d899F0306fd5c312A5918
-    .try_into()
-    .unwrap();
-  contract_lotery
+fn deploy_contract_lottery() -> ContractAddress {
+    let contract_lotery: ContractAddress =
+        0x02dA5254690b46B9C4059C25366D1778839BE63C142d899F0306fd5c312A5918
+        .try_into()
+        .unwrap();
+    contract_lotery
 }
 
-fn deploy_contract_starkplayvault() -> ContractAddress{
-   let contract_lotery = deploy_contract_lottery();
-   let owner = owner_address();
-   let initial_fee = 50_u64; // 50 basis points = 0.5%
-   let mut calldata = array![];
-   
-   calldata.append_serde(contract_lotery);
-   calldata.append_serde(owner);
-   calldata.append_serde(initial_fee);
-   
-   declare_and_deploy("StarkPlayVault", calldata)
+fn deploy_contract_starkplayvault() -> ContractAddress {
+    let contract_lotery = deploy_contract_lottery();
+    let owner = owner_address();
+    let initial_fee = 50_u64; // 50 basis points = 0.5%
+    let mut calldata = array![];
+
+    calldata.append_serde(contract_lotery);
+    calldata.append_serde(owner);
+    calldata.append_serde(initial_fee);
+
+    declare_and_deploy("StarkPlayVault", calldata)
 }
 
 #[test]
-fn test_get_fee_percentage_deploy(){
+fn test_get_fee_percentage_deploy() {
     //Deploy the contract
     let vault_address = deploy_contract_starkplayvault();
 
@@ -57,16 +58,15 @@ fn test_get_fee_percentage_deploy(){
     let fee_percentage = vault_dispatcher.GetFeePercentage();
 
     assert(fee_percentage == Initial_Fee_Percentage, 'Fee percentage should be 0.5%');
-
 }
 
-fn get_fee_amount(feePercentage: u64, amount: u256) -> u256{
+fn get_fee_amount(feePercentage: u64, amount: u256) -> u256 {
     let feeAmount = (amount * feePercentage.into()) / BASIS_POINTS_DENOMINATOR;
     feeAmount
 }
 
 #[test]
-fn test_calculate_fee_buy_numbers(){
+fn test_calculate_fee_buy_numbers() {
     let vault_address = deploy_contract_starkplayvault();
 
     //dispatch the contract
@@ -79,9 +79,18 @@ fn test_calculate_fee_buy_numbers(){
     let mount_100STARK = 100000000000000000000_u256; // 100 STARK 
 
     //1 STARK	0.005 STARK
-    assert(get_fee_amount(fee_percentage,mount_1STARK) == 5000000000000000_u256, 'Fee correct for 1 STARK');
+    assert(
+        get_fee_amount(fee_percentage, mount_1STARK) == 5000000000000000_u256,
+        'Fee correct for 1 STARK',
+    );
     //10 STARK	0.05 STARK
-    assert(get_fee_amount(fee_percentage,mount_10STARK) == 50000000000000000_u256, 'Fee correct for 10 STARK');
+    assert(
+        get_fee_amount(fee_percentage, mount_10STARK) == 50000000000000000_u256,
+        'Fee correct for 10 STARK',
+    );
     //100 STARK	0.5 STARK
-    assert(get_fee_amount(fee_percentage,mount_100STARK) == 500000000000000000_u256, 'Fee correct for 100 STARK');
+    assert(
+        get_fee_amount(fee_percentage, mount_100STARK) == 500000000000000000_u256,
+        'Fee correct for 100 STARK',
+    );
 }
