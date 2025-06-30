@@ -123,6 +123,7 @@ mod Lottery {
         PrizeClaimed: PrizeClaimed,
         UserTicketsInfo: UserTicketsInfo,
         JackpotIncreased: JackpotIncreased,
+        BalanceValidated: BalanceValidated,
     }
 
     #[derive(Drop, starknet::Event)]
@@ -170,6 +171,13 @@ mod Lottery {
         newAmount: u256,
         timestamp: u64,
     }
+    
+    #[derive(Drop, starknet::Event)]
+    struct BalanceValidated {
+        #[key]
+        user: ContractAddress,
+        amount: u256,
+    }
 
     //=======================================================================================
     //storage
@@ -194,6 +202,8 @@ mod Lottery {
         // ownable component by openzeppelin
         #[substorage(v0)]
         ownable: OwnableComponent::Storage,
+        // Reentrancy guard
+        reentrancy_guard: bool,
     }
     //=======================================================================================
     //constructor
@@ -207,6 +217,7 @@ mod Lottery {
         self.fixedPrize2Matches.write(2000000000000000000);
         self.currentDrawId.write(0);
         self.currentTicketId.write(0);
+        self.reentrancy_guard.write(false);
     }
     //=======================================================================================
     //impl
@@ -228,34 +239,48 @@ mod Lottery {
             assert(self.ValidateNumbers(@numbers), 'Invalid numbers');
             let draw = self.draws.entry(drawId).read();
             assert(draw.isActive, 'Draw is not active');
+
             let current_timestamp = get_block_timestamp();
 
             // Process the payment
-            let strk_play_token_dispatcher = IERC20Dispatcher {
+            let token_dispatcher = IERC20Dispatcher {
                 contract_address: contract_address_const::<STRK_PLAY_CONTRACT_ADDRESS>(),
             };
 
-            let buyer = get_caller_address();
-            let strk_play_token_vault_address: ContractAddress = contract_address_const::<
-                STRK_PLAY_VAULT_CONTRACT_ADDRESS,
-            >();
-            let payment_amount = self.ticketPrice.read();
+            // --- Balance validation and deduction logic ---
+            // Reentrancy guard
+            assert(!self.reentrancy_guard.read(), 'ReentrancyGuard: reentrant call');
+            self.reentrancy_guard.write(true);
 
+            let ticket_price = self.ticketPrice.read();
+            let user = get_caller_address();
+            let vault_address = contract_address_const::<STRK_PLAY_VAULT_CONTRACT_ADDRESS>();
+            
+            // Check user's balance
+            let user_balance = token_dispatcher.balance_of(user);
+            assert(u256::gt(user_balance, 0), 'User has no token balance');
             assert(
-                strk_play_token_dispatcher.balance_of(buyer) >= payment_amount,
-                'Insufficient funds',
+                u256::ge(user_balance, ticket_price), 
+                'Insufficient token balance. Required: {ticket_price}, Available: {user_balance}'
             );
-
+            
+            // Check allowance
+            let allowance = token_dispatcher.allowance(user, vault_address);
             assert(
-                strk_play_token_dispatcher
-                    .allowance(buyer, strk_play_token_vault_address) >= payment_amount,
-                'Insufficient allowance',
+                u256::ge(allowance, ticket_price), 
+                'Insufficient token allowance. Required: {ticket_price}, Allowed: {allowance}'
             );
-
-            let transfer = strk_play_token_dispatcher
-                .transfer_from(buyer, strk_play_token_vault_address, payment_amount);
-
-            assert(transfer, 'Payment failed');
+            
+            // Transfer tokens from user to vault
+            let transfer_result = token_dispatcher.transfer_from(user, vault_address, ticket_price);
+            assert(transfer_result, 'Token transfer failed');
+            
+            // Emit BalanceValidated event
+            self.emit(BalanceValidated { user, amount: ticket_price });
+            
+            // Release reentrancy guard
+            self.reentrancy_guard.write(false);
+            // --- End balance logic ---
 
             // TODO: Mint the NFT here, for now it is simulated
             let minted = true;
