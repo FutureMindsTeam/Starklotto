@@ -1,4 +1,5 @@
 use starknet::ContractAddress;
+use openzeppelin::utils::u256;
 
 //=======================================================================================
 //structs
@@ -112,6 +113,7 @@ mod Lottery {
         TicketPurchased: TicketPurchased,
         DrawCompleted: DrawCompleted,
         PrizeClaimed: PrizeClaimed,
+        BalanceValidated: BalanceValidated,
     }
 
     #[derive(Drop, starknet::Event)]
@@ -140,6 +142,14 @@ mod Lottery {
         prizeAmount: u256,
     }
 
+    #[derive(Drop, starknet::Event)]
+    struct BalanceValidated {
+        #[key]
+        user: ContractAddress,
+        #[key]
+        amount: u256,
+    }
+
     //=======================================================================================
     //storage
     //=======================================================================================
@@ -163,6 +173,8 @@ mod Lottery {
         // ownable component by openzeppelin
         #[substorage(v0)]
         ownable: OwnableComponent::Storage,
+        // Reentrancy guard
+        reentrancy_guard: bool,
     }
     //=======================================================================================
     //constructor
@@ -176,6 +188,7 @@ mod Lottery {
         self.fixedPrize2Matches.write(2000000000000000000);
         self.currentDrawId.write(0);
         self.currentTicketId.write(0);
+        self.reentrancy_guard.write(false);
     }
     //=======================================================================================
     //impl
@@ -198,8 +211,43 @@ mod Lottery {
             let draw = self.draws.read(drawId);
             assert(draw.isActive, 'Draw is not active');
 
-            //TODO: We need to process the payment
+            // Validate numbers length
             assert(numbers.len() == 5, 'Invalid numbers length');
+
+                // --- Balance validation and deduction logic ---
+            // Reentrancy guard
+            assert(!self.reentrancy_guard.read(), 'ReentrancyGuard: reentrant call');
+            self.reentrancy_guard.write(true);
+
+            let ticket_price = self.ticketPrice.read();
+            let user = get_caller_address();
+            let token_address = contract_address_const::<STRK_CONTRACT_ADRESS>();
+            let token = IERC20Dispatcher { contract_address: token_address };
+            
+            // Check user's balance
+            let user_balance = token.balance_of(user);
+            assert(u256::gt(user_balance, 0), 'User has no token balance');
+            assert(
+                u256::ge(user_balance, ticket_price), 
+                'Insufficient token balance. Required: {ticket_price}, Available: {user_balance}'
+            );
+            
+            // Check allowance
+            let allowance = token.allowance(user, get_contract_address());
+            assert(
+                u256::ge(allowance, ticket_price), 
+                'Insufficient token allowance. Required: {ticket_price}, Allowed: {allowance}'
+            );
+            
+            // Transfer tokens from user to contract
+            token.transfer_from(user, get_contract_address(), ticket_price);
+            
+            // Emit BalanceValidated event
+            self.emit(BalanceValidated { user, amount: ticket_price });
+            
+            // Release reentrancy guard
+            self.reentrancy_guard.write(false);
+            // --- End balance logic ---
 
             // Debug del array antes de crear el ticket
             let n1 = *numbers.at(0);
