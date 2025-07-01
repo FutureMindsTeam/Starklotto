@@ -3,11 +3,16 @@ pub trait IStarkPlayVault<TContractState> {
     //=======================================================================================
     //get functions
     fn GetFeePercentage(self: @TContractState) -> u64;
+
+    //=======================================================================================
+    //set functions
+    fn setMintLimit(ref self: TContractState, new_limit: u256);
+    fn setBurnLimit(ref self: TContractState, new_limit: u256);
 }
 
 
 #[starknet::contract]
-mod StarkPlayVault {
+pub mod StarkPlayVault {
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //imports
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -60,8 +65,8 @@ mod StarkPlayVault {
         feePercentage: u64,
         owner: ContractAddress,
         paused: bool,
-        mintLimit: u256,
-        burnLimit: u256,
+        pub mintLimit: u256,
+        pub burnLimit: u256,
         reentrant_locked: bool,
         accumulatedFee: u256,
         #[substorage(v0)]
@@ -73,7 +78,7 @@ mod StarkPlayVault {
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     #[constructor]
-    fn constructor(
+    pub fn constructor(
         ref self: ContractState,
         owner: ContractAddress,
         starkPlayToken: ContractAddress,
@@ -165,9 +170,19 @@ mod StarkPlayVault {
         amount: u256,
     }
 
+    #[derive(Drop, starknet::Event)]
+    pub struct MintLimitUpdated {
+        new_mint_limit: u256,
+    }
+
+    #[derive(Drop, starknet::Event)]
+    pub struct BurnLimitUpdated {
+        new_burn_limit: u256,
+    }
+
     #[event]
     #[derive(Drop, starknet::Event)]
-    enum Event {
+    pub enum Event {
         #[flat]
         OwnableEvent: OwnableComponent::Event,
         STRKDeposited: STRKDeposited,
@@ -179,6 +194,8 @@ mod StarkPlayVault {
         StarkPlayBurnedByOwner: StarkPlayBurnedByOwner,
         FeeCollected: FeeCollected,
         ConvertedToSTRK: ConvertedToSTRK,
+        MintLimitUpdated: MintLimitUpdated,
+        BurnLimitUpdated: BurnLimitUpdated,
     }
 
 
@@ -387,9 +404,26 @@ mod StarkPlayVault {
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     #[abi(embed_v0)]
-    impl StarkPlayVaultImpl of IStarkPlayVault<ContractState> {
+    pub impl StarkPlayVaultImpl of IStarkPlayVault<ContractState> {
         fn GetFeePercentage(self: @ContractState) -> u64 {
             self.feePercentage.read()
+        }
+
+        fn setMintLimit(ref self: ContractState, new_limit: u256) {
+            self.ownable.assert_only_owner();
+
+            assert(new_limit > 0, 'Invalid Mint limit');
+            self.mintLimit.write(new_limit);
+
+            self.emit(MintLimitUpdated { new_mint_limit: new_limit });
+        }
+
+        fn setBurnLimit(ref self: ContractState, new_limit: u256) {
+            self.ownable.assert_only_owner();
+            assert(new_limit > 0, 'Invalid Burn limit');
+            self.burnLimit.write(new_limit);
+
+            self.emit(BurnLimitUpdated { new_burn_limit: new_limit });
         }
     }
 }
