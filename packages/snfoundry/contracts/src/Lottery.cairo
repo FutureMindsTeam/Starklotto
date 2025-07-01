@@ -440,7 +440,7 @@ mod Lottery {
         //OK
         fn CreateNewDraw(ref self: ContractState, accumulatedPrize: u256) {
             // Validate that the accumulated prize is not negative
-            assert(accumulatedPrize >= 0, 'Invalid accumulated prize: cannot be negative');
+            assert(accumulatedPrize >= 0, 'Accumulated prize is negative');
             
             let drawId = self.currentDrawId.read() + 1;
             let previousAmount = self.accumulatedPrize.read();
