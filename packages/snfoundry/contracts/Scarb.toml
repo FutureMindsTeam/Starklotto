@@ -39,3 +39,6 @@ exit_first = true
 allow-prebuilt-plugins = [
 	"snforge_std",
 ] # Avoids the need to install Rust for snforge_std/starknet-foundry
+
+[scripts]
+test = "snforge test"

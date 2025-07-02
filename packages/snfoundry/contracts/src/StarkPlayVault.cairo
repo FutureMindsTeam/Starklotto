@@ -172,12 +172,12 @@ pub mod StarkPlayVault {
 
     #[derive(Drop, starknet::Event)]
     pub struct MintLimitUpdated {
-        new_mint_limit: u256,
+        pub new_mint_limit: u256,
     }
 
     #[derive(Drop, starknet::Event)]
     pub struct BurnLimitUpdated {
-        new_burn_limit: u256,
+        pub new_burn_limit: u256,
     }
 
     #[event]
