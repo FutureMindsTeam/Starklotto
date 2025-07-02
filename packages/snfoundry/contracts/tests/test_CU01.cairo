@@ -1,8 +1,16 @@
 use contracts::StarkPlayVault::{IStarkPlayVaultDispatcher, IStarkPlayVaultDispatcherTrait};
 use openzeppelin_testing::declare_and_deploy;
 use openzeppelin_utils::serde::SerializedAppend;
-use snforge_std::{CheatSpan, cheat_caller_address, spy_events, ContractClassTrait, DeclareResultTrait, declare};
+use snforge_std::{
+    CheatSpan, cheat_caller_address, EventSpy, start_cheat_caller_address,
+    stop_cheat_caller_address, declare, ContractClassTrait, DeclareResultTrait, spy_events,
+    EventSpyAssertionsTrait, EventSpyTrait, // Add for fetching events directly
+    Event, // A structure describing a raw `Event`
+    IsEmitted // Trait for checking if a given event was ever emitted
+};
 use starknet::ContractAddress;
+
+
 
 // Test addresses
 const OWNER: felt252 = 0x123456789abcdef;
@@ -101,6 +109,81 @@ fn test_calculate_fee_buy_numbers() {
         'Fee correct for 100 STARK',
     );
 }
+
+//--------------TEST ISSUE-TEST-004------------------------------
+//tests have to fail
+#[should_panic(expected: 'Fee percentage is too low')]
+#[test]
+fn test_set_fee_zero_like_negative_value() {
+    let vault_address = deploy_contract_starkplayvault();
+    let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
+    let new_fee = 0_u64;
+    let result = vault_dispatcher.setFeePercentage(new_fee);
+}
+
+//tests have to fail
+#[should_panic(expected: 'Fee percentage is too high')]
+#[test]
+fn test_set_fee_max_like_501() {
+    let vault_address = deploy_contract_starkplayvault();
+    let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
+    let new_fee = 501_u64;
+    let _result = vault_dispatcher.setFeePercentage(new_fee);
+}
+
+#[test]
+fn test_set_fee_deploy_contract() {
+    let vault_address = deploy_contract_starkplayvault();
+    let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
+    let fee_percentage = 50_u64;
+    let val = vault_dispatcher.GetFeePercentage();
+    assert(val == 50_u64, 'Fee  should be 50');
+}
+
+#[test]
+fn test_set_fee_min() {
+    let vault_address = deploy_contract_starkplayvault();
+    let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
+    let new_fee = 10_u64;
+    let result = vault_dispatcher.setFeePercentage(new_fee);
+    assert(result == true, 'Fee should be set');
+    assert(vault_dispatcher.GetFeePercentage() == new_fee, 'Fee is not 10_u64');
+}
+
+#[test]
+fn test_set_fee_max() {
+    let vault_address = deploy_contract_starkplayvault();
+    let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
+    let new_fee = 500_u64;
+    let result = vault_dispatcher.setFeePercentage(new_fee);
+    assert(result == true, 'Fee should be set');
+    assert(vault_dispatcher.GetFeePercentage() == new_fee, 'Fee is not 500_u64');
+}
+
+#[test]
+fn test_set_fee_middle() {
+    let vault_address = deploy_contract_starkplayvault();
+    let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
+    let new_fee = 250_u64;
+    let result = vault_dispatcher.setFeePercentage(new_fee);
+    assert(result == true, 'Fee should be set');
+    assert(vault_dispatcher.GetFeePercentage() == new_fee, 'Fee is not 250_u64');
+}
+
+#[test]
+fn test_event_set_fee_percentage() {
+    let vault_address = deploy_contract_starkplayvault();
+    let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
+    let new_fee = 250_u64;
+    let mut spy = spy_events();
+
+    let result = vault_dispatcher.setFeePercentage(new_fee);
+
+    let events = spy.get_events();
+
+    assert(events.events.len() == 1, 'There should be one event');
+}
+//--------------TEST ISSUE-TEST-004------------------------------
 
 #[test]
 fn test_convert_1000_tokens_with_5_percent_fee() {

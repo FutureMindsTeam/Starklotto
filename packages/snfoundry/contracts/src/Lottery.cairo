@@ -440,8 +440,8 @@ mod Lottery {
         //OK
         fn CreateNewDraw(ref self: ContractState, accumulatedPrize: u256) {
             // Validate that the accumulated prize is not negative
-            assert!(accumulatedPrize >= 0, "Invalid accumulated prize: cannot be negative");
-            
+            assert(accumulatedPrize >= 0, 'Accumulated prize is negative');
+
             let drawId = self.currentDrawId.read() + 1;
             let previousAmount = self.accumulatedPrize.read();
             let newDraw = Draw {
@@ -460,12 +460,15 @@ mod Lottery {
             self.draws.entry(drawId).write(newDraw);
             self.currentDrawId.write(drawId);
 
-            self.emit(JackpotIncreased {
-                drawId,
-                previousAmount,
-                newAmount: accumulatedPrize,
-                timestamp: get_block_timestamp()
-            });
+            self
+                .emit(
+                    JackpotIncreased {
+                        drawId,
+                        previousAmount,
+                        newAmount: accumulatedPrize,
+                        timestamp: get_block_timestamp(),
+                    },
+                );
         }
 
         //OK
