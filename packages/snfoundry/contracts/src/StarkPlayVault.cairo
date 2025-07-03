@@ -49,6 +49,7 @@ mod StarkPlayVault {
         burnLimit: u256,
         reentrant_locked: bool,
         accumulatedFee: u256,
+        accumulatedPrizeConversionFees: u256, // NEW: for prize conversion fees
         #[substorage(v0)]
         ownable: OwnableComponent::Storage,
     }
@@ -142,6 +143,22 @@ mod StarkPlayVault {
         amount: u256,
     }
 
+    #[derive(Drop, starknet::Event)]
+    struct GeneralFeesWithdrawn {
+        #[key]
+        recipient: ContractAddress,
+        #[key]
+        amount: u256,
+    }
+
+    #[derive(Drop, starknet::Event)]
+    struct PrizeConversionFeesWithdrawn {
+        #[key]
+        recipient: ContractAddress,
+        #[key]
+        amount: u256,
+    }
+
     #[event]
     #[derive(Drop, starknet::Event)]
     enum Event {
@@ -155,6 +172,8 @@ mod StarkPlayVault {
         Unpaused: Unpaused,
         StarkPlayBurnedByOwner: StarkPlayBurnedByOwner,
         FeeCollected: FeeCollected,
+        GeneralFeesWithdrawn: GeneralFeesWithdrawn,
+        PrizeConversionFeesWithdrawn: PrizeConversionFeesWithdrawn,
     }
 
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -341,5 +360,37 @@ mod StarkPlayVault {
     //}
 
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    fn withdrawGeneralFees(ref self: ContractState, recipient: ContractAddress, amount: u256) -> bool {
+        // Only owner can withdraw
+        assert_only_owner(@self);
+        let current_fees = self.accumulatedFee.read();
+        assert(amount > 0, 'Amount must be > 0');
+        assert(amount <= current_fees, 'Withdraw amount exceeds fees');
+        let strk_contract_address = contract_address_const::<TOKEN_STRK_ADDRESS>();
+        let strk_dispatcher = IERC20Dispatcher { contract_address: strk_contract_address };
+        let contract_balance = strk_dispatcher.balance_of(get_contract_address());
+        assert(contract_balance >= amount, 'Insufficient STRK in vault');
+        strk_dispatcher.transfer(recipient, amount);
+        self.accumulatedFee.write(current_fees - amount);
+        self.emit(GeneralFeesWithdrawn { recipient, amount });
+        true
+    }
+
+    fn withdrawPrizeConversionFees(ref self: ContractState, recipient: ContractAddress, amount: u256) -> bool {
+        // Only owner can withdraw
+        assert_only_owner(@self);
+        let current_fees = self.accumulatedPrizeConversionFees.read();
+        assert(amount > 0, 'Amount must be > 0');
+        assert(amount <= current_fees, 'Withdraw amount exceeds fees');
+        let strk_contract_address = contract_address_const::<TOKEN_STRK_ADDRESS>();
+        let strk_dispatcher = IERC20Dispatcher { contract_address: strk_contract_address };
+        let contract_balance = strk_dispatcher.balance_of(get_contract_address());
+        assert(contract_balance >= amount, 'Insufficient STRK in vault');
+        strk_dispatcher.transfer(recipient, amount);
+        self.accumulatedPrizeConversionFees.write(current_fees - amount);
+        self.emit(PrizeConversionFeesWithdrawn { recipient, amount });
+        true
+    }
 
 }
