@@ -65,8 +65,8 @@ pub mod StarkPlayVault {
         feePercentage: u64,
         owner: ContractAddress,
         paused: bool,
-        pub mintLimit: u256,
-        pub burnLimit: u256,
+        mintLimit: u256,
+        burnLimit: u256,
         reentrant_locked: bool,
         accumulatedFee: u256,
         #[substorage(v0)]
@@ -171,13 +171,13 @@ pub mod StarkPlayVault {
     }
 
     #[derive(Drop, starknet::Event)]
-    pub struct MintLimitUpdated {
-        pub new_mint_limit: u256,
+    struct MintLimitUpdated {
+        new_mint_limit: u256,
     }
 
     #[derive(Drop, starknet::Event)]
-    pub struct BurnLimitUpdated {
-        pub new_burn_limit: u256,
+    struct BurnLimitUpdated {
+        new_burn_limit: u256,
     }
 
     #[event]
