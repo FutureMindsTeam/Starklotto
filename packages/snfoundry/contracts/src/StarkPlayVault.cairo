@@ -9,7 +9,6 @@ pub trait IStarkPlayVault<TContractState> {
     fn setMintLimit(ref self: TContractState, new_limit: u256);
     fn setBurnLimit(ref self: TContractState, new_limit: u256);
     fn setFeePercentage(ref self: TContractState, new_fee: u64) -> bool;
-
 }
 
 
@@ -182,8 +181,8 @@ pub mod StarkPlayVault {
     }
 
     #[derive(Drop, starknet::Event)]
-    struct MintLimitUpdated {
-        new_mint_limit: u256,
+    pub struct MintLimitUpdated {
+        pub new_mint_limit: u256,
     }
 
     #[derive(Drop, starknet::Event)]
@@ -418,7 +417,7 @@ pub mod StarkPlayVault {
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     #[abi(embed_v0)]
-impl StarkPlayVaultImpl of IStarkPlayVault<ContractState> {
+    impl StarkPlayVaultImpl of IStarkPlayVault<ContractState> {
         fn GetFeePercentage(self: @ContractState) -> u64 {
             self.feePercentage.read()
         }

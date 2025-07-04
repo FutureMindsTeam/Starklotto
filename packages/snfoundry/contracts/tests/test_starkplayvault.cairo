@@ -1,12 +1,9 @@
-use contracts::StarkPlayVault::StarkPlayVault::{
-    BurnLimitUpdated, Event, MintLimitUpdated, StarkPlayVaultImpl,
-};
 use contracts::StarkPlayVault::{
     IStarkPlayVault, IStarkPlayVaultDispatcher, IStarkPlayVaultDispatcherTrait, StarkPlayVault,
 };
 use snforge_std::{
-    ContractClassTrait, DeclareResultTrait, EventSpyAssertionsTrait, EventSpyTrait, declare,
-    spy_events, start_cheat_caller_address, stop_cheat_caller_address, test_address,
+    ContractClassTrait, DeclareResultTrait, Event, EventSpyAssertionsTrait, EventSpyTrait, declare,
+    load, spy_events, start_cheat_caller_address, stop_cheat_caller_address, test_address,
 };
 use starknet::storage::StorableStoragePointerReadAccess;
 use starknet::{ContractAddress, contract_address_const};
@@ -57,20 +54,18 @@ fn test_set_mint_limit_by_owner() {
     let contract_address = test_address();
 
     // Check initial state
-    let initial_state_limit = state.mintLimit.read();
-    assert(initial_state_limit == MAX_MINT_AMOUNT, 'Wrong mint limit');
+    let initial_state_limit = load(contract_address, selector!("mintLimit"), 1);
+    assert(initial_state_limit == array![MAX_MINT_AMOUNT.try_into().unwrap()], 'Wrong mint limit');
 
     // Set caller as owner
     start_cheat_caller_address(contract_address, owner);
-
-    let mut spy = spy_events();
 
     // set new mint limit
     state.setMintLimit(new_limit);
 
     // Verify
-    let final_limit = state.mintLimit.read();
-    assert(final_limit == new_limit, 'Mint limit not updated');
+    let final_limit = load(contract_address, selector!("mintLimit"), 1);
+    assert(final_limit == array![new_limit.try_into().unwrap()], 'Mint limit not updated');
 }
 
 #[test]
@@ -82,20 +77,18 @@ fn test_set_burn_limit_by_owner() {
     let contract_address = test_address();
 
     // Check initial state
-    let initial_state_limit = state.burnLimit.read();
-    assert(initial_state_limit == MAX_BURN_AMOUNT, 'Wrong burn limit');
+    let initial_state_limit = load(contract_address, selector!("burnLimit"), 1);
+    assert(initial_state_limit == array![MAX_BURN_AMOUNT.try_into().unwrap()], 'Wrong burn limit');
 
     // Set caller as owner
     start_cheat_caller_address(contract_address, owner);
-
-    let mut spy = spy_events();
 
     // set new burn limit
     state.setBurnLimit(new_limit);
 
     // Verify
-    let final_limit = state.burnLimit.read();
-    assert(final_limit == new_limit, 'Burn limit not updated');
+    let final_limit = load(contract_address, selector!("burnLimit"), 1);
+    assert(final_limit == array![new_limit.try_into().unwrap()], 'Burn limit not updated');
 }
 
 #[should_panic(expected: 'Caller is not the owner')]
@@ -146,7 +139,9 @@ fn test_set_mint_limit_emit_event() {
     // Check event emission
     let events = spy.get_events();
     assert(events.events.len() == 1, 'Event not emitted');
-    let expected_event = Event::MintLimitUpdated(MintLimitUpdated { new_mint_limit: new_limit });
+    let expected_event = StarkPlayVault::Event::MintLimitUpdated(
+        StarkPlayVault::MintLimitUpdated { new_mint_limit: new_limit },
+    );
     let expected_events = array![(contract_address, expected_event)];
     spy.assert_emitted(@expected_events);
 }
@@ -169,7 +164,9 @@ fn test_set_burn_limit_emit_event() {
     // Check event emission
     let events = spy.get_events();
     assert(events.events.len() == 1, 'Event not emitted');
-    let expected_event = Event::BurnLimitUpdated(BurnLimitUpdated { new_burn_limit: new_limit });
+    let expected_event = StarkPlayVault::Event::BurnLimitUpdated(
+        StarkPlayVault::BurnLimitUpdated { new_burn_limit: new_limit },
+    );
     let expected_events = array![(contract_address, expected_event)];
     spy.assert_emitted(@expected_events);
 }
@@ -183,14 +180,15 @@ fn test_mint_limit_zero_value() {
     let contract_address = test_address();
 
     // Check initial state
-    let initial_state_limit = state.mintLimit.read();
-    assert(initial_state_limit == MAX_MINT_AMOUNT, 'Wrong mint limit');
+    let initial_state_limit = load(contract_address, selector!("mintLimit"), 1);
+    let max_mint_amount: felt252 = MAX_MINT_AMOUNT.try_into().unwrap();
+    assert(initial_state_limit == array![max_mint_amount], 'Wrong mint limit');
 
     // Set caller as owner
     start_cheat_caller_address(contract_address, owner);
 
     // set new mint limit to zero
-    state.setMintLimit(0_u256);
+    state.setMintLimit(0);
 }
 
 #[should_panic(expected: 'Invalid Burn limit')]
@@ -202,12 +200,13 @@ fn test_burn_limit_zero_value() {
     let contract_address = test_address();
 
     // Check initial state
-    let initial_state_limit = state.mintLimit.read();
-    assert(initial_state_limit == MAX_MINT_AMOUNT, 'Wrong mint limit');
+    let initial_state_limit = load(contract_address, selector!("burnLimit"), 1);
+    let max_burn_amount: felt252 = MAX_BURN_AMOUNT.try_into().unwrap();
+    assert(initial_state_limit == array![max_burn_amount], 'Wrong burn limit');
 
     // Set caller as owner
     start_cheat_caller_address(contract_address, owner);
 
     // set new mint limit to zero
-    state.setBurnLimit(0_u256);
+    state.setBurnLimit(0);
 }
