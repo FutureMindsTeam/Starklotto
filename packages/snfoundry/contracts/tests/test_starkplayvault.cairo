@@ -136,6 +136,9 @@ fn test_set_mint_limit_emit_event() {
     // set new mint limit
     dispatcher.setMintLimit(new_limit);
 
+    let updated_limit = dispatcher.get_mint_limit();
+    assert(updated_limit == new_limit, 'Mint limit not updated');
+
     // Check event emission
     let events = spy.get_events();
     assert(events.events.len() == 1, 'Event not emitted');
@@ -161,6 +164,9 @@ fn test_set_burn_limit_emit_event() {
     // set new burn limit
     dispatcher.setBurnLimit(new_limit);
 
+    let updated_limit = dispatcher.get_burn_limit();
+    assert(updated_limit == new_limit, 'Burn limit not updated');
+
     // Check event emission
     let events = spy.get_events();
     assert(events.events.len() == 1, 'Event not emitted');
@@ -175,38 +181,36 @@ fn test_set_burn_limit_emit_event() {
 #[test]
 fn test_mint_limit_zero_value() {
     // Setup
-    let mut state = init_vault();
+    let vault = deploy_vault();
     let owner = contract_address_const::<5>();
     let contract_address = test_address();
 
     // Check initial state
-    let initial_state_limit = load(contract_address, selector!("mintLimit"), 1);
-    let max_mint_amount: felt252 = MAX_MINT_AMOUNT.try_into().unwrap();
-    assert(initial_state_limit == array![max_mint_amount], 'Wrong mint limit');
+    let initial_state_limit = vault.get_mint_limit();
+    assert(initial_state_limit == MAX_MINT_AMOUNT, 'Wrong mint limit');
 
     // Set caller as owner
     start_cheat_caller_address(contract_address, owner);
 
     // set new mint limit to zero
-    state.setMintLimit(0);
+    vault.setMintLimit(0);
 }
 
 #[should_panic(expected: 'Invalid Burn limit')]
 #[test]
 fn test_burn_limit_zero_value() {
     // Setup
-    let mut state = init_vault();
+    let vault = deploy_vault();
     let owner = contract_address_const::<5>();
     let contract_address = test_address();
 
     // Check initial state
-    let initial_state_limit = load(contract_address, selector!("burnLimit"), 1);
-    let max_burn_amount: felt252 = MAX_BURN_AMOUNT.try_into().unwrap();
-    assert(initial_state_limit == array![max_burn_amount], 'Wrong burn limit');
+    let initial_state_limit = vault.get_burn_limit();
+    assert(initial_state_limit == MAX_BURN_AMOUNT, 'Wrong burn limit');
 
     // Set caller as owner
     start_cheat_caller_address(contract_address, owner);
 
     // set new mint limit to zero
-    state.setBurnLimit(0);
+    vault.setBurnLimit(0_u256);
 }

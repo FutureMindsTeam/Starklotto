@@ -3,6 +3,8 @@ pub trait IStarkPlayVault<TContractState> {
     //=======================================================================================
     //get functions
     fn GetFeePercentage(self: @TContractState) -> u64;
+    fn get_mint_limit(self: @TContractState) -> u256;
+    fn get_burn_limit(self: @TContractState) -> u256;
 
     //=======================================================================================
     //set functions
@@ -447,6 +449,14 @@ pub mod StarkPlayVault {
             self.feePercentage.write(new_fee);
             self.emit(SetFeePercentage { owner: get_caller_address(), old_fee, new_fee });
             true
+        }
+
+        fn get_mint_limit(self: @ContractState) -> u256 {
+            self.mintLimit.read()
+        }
+
+        fn get_burn_limit(self: @ContractState) -> u256 {
+            self.burnLimit.read()
         }
     }
 }
