@@ -35,6 +35,17 @@ struct Draw {
     endTime: u64,
 }
 
+#[derive(Drop, Serde, starknet::Store)]
+//serde for serialization and deserialization
+struct JackpotEntry {
+    drawId: u64,
+    jackpotAmount: u256,
+    startTime: u64,
+    endTime: u64,
+    isActive: bool,
+    isCompleted: bool,
+}
+
 //=======================================================================================
 //interface
 //=======================================================================================
@@ -73,6 +84,7 @@ trait ILottery<TContractState> {
     ) -> Ticket;
     fn GetTicketCurrentId(self: @TContractState) -> u64;
     fn GetWinningNumbers(self: @TContractState, drawId: u64) -> Array<u16>;
+    fn GetJackpotHistory(self: @TContractState) -> Array<JackpotEntry>;
     //=======================================================================================
 
 }
@@ -90,8 +102,11 @@ mod Lottery {
     use starknet::storage::{
         Map, StoragePathEntry, StoragePointerReadAccess, StoragePointerWriteAccess,
     };
-    use starknet::{ContractAddress, get_block_timestamp, get_caller_address, get_contract_address};
-    use super::{Draw, ILottery, Ticket};
+    use starknet::{
+        ContractAddress, contract_address_const, get_block_timestamp, get_caller_address,
+        get_contract_address,
+    };
+    use super::{Draw, ILottery, JackpotEntry, Ticket};
 
     // ownable component by openzeppelin
     component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
@@ -551,6 +566,35 @@ mod Lottery {
             numbers.append(draw.winningNumber4);
             numbers.append(draw.winningNumber5);
             numbers
+        }
+
+        //=======================================================================================
+        fn GetJackpotHistory(self: @ContractState) -> Array<JackpotEntry> {
+            let mut jackpotHistory = ArrayTrait::new();
+            let currentDrawId = self.currentDrawId.read();
+            
+            // Iterate through all draws from 1 to currentDrawId
+            let mut drawId: u64 = 1;
+            loop {
+                if drawId > currentDrawId {
+                    break;
+                }
+                
+                let draw = self.draws.entry(drawId).read();
+                let jackpotEntry = JackpotEntry {
+                    drawId: draw.drawId,
+                    jackpotAmount: draw.accumulatedPrize,
+                    startTime: draw.startTime,
+                    endTime: draw.endTime,
+                    isActive: draw.isActive,
+                    isCompleted: !draw.isActive,
+                };
+                
+                jackpotHistory.append(jackpotEntry);
+                drawId += 1;
+            };
+            
+            jackpotHistory
         }
     }
 
