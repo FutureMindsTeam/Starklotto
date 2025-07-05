@@ -100,7 +100,7 @@ mod Lottery {
     };
     use starknet::{ContractAddress, contract_address_const};
     use starknet::{get_block_timestamp, get_caller_address, get_contract_address};
-    use super::{Draw, ILottery, Ticket, JackpotEntry};
+    use super::{Draw, ILottery, JackpotEntry, Ticket};
 
     // ownable component by openzeppelin
     component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
@@ -458,14 +458,14 @@ mod Lottery {
         fn GetJackpotHistory(self: @ContractState) -> Array<JackpotEntry> {
             let mut jackpotHistory = ArrayTrait::new();
             let currentDrawId = self.currentDrawId.read();
-            
+
             // Iterate through all draws from 1 to currentDrawId
             let mut drawId: u64 = 1;
             loop {
                 if drawId > currentDrawId {
                     break;
                 }
-                
+
                 let draw = self.draws.read(drawId);
                 let jackpotEntry = JackpotEntry {
                     drawId: draw.drawId,
@@ -475,11 +475,11 @@ mod Lottery {
                     isActive: draw.isActive,
                     isCompleted: !draw.isActive,
                 };
-                
+
                 jackpotHistory.append(jackpotEntry);
                 drawId += 1;
             };
-            
+
             jackpotHistory
         }
     }
