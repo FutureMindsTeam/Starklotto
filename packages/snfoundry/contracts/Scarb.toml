@@ -27,9 +27,6 @@ sierra = true
 [tool.fmt]
 sort-module-level-items = true
 
-[scripts]
-test = "snforge test"
-
 [[tool.snforge.fork]]
 name = "SEPOLIA_LATEST"
 url = "https://starknet-sepolia.public.blastapi.io/rpc/v0_8"
