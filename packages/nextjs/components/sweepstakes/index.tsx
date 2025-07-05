@@ -10,7 +10,7 @@ const SweepstakesModal = ({ modalId }: { modalId: string }) => {
     useSweepstakesStore();
 
   return (
-    <GenericModal modalId={modalId} isOpen={isModalOpen} onClose={closeModal}>
+    <GenericModal modalId={modalId} onClose={closeModal}>
       <button className="absolute top-4 right-4" onClick={closeModal}>
         ✕
       </button>

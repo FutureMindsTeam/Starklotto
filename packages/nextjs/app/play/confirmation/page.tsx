@@ -7,7 +7,12 @@ import { ContractPlayUI } from "~~/app/_components/contractByApp/ContractPlayUI"
 import { LOTT_CONTRACT_NAME } from "~~/utils/Constants";
 
 // Definir los valores permitidos para contractName
-type ContractType = "Eth" | "Strk" | "Lottery";
+type ContractType =
+  | "Lottery"
+  | "StarkPlayERC20"
+  | "StarkPlayVault"
+  | "LottoTicketNFT"
+  | "Strk";
 
 // Asegurar que LOTT_CONTRACT_NAME sea del tipo correcto
 const contractName: ContractType = LOTT_CONTRACT_NAME as ContractType;

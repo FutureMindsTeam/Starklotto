@@ -25,38 +25,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@master
 
-      - name: Install scarb
-        run: curl --proto '=https' --tlsv1.2 -sSf https://docs.swmansion.com/scarb/install.sh | sh -s -- -v 2.9.2
-
-      - name: Verify scarb installation
-        run: |
-          scarb --version
-          echo "Scarb installation directory: $(which scarb)"
-
-      - name: Install snfoundryup
-        run: curl -L https://raw.githubusercontent.com/foundry-rs/starknet-foundry/master/scripts/install.sh | sh
-
-      - name: Install snforge
-        run: snfoundryup -v 0.34.0
-
-      - name: Verify snforge installation
-        run: |
-          snforge --version
-          echo "SNforge installation directory: $(which snforge)"
-
-      - name: Clear build cache
-        run: |
-          rm -rf ~/.cache/scarb
-          rm -rf ~/.cache/snfoundry
-          echo "Cleared build caches"
-
-      # - name: Run snforge tests
-      #   run: snforge test --coverage
-      #   working-directory: ./packages/snfoundry/contracts
-
-      - name: Build snfoundry dependencies
-        run: cd packages/snfoundry && yarn install --immutable && yarn compile
-
       - name: Setup node env
         uses: actions/setup-node@v3
         with:
@@ -68,8 +36,22 @@ jobs:
         run: yarn install --immutable
         working-directory: ./packages/nextjs
 
-      - name: Install root dependencies
-        run: yarn install --immutable
+      - name: Install scarb
+        uses: software-mansion/setup-scarb@v1
+        with:
+          tool-versions: ./.tool-versions
+          scarb-lock: ./packages/snfoundry/contracts/Scarb.lock
+
+      - name: Install snfoundryup
+        uses: foundry-rs/setup-snfoundry@v3
+        with:
+          tool-versions: ./.tool-versions
+
+      - name: Build Contracts
+        run: yarn compile
+
+      - name: Run smart contract tests
+        run: yarn test
 
       - name: Check Code Format
         run: yarn format:check

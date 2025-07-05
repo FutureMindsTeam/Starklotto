@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { sepolia } from "@starknet-react/chains";
 import { BanknotesIcon } from "@heroicons/react/24/outline";
 import { useNetwork, useProvider } from "@starknet-react/core";
@@ -10,10 +10,9 @@ import GenericModal from "./CustomConnectButton/GenericModal";
 import { useTheme } from "next-themes";
 
 /**
- * Faucet modal which displays external websites that lets you send small amounts of L2 Sepolia ETH/STRK to an account address on Starknet Sepolia..
+ * Faucet modal which displays external websites that lets you send small amounts of L2 Sepolia STRK to an account address on Starknet Sepolia..
  */
 export const FaucetSepolia = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const { chain: ConnectedChain } = useNetwork();
 
   const sepoliaFaucets = [
@@ -23,14 +22,9 @@ export const FaucetSepolia = () => {
       link: "https://starknet-faucet.vercel.app/",
     },
     {
-      name: "Alchemy",
-      img: "/logo_alchemy.png",
-      link: "https://www.alchemy.com/faucets/starknet-sepolia",
-    },
-    {
       name: "Blast",
       img: "/blast-icon-color.svg",
-      link: "https://blastapi.io/faucets/starknet-sepolia-eth",
+      link: "https://blastapi.io/faucets/starknet-sepolia-strk",
     },
   ];
 
@@ -85,26 +79,23 @@ export const FaucetSepolia = () => {
   return (
     <div>
       <label
-        onClick={() => setIsModalOpen(true)}
+        htmlFor="faucet-modal"
         className="btn btn-sm font-normal gap-1 border border-[#32BAC4] shadow-none"
       >
         <BanknotesIcon className="h-4 w-4 text-[#32BAC4]" />
         <span>Faucet</span>
       </label>
-      <GenericModal
-        modalId="faucet-modal"
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-      >
+      <input type="checkbox" id="faucet-modal" className="modal-toggle" />
+      <GenericModal modalId="faucet-modal" onClose={() => {}}>
         <>
           <div className="flex items-center justify-between">
             <h3 className="text-xl font-bold mb-3">Sepolia Faucets</h3>
-            <button
-              onClick={() => setIsModalOpen(false)}
+            <label
+              htmlFor="faucet-modal"
               className="btn btn-ghost btn-sm btn-circle"
             >
               ✕
-            </button>
+            </label>
           </div>
           <p className="text-xs mb-6">
             <span className="font-medium underline">Disclaimer:</span>

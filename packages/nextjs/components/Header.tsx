@@ -108,7 +108,7 @@ export const Header = () => {
             <CustomConnectButton isHeader={true} />
           </button> */}
           <button className="text-white font-semibold rounded-full hover:opacity-90 transition">
-            <CustomConnectButton isHeader={true} />
+            <CustomConnectButton />
           </button>
           <button
             className="p-2 bg-transparent hover:bg-gray-700 rounded-full transition"
