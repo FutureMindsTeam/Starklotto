@@ -276,7 +276,8 @@ pub mod StarkPlayVault {
             assert(transfer_result, 'Error al transferir el STRK');
 
             //recollect fee
-            let fee = (amountSTRK * self.feePercentage.read().into()) / 100;
+            let fee = (amountSTRK * self.feePercentage.read().into())
+                / BASIS_POINTS_DENOMINATOR.into();
             self.accumulatedFee.write(self.accumulatedFee.read() + fee);
             self
                 .emit(
@@ -433,53 +434,6 @@ pub mod StarkPlayVault {
     }
 
 
-
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    //public functions
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    fn buySTRKP(ref self: ContractState, user: ContractAddress, amountSTRK: u256) -> bool {
-        //verify reentrancy and set reentrancy lock
-        assert(!self.reentrant_locked.read(), 'ReentrancyGuard: reentrant call');
-        self.reentrant_locked.write(true);
-
-        let mut success = false;
-
-        assert(amountSTRK > 0, 'Amount must be greater than 0');
-        let has_balance = _check_user_balance(@self, user, amountSTRK);
-        assert(has_balance, 'Insufficient STRK balance');
-
-        _assert_not_paused(@self);
-        assert(amountSTRK <= self.mintLimit.read(), 'Exceeds mint limit');
-
-        // tranfer strk from user to contract
-        let transfer_result = _transfer_strk(@self, user, amountSTRK);
-        assert(transfer_result, 'Error al transferir el STRK');
-
-        //recollect fee
-        let fee = (amountSTRK * self.feePercentage.read().into()) / BASIS_POINTS_DENOMINATOR.into();
-        self.accumulatedFee.write(self.accumulatedFee.read() + fee);
-        self.emit(FeeCollected { user, amount: fee, accumulatedFee: self.accumulatedFee.read() });
-
-        //update totalSTRKStored
-        self.totalSTRKStored.write(self.totalSTRKStored.read() + amountSTRK);
-
-        //mint strk play to user
-        let amount_to_mint = _amount_to_mint(@self, amountSTRK);
-        _mint_strk_play(@self, user, amount_to_mint);
-
-        //update totalStarkPlayMinted
-        self.totalStarkPlayMinted.write(self.totalStarkPlayMinted.read() + amount_to_mint);
-
-        self.emit(StarkPlayMinted { user, amount: amount_to_mint });
-
-        success = true;
-
-        //unlock reentrancy always at the end
-        self.reentrant_locked.write(false);
-
-        return success;
-    }
-
     fn convert_to_strk(ref self: ContractState, amount: u256) {
         _assert_not_paused(@self);
         let user = get_caller_address();
@@ -512,17 +466,17 @@ pub mod StarkPlayVault {
         self.emit(ConvertedToSTRK { user, amount: netAmount });
     }
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    //private functions
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//private functions
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     //fn depositSTRK(ref self: ContractState, user: ContractAddress, amount: u256) -> bool {
-    //deposit strk to vault
-    //emit event STRKDeposited
-    //return true
+//deposit strk to vault
+//emit event STRKDeposited
+//return true
 
     //in case of error al depositar el STRK
-    //return false
-    //}
+//return false
+//}
 
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -531,12 +485,12 @@ pub mod StarkPlayVault {
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     //fn setFee(ref self: ContractState, new_fee: u64) -> bool {
-    //    self.assert_only_owner();
-    //   assert(new_fee <= BASIS_POINTS_DENOMINATOR, 'Fee too high'); // Máximo 100% (10000 basis
-    //   points)
-    //   self.feePercentage.write(new_fee);
-    //    true
-    //}
+//    self.assert_only_owner();
+//   assert(new_fee <= BASIS_POINTS_DENOMINATOR, 'Fee too high'); // Máximo 100% (10000 basis
+//   points)
+//   self.feePercentage.write(new_fee);
+//    true
+//}
 
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 

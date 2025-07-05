@@ -6,7 +6,9 @@ use starknet::{ContractAddress, contract_address_const};
 use contracts::StarkPlayVault::{IStarkPlayVaultDispatcher, IStarkPlayVaultDispatcherTrait};
 use contracts::StarkPlayERC20::{IMintableDispatcher, IMintableDispatcherTrait};
 use openzeppelin_token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
-use openzeppelin_access::ownable::interface::{IOwnableDispatcher, IOwnableDispatcherTrait};
+use openzeppelin_access::accesscontrol::interface::{
+    IAccessControlDispatcher, IAccessControlDispatcherTrait,
+};
 
 // Test constants
 fn OWNER() -> ContractAddress {
@@ -27,7 +29,7 @@ fn USER3() -> ContractAddress {
 
 
 fn INITIAL_FEE_PERCENTAGE() -> u64 {
-    5_u64 // 5%
+    50_u64 // 50 basis points = 0.5%
 }
 
 fn PURCHASE_AMOUNT() -> u256 {
@@ -47,6 +49,11 @@ fn deploy_mock_strk_token() -> IMintableDispatcher {
     // Set up the STRK token with initial balances for users
     let strk_token = IMintableDispatcher { contract_address: deployed_address };
     start_cheat_caller_address(deployed_address, OWNER());
+
+    // Grant MINTER_ROLE to OWNER so we can mint tokens
+    strk_token.grant_minter_role(OWNER());
+    strk_token.set_minter_allowance(OWNER(), 1000000000000000000000000_u256); // Large allowance
+
     strk_token.mint(USER1(), LARGE_AMOUNT() * 100); // Mint plenty for testing
     strk_token.mint(USER2(), LARGE_AMOUNT() * 100);
     strk_token.mint(USER3(), LARGE_AMOUNT() * 100);
@@ -69,9 +76,11 @@ fn deploy_vault_contract(
     // First deploy the vault to get its address
     let vault_contract = declare("StarkPlayVault").unwrap().contract_class();
 
-    // Deploy StarkPlay token with vault as owner (so vault can mint)
+    // Deploy StarkPlay token with OWNER as admin (so OWNER can grant roles)
     let starkplay_contract = declare("StarkPlayERC20").unwrap().contract_class();
-    let starkplay_constructor_calldata = array![OWNER().into(), OWNER().into()]; // temp owner
+    let starkplay_constructor_calldata = array![
+        OWNER().into(), OWNER().into(),
+    ]; // recipient and admin
     let (starkplay_address, _) = starkplay_contract
         .deploy(@starkplay_constructor_calldata)
         .unwrap();
@@ -87,12 +96,12 @@ fn deploy_vault_contract(
     let (vault_address, _) = vault_contract.deploy(@vault_constructor_calldata).unwrap();
     let vault = IStarkPlayVaultDispatcher { contract_address: vault_address };
 
-    // Transfer ownership of StarkPlay token to the vault
+    // Grant MINTER_ROLE to the vault so it can mint StarkPlay tokens
     start_cheat_caller_address(starkplay_token.contract_address, OWNER());
-    let ownable_dispatcher = IOwnableDispatcher {
-        contract_address: starkplay_token.contract_address,
-    };
-    ownable_dispatcher.transfer_ownership(vault_address);
+    starkplay_token.grant_minter_role(vault_address);
+    // Set a large allowance for the vault to mint tokens
+    starkplay_token
+        .set_minter_allowance(vault_address, 1000000000000000000000000_u256); // 1M tokens
     stop_cheat_caller_address(starkplay_token.contract_address);
 
     (vault, starkplay_token)
@@ -103,6 +112,11 @@ fn setup_user_balance(
 ) {
     // Mint STRK tokens to user so they can pay
     start_cheat_caller_address(token.contract_address, OWNER());
+
+    // Ensure OWNER has MINTER_ROLE and allowance (should already be set, but just in case)
+    token.grant_minter_role(OWNER());
+    token.set_minter_allowance(OWNER(), 1000000000000000000000000_u256);
+
     token.mint(user, amount);
     stop_cheat_caller_address(token.contract_address);
 
@@ -118,13 +132,121 @@ fn setup_user_balance(
 // ============================================================================================
 
 #[test]
+fn test_deploy_vault_only() {
+    // Deploy a mock STRK token first
+    let strk_contract = declare("StarkPlayERC20").unwrap().contract_class();
+    let strk_constructor_calldata = array![OWNER().into(), OWNER().into()];
+    let (strk_address, _) = strk_contract.deploy(@strk_constructor_calldata).unwrap();
+
+    // Deploy StarkPlay token
+    let starkplay_contract = declare("StarkPlayERC20").unwrap().contract_class();
+    let starkplay_constructor_calldata = array![OWNER().into(), OWNER().into()];
+    let (starkplay_address, _) = starkplay_contract
+        .deploy(@starkplay_constructor_calldata)
+        .unwrap();
+
+    // Now try to deploy the vault - this might be where the error occurs
+    let vault_contract = declare("StarkPlayVault").unwrap().contract_class();
+    let vault_constructor_calldata = array![
+        OWNER().into(),
+        starkplay_address.into(),
+        strk_address.into(),
+        INITIAL_FEE_PERCENTAGE().into(),
+    ];
+    let (vault_address, _) = vault_contract.deploy(@vault_constructor_calldata).unwrap();
+
+    // If we get here, vault deployment worked
+    assert(vault_address != contract_address_const::<0>(), 'Vault deployed');
+}
+
+#[test]
+fn test_deploy_starkplay_only() {
+    // Try to deploy just the StarkPlay token to see if this is where the error comes from
+    let starkplay_contract = declare("StarkPlayERC20").unwrap().contract_class();
+    let starkplay_constructor_calldata = array![OWNER().into(), OWNER().into()];
+    let (starkplay_address, _) = starkplay_contract
+        .deploy(@starkplay_constructor_calldata)
+        .unwrap();
+
+    // If we get here, the StarkPlay deployment worked
+    assert(starkplay_address != contract_address_const::<0>(), 'StarkPlay deployed');
+}
+
+#[test]
+fn test_basic_deployment() {
+    // Deploy real STRK token
+    let strk_token = deploy_mock_strk_token();
+
+    // Deploy StarkPlay token
+    let starkplay_contract = declare("StarkPlayERC20").unwrap().contract_class();
+    let starkplay_constructor_calldata = array![OWNER().into(), OWNER().into()];
+    let (starkplay_address, _) = starkplay_contract
+        .deploy(@starkplay_constructor_calldata)
+        .unwrap();
+    let starkplay_token = IMintableDispatcher { contract_address: starkplay_address };
+
+    // Deploy vault
+    let vault_contract = declare("StarkPlayVault").unwrap().contract_class();
+    let vault_constructor_calldata = array![
+        OWNER().into(),
+        starkplay_token.contract_address.into(),
+        strk_token.contract_address.into(),
+        INITIAL_FEE_PERCENTAGE().into(),
+    ];
+    let (vault_address, _) = vault_contract.deploy(@vault_constructor_calldata).unwrap();
+    let vault = IStarkPlayVaultDispatcher { contract_address: vault_address };
+
+    // Just check that contracts were deployed and basic reads work
+    let fee_percentage = vault.get_fee_percentage();
+    assert(fee_percentage == INITIAL_FEE_PERCENTAGE(), 'Fee percentage mismatch');
+}
+
+#[test]
+fn test_role_granting() {
+    // Deploy STRK token simply without minting
+    let strk_contract = declare("StarkPlayERC20").unwrap().contract_class();
+    let strk_constructor_calldata = array![OWNER().into(), OWNER().into()];
+    let (strk_address, _) = strk_contract.deploy(@strk_constructor_calldata).unwrap();
+    let strk_token = IMintableDispatcher { contract_address: strk_address };
+
+    // Deploy StarkPlay token manually to control the process
+    let starkplay_contract = declare("StarkPlayERC20").unwrap().contract_class();
+    let starkplay_constructor_calldata = array![OWNER().into(), OWNER().into()];
+    let (starkplay_address, _) = starkplay_contract
+        .deploy(@starkplay_constructor_calldata)
+        .unwrap();
+    let starkplay_token = IMintableDispatcher { contract_address: starkplay_address };
+
+    // Deploy vault
+    let vault_contract = declare("StarkPlayVault").unwrap().contract_class();
+    let vault_constructor_calldata = array![
+        OWNER().into(),
+        starkplay_token.contract_address.into(),
+        strk_token.contract_address.into(),
+        INITIAL_FEE_PERCENTAGE().into(),
+    ];
+    let (vault_address, _) = vault_contract.deploy(@vault_constructor_calldata).unwrap();
+
+    // Now try to grant the role step by step
+    start_cheat_caller_address(starkplay_token.contract_address, OWNER());
+
+    // Step 1: Grant the minter role - this is where the error might occur
+    starkplay_token.grant_minter_role(vault_address);
+
+    // Step 2: Set allowance - this might also fail
+    starkplay_token.set_minter_allowance(vault_address, 1000000_u256);
+
+    stop_cheat_caller_address(starkplay_token.contract_address);
+}
+
+#[test]
 fn test_sequential_fee_consistency() {
     // Deploy real STRK token that users will pay with
     let strk_token = deploy_mock_strk_token();
 
     let (vault, _) = deploy_vault_contract(strk_token);
     let purchase_amount = PURCHASE_AMOUNT();
-    let expected_fee = (purchase_amount * INITIAL_FEE_PERCENTAGE().into()) / 100;
+    let expected_fee = (purchase_amount * INITIAL_FEE_PERCENTAGE().into()) / 10000; // basis points
 
     // Setup user balance using the real STRK token (what users pay with)
     setup_user_balance(strk_token, USER1(), LARGE_AMOUNT(), vault.contract_address);
@@ -136,10 +258,8 @@ fn test_sequential_fee_consistency() {
     while i < 10_u64 {
         let initial_accumulated_fee = vault.get_accumulated_fee();
 
-        // Execute transaction
-        start_cheat_caller_address(vault.contract_address, USER1());
+        // Execute transaction - don't cheat caller address, let vault be the caller to mint
         let success = vault.buySTRKP(USER1(), purchase_amount);
-        stop_cheat_caller_address(vault.contract_address);
 
         assert(success, 'Transaction should succeed');
 
