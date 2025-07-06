@@ -5,52 +5,52 @@ use starknet::ContractAddress;
 //=======================================================================================
 #[derive(Drop, Copy, Serde, starknet::Store)]
 //serde for serialization and deserialization
-struct Ticket {
-    player: ContractAddress,
-    number1: u16,
-    number2: u16,
-    number3: u16,
-    number4: u16,
-    number5: u16,
-    claimed: bool,
-    drawId: u64,
-    timestamp: u64,
+pub struct Ticket {
+    pub player: ContractAddress,
+    pub number1: u16,
+    pub number2: u16,
+    pub number3: u16,
+    pub number4: u16,
+    pub number5: u16,
+    pub claimed: bool,
+    pub drawId: u64,
+    pub timestamp: u64,
 }
 
-#[derive(Drop, Serde, starknet::Store)]
+#[derive(Drop, Copy, Serde, starknet::Store)]
 //serde for serialization and deserialization
-struct Draw {
-    drawId: u64,
-    accumulatedPrize: u256,
-    winningNumber1: u16,
-    winningNumber2: u16,
-    winningNumber3: u16,
-    winningNumber4: u16,
-    winningNumber5: u16,
+pub struct Draw {
+    pub drawId: u64,
+    pub accumulatedPrize: u256,
+    pub winningNumber1: u16,
+    pub winningNumber2: u16,
+    pub winningNumber3: u16,
+    pub winningNumber4: u16,
+    pub winningNumber5: u16,
     //map of ticketId to ticket
-    isActive: bool,
+    pub isActive: bool,
     //start time of the draw,timestamp unix
-    startTime: u64,
+    pub startTime: u64,
     //end time of the draw,timestamp unix
-    endTime: u64,
+    pub endTime: u64,
 }
 
-#[derive(Drop, Serde, starknet::Store)]
+#[derive(Drop, Copy, Serde, starknet::Store)]
 //serde for serialization and deserialization
-struct JackpotEntry {
-    drawId: u64,
-    jackpotAmount: u256,
-    startTime: u64,
-    endTime: u64,
-    isActive: bool,
-    isCompleted: bool,
+pub struct JackpotEntry {
+    pub drawId: u64,
+    pub jackpotAmount: u256,
+    pub startTime: u64,
+    pub endTime: u64,
+    pub isActive: bool,
+    pub isCompleted: bool,
 }
 
 //=======================================================================================
 //interface
 //=======================================================================================
 #[starknet::interface]
-trait ILottery<TContractState> {
+pub trait ILottery<TContractState> {
     //=======================================================================================
     //set functions
     fn Initialize(ref self: TContractState, ticketPrice: u256, accumulatedPrize: u256);
@@ -84,7 +84,7 @@ trait ILottery<TContractState> {
     ) -> Ticket;
     fn GetTicketCurrentId(self: @TContractState) -> u64;
     fn GetWinningNumbers(self: @TContractState, drawId: u64) -> Array<u16>;
-    fn GetJackpotHistory(self: @TContractState) -> Array<JackpotEntry>;
+    fn get_jackpot_history(self: @TContractState) -> Array<JackpotEntry>;
     //=======================================================================================
 
 }
@@ -93,7 +93,7 @@ trait ILottery<TContractState> {
 //contract
 //=======================================================================================
 #[starknet::contract]
-mod Lottery {
+pub mod Lottery {
     use core::array::{Array, ArrayTrait};
     use core::dict::{Felt252Dict, Felt252DictTrait};
     use core::traits::TryInto;
@@ -569,7 +569,18 @@ mod Lottery {
         }
 
         //=======================================================================================
-        fn GetJackpotHistory(self: @ContractState) -> Array<JackpotEntry> {
+        /// Returns the complete history of all jackpot draws
+        /// 
+        /// This function iterates through all draws from drawId 1 to currentDrawId
+        /// and returns an array of JackpotEntry structs containing:
+        /// - drawId: Unique identifier for the draw
+        /// - jackpotAmount: The accumulated prize amount for this draw
+        /// - startTime: When the draw started (unix timestamp)
+        /// - endTime: When the draw ended (unix timestamp)
+        /// - isActive: Whether the draw is currently active (true) or completed (false)
+        /// - isCompleted: Whether the draw has been completed (true) or is still active (false)
+        ///   Note: isCompleted is the logical inverse of isActive for clarity
+        fn get_jackpot_history(self: @ContractState) -> Array<JackpotEntry> {
             let mut jackpotHistory = ArrayTrait::new();
             let currentDrawId = self.currentDrawId.read();
             
@@ -587,6 +598,9 @@ mod Lottery {
                     startTime: draw.startTime,
                     endTime: draw.endTime,
                     isActive: draw.isActive,
+                    // isCompleted is the logical inverse of isActive for explicit clarity
+                    // When isActive is true, the draw is ongoing (not completed)
+                    // When isActive is false, the draw has been completed
                     isCompleted: !draw.isActive,
                 };
                 
