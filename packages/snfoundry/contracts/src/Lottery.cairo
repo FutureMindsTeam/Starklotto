@@ -91,6 +91,7 @@ mod Lottery {
     };
     use starknet::{
         ContractAddress, contract_address_const, get_block_timestamp, get_caller_address,
+        get_contract_address,
     };
     use super::{Draw, ILottery, Ticket};
 
@@ -106,6 +107,7 @@ mod Lottery {
     const STRK_PLAY_CONTRACT_ADDRESS: felt252 =
         0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d;
 
+    // TODO: Update the address of the vault contract once the vault is deployed
     const STRK_PLAY_VAULT_CONTRACT_ADDRESS: felt252 =
         0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d;
 
@@ -123,7 +125,6 @@ mod Lottery {
         PrizeClaimed: PrizeClaimed,
         UserTicketsInfo: UserTicketsInfo,
         JackpotIncreased: JackpotIncreased,
-        BalanceValidated: BalanceValidated,
     }
 
     #[derive(Drop, starknet::Event)]
@@ -170,13 +171,6 @@ mod Lottery {
         previousAmount: u256,
         newAmount: u256,
         timestamp: u64,
-    }
-    
-    #[derive(Drop, starknet::Event)]
-    struct BalanceValidated {
-        #[key]
-        user: ContractAddress,
-        amount: u256,
     }
 
     //=======================================================================================
@@ -236,7 +230,14 @@ mod Lottery {
         //=======================================================================================
         //OK
         fn BuyTicket(ref self: ContractState, drawId: u64, numbers: Array<u16>) {
+            // Reentrancy guard at the very beginning
+            assert(!self.reentrancy_guard.read(), 'ReentrancyGuard: reentrant call');
+            self.reentrancy_guard.write(true);
+            
+            // Input validation
             assert(self.ValidateNumbers(@numbers), 'Invalid numbers');
+            assert(numbers.len() == 5, 'Invalid numbers length');
+            
             let draw = self.draws.entry(drawId).read();
             assert(draw.isActive, 'Draw is not active');
 
@@ -248,45 +249,27 @@ mod Lottery {
             };
 
             // --- Balance validation and deduction logic ---
-            // Reentrancy guard
-            assert(!self.reentrancy_guard.read(), 'ReentrancyGuard: reentrant call');
-            self.reentrancy_guard.write(true);
-
             let ticket_price = self.ticketPrice.read();
             let user = get_caller_address();
             let vault_address = contract_address_const::<STRK_PLAY_VAULT_CONTRACT_ADDRESS>();
             
-            // Check user's balance
+            // Check user's balance first (cheaper operation)
             let user_balance = token_dispatcher.balance_of(user);
-            assert(u256::gt(user_balance, 0), 'User has no token balance');
-            assert(
-                u256::ge(user_balance, ticket_price), 
-                'Insufficient token balance. Required: {ticket_price}, Available: {user_balance}'
-            );
+            assert(user_balance > 0, 'No token balance');
+            assert(user_balance >= ticket_price, 'Insufficient balance');
             
-            // Check allowance
-            let allowance = token_dispatcher.allowance(user, vault_address);
-            assert(
-                u256::ge(allowance, ticket_price), 
-                'Insufficient token allowance. Required: {ticket_price}, Allowed: {allowance}'
-            );
+            // Check allowance - user should approve the lottery contract
+            let allowance = token_dispatcher.allowance(user, get_contract_address());
+            assert(allowance >= ticket_price, 'Insufficient allowance');
             
             // Transfer tokens from user to vault
-            let transfer_result = token_dispatcher.transfer_from(user, vault_address, ticket_price);
-            assert(transfer_result, 'Token transfer failed');
-            
-            // Emit BalanceValidated event
-            self.emit(BalanceValidated { user, amount: ticket_price });
-            
-            // Release reentrancy guard
-            self.reentrancy_guard.write(false);
+            let transfer_success = token_dispatcher.transfer_from(user, vault_address, ticket_price);
+            assert(transfer_success, 'Transfer failed');
             // --- End balance logic ---
 
             // TODO: Mint the NFT here, for now it is simulated
             let minted = true;
             assert(minted, 'NFT minting failed');
-
-            assert(numbers.len() == 5, 'Invalid numbers length');
 
             // Debug del array antes de crear el ticket
             let n1 = *numbers.at(0);
@@ -329,6 +312,9 @@ mod Lottery {
                         timestamp: current_timestamp,
                     },
                 );
+            
+            // Release reentrancy guard
+            self.reentrancy_guard.write(false);
         }
         //=======================================================================================
         fn GetUserTicketsCount(self: @ContractState, drawId: u64, player: ContractAddress) -> u32 {
@@ -506,7 +492,7 @@ mod Lottery {
             let count = self.userTicketCount.entry((player, drawId)).read();
 
             let mut i: u32 = 1;
-            while i != count {
+            while i <= count {
                 let ticketId = self.userTicketIds.entry((player, drawId, i)).read();
                 userTicket_ids.append(ticketId);
                 i += 1;
