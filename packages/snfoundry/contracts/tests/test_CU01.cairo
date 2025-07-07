@@ -113,6 +113,7 @@ fn test_set_fee_zero_like_negative_value() {
 }
 
 //tests have to fail
+#[should_panic(expected: 'Fee percentage is too high')]
 #[test]
 fn test_set_fee_max_like_501() {
     let vault_address = deploy_contract_starkplayvault();

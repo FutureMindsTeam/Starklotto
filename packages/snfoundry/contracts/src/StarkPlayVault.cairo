@@ -1,3 +1,5 @@
+use starknet::ContractAddress;
+
 #[starknet::interface]
 pub trait IStarkPlayVault<TContractState> {
     //=======================================================================================
@@ -11,6 +13,9 @@ pub trait IStarkPlayVault<TContractState> {
     fn setMintLimit(ref self: TContractState, new_limit: u256);
     fn setBurnLimit(ref self: TContractState, new_limit: u256);
     fn setFeePercentage(ref self: TContractState, new_fee: u64) -> bool;
+    //=======================================================================================
+    //mint functions
+    fn mint_strk_play(self: @TContractState, user: ContractAddress, amount: u256) -> bool;
 }
 
 
@@ -284,16 +289,13 @@ pub mod StarkPlayVault {
 
     //TODO: delete fn public
     //#[external(v0)]
-    fn mint_strk_play(self: @ContractState, user: ContractAddress, amount: u256) -> bool {
+    fn _mint_strk_play(self: @ContractState, user: ContractAddress, amount: u256) -> bool {
         let starkPlayContractAddress = self.starkPlayToken.read();
         let mintDispatcher = IMintableDispatcher { contract_address: starkPlayContractAddress };
         mintDispatcher.mint(user, amount);
         true
     }
 
-    fn _mint_strk_play(self: @ContractState, user: ContractAddress, amount: u256) -> bool {
-        mint_strk_play(self, user, amount)
-    }
 
 
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -458,5 +460,10 @@ pub mod StarkPlayVault {
         fn get_burn_limit(self: @ContractState) -> u256 {
             self.burnLimit.read()
         }
+        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        fn mint_strk_play(self: @ContractState, user: ContractAddress, amount: u256) -> bool {
+            _mint_strk_play(self, user, amount)
+        }
+        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     }
 }
