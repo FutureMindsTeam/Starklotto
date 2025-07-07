@@ -7,6 +7,13 @@ import { GlowingButton } from "~~/components/glowing-button";
 import { Navbar } from "~~/components/Navbar";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { useTransactor } from "~~/hooks/scaffold-stark";
+import { useContract, useNetwork } from "@starknet-react/core";
+import { useAccount } from "~~/hooks/useAccount";
+import { useTargetNetwork } from "~~/hooks/scaffold-stark/useTargetNetwork";
+import deployedContracts from "~~/contracts/deployedContracts";
+import { LOTT_CONTRACT_NAME } from "~~/utils/Constants";
+import { Abi } from "abi-wan-kanabi";
 
 export default function BuyTicketsPage() {
   const router = useRouter();
@@ -22,6 +29,37 @@ export default function BuyTicketsPage() {
   const countdown = { days: "00", hours: "23", minutes: "57", seconds: "46" };
   const balance = 1000;
   const ticketPrice = 10;
+
+  // Get contract info for devnet (adjust if you support other networks)
+  const contractInfo = deployedContracts.devnet[LOTT_CONTRACT_NAME];
+  const abi = contractInfo.abi as Abi;
+  const contractAddress = contractInfo.address;
+
+  const { contract: contractInstance } = useContract({
+    abi,
+    address: contractAddress,
+  });
+  const writeTxn = useTransactor();
+  const { status: walletStatus } = useAccount();
+  const { chain } = useNetwork();
+  const { targetNetwork } = useTargetNetwork();
+
+  // For demo, use drawId = 2 (should be dynamic if you have multiple draws)
+  const drawId = 2;
+
+  // Check if all tickets have 5 numbers
+  const allTicketsValid = Object.values(selectedNumbers).every(
+    (nums) => nums.length === 5
+  );
+  const writeDisabled =
+    !chain ||
+    chain?.network !== targetNetwork.network ||
+    walletStatus === "disconnected" ||
+    !allTicketsValid;
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [txError, setTxError] = useState<string | null>(null);
+  const [txSuccess, setTxSuccess] = useState<string | null>(null);
 
   const increaseTickets = () => {
     if (ticketCount < 10) {
@@ -93,9 +131,22 @@ export default function BuyTicketsPage() {
 
   const totalCost = ticketCount * ticketPrice;
 
-  const handlePurchase = () => {
-    // Handle purchase logic here
-    console.log("Purchase:", { selectedNumbers, totalCost });
+  const handlePurchase = async () => {
+    setTxError(null);
+    setTxSuccess(null);
+    if (!contractInstance) return;
+    setIsLoading(true);
+    try {
+      const txs = Object.values(selectedNumbers).map((nums) =>
+        contractInstance.populate("BuyTicket", [drawId, nums])
+      );
+      await writeTxn.writeTransaction(txs);
+      setTxSuccess("Tickets purchased successfully!");
+    } catch (e: any) {
+      setTxError(e?.message || "Transaction failed");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Animation variants
@@ -397,9 +448,12 @@ export default function BuyTicketsPage() {
                   onClick={handlePurchase}
                   className="w-full"
                   glowColor="rgba(139, 92, 246, 0.5)"
+                  disabled={writeDisabled || isLoading}
                 >
-                  Buy Tickets
+                  {isLoading ? "Processing..." : "Buy Tickets"}
                 </GlowingButton>
+                {txError && <p className="text-red-500 mt-2">{txError}</p>}
+                {txSuccess && <p className="text-green-500 mt-2">{txSuccess}</p>}
               </motion.div>
             </div>
           </div>
