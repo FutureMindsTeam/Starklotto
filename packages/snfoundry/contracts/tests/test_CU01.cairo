@@ -12,19 +12,25 @@ use starknet::ContractAddress;
 
 
 
-// Test addresses
-const OWNER: felt252 = 0x123456789abcdef;
-const USER: felt252 = 0x987654321fedcba;
+// Direcciones de prueba
+const OWNER: ContractAddress = 0x02dA5254690b46B9C4059C25366D1778839BE63C142d899F0306fd5c312A5918
+    .try_into()
+    .unwrap();
+
+const USER: ContractAddress = 0x02dA5254690b46B9C4059C25366D1778839BE63C142d899F0306fd5c312A5918
+    .try_into()
+    .unwrap();
+
 const Initial_Fee_Percentage: u64 = 50; // 50 basis points = 0.5%
 const BASIS_POINTS_DENOMINATOR: u256 = 10000_u256; // 10000 basis points = 100%
 
-//helper functions
+//helper function
 fn owner_address() -> ContractAddress {
-    OWNER.try_into().unwrap()
+    OWNER
 }
 
 fn user_address() -> ContractAddress {
-    USER.try_into().unwrap()
+    USER
 }
 
 fn deploy_contract_lottery() -> ContractAddress {
