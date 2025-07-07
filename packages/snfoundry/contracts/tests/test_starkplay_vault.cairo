@@ -2,13 +2,11 @@ use snforge_std::{
     declare, ContractClassTrait, DeclareResultTrait, start_cheat_caller_address,
     stop_cheat_caller_address,
 };
+#[feature("deprecated-starknet-consts")]
 use starknet::{ContractAddress, contract_address_const};
 use contracts::StarkPlayVault::{IStarkPlayVaultDispatcher, IStarkPlayVaultDispatcherTrait};
 use contracts::StarkPlayERC20::{IMintableDispatcher, IMintableDispatcherTrait};
 use openzeppelin_token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
-use openzeppelin_access::accesscontrol::interface::{
-    IAccessControlDispatcher, IAccessControlDispatcherTrait,
-};
 
 // Test constants
 fn OWNER() -> ContractAddress {
@@ -147,7 +145,7 @@ fn test_sequential_fee_consistency() {
     let mut i = 0;
     let mut expected_accumulated_fee = 0;
 
-    while i < 10_u64 {
+    while i != 10_u64 {
         let initial_accumulated_fee = vault.get_accumulated_fee();
 
         // Execute transaction - don't cheat caller address, let vault be the caller to mint
