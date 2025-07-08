@@ -19,20 +19,20 @@ pub struct Ticket {
 
 #[derive(Drop, Copy, Serde, starknet::Store)]
 //serde for serialization and deserialization
-pub struct Draw {
-    pub drawId: u64,
-    pub accumulatedPrize: u256,
-    pub winningNumber1: u16,
-    pub winningNumber2: u16,
-    pub winningNumber3: u16,
-    pub winningNumber4: u16,
-    pub winningNumber5: u16,
+struct Draw {
+    drawId: u64,
+    accumulatedPrize: u256,
+    winningNumber1: u16,
+    winningNumber2: u16,
+    winningNumber3: u16,
+    winningNumber4: u16,
+    winningNumber5: u16,
     //map of ticketId to ticket
-    pub isActive: bool,
+    isActive: bool,
     //start time of the draw,timestamp unix
-    pub startTime: u64,
+    startTime: u64,
     //end time of the draw,timestamp unix
-    pub endTime: u64,
+    endTime: u64,
 }
 
 #[derive(Drop, Copy, Serde, starknet::Store)]
@@ -237,7 +237,7 @@ pub mod Lottery {
             self.ownable.assert_only_owner();
             self.ticketPrice.write(ticketPrice);
             self.accumulatedPrize.write(accumulatedPrize);
-            self.CreateNewDraw(0);
+            self.CreateNewDraw(accumulatedPrize);
         }
 
         //=======================================================================================
