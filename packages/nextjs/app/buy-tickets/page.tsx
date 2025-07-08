@@ -453,7 +453,9 @@ export default function BuyTicketsPage() {
                   {isLoading ? "Processing..." : "Buy Tickets"}
                 </GlowingButton>
                 {txError && <p className="text-red-500 mt-2">{txError}</p>}
-                {txSuccess && <p className="text-green-500 mt-2">{txSuccess}</p>}
+                {txSuccess && (
+                  <p className="text-green-500 mt-2">{txSuccess}</p>
+                )}
               </motion.div>
             </div>
           </div>
