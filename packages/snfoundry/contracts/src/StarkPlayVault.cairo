@@ -113,7 +113,7 @@ pub mod StarkPlayVault {
     ) {
         self.strkToken.write(strkToken);
         self.starkPlayToken.write(starkPlayToken);
-        self.owner.write(starknet::get_caller_address());
+        self.owner.write(owner);
         self.ownable.initializer(owner);
         self.mintLimit.write(MAX_MINT_AMOUNT);
         self.burnLimit.write(MAX_BURN_AMOUNT);
