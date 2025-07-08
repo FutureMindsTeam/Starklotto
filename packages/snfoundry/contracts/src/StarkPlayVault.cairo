@@ -1,3 +1,5 @@
+use starknet::ContractAddress;
+
 #[starknet::interface]
 pub trait IStarkPlayVault<TContractState> {
     //=======================================================================================
@@ -8,6 +10,9 @@ pub trait IStarkPlayVault<TContractState> {
     //set functions
     fn setFeePercentage(ref self: TContractState, new_fee: u64) -> bool;
     fn convert_to_strk(ref self: TContractState, amount: u256);
+    //=======================================================================================
+    //mint functions
+    fn mint_strk_play(self: @TContractState, user: ContractAddress, amount: u256) -> bool;
 }
 
 
@@ -271,16 +276,13 @@ pub mod StarkPlayVault {
 
     //TODO: delete fn public
     //#[external(v0)]
-    fn mint_strk_play(self: @ContractState, user: ContractAddress, amount: u256) -> bool {
+    fn _mint_strk_play(self: @ContractState, user: ContractAddress, amount: u256) -> bool {
         let starkPlayContractAddress = self.starkPlayToken.read();
         let mintDispatcher = IMintableDispatcher { contract_address: starkPlayContractAddress };
         mintDispatcher.mint(user, amount);
         true
     }
 
-    fn _mint_strk_play(self: @ContractState, user: ContractAddress, amount: u256) -> bool {
-        mint_strk_play(self, user, amount)
-    }
 
 
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -442,6 +444,10 @@ pub mod StarkPlayVault {
             self.feePercentage.write(new_fee);
             self.emit(SetFeePercentage { owner: get_caller_address(), old_fee, new_fee });
             true
+        }
+        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        fn mint_strk_play(self: @ContractState, user: ContractAddress, amount: u256) -> bool {
+            _mint_strk_play(self, user, amount)
         }
         //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     }
