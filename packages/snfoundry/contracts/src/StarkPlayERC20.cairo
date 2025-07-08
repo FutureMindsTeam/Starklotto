@@ -10,8 +10,16 @@ pub trait IMintable<TContractState> {
 }
 
 #[starknet::interface]
+pub trait IPrizeToken<TContractState> {
+    fn get_prize_balance(self: @TContractState, user: ContractAddress) -> u256;
+    fn set_prize_balance(ref self: TContractState, user: ContractAddress, amount: u256);
+    fn add_prize_balance(ref self: TContractState, user: ContractAddress, amount: u256);
+}
+
+#[starknet::interface]
 pub trait IBurnable<TContractState> {
     fn burn(ref self: TContractState, amount: u256);
+    fn burn_from(ref self: TContractState, account: ContractAddress, amount: u256);
 }
 
 #[starknet::contract]
@@ -22,11 +30,12 @@ pub mod StarkPlayERC20 {
     use openzeppelin_upgrades::interface::IUpgradeable;
     use starknet::{ClassHash, ContractAddress, get_caller_address};
 
-    use super::{IBurnable, IMintable, INITIAL_SUPPLY};
+    // CHANGED: Updated import
+    use super::{IBurnable, IMintable, INITIAL_SUPPLY, IPrizeToken};
+    
     component!(path: ERC20Component, storage: erc20, event: ERC20Event);
     component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
     component!(path: UpgradeableComponent, storage: upgradeable, event: UpgradeableEvent);
-
 
     // External
     #[abi(embed_v0)]
@@ -47,6 +56,8 @@ pub mod StarkPlayERC20 {
         ownable: OwnableComponent::Storage,
         #[substorage(v0)]
         upgradeable: UpgradeableComponent::Storage,
+        // FIXED: Removed #[substorage(v0)]
+        prize_balances: LegacyMap<ContractAddress, u256>,
     }
 
     #[derive(Drop, starknet::Event)]
@@ -82,33 +93,50 @@ pub mod StarkPlayERC20 {
     fn constructor(ref self: ContractState, recipient: ContractAddress, owner: ContractAddress) {
         self.erc20.initializer("$tarkPlay", "STARKP");
         self.ownable.initializer(owner);
-        // this is not minting any token initially
-    //self.erc20.mint(recipient, INITIAL_SUPPLY);
     }
 
     #[abi(embed_v0)]
     impl MintableImpl of IMintable<ContractState> {
         fn mint(ref self: ContractState, recipient: ContractAddress, amount: u256) {
-            //TODO: security, add authorized addresses like vault contract
             self.ownable.assert_only_owner();
             self.erc20.mint(recipient, amount);
             self.emit(Mint { recipient, amount });
         }
     }
 
+    // CHANGED: Updated implementation name and trait
+    #[abi(embed_v0)]
+    impl PrizeTokenImpl of IPrizeToken<ContractState> {
+        fn get_prize_balance(self: @ContractState, user: ContractAddress) -> u256 {
+            self.prize_balances.read(user)
+        }
+        
+        fn set_prize_balance(ref self: ContractState, user: ContractAddress, amount: u256) {
+            self.ownable.assert_only_owner();
+            self.prize_balances.write(user, amount);
+        }
+        
+        fn add_prize_balance(ref self: ContractState, user: ContractAddress, amount: u256) {
+            self.ownable.assert_only_owner();
+            let current_balance = self.prize_balances.read(user);
+            self.prize_balances.write(user, current_balance + amount);
+        }
+    }
+
     #[abi(embed_v0)]
     impl BurnableImpl of IBurnable<ContractState> {
         fn burn(ref self: ContractState, amount: u256) {
-            //TODO: security, add authorized addresses like vault contract
             let burner = get_caller_address();
             self.erc20.burn(burner, amount);
             self.emit(Burn { burner, amount });
         }
+        
+        fn burn_from(ref self: ContractState, account: ContractAddress, amount: u256) {
+            self.ownable.assert_only_owner();
+            self.erc20.burn(account, amount);
+            self.emit(Burn { burner: account, amount });
+        }
     }
-
-    //
-    // Upgradeable
-    //
 
     #[abi(embed_v0)]
     impl UpgradeableImpl of IUpgradeable<ContractState> {
