@@ -14,7 +14,7 @@ openzeppelin_upgrades = "0.20.0"
 
 [dev-dependencies]
 openzeppelin_utils = "0.20.0"
-snforge_std = "0.34.0"
+snforge_std = "0.40.0"
 cairo_test = "2.9.2"
 
 [[target.starknet-contract]]
@@ -35,3 +35,6 @@ exit_first = true
 [profile.dev.cairo]
 unstable-add-statements-code-locations-debug-info = true
 inlining-strategy = "avoid"
+
+[scripts]
+test = "snforge test"

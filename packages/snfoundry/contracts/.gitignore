@@ -1,0 +1,6 @@
+target
+.snfoundry_cache/
+.env
+local-devnet
+
+.vercel
