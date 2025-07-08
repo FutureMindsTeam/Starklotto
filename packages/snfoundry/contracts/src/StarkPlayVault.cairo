@@ -1,13 +1,21 @@
+use starknet::ContractAddress;
+
 #[starknet::interface]
 pub trait IStarkPlayVault<TContractState> {
     //=======================================================================================
     //get functions
     fn GetFeePercentage(self: @TContractState) -> u64;
+    //=======================================================================================
+    //set functions
+    fn setFeePercentage(ref self: TContractState, new_fee: u64) -> bool;
+    //=======================================================================================
+    //mint functions
+    fn mint_strk_play(self: @TContractState, user: ContractAddress, amount: u256) -> bool;
 }
 
 
 #[starknet::contract]
-mod StarkPlayVault {
+pub mod StarkPlayVault {
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //imports
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -57,7 +65,13 @@ mod StarkPlayVault {
         totalStarkPlayMinted: u256,
         totalStarkPlayBurned: u256,
         starkPlayToken: ContractAddress,
+        //fee percentage for the vault to mint STRKP
         feePercentage: u64,
+        //this don't change after the constructor
+        feePercentageMin: u64, //min fee percentage for the vault to mint STRKP (0.1% = 10 basis points)
+        feePercentageMax: u64, //max fee percentage for the vault to mint STRKP (5% = 500 basis points)
+        //------------------------------------------------
+        //owner of the vault
         owner: ContractAddress,
         paused: bool,
         mintLimit: u256,
@@ -81,13 +95,16 @@ mod StarkPlayVault {
     ) {
         self.strkToken.write(TOKEN_STRK_ADDRESS);
         self.starkPlayToken.write(starkPlayToken);
-        self.feePercentage.write(feePercentage);
         self.owner.write(starknet::get_caller_address());
         self.ownable.initializer(owner);
         self.mintLimit.write(MAX_MINT_AMOUNT);
         self.burnLimit.write(MAX_BURN_AMOUNT);
         self.paused.write(false);
         self.reentrant_locked.write(false);
+        //set fee percentage
+        self.feePercentage.write(feePercentage);
+        self.feePercentageMin.write(10); //0.1%
+        self.feePercentageMax.write(500); //5%
     }
 
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -165,6 +182,14 @@ mod StarkPlayVault {
         amount: u256,
     }
 
+    #[derive(Drop, starknet::Event)]
+    struct SetFeePercentage {
+        #[key]
+        owner: ContractAddress,
+        old_fee: u64,
+        new_fee: u64,
+    }
+
     #[event]
     #[derive(Drop, starknet::Event)]
     enum Event {
@@ -179,6 +204,7 @@ mod StarkPlayVault {
         StarkPlayBurnedByOwner: StarkPlayBurnedByOwner,
         FeeCollected: FeeCollected,
         ConvertedToSTRK: ConvertedToSTRK,
+        SetFeePercentage: SetFeePercentage,
     }
 
 
@@ -246,16 +272,13 @@ mod StarkPlayVault {
 
     //TODO: delete fn public
     //#[external(v0)]
-    fn mint_strk_play(self: @ContractState, user: ContractAddress, amount: u256) -> bool {
+    fn _mint_strk_play(self: @ContractState, user: ContractAddress, amount: u256) -> bool {
         let starkPlayContractAddress = self.starkPlayToken.read();
         let mintDispatcher = IMintableDispatcher { contract_address: starkPlayContractAddress };
         mintDispatcher.mint(user, amount);
         true
     }
 
-    fn _mint_strk_play(self: @ContractState, user: ContractAddress, amount: u256) -> bool {
-        mint_strk_play(self, user, amount)
-    }
 
 
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -380,16 +403,26 @@ mod StarkPlayVault {
 
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    //fn  getFeePercentage(): u64{
-
-    //}
-
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
     #[abi(embed_v0)]
     impl StarkPlayVaultImpl of IStarkPlayVault<ContractState> {
+        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         fn GetFeePercentage(self: @ContractState) -> u64 {
             self.feePercentage.read()
         }
+        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        fn setFeePercentage(ref self: ContractState, new_fee: u64) -> bool {
+            assert_only_owner(@self);
+            assert(new_fee >= self.feePercentageMin.read(), 'Fee percentage is too low');
+            assert(new_fee <= self.feePercentageMax.read(), 'Fee percentage is too high');
+            let old_fee = self.feePercentage.read();
+            self.feePercentage.write(new_fee);
+            self.emit(SetFeePercentage { owner: get_caller_address(), old_fee, new_fee });
+            true
+        }
+        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        fn mint_strk_play(self: @ContractState, user: ContractAddress, amount: u256) -> bool {
+            _mint_strk_play(self, user, amount)
+        }
+        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     }
 }
