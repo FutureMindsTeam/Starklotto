@@ -84,13 +84,14 @@ trait ILottery<TContractState> {
 mod Lottery {
     use core::array::{Array, ArrayTrait};
     use core::dict::{Felt252Dict, Felt252DictTrait};
+    use core::traits::TryInto;
     use openzeppelin_access::ownable::OwnableComponent;
     use openzeppelin_token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
     use starknet::storage::{
         Map, StoragePathEntry, StoragePointerReadAccess, StoragePointerWriteAccess,
     };
     use starknet::{
-        ContractAddress, contract_address_const, get_block_timestamp, get_caller_address,
+        ContractAddress, get_block_timestamp, get_caller_address,
         get_contract_address,
     };
     use super::{Draw, ILottery, Ticket};
@@ -245,27 +246,28 @@ mod Lottery {
 
             // Process the payment
             let token_dispatcher = IERC20Dispatcher {
-                contract_address: contract_address_const::<STRK_PLAY_CONTRACT_ADDRESS>(),
+                contract_address: STRK_PLAY_CONTRACT_ADDRESS.try_into().unwrap(),
             };
 
             // --- Balance validation and deduction logic ---
+            // 1. Get ticket price and user/vault addresses
             let ticket_price = self.ticketPrice.read();
             let user = get_caller_address();
-            let vault_address = contract_address_const::<STRK_PLAY_VAULT_CONTRACT_ADDRESS>();
+            let vault_address: ContractAddress = STRK_PLAY_VAULT_CONTRACT_ADDRESS.try_into().unwrap();
             
-            // Check user's balance first (cheaper operation)
+            // 2. Validate user has sufficient token balance
             let user_balance = token_dispatcher.balance_of(user);
             assert(user_balance > 0, 'No token balance');
             assert(user_balance >= ticket_price, 'Insufficient balance');
             
-            // Check allowance - user should approve the lottery contract
+            // 3. Validate user has approved lottery contract for token transfer
             let allowance = token_dispatcher.allowance(user, get_contract_address());
             assert(allowance >= ticket_price, 'Insufficient allowance');
             
-            // Transfer tokens from user to vault
+            // 4. Execute token transfer from user to vault
             let transfer_success = token_dispatcher.transfer_from(user, vault_address, ticket_price);
             assert(transfer_success, 'Transfer failed');
-            // --- End balance logic ---
+            // --- End balance validation and deduction logic ---
 
             // TODO: Mint the NFT here, for now it is simulated
             let minted = true;
@@ -407,7 +409,6 @@ mod Lottery {
             let mut matches: u8 = 0;
 
             // Para cada número del ticket
-            let mut _i: usize = 0;
             if number1 == winningNumber1 {
                 matches += 1;
             }
@@ -451,7 +452,7 @@ mod Lottery {
         //OK
         fn CreateNewDraw(ref self: ContractState, accumulatedPrize: u256) {
             // Validate that the accumulated prize is not negative
-            assert(accumulatedPrize >= 0, 'Invalid accumulated prize: cannot be negative');
+            assert(accumulatedPrize >= 0, 'Invalid accumulated prize');
             
             let drawId = self.currentDrawId.read() + 1;
             let previousAmount = self.accumulatedPrize.read();
