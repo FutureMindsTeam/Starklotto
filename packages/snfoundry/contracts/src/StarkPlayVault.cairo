@@ -5,7 +5,7 @@ mod StarkPlayVault {
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     use crate::StarkPlayERC20::{
         IBurnable, IBurnableDispatcher, IBurnableDispatcherTrait,
-        IPrizeToken, IPrizeTokenDispatcher, IPrizeTokenDispatcherTrait,  // Now IPrizeToken generates IPrizeTokenDispatcher
+        IPrizeToken, IPrizeTokenDispatcher, IPrizeTokenDispatcherTrait,  
         IMintable, IMintableDispatcher, IMintableDispatcherTrait,
     };
     use openzeppelin_access::ownable::OwnableComponent;
