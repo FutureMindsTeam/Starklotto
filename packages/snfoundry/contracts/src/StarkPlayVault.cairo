@@ -26,6 +26,11 @@ pub mod StarkPlayVault {
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //imports
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    use crate::StarkPlayERC20::{
+        IBurnable, IBurnableDispatcher, IBurnableDispatcherTrait,
+        IPrizeToken, IPrizeTokenDispatcher, IPrizeTokenDispatcherTrait,  
+        IMintable, IMintableDispatcher, IMintableDispatcherTrait,
+    };
     use openzeppelin_access::ownable::OwnableComponent;
     use openzeppelin_token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
     use starknet::storage::{
@@ -54,11 +59,12 @@ pub mod StarkPlayVault {
 
     const TOKEN_STRK_ADDRESS: felt252 =
         0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d;
-    const Initial_Fee_Percentage: u64 = 50_u64; // 50 basis points = 0.5%
-    const BASIS_POINTS_DENOMINATOR: u256 = 10000_u256; // 10000 basis points = 100%
+    const Initial_Fee_Percentage: u64 = 50; // 0,5%
     const DECIMALS_FACTOR: u256 = 1_000_000_000_000_000_000; // 10^18
     const MAX_MINT_AMOUNT: u256 = 1_000_000 * 1_000_000_000_000_000_000; // 1 millón de tokens
     const MAX_BURN_AMOUNT: u256 = 1_000_000 * 1_000_000_000_000_000_000; // 1 millón de tokens
+    const FEE_PERCENTAGE_CONVERSION: u64 = 300; // 300 basis points = 3%
+    const BASIS_POINTS_DENOMINATOR: u256 = 100;
 
 
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -88,6 +94,7 @@ pub mod StarkPlayVault {
         accumulatedPrizeConversionFees: u256,
         #[substorage(v0)]
         ownable: OwnableComponent::Storage,
+        treasury_address: ContractAddress,
     }
 
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -99,6 +106,7 @@ pub mod StarkPlayVault {
         ref self: ContractState,
         owner: ContractAddress,
         starkPlayToken: ContractAddress,
+        treasury_address: ContractAddress,
         feePercentage: u64,
     ) {
         self.strkToken.write(TOKEN_STRK_ADDRESS);
@@ -109,11 +117,7 @@ pub mod StarkPlayVault {
         self.burnLimit.write(MAX_BURN_AMOUNT);
         self.paused.write(false);
         self.reentrant_locked.write(false);
-        self.accumulatedPrizeConversionFees.write(0);
-        //set fee percentage
-        self.feePercentage.write(feePercentage);
-        self.feePercentageMin.write(10); //0.1%
-        self.feePercentageMax.write(500); //5%
+        self.treasury_address.write(treasury_address);
     }
 
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -191,24 +195,6 @@ pub mod StarkPlayVault {
         amount: u256,
     }
 
-    #[derive(Drop, starknet::Event)]
-    struct MintLimitUpdated {
-        new_mint_limit: u256,
-    }
-
-    #[derive(Drop, starknet::Event)]
-    struct BurnLimitUpdated {
-        new_burn_limit: u256,
-    }
-
-    #[derive(Drop, starknet::Event)]
-    struct SetFeePercentage {
-        #[key]
-        owner: ContractAddress,
-        old_fee: u64,
-        new_fee: u64,
-    }
-
     #[event]
     #[derive(Drop, starknet::Event)]
     pub enum Event {
@@ -223,9 +209,6 @@ pub mod StarkPlayVault {
         StarkPlayBurnedByOwner: StarkPlayBurnedByOwner,
         FeeCollected: FeeCollected,
         ConvertedToSTRK: ConvertedToSTRK,
-        MintLimitUpdated: MintLimitUpdated,
-        BurnLimitUpdated: BurnLimitUpdated,
-        SetFeePercentage: SetFeePercentage,
     }
 
 
@@ -399,13 +382,54 @@ pub mod StarkPlayVault {
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     //fn setFee(ref self: ContractState, new_fee: u64) -> bool {
-    //    self.assert_only_owner();
-    //   assert(new_fee <= BASIS_POINTS_DENOMINATOR, 'Fee too high'); // Máximo 100% (10000 basis
-    //   points)
-    //   self.feePercentage.write(new_fee);
-    //    true
-    //}
+//    self.assert_only_owner();
+//   assert(new_fee <= 10000, 'Fee too high'); // Máximo 100%
+//   self.feePercentage.write(new_fee);
+//    true
+//}
 
+    fn convert_to_strk(ref self: ContractState, amount: u256) {
+        _assert_not_paused(@self);
+        let user = get_caller_address();
+        
+        // Verify prize balance
+        let starkPlayContractAddress = self.starkPlayToken.read();
+        let prizeDispatcher = IPrizeTokenDispatcher { contract_address: starkPlayContractAddress };
+                 
+        let prize_balance = prizeDispatcher.get_prize_balance(user);
+        assert(prize_balance >= amount, 'Insufficient prize tokens');
+        
+        // Calculate 3% fee
+        let fee = (amount * FEE_PERCENTAGE_CONVERSION.into()) / BASIS_POINTS_DENOMINATOR.into();
+        let net_amount = amount - fee;
+        
+        // Burn $tarkPlay tokens
+        let mut burnDispatcher = IBurnableDispatcher { contract_address: starkPlayContractAddress };
+        burnDispatcher.burn_from(user, amount);
+        
+        // Transfer fee to treasury
+        let strk_contract_address = contract_address_const::<TOKEN_STRK_ADDRESS>();
+        let strk_dispatcher = IERC20Dispatcher { contract_address: strk_contract_address };
+        strk_dispatcher.transfer(self.treasury_address.read(), fee);
+        
+        // Transfer net amount to user
+        strk_dispatcher.transfer(user, net_amount);
+        
+        // Update counters
+        self.totalStarkPlayBurned.write(self.totalStarkPlayBurned.read() + amount);
+        self.totalSTRKStored.write(self.totalSTRKStored.read() - amount);
+        
+        // Emit events
+        self.emit(StarkPlayBurned { user, amount });
+        self.emit(FeeCollected { user, amount: fee, accumulatedFee: self.accumulatedFee.read() + fee });
+        self.emit(ConvertedToSTRK { user, amount: net_amount });
+    }
+
+    fn set_treasury_address(ref self: ContractState, treasury: ContractAddress) {
+        self.ownable.assert_only_owner();
+        self.treasury_address.write(treasury);
+    }
+    
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     //fn setFee(u64): bool{
