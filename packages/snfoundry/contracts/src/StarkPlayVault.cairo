@@ -37,18 +37,12 @@ pub mod StarkPlayVault {
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     use openzeppelin_access::ownable::OwnableComponent;
     use openzeppelin_token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
-    use starknet::storage::{
-        Map, StorageMapReadAccess, StorageMapWriteAccess, StoragePathEntry,
-        StoragePointerReadAccess, StoragePointerWriteAccess,
-    };
-    use starknet::{
-        ContractAddress, contract_address_const, get_caller_address, get_contract_address,
-    };
+    use starknet::storage::{StoragePointerReadAccess, StoragePointerWriteAccess};
+    use starknet::{ContractAddress, get_caller_address, get_contract_address};
     use crate::StarkPlayERC20::{
-        IBurnableDispatcher, IBurnableDispatcherTrait, IMintable, IMintableDispatcher,
+        IBurnableDispatcher, IBurnableDispatcherTrait, IMintableDispatcher,
         IMintableDispatcherTrait, IPrizeTokenDispatcher, IPrizeTokenDispatcherTrait,
     };
-    use super::IStarkPlayVault;
 
     component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
 
@@ -61,8 +55,11 @@ pub mod StarkPlayVault {
     //constants
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    const TOKEN_STRK_ADDRESS: felt252 =
-        0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d;
+    const TOKEN_STRK_ADDRESS: ContractAddress =
+        0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
+        .try_into()
+        .unwrap();
+
     const Initial_Fee_Percentage: u64 = 50_u64; // 50 basis points = 0.5%
     const BASIS_POINTS_DENOMINATOR: u256 = 10000_u256; // 10000 basis points = 100%
     const DECIMALS_FACTOR: u256 = 1_000_000_000_000_000_000; // 10^18
@@ -108,10 +105,10 @@ pub mod StarkPlayVault {
         ref self: ContractState,
         owner: ContractAddress,
         starkPlayToken: ContractAddress,
-        strkToken: ContractAddress,
         feePercentage: u64,
     ) {
-        self.strkToken.write(strkToken);
+        // Use the constant STRK token address
+        self.strkToken.write(TOKEN_STRK_ADDRESS);
         self.starkPlayToken.write(starkPlayToken);
         self.owner.write(owner);
         self.ownable.initializer(owner);
@@ -374,7 +371,6 @@ pub mod StarkPlayVault {
 
             self.emit(BurnLimitUpdated { new_burn_limit: new_limit });
         }
-
 
 
         fn get_mint_limit(self: @ContractState) -> u256 {

@@ -39,10 +39,20 @@ fn LARGE_AMOUNT() -> u256 {
 }
 
 fn deploy_mock_strk_token() -> IMintableDispatcher {
-    // Deploy a real STRK token (using StarkPlayERC20 as template)
+    // Deploy the mock STRK token at the exact constant address that the vault expects
+    let target_address: ContractAddress =
+        0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
+        .try_into()
+        .unwrap();
+
     let contract = declare("StarkPlayERC20").unwrap().contract_class();
     let constructor_calldata = array![OWNER().into(), OWNER().into()];
-    let (deployed_address, _) = contract.deploy(@constructor_calldata).unwrap();
+
+    // Deploy at the specific constant address that the vault expects
+    let (deployed_address, _) = contract.deploy_at(@constructor_calldata, target_address).unwrap();
+
+    // Verify it deployed at the correct address
+    assert(deployed_address == target_address, 'Mock STRK address mismatch');
 
     // Set up the STRK token with initial balances for users
     let strk_token = IMintableDispatcher { contract_address: deployed_address };
@@ -68,11 +78,9 @@ fn deploy_starkplay_token() -> IMintableDispatcher {
     IMintableDispatcher { contract_address }
 }
 
-fn deploy_vault_contract(
-    strk_token: IMintableDispatcher,
-) -> (IStarkPlayVaultDispatcher, IMintableDispatcher) {
-    // First deploy the vault to get its address
-    let vault_contract = declare("StarkPlayVault").unwrap().contract_class();
+fn deploy_vault_contract() -> (IStarkPlayVaultDispatcher, IMintableDispatcher) {
+    // First deploy the mock STRK token at the constant address
+    let _strk_token = deploy_mock_strk_token();
 
     // Deploy StarkPlay token with OWNER as admin (so OWNER can grant roles)
     let starkplay_contract = declare("StarkPlayERC20").unwrap().contract_class();
@@ -84,12 +92,10 @@ fn deploy_vault_contract(
         .unwrap();
     let starkplay_token = IMintableDispatcher { contract_address: starkplay_address };
 
-    // Deploy vault with the StarkPlay token address
+    // Deploy vault (no longer needs STRK token address parameter)
+    let vault_contract = declare("StarkPlayVault").unwrap().contract_class();
     let vault_constructor_calldata = array![
-        OWNER().into(),
-        starkplay_token.contract_address.into(),
-        strk_token.contract_address.into(),
-        INITIAL_FEE_PERCENTAGE().into(),
+        OWNER().into(), starkplay_token.contract_address.into(), INITIAL_FEE_PERCENTAGE().into(),
     ];
     let (vault_address, _) = vault_contract.deploy(@vault_constructor_calldata).unwrap();
     let vault = IStarkPlayVaultDispatcher { contract_address: vault_address };
@@ -131,14 +137,18 @@ fn setup_user_balance(
 
 #[test]
 fn test_sequential_fee_consistency() {
-    // Deploy real STRK token that users will pay with
-    let strk_token = deploy_mock_strk_token();
-
-    let (vault, _) = deploy_vault_contract(strk_token);
+    let (vault, _) = deploy_vault_contract();
     let purchase_amount = PURCHASE_AMOUNT();
     let expected_fee = (purchase_amount * INITIAL_FEE_PERCENTAGE().into()) / 10000; // basis points
 
-    // Setup user balance using the real STRK token (what users pay with)
+    // Get the deployed STRK token for user balance setup
+    let strk_token = IMintableDispatcher {
+        contract_address: 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
+            .try_into()
+            .unwrap(),
+    };
+
+    // Setup user balance using the deployed STRK token
     setup_user_balance(strk_token, USER1(), LARGE_AMOUNT(), vault.contract_address);
 
     // Execute 10 consecutive transactions
@@ -172,8 +182,14 @@ fn test_sequential_fee_consistency() {
 
 #[test]
 fn test_fee_calculation_accuracy() {
-    let strk_token = deploy_mock_strk_token();
-    let (vault, _) = deploy_vault_contract(strk_token);
+    let (vault, _) = deploy_vault_contract();
+
+    // Get the deployed STRK token
+    let strk_token = IMintableDispatcher {
+        contract_address: 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
+            .try_into()
+            .unwrap(),
+    };
 
     // Test different amounts
     let amounts = array![
@@ -215,8 +231,15 @@ fn test_fee_calculation_accuracy() {
 
 #[test]
 fn test_multiple_users_fee_consistency() {
-    let strk_token = deploy_mock_strk_token();
-    let (vault, _) = deploy_vault_contract(strk_token);
+    let (vault, _) = deploy_vault_contract();
+
+    // Get the deployed STRK token
+    let strk_token = IMintableDispatcher {
+        contract_address: 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
+            .try_into()
+            .unwrap(),
+    };
+
     let purchase_amount = PURCHASE_AMOUNT();
     let expected_fee = (purchase_amount * INITIAL_FEE_PERCENTAGE().into()) / 10000;
 
@@ -253,8 +276,14 @@ fn test_multiple_users_fee_consistency() {
 
 #[test]
 fn test_concurrent_transactions_simulation() {
-    let strk_token = deploy_mock_strk_token();
-    let (vault, _) = deploy_vault_contract(strk_token);
+    let (vault, _) = deploy_vault_contract();
+
+    // Get the deployed STRK token
+    let strk_token = IMintableDispatcher {
+        contract_address: 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
+            .try_into()
+            .unwrap(),
+    };
     let purchase_amount = PURCHASE_AMOUNT();
     let expected_fee = (purchase_amount * INITIAL_FEE_PERCENTAGE().into()) / 10000;
 
@@ -299,8 +328,14 @@ fn test_concurrent_transactions_simulation() {
 
 #[test]
 fn test_fee_consistency_after_pause_unpause() {
-    let strk_token = deploy_mock_strk_token();
-    let (vault, _) = deploy_vault_contract(strk_token);
+    let (vault, _) = deploy_vault_contract();
+
+    // Get the deployed STRK token
+    let strk_token = IMintableDispatcher {
+        contract_address: 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
+            .try_into()
+            .unwrap(),
+    };
     let purchase_amount = PURCHASE_AMOUNT();
     let expected_fee = (purchase_amount * INITIAL_FEE_PERCENTAGE().into()) / 10000;
 
@@ -346,8 +381,14 @@ fn test_fee_consistency_after_pause_unpause() {
 #[should_panic(expected: 'Contract is paused')]
 #[test]
 fn test_transaction_fails_when_paused() {
-    let strk_token = deploy_mock_strk_token();
-    let (vault, _) = deploy_vault_contract(strk_token);
+    let (vault, _) = deploy_vault_contract();
+
+    // Get the deployed STRK token
+    let strk_token = IMintableDispatcher {
+        contract_address: 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
+            .try_into()
+            .unwrap(),
+    };
 
     setup_user_balance(strk_token, USER1(), LARGE_AMOUNT(), vault.contract_address);
 
@@ -367,8 +408,14 @@ fn test_transaction_fails_when_paused() {
 
 #[test]
 fn test_fee_accumulation_multiple_users() {
-    let strk_token = deploy_mock_strk_token();
-    let (vault, _) = deploy_vault_contract(strk_token);
+    let (vault, _) = deploy_vault_contract();
+
+    // Get the deployed STRK token
+    let strk_token = IMintableDispatcher {
+        contract_address: 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
+            .try_into()
+            .unwrap(),
+    };
     let purchase_amount = PURCHASE_AMOUNT();
     let expected_fee_per_tx = (purchase_amount * INITIAL_FEE_PERCENTAGE().into()) / 10000;
 
@@ -396,10 +443,10 @@ fn test_fee_accumulation_multiple_users() {
             assert(vault.get_accumulated_fee() == total_expected_fee, 'Fee must be consistent');
 
             tx_count += 1;
-        };
+        }
 
         user_index += 1;
-    };
+    }
 
     // Verify total fees collected
     let total_transactions = users.len() * transactions_per_user;
@@ -414,8 +461,14 @@ fn test_fee_accumulation_multiple_users() {
 #[should_panic(expected: 'Amount must be greater than 0')]
 #[test]
 fn test_zero_amount_transaction() {
-    let strk_token = deploy_mock_strk_token();
-    let (vault, _) = deploy_vault_contract(strk_token);
+    let (vault, _) = deploy_vault_contract();
+
+    // Get the deployed STRK token
+    let strk_token = IMintableDispatcher {
+        contract_address: 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
+            .try_into()
+            .unwrap(),
+    };
 
     setup_user_balance(strk_token, USER1(), LARGE_AMOUNT(), vault.contract_address);
 
@@ -430,9 +483,14 @@ fn test_zero_amount_transaction() {
 
 #[test]
 fn test_complete_flow_integration() {
-    let strk_token = deploy_mock_strk_token();
-    let (vault, _) = deploy_vault_contract(strk_token);
+    let (vault, _) = deploy_vault_contract();
 
+    // Get the deployed STRK token
+    let strk_token = IMintableDispatcher {
+        contract_address: 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
+            .try_into()
+            .unwrap(),
+    };
     // Setup multiple users
     setup_user_balance(strk_token, USER1(), LARGE_AMOUNT(), vault.contract_address);
     setup_user_balance(strk_token, USER2(), LARGE_AMOUNT(), vault.contract_address);
@@ -472,5 +530,4 @@ fn test_complete_flow_integration() {
     // Verify fee percentage remains consistent
     assert(vault.get_fee_percentage() == INITIAL_FEE_PERCENTAGE(), 'percentage remain unchanged');
 }
-
 
