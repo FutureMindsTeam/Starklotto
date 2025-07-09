@@ -437,23 +437,32 @@ pub mod StarkPlayVault {
         let prizeDispatcher = IPrizeTokenDispatcher { contract_address: starkPlayContractAddress };
         let prize_balance = prizeDispatcher.get_prize_balance(user);
         assert(prize_balance >= amount, 'Insufficient prize tokens');
-        
+
         // Calculate conversion fee
         let prizeFeeAmount = (amount * self.feePercentage.read().into()) / BASIS_POINTS_DENOMINATOR;
         let netAmount = amount - prizeFeeAmount;
-        
+
         // Burn the full amount of prize tokens from user
         let mut burnDispatcher = IBurnableDispatcher { contract_address: starkPlayContractAddress };
         burnDispatcher.burn_from(user, amount);
         self.totalStarkPlayBurned.write(self.totalStarkPlayBurned.read() + amount);
         self.emit(StarkPlayBurned { user, amount });
-        
+
         // Update accumulated prize conversion fees
-        self.accumulatedPrizeConversionFees.write(self.accumulatedPrizeConversionFees.read() + prizeFeeAmount);
-        
+        self
+            .accumulatedPrizeConversionFees
+            .write(self.accumulatedPrizeConversionFees.read() + prizeFeeAmount);
+
         // Emit FeeCollected event
-        self.emit(FeeCollected { user, amount: prizeFeeAmount, accumulatedFee: self.accumulatedPrizeConversionFees.read() });
-        
+        self
+            .emit(
+                FeeCollected {
+                    user,
+                    amount: prizeFeeAmount,
+                    accumulatedFee: self.accumulatedPrizeConversionFees.read(),
+                },
+            );
+
         // Transfer the net amount (after deducting fee) to user
         let strk_contract_address = self.strkToken.read();
         let strk_dispatcher = IERC20Dispatcher { contract_address: strk_contract_address };
