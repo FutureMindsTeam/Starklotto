@@ -60,5 +60,7 @@ fn test_initialization() {
     // let access_control_interface_id: felt252 =
     //     0x3f918d17e5ee77373b56385708f855659a07f75997f365cf8774862850866d;
     // assert(src5.supports_interface(access_control_interface_id), 'Interface not registered');
+    assert(erc20.total_supply() == 1000, 'Initial supply should be 1000');
+    assert(erc20.balance_of(ADMIN()) == 1000, 'Adm should have initial supp');
     assert(!pausable.is_paused(), 'Contract should not be paused');
 }

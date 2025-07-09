@@ -25,7 +25,6 @@ fn USER3() -> ContractAddress {
     contract_address_const::<0xABC>()
 }
 
-
 fn INITIAL_FEE_PERCENTAGE() -> u64 {
     50_u64 // 50 basis points = 0.5%
 }
@@ -179,7 +178,6 @@ fn test_sequential_fee_consistency() {
     assert(vault.get_accumulated_fee() == expected_fee * 10, 'Final accumulated fee incorrect');
 }
 
-
 #[test]
 fn test_fee_calculation_accuracy() {
     let (vault, _) = deploy_vault_contract();
@@ -225,9 +223,9 @@ fn test_fee_calculation_accuracy() {
     assert(vault.get_accumulated_fee() == total_expected_fee, 'fee accumulation incorrect');
 }
 
-// // ============================================================================================
+// //============================================================================================
 // // MULTIPLE USERS TESTS
-// // ============================================================================================
+// //============================================================================================
 
 #[test]
 fn test_multiple_users_fee_consistency() {
@@ -322,9 +320,9 @@ fn test_concurrent_transactions_simulation() {
     assert(first_fee == expected_fee, 'Fee must be consistent');
 }
 
-// // ============================================================================================
+// //============================================================================================
 // // PAUSE/UNPAUSE TESTS
-// // ============================================================================================
+// //============================================================================================
 
 #[test]
 fn test_fee_consistency_after_pause_unpause() {
@@ -350,14 +348,14 @@ fn test_fee_consistency_after_pause_unpause() {
     assert(fee_before_pause == expected_fee, 'Fee before pause incorrect');
 
     // Pause the contract
-    start_cheat_caller_address(vault.contract_address, OWNER());
+    start_cheat_caller_address(vault.contract_address, vault.get_owner());
     vault.pause();
     stop_cheat_caller_address(vault.contract_address);
 
     assert(vault.is_paused(), 'Contract should be paused');
 
     // Unpause the contract
-    start_cheat_caller_address(vault.contract_address, OWNER());
+    start_cheat_caller_address(vault.contract_address, vault.get_owner());
     vault.unpause();
     stop_cheat_caller_address(vault.contract_address);
 
@@ -375,7 +373,10 @@ fn test_fee_consistency_after_pause_unpause() {
     assert(fee_after_unpause == expected_fee * 2, 'Fee must be consistent');
 
     // Verify fee percentage remains the same
-    assert(vault.get_fee_percentage() == INITIAL_FEE_PERCENTAGE(), 'percentage remain unchanged');
+    assert(
+        vault.get_fee_percentage() == INITIAL_FEE_PERCENTAGE(), 'percentage remain
+    unchanged',
+    );
 }
 
 #[should_panic(expected: 'Contract is paused')]
@@ -393,7 +394,7 @@ fn test_transaction_fails_when_paused() {
     setup_user_balance(strk_token, USER1(), LARGE_AMOUNT(), vault.contract_address);
 
     // Pause the contract
-    start_cheat_caller_address(vault.contract_address, OWNER());
+    start_cheat_caller_address(vault.contract_address, vault.get_owner());
     vault.pause();
     stop_cheat_caller_address(vault.contract_address);
 
@@ -454,9 +455,9 @@ fn test_fee_accumulation_multiple_users() {
     assert(vault.get_accumulated_fee() == expected_total_fee, 'fee accumulation incorrect');
 }
 
-// // ============================================================================================
+// //============================================================================================
 // // ERROR HANDLING TESTS
-// // ============================================================================================
+// //============================================================================================
 
 #[should_panic(expected: 'Amount must be greater than 0')]
 #[test]
@@ -477,9 +478,9 @@ fn test_zero_amount_transaction() {
     stop_cheat_caller_address(vault.contract_address);
 }
 
-// // ============================================================================================
+// //============================================================================================
 // // INTEGRATION TESTS
-// // ============================================================================================
+// //============================================================================================
 
 #[test]
 fn test_complete_flow_integration() {
@@ -515,7 +516,7 @@ fn test_complete_flow_integration() {
     assert(vault.get_accumulated_fee() == expected_fee * 2, 'Fee after second transaction');
 
     // Pause and unpause
-    start_cheat_caller_address(vault.contract_address, OWNER());
+    start_cheat_caller_address(vault.contract_address, vault.get_owner());
     vault.pause();
     vault.unpause();
     stop_cheat_caller_address(vault.contract_address);
@@ -528,6 +529,9 @@ fn test_complete_flow_integration() {
     assert(vault.get_accumulated_fee() == expected_fee * 3, 'Fee after pause/unpause');
 
     // Verify fee percentage remains consistent
-    assert(vault.get_fee_percentage() == INITIAL_FEE_PERCENTAGE(), 'percentage remain unchanged');
+    assert(
+        vault.get_fee_percentage() == INITIAL_FEE_PERCENTAGE(), 'percentage remain
+    unchanged',
+    );
 }
 

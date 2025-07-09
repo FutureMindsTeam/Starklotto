@@ -173,6 +173,7 @@ pub mod StarkPlayERC20 {
         self.accesscontrol.initializer();
         self.accesscontrol._grant_role(DEFAULT_ADMIN_ROLE, admin);
         self.accesscontrol._grant_role(PAUSER_ROLE, admin);
+        self.erc20.mint(recipient, 1000);
         // Initial tokens can be minted after deployment if needed
     }
 

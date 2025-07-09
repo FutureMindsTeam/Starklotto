@@ -12,6 +12,7 @@ pub trait IStarkPlayVault<TContractState> {
     fn get_total_strk_stored(self: @TContractState) -> u256;
     fn get_total_starkplay_minted(self: @TContractState) -> u256;
     fn is_paused(self: @TContractState) -> bool;
+    fn get_owner(self: @TContractState) -> ContractAddress;
     //=======================================================================================
     //get functions
     fn GetFeePercentage(self: @TContractState) -> u64;
@@ -110,7 +111,7 @@ pub mod StarkPlayVault {
         // Use the constant STRK token address
         self.strkToken.write(TOKEN_STRK_ADDRESS);
         self.starkPlayToken.write(starkPlayToken);
-        self.owner.write(owner);
+        self.owner.write(get_caller_address());
         self.ownable.initializer(owner);
         self.mintLimit.write(MAX_MINT_AMOUNT);
         self.burnLimit.write(MAX_BURN_AMOUNT);
@@ -387,6 +388,10 @@ pub mod StarkPlayVault {
 
         fn convert_to_strk(ref self: ContractState, amount: u256) {
             convert_to_strk(ref self, amount)
+        }
+
+        fn get_owner(self: @ContractState) -> ContractAddress {
+            self.owner.read()
         }
     }
 
