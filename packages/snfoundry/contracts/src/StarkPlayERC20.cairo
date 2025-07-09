@@ -56,7 +56,6 @@ pub mod StarkPlayERC20 {
         ownable: OwnableComponent::Storage,
         #[substorage(v0)]
         upgradeable: UpgradeableComponent::Storage,
-        // FIXED: Removed #[substorage(v0)]
         prize_balances: LegacyMap<ContractAddress, u256>,
     }
 
@@ -104,7 +103,6 @@ pub mod StarkPlayERC20 {
         }
     }
 
-    // CHANGED: Updated implementation name and trait
     #[abi(embed_v0)]
     impl PrizeTokenImpl of IPrizeToken<ContractState> {
         fn get_prize_balance(self: @ContractState, user: ContractAddress) -> u256 {
