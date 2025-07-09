@@ -1,5 +1,8 @@
 use starknet::ContractAddress;
 
+// Add storage_var at the top level
+storage_var!(ticket_price: u128);
+
 //=======================================================================================
 //structs
 //=======================================================================================
@@ -73,6 +76,8 @@ trait ILottery<TContractState> {
     ) -> Ticket;
     fn GetTicketCurrentId(self: @TContractState) -> u64;
     fn GetWinningNumbers(self: @TContractState, drawId: u64) -> Array<u16>;
+    fn get_ticket_price(self: @TContractState) -> u128;
+    fn set_ticket_price(ref self: TContractState, new_price: u128);
     //=======================================================================================
 
 }
@@ -176,7 +181,6 @@ mod Lottery {
     //=======================================================================================
     #[storage]
     struct Storage {
-        ticketPrice: u256,
         currentDrawId: u64,
         currentTicketId: u64,
         fixedPrize4Matches: u256,
@@ -217,7 +221,7 @@ mod Lottery {
         //OK
         fn Initialize(ref self: ContractState, ticketPrice: u256, accumulatedPrize: u256) {
             self.ownable.assert_only_owner();
-            self.ticketPrice.write(ticketPrice);
+            ticket_price::write(ticketPrice.try_into().unwrap());
             self.accumulatedPrize.write(accumulatedPrize);
             self.CreateNewDraw(0);
         }
@@ -239,7 +243,7 @@ mod Lottery {
             let strk_play_token_vault_address: ContractAddress = contract_address_const::<
                 STRK_PLAY_VAULT_CONTRACT_ADDRESS,
             >();
-            let payment_amount = self.ticketPrice.read();
+            let payment_amount = ticket_price::read();
 
             assert(
                 strk_play_token_dispatcher.balance_of(buyer) >= payment_amount,
@@ -539,6 +543,15 @@ mod Lottery {
             numbers.append(draw.winningNumber4);
             numbers.append(draw.winningNumber5);
             numbers
+        }
+
+        fn get_ticket_price(self: @ContractState) -> u128 {
+            ticket_price::read()
+        }
+
+        fn set_ticket_price(ref self: ContractState, new_price: u128) {
+            self.ownable.assert_only_owner();
+            ticket_price::write(new_price);
         }
     }
 
