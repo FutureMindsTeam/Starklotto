@@ -2,11 +2,11 @@ use contracts::StarkPlayVault::{
     IStarkPlayVault, IStarkPlayVaultDispatcher, IStarkPlayVaultDispatcherTrait, StarkPlayVault,
 };
 use snforge_std::{
-    ContractClassTrait, DeclareResultTrait, Event, EventSpyAssertionsTrait, EventSpyTrait, declare,
-    load, spy_events, start_cheat_caller_address, stop_cheat_caller_address, test_address,
+    ContractClassTrait, DeclareResultTrait, EventSpyTrait, declare, load, spy_events,
+    start_cheat_caller_address, test_address,
 };
+use starknet::ContractAddress;
 use starknet::storage::StorableStoragePointerReadAccess;
-use starknet::{ContractAddress, contract_address_const};
 
 // setting up the contract state
 fn CONTRACT_STATE() -> StarkPlayVault::ContractState {
@@ -17,8 +17,8 @@ fn init_vault() -> StarkPlayVault::ContractState {
     let mut state = StarkPlayVault::contract_state_for_testing();
     StarkPlayVault::constructor(
         ref state,
-        contract_address_const::<5>(), // owner
-        contract_address_const::<'token'>(), // starkplay_token
+        5.try_into().unwrap(), // owner
+        'token'.try_into().unwrap(), // starkplay_token
         10000 // fee percentage
     );
     state
@@ -27,8 +27,8 @@ fn init_vault() -> StarkPlayVault::ContractState {
 // Helper function to deploy the contract and return dispatcher and address
 fn deploy_vault() -> IStarkPlayVaultDispatcher {
     let contract = declare("StarkPlayVault").unwrap().contract_class();
-    let owner = contract_address_const::<5>(); // 
-    let token = contract_address_const::<'token'>(); //
+    let owner: ContractAddress = 5.try_into().unwrap();
+    let token: ContractAddress = 'token'.try_into().unwrap();
     let fee_percentage: u128 = 10000;
 
     let mut constructor_calldata = array![];
@@ -49,7 +49,7 @@ const MAX_BURN_AMOUNT: u256 = 1_000_000 * 1_000_000_000_000_000_000; // 1 milló
 fn test_set_mint_limit_by_owner() {
     // Setup
     let mut state = init_vault();
-    let owner = contract_address_const::<5>();
+    let owner = 5.try_into().unwrap();
     let new_limit = 1000_u256;
     let contract_address = test_address();
 
@@ -72,7 +72,7 @@ fn test_set_mint_limit_by_owner() {
 fn test_set_burn_limit_by_owner() {
     // Setup
     let mut state = init_vault();
-    let owner = contract_address_const::<5>();
+    let owner = 5.try_into().unwrap();
     let new_limit = 500_u256;
     let contract_address = test_address();
 
@@ -96,7 +96,7 @@ fn test_set_burn_limit_by_owner() {
 fn test_set_mint_limit_by_non_owner() {
     // Setup
     let dispatcher = deploy_vault();
-    let non_owner = contract_address_const::<6>();
+    let non_owner = 6.try_into().unwrap();
     let new_limit = 1000_u256;
 
     // Set caller as non-owner
@@ -111,7 +111,7 @@ fn test_set_mint_limit_by_non_owner() {
 fn test_set_burn_limit_by_non_owner() {
     // Setup
     let dispatcher = deploy_vault();
-    let non_owner = contract_address_const::<6>();
+    let non_owner = 6.try_into().unwrap();
     let new_limit = 500_u256;
     let contract_address = dispatcher.contract_address;
 
@@ -126,7 +126,7 @@ fn test_set_burn_limit_by_non_owner() {
 fn test_set_mint_limit_emit_event() {
     // Setup
     let dispatcher = deploy_vault();
-    let owner = contract_address_const::<5>();
+    let owner = 5.try_into().unwrap();
     let new_limit = 1000_u256;
     let contract_address = dispatcher.contract_address;
     let mut spy = spy_events();
@@ -153,7 +153,7 @@ fn test_set_mint_limit_emit_event() {
 fn test_set_burn_limit_emit_event() {
     // Setup
     let dispatcher = deploy_vault();
-    let owner = contract_address_const::<5>();
+    let owner = 5.try_into().unwrap();
     let new_limit = 500_u256;
     let contract_address = dispatcher.contract_address;
     let mut spy = spy_events();
@@ -182,7 +182,7 @@ fn test_set_burn_limit_emit_event() {
 fn test_mint_limit_zero_value() {
     // Setup
     let vault = deploy_vault();
-    let owner = contract_address_const::<5>();
+    let owner = 5.try_into().unwrap();
     let contract_address = vault.contract_address;
 
     // Check initial state
@@ -201,7 +201,7 @@ fn test_mint_limit_zero_value() {
 fn test_burn_limit_zero_value() {
     // Setup
     let vault = deploy_vault();
-    let owner = contract_address_const::<5>();
+    let owner = 5.try_into().unwrap();
     let contract_address = vault.contract_address;
 
     // Check initial state

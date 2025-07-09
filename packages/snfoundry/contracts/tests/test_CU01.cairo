@@ -1,13 +1,7 @@
 use contracts::StarkPlayVault::{IStarkPlayVaultDispatcher, IStarkPlayVaultDispatcherTrait};
 use openzeppelin_testing::declare_and_deploy;
 use openzeppelin_utils::serde::SerializedAppend;
-use snforge_std::{
-    CheatSpan, cheat_caller_address, EventSpy, start_cheat_caller_address,
-    stop_cheat_caller_address, declare, ContractClassTrait, DeclareResultTrait, spy_events,
-    EventSpyAssertionsTrait, EventSpyTrait, // Add for fetching events directly
-    Event, // A structure describing a raw `Event`
-    IsEmitted // Trait for checking if a given event was ever emitted
-};
+use snforge_std::{ContractClassTrait, DeclareResultTrait, EventSpyTrait, declare, spy_events};
 use starknet::ContractAddress;
 
 
@@ -123,7 +117,7 @@ fn test_set_fee_zero_like_negative_value() {
     let vault_address = deploy_contract_starkplayvault();
     let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
     let new_fee = 0_u64;
-    let result = vault_dispatcher.setFeePercentage(new_fee);
+    let _ = vault_dispatcher.setFeePercentage(new_fee);
 }
 
 //tests have to fail
@@ -140,7 +134,7 @@ fn test_set_fee_max_like_501() {
 fn test_set_fee_deploy_contract() {
     let vault_address = deploy_contract_starkplayvault();
     let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
-    let fee_percentage = 50_u64;
+    let _ = 50_u64;
     let val = vault_dispatcher.GetFeePercentage();
     assert(val == 50_u64, 'Fee  should be 50');
 }
@@ -151,7 +145,7 @@ fn test_set_fee_min() {
     let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
     let new_fee = 10_u64;
     let result = vault_dispatcher.setFeePercentage(new_fee);
-    assert(result == true, 'Fee should be set');
+    assert(result, 'Fee should be set');
     assert(vault_dispatcher.GetFeePercentage() == new_fee, 'Fee is not 10_u64');
 }
 
@@ -161,7 +155,7 @@ fn test_set_fee_max() {
     let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
     let new_fee = 500_u64;
     let result = vault_dispatcher.setFeePercentage(new_fee);
-    assert(result == true, 'Fee should be set');
+    assert(result, 'Fee should be set');
     assert(vault_dispatcher.GetFeePercentage() == new_fee, 'Fee is not 500_u64');
 }
 
@@ -171,7 +165,7 @@ fn test_set_fee_middle() {
     let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
     let new_fee = 250_u64;
     let result = vault_dispatcher.setFeePercentage(new_fee);
-    assert(result == true, 'Fee should be set');
+    assert(result, 'Fee should be set');
     assert(vault_dispatcher.GetFeePercentage() == new_fee, 'Fee is not 250_u64');
 }
 
@@ -182,7 +176,7 @@ fn test_event_set_fee_percentage() {
     let new_fee = 250_u64;
     let mut spy = spy_events();
 
-    let result = vault_dispatcher.setFeePercentage(new_fee);
+    let _ = vault_dispatcher.setFeePercentage(new_fee);
 
     let events = spy.get_events();
 
@@ -274,7 +268,7 @@ fn test_basis_points_calculation() {
 fn test_consecutive_conversion_fee_accumulation() {
     let token_address = deploy_starkplay_token();
     let vault_address = deploy_vault_with_fee(token_address, 500_u64); // 5% fee
-    let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
+    let _ = IStarkPlayVaultDispatcher { contract_address: vault_address };
 
     let mut simulated_accumulated_fees = 0_u256;
 
@@ -484,7 +478,7 @@ fn test_mixed_amounts_accumulation() {
 
     // Calculate fees for each amount
     let mut i = 0;
-    while i < amounts.len() {
+    while i != amounts.len() {
         let amount = *amounts.at(i);
         let fee = get_fee_amount(fee_percentage, amount);
         total_accumulated += fee;
@@ -505,7 +499,7 @@ fn test_mixed_amounts_accumulation() {
     // Verify step-by-step accumulation
     let mut running_total = 0_u256;
     let mut j = 0;
-    while j < expected_fees.len() {
+    while j != expected_fees.len() {
         running_total += *expected_fees.at(j);
         j += 1;
     }

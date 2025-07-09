@@ -8,19 +8,19 @@ use openzeppelin_token::erc20::interface::{
 };
 use openzeppelin_utils::serde::SerializedAppend;
 use snforge_std::{ContractClassTrait, DeclareResultTrait, declare};
-use starknet::{ContractAddress, contract_address_const};
+use starknet::ContractAddress;
 
 fn ADMIN() -> ContractAddress {
-    contract_address_const::<0x01234>()
+    0x01234.try_into().unwrap()
 }
 fn OWNER() -> ContractAddress {
-    contract_address_const::<0x01234>()
+    0x01234.try_into().unwrap()
 }
 fn USER() -> ContractAddress {
-    contract_address_const::<0x0567>()
+    0x0567.try_into().unwrap()
 }
 fn STRK_TOKEN_ADDRESS() -> ContractAddress {
-    contract_address_const::<0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d>()
+    0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d.try_into().unwrap()
 }
 
 

@@ -4,18 +4,18 @@ use openzeppelin_testing::declare_and_deploy;
 use openzeppelin_token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
 use openzeppelin_utils::serde::SerializedAppend;
 use snforge_std::{EventSpyTrait, spy_events, start_cheat_caller_address, stop_cheat_caller_address};
-use starknet::{ContractAddress, contract_address_const};
+use starknet::ContractAddress;
 
 
 const MAX_MINT_AMOUNT: u256 = 1_000_000 * 1_000_000_000_000_000_000;
 const INITIAL_FEE_PERCENTAGE: u64 = 50;
 
 fn owner_address() -> ContractAddress {
-    contract_address_const::<'owner'>()
+    'owner'.try_into().unwrap()
 }
 
 fn user_address() -> ContractAddress {
-    contract_address_const::<'user'>()
+    'user'.try_into().unwrap()
 }
 
 fn deploy_starkplay_token() -> ContractAddress {
@@ -61,7 +61,7 @@ fn setup_minting_permissions(vault: ContractAddress, starkplay_token: ContractAd
 
 #[test]
 fn test_contract_deployment() {
-    let (vault, starkplay_token) = setup_contracts();
+    let (vault, _) = setup_contracts();
 
     let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault };
 
@@ -210,7 +210,7 @@ fn test_fee_percentage_management() {
     let new_fee = 100_u64;
     let result = vault_dispatcher.setFeePercentage(new_fee);
 
-    assert(result == true, 'Fee percentage not set');
+    assert(result, 'Fee percentage not set');
 
     let updated_fee = vault_dispatcher.GetFeePercentage();
     assert(updated_fee == new_fee, 'Fee percentage not updated');
