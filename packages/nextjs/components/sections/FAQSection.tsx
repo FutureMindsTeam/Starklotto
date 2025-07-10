@@ -2,12 +2,15 @@
 
 import { motion } from "framer-motion";
 import { Card, CardContent } from "~~/components/ui/card";
+import { useTranslation } from "react-i18next";
 
 interface FAQSectionProps {
   faqY: any;
 }
 
 export function FAQSection({ faqY }: FAQSectionProps) {
+  const { t } = useTranslation();
+  
   return (
     <motion.section
       id="faq"
@@ -23,62 +26,27 @@ export function FAQSection({ faqY }: FAQSectionProps) {
         >
           <div className="space-y-2">
             <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">
-              Frequently Asked Questions
+              {t('home.faq.title')}
             </h2>
             <p className="max-w-[900px] text-gray-400 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-              Find answers to common questions about our platform.
+              {t('home.faq.subtitle')}
             </p>
           </div>
         </motion.div>
 
         <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 py-12 md:grid-cols-2">
-          <Card className="bg-black/20 border-white/10">
-            <CardContent className="p-6">
-              <h3 className="text-xl font-bold mb-2">
-                How is randomness guaranteed?
-              </h3>
-              <p className="text-gray-400">
-                We use Chainlink VRF (Verifiable Random Function) to ensure fair
-                and provably random number generation.
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-black/20 border-white/10">
-            <CardContent className="p-6">
-              <h3 className="text-xl font-bold mb-2">
-                When do I receive my winnings?
-              </h3>
-              <p className="text-gray-400">
-                Winnings are automatically sent to your wallet immediately after
-                the draw.
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-black/20 border-white/10">
-            <CardContent className="p-6">
-              <h3 className="text-xl font-bold mb-2">
-                What cryptocurrencies are accepted?
-              </h3>
-              <p className="text-gray-400">
-                We currently accept USDC on multiple networks including Ethereum
-                and Polygon.
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-black/20 border-white/10">
-            <CardContent className="p-6">
-              <h3 className="text-xl font-bold mb-2">
-                How do I verify the results?
-              </h3>
-              <p className="text-gray-400">
-                All draws are recorded on the blockchain and can be verified
-                through our explorer.
-              </p>
-            </CardContent>
-          </Card>
+          {t('home.faq.questions', { returnObjects: true }).map((faq: any, index: number) => (
+            <Card key={index} className="bg-black/20 border-white/10">
+              <CardContent className="p-6">
+                <h3 className="text-xl font-bold mb-2">
+                  {faq.question}
+                </h3>
+                <p className="text-gray-400">
+                  {faq.answer}
+                </p>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
     </motion.section>

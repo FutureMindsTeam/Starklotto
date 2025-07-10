@@ -1,0 +1,154 @@
+{
+  "common": {
+    "close": "Close",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success"
+  },
+  "buyTickets": {
+    "title": "Buy Tickets",
+    "nextDraw": "Next Draw",
+    "countdown": {
+      "days": "Days",
+      "hours": "Hours",
+      "minutes": "Minutes",
+      "seconds": "Seconds"
+    },
+    "balance": "Balance: {{balance}} $tarkPlay",
+    "pricePerTicket": "Price per ticket: {{price}} $tarkPlay",
+    "ticketCount": "{{count}} Ticket{{s}}",
+    "randomForAll": "Random for all",
+    "random": "Random",
+    "ticketNumber": "Ticket #{{number}}",
+    "totalCost": "Total cost:",
+    "buyButton": "Buy Tickets",
+    "gameRules": {
+      "title": "Game Rules",
+      "rules": [
+        "Select 5 numbers from 00 to 40 for each ticket",
+        "You can purchase up to 10 tickets per transaction",
+        "The draw takes place daily at 20:00 UTC",
+        "Match all numbers to win the jackpot",
+        "Smaller prizes for partial matches"
+      ]
+    }
+  },
+  "buyPage": {
+    "title": "Buy Tickets",
+    "nextDraw": "Next Draw",
+    "countdown": {
+      "days": "Days",
+      "hours": "Hours",
+      "minutes": "Minutes",
+      "seconds": "Seconds"
+    },
+    "ticketCount": "{{count}} Ticket{{s}}",
+    "randomForAll": "Random for all",
+    "random": "Random",
+    "totalCost": "Total cost:",
+    "buyButton": "Buy Tickets"
+  },
+  "navigation": {
+    "home": "Home",
+    "howItWorks": "How It Works",
+    "rewards": "Rewards",
+    "faq": "FAQ",
+    "play": "Play",
+    "profile": "Profile",
+    "about": "About",
+    "contact": "Contact",
+    "features": "Features"
+  },
+  "home": {
+    "hero": {
+      "title": "The Most Secure and Exciting Web3 Lottery",
+      "subtitle": "Play, win, and collect prizes instantly with blockchain security.",
+      "playNow": "Buy Tickets",
+      "learnMore": "Learn More"
+    },
+    "features": {
+      "title": "Security Features",
+      "subtitle": "Our platform uses audited and verified smart contracts to ensure transparency and security.",
+      "auditedContracts": {
+        "title": "Audited Contracts",
+        "description": "All our smart contracts have been audited by leading security firms."
+      },
+      "secureTransactions": {
+        "title": "Secure Transactions",
+        "description": "All transactions are secured and verified on the blockchain."
+      },
+      "instantPrizes": {
+        "title": "Instant Prizes",
+        "description": "Winners receive their prizes automatically and instantly."
+      }
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "subtitle": "Find answers to common questions about our platform.",
+      "questions": [
+        {
+          "question": "How is randomness guaranteed?",
+          "answer": "We use Chainlink VRF (Verifiable Random Function) to ensure fair and provably random number generation."
+        },
+        {
+          "question": "When do I receive my winnings?",
+          "answer": "Winnings are automatically sent to your wallet immediately after the draw."
+        },
+        {
+          "question": "What cryptocurrencies are accepted?",
+          "answer": "We currently accept USDC on multiple networks including Ethereum and Polygon."
+        },
+        {
+          "question": "How do I verify the results?",
+          "answer": "All draws are recorded on the blockchain and can be verified through our explorer."
+        }
+      ]
+    }
+  },
+  "lastDraw": {
+    "title": "Last Draw Results",
+    "winningNumbers": "Winning Numbers",
+    "jackpotAmount": "Jackpot Amount",
+    "winners": "Winners",
+    "noWinners": "No winners",
+    "viewPrevious": "View Previous Draws"
+  },
+  "howItWorks": {
+    "title": "How It Works",
+    "subtitle": "Getting started is easy. Follow these simple steps to participate.",
+    "steps": [
+      {
+        "title": "1. Connect Wallet",
+        "desc": "Connect your Web3 wallet to get started."
+      },
+      {
+        "title": "2. Choose Numbers",
+        "desc": "Select your lucky numbers and purchase tickets."
+      },
+      {
+        "title": "3. Win & Collect",
+        "desc": "Winners receive prizes automatically in their wallet."
+      }
+    ]
+  },
+  "cta": {
+    "title": "Ready to Try Your Luck?",
+    "subtitle": "Join thousands of players who are already winning on our platform.",
+    "playNow": "Play Now",
+    "learnMore": "Learn More"
+  },
+  "language": {
+    "en": "English",
+    "es": "Español",
+    "fr": "Français",
+    "pt": "Português"
+  },
+  "connect": {
+    "button": "Connect",
+    "modal": {
+      "title": "Connect a Wallet",
+      "chooseAccount": "Choose account",
+      "close": "✕"
+    }
+  }
+} 

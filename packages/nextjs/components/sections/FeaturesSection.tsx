@@ -3,12 +3,15 @@
 import { motion } from "framer-motion";
 import { Shield, Lock, Trophy } from "lucide-react";
 import { CertificationBadges } from "~~/components/certification-badges";
+import { useTranslation } from "react-i18next";
 
 interface FeaturesSectionProps {
   featuresY: any;
 }
 
 export function FeaturesSection({ featuresY }: FeaturesSectionProps) {
+  const { t } = useTranslation();
+  
   return (
     <motion.section
       id="features"
@@ -24,11 +27,10 @@ export function FeaturesSection({ featuresY }: FeaturesSectionProps) {
         >
           <div className="space-y-2">
             <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">
-              Security Features
+              {t('home.features.title')}
             </h2>
             <p className="max-w-[900px] text-gray-400 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-              Our platform uses audited and verified smart contracts to ensure
-              transparency and security.
+              {t('home.features.subtitle')}
             </p>
           </div>
         </motion.div>
@@ -48,10 +50,9 @@ export function FeaturesSection({ featuresY }: FeaturesSectionProps) {
               <Shield className="h-8 w-8 text-primary" />
             </motion.div>
             <div className="space-y-2">
-              <h3 className="text-xl font-bold">Audited Contracts</h3>
+              <h3 className="text-xl font-bold">{t('home.features.auditedContracts.title')}</h3>
               <p className="text-gray-400">
-                All our smart contracts have been audited by leading security
-                firms.
+                {t('home.features.auditedContracts.description')}
               </p>
             </div>
           </motion.div>
@@ -70,9 +71,9 @@ export function FeaturesSection({ featuresY }: FeaturesSectionProps) {
               <Lock className="h-8 w-8 text-primary" />
             </motion.div>
             <div className="space-y-2">
-              <h3 className="text-xl font-bold">Secure Transactions</h3>
+              <h3 className="text-xl font-bold">{t('home.features.secureTransactions.title')}</h3>
               <p className="text-gray-400">
-                All transactions are secured and verified on the blockchain.
+                {t('home.features.secureTransactions.description')}
               </p>
             </div>
           </motion.div>
@@ -91,9 +92,9 @@ export function FeaturesSection({ featuresY }: FeaturesSectionProps) {
               <Trophy className="h-8 w-8 text-primary" />
             </motion.div>
             <div className="space-y-2">
-              <h3 className="text-xl font-bold">Instant Prizes</h3>
+              <h3 className="text-xl font-bold">{t('home.features.instantPrizes.title')}</h3>
               <p className="text-gray-400">
-                Winners receive their prizes automatically and instantly.
+                {t('home.features.instantPrizes.description')}
               </p>
             </div>
           </motion.div>

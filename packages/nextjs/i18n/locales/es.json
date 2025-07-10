@@ -1,0 +1,154 @@
+{
+  "common": {
+    "close": "Cerrar",
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito"
+  },
+  "buyTickets": {
+    "title": "Comprar Boletos",
+    "nextDraw": "Próximo Sorteo",
+    "countdown": {
+      "days": "Días",
+      "hours": "Horas",
+      "minutes": "Minutos",
+      "seconds": "Segundos"
+    },
+    "balance": "Saldo: {{balance}} $tarkPlay",
+    "pricePerTicket": "Precio por boleto: {{price}} $tarkPlay",
+    "ticketCount": "{{count}} Boleto{{s}}",
+    "randomForAll": "Aleatorio para todos",
+    "random": "Aleatorio",
+    "ticketNumber": "Boleto #{{number}}",
+    "totalCost": "Costo total:",
+    "buyButton": "Comprar Boletos",
+    "gameRules": {
+      "title": "Reglas del Juego",
+      "rules": [
+        "Selecciona 5 números del 00 al 40 para cada boleto",
+        "Puedes comprar hasta 10 boletos por transacción",
+        "El sorteo se realiza diariamente a las 20:00 UTC",
+        "Coincide todos los números para ganar el premio mayor",
+        "Premios menores por coincidencias parciales"
+      ]
+    }
+  },
+  "buyPage": {
+    "title": "Comprar Boletos",
+    "nextDraw": "Próximo Sorteo",
+    "countdown": {
+      "days": "Días",
+      "hours": "Horas",
+      "minutes": "Minutos",
+      "seconds": "Segundos"
+    },
+    "ticketCount": "{{count}} Boleto{{s}}",
+    "randomForAll": "Aleatorio para todos",
+    "random": "Aleatorio",
+    "totalCost": "Costo total:",
+    "buyButton": "Comprar Boletos"
+  },
+  "lastDraw": {
+    "title": "Últimos Resultados",
+    "winningNumbers": "Números Ganadores",
+    "jackpotAmount": "Premio Mayor",
+    "winners": "Ganadores",
+    "noWinners": "Sin ganadores",
+    "viewPrevious": "Ver sorteos anteriores"
+  },
+  "navigation": {
+    "home": "Inicio",
+    "howItWorks": "Cómo Funciona",
+    "rewards": "Recompensas",
+    "faq": "Preguntas Frecuentes",
+    "play": "Jugar",
+    "profile": "Perfil",
+    "about": "Acerca de",
+    "contact": "Contacto",
+    "features": "Características"
+  },
+  "home": {
+    "hero": {
+      "title": "La Lotería Web3 Más Segura y Emocionante",
+      "subtitle": "Juega, gana y cobra premios al instante con seguridad blockchain.",
+      "playNow": "Comprar Boletos",
+      "learnMore": "Saber Más"
+    },
+    "features": {
+      "title": "Características de Seguridad",
+      "subtitle": "Nuestra plataforma utiliza contratos inteligentes auditados y verificados para garantizar transparencia y seguridad.",
+      "auditedContracts": {
+        "title": "Contratos Auditados",
+        "description": "Todos nuestros contratos inteligentes han sido auditados por empresas líderes en seguridad."
+      },
+      "secureTransactions": {
+        "title": "Transacciones Seguras",
+        "description": "Todas las transacciones están aseguradas y verificadas en la blockchain."
+      },
+      "instantPrizes": {
+        "title": "Premios Instantáneos",
+        "description": "Los ganadores reciben sus premios automáticamente e instantáneamente."
+      }
+    },
+    "faq": {
+      "title": "Preguntas Frecuentes",
+      "subtitle": "Encuentra respuestas a preguntas comunes sobre nuestra plataforma.",
+      "questions": [
+        {
+          "question": "¿Cómo se garantiza la aleatoriedad?",
+          "answer": "Utilizamos Chainlink VRF (Función Aleatoria Verificable) para garantizar una generación de números justa y verificablemente aleatoria."
+        },
+        {
+          "question": "¿Cuándo recibo mis ganancias?",
+          "answer": "Las ganancias se envían automáticamente a tu wallet inmediatamente después del sorteo."
+        },
+        {
+          "question": "¿Qué criptomonedas se aceptan?",
+          "answer": "Actualmente aceptamos USDC en múltiples redes incluyendo Ethereum y Polygon."
+        },
+        {
+          "question": "¿Cómo verifico los resultados?",
+          "answer": "Todos los sorteos se registran en la blockchain y pueden verificarse a través de nuestro explorador."
+        }
+      ]
+    }
+  },
+  "howItWorks": {
+    "title": "Cómo Funciona",
+    "subtitle": "Comenzar es fácil. Sigue estos simples pasos para participar.",
+    "steps": [
+      {
+        "title": "1. Conecta tu Wallet",
+        "desc": "Conecta tu wallet Web3 para comenzar."
+      },
+      {
+        "title": "2. Elige Números",
+        "desc": "Selecciona tus números de la suerte y compra boletos."
+      },
+      {
+        "title": "3. Gana y Cobra",
+        "desc": "Los ganadores reciben premios automáticamente en su wallet."
+      }
+    ]
+  },
+  "cta": {
+    "title": "¿Listo para probar tu suerte?",
+    "subtitle": "Únete a miles de jugadores que ya están ganando en nuestra plataforma.",
+    "playNow": "Jugar Ahora",
+    "learnMore": "Saber Más"
+  },
+  "language": {
+    "en": "English",
+    "es": "Español",
+    "fr": "Français",
+    "pt": "Português"
+  },
+  "connect": {
+    "button": "Conectar",
+    "modal": {
+      "title": "Conectar una Billetera",
+      "chooseAccount": "Elegir cuenta",
+      "close": "✕"
+    }
+  }
+} 
