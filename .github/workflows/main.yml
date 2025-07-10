@@ -36,7 +36,6 @@ jobs:
       - name: 🧪 Run Vitest
         run: yarn test
         working-directory: ./packages/nextjs
-
       - name: 🔍 Run ESLint
         run: yarn lint
         working-directory: ./packages/nextjs

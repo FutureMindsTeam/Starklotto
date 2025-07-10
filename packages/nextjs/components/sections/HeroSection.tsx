@@ -7,299 +7,104 @@ import { Button } from "~~/components/ui/button";
 import { SecurityBadge } from "~~/components/security-badge";
 import { GlowingButton } from "~~/components/glowing-button";
 import { CountdownTimer } from "~~/components/countdown-timer";
-import { NumberSelector } from "~~/components/number-selector";
-import { TicketPriceCalculator } from "~~/components/ticket-price-calculator";
-import { LiveActivityFeed } from "~~/components/live-activity-feed";
-import { ConfirmationModal } from "~~/components/confirmation-modal";
-import BuyTicketsModal from "~~/components/BuyTicketsModal";
+import { useRouter } from "next/navigation";
 
 interface HeroSectionProps {
   heroY: any;
   jackpot: number;
   showSecurityInfo: boolean;
-  showTicketSelector: boolean;
-  selectedNumbers: number[];
   targetDate: Date;
   onBuyTicket: () => void;
-  onSelectNumbers: (numbers: number[]) => void;
-  onPurchase: (quantity: number, totalPrice: number) => void;
   onToggleSecurityInfo: () => void;
+  showTicketSelector?: boolean;
+  selectedNumbers?: number[];
+  onSelectNumbers?: (numbers: number[]) => void;
+  onPurchase?: (quantity: number, totalPrice: number) => void;
 }
 
 export function HeroSection({
   heroY,
   jackpot,
   showSecurityInfo,
-  showTicketSelector,
-  selectedNumbers,
   targetDate,
   onBuyTicket,
-  onSelectNumbers,
-  onPurchase,
   onToggleSecurityInfo,
 }: HeroSectionProps) {
-  // Add state for confirmation modal
-  const [showConfirmation, setShowConfirmation] = useState(false);
-  const [showBuyTicketsModal, setShowBuyTicketsModal] = useState(false);
-  const [purchaseDetails, setPurchaseDetails] = useState<{
-    quantity: number;
-    totalPrice: number;
-  } | null>(null);
-
-  // Mock current balance value - in real app, this would come from a wallet connection
-  const currentBalance = 1000;
-
-  // Handle purchase click from the ticket calculator
-  const handlePurchaseClick = (quantity: number, totalPrice: number) => {
-    setPurchaseDetails({ quantity, totalPrice });
-    setShowConfirmation(true);
-  };
-
-  // Handle confirm purchase action
-  const handleConfirmPurchase = () => {
-    if (purchaseDetails) {
-      onPurchase(purchaseDetails.quantity, purchaseDetails.totalPrice);
-    }
-    setShowConfirmation(false);
-  };
-
-  // Handle buy ticket button click
-  const handleBuyTicketClick = () => {
-    setShowBuyTicketsModal(true);
-  };
-
-  const handleTicketPurchase = (
-    selectedNumbers: Record<number, number[]>,
-    totalCost: number,
-  ) => {
-    // Process the purchase
-    console.log("Processing purchase:", { selectedNumbers, totalCost });
-
-    setShowBuyTicketsModal(false);
-  };
-
-  // Generate the tickets array based on quantity for the modal
-  const tickets = purchaseDetails
-    ? Array(purchaseDetails.quantity).fill(selectedNumbers)
-    : [];
+  const router = useRouter();
 
   return (
     <motion.section
-      id="hero"
       style={{ y: heroY }}
-      className="w-full py-12 md:py-24 lg:py-32 xl:py-48 relative overflow-hidden"
+      className="relative min-h-screen flex items-center justify-center px-4 py-20"
     >
-      <div className="container px-4 md:px-6 relative z-10">
-        <div className="grid gap-6 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px]">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        {/* Left Column - Main Content */}
+        <div className="space-y-8">
           <motion.div
-            className="flex flex-col justify-center space-y-4"
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
           >
-            <div className="space-y-2">
-              <div className="flex flex-wrap gap-2 mb-4">
-                <SecurityBadge type="verified" />
-                <SecurityBadge type="secure" />
-                <SecurityBadge type="encrypted" />
-              </div>
-              <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-violet-500 to-indigo-600">
-                The Most Secure and Exciting Web3 Lottery
-              </h1>
-              <p className="max-w-[600px] text-gray-300 md:text-xl">
-                Play, win, and collect prizes instantly with blockchain
-                security. Transparent, fair, and fully decentralized.
-              </p>
-            </div>
-            <div className="flex flex-col gap-2 min-[400px]:flex-row">
-              <GlowingButton
-                onClick={handleBuyTicketClick}
-                glowColor="rgba(139, 92, 246, 0.6)"
-              >
-                Play Now
-              </GlowingButton>
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="border-white/10 hover:bg-white/5 hover:border-white/20 text-white"
-                >
-                  How It Works
-                </Button>
-              </motion.div>
-            </div>
-
-            {/* Security Info Button */}
-            <motion.button
-              className="flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors mt-4 w-fit"
-              onClick={onToggleSecurityInfo}
-              whileHover={{ x: 5 }}
-            >
-              <Shield className="h-4 w-4" />
-              <span>View our security measures</span>
-              <ChevronRight className="h-4 w-4" />
-            </motion.button>
-
-            {/* Security Info Panel */}
-            <motion.div
-              className={`mt-4 p-4 rounded-lg bg-black/40 backdrop-blur-sm border border-white/10 ${
-                showSecurityInfo ? "block" : "hidden"
-              }`}
-              initial={{ opacity: 0, height: 0 }}
-              animate={{
-                opacity: showSecurityInfo ? 1 : 0,
-                height: showSecurityInfo ? "auto" : 0,
-              }}
-              exit={{ opacity: 0, height: 0 }}
-            >
-              <h3 className="text-lg font-medium mb-2">
-                Our Security Measures
-              </h3>
-              <ul className="space-y-2">
-                <li className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
-                  <span>Smart contracts audited by CertiK and Hacken</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
-                  <span>Chainlink VRF for provably fair randomness</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
-                  <span>
-                    Multi-signature treasury with time-locked transactions
-                  </span>
-                </li>
-              </ul>
-            </motion.div>
+            <h1 className="text-4xl md:text-6xl font-bold text-purple-400 mb-4">
+              The Most Secure and Exciting Web3 Lottery
+            </h1>
+            <p className="text-gray-300 text-lg mb-8">
+              Play, win, and collect prizes instantly with blockchain security.
+            </p>
           </motion.div>
 
-          <div className="flex flex-col gap-6">
-            <motion.div
-              className="relative flex items-center justify-center"
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 }}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            className="flex gap-4"
+          >
+            <GlowingButton
+              onClick={onBuyTicket}
+              className="px-8 py-4 text-lg"
+              glowColor="rgba(139, 92, 246, 0.5)"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-600/30 to-indigo-600/30 rounded-full blur-3xl opacity-20 animate-pulse"></div>
-              <div className="relative bg-black/40 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
-                <div className="absolute -top-2 -right-2">
-                  <div className="bg-green-500/20 text-green-400 text-xs px-2 py-1 rounded-full border border-green-500/30 flex items-center gap-1">
-                    <Lock className="h-3 w-3" />
-                    <span>Secure</span>
-                  </div>
-                </div>
-                <div className="space-y-2 text-center mb-4">
-                  <h3 className="text-xl font-bold">Next Draw</h3>
-                  <motion.div
-                    className="text-3xl font-bold text-accent"
-                    key={jackpot}
-                    initial={{ scale: 0.8 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring", stiffness: 300 }}
-                  >
-                    ${jackpot.toLocaleString()} USDC
-                  </motion.div>
-                  <CountdownTimer targetDate={targetDate} />
-                </div>
-
-                {showTicketSelector ? (
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                  >
-                    <div className="mb-4">
-                      <h4 className="text-sm font-medium mb-2">
-                        Select your lucky numbers:
-                      </h4>
-
-                      <NumberSelector
-                        maxNumbers={20}
-                        maxSelections={5}
-                        onSelectNumbers={onSelectNumbers}
-                      />
-                    </div>
-                    <div className="mt-4 pt-4 border-t border-white/10">
-                      <TicketPriceCalculator
-                        basePrice={5}
-                        maxTickets={10}
-                        selectedNumbers={selectedNumbers}
-                        onPurchaseClick={handlePurchaseClick}
-                      />
-                    </div>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                  >
-                    <div className="grid grid-cols-5 gap-2 mb-4">
-                      {[1, 2, 3, 4, 5].map((num) => (
-                        <motion.div
-                          key={num}
-                          className="aspect-square flex items-center justify-center bg-gradient-to-br from-amber-400 to-amber-600 rounded-full text-white font-bold text-lg"
-                          whileHover={{ scale: 1.1, rotate: 5 }}
-                          whileTap={{ scale: 0.9 }}
-                        >
-                          {num}
-                        </motion.div>
-                      ))}
-                    </div>
-                    <GlowingButton
-                      onClick={handleBuyTicketClick}
-                      className="w-full"
-                    >
-                      Buy Ticket
-                    </GlowingButton>
-                  </motion.div>
-                )}
-              </div>
-            </motion.div>
-
-            {/* Live Activity Feed */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6 }}
-              className="hidden md:block"
+              Buy Tickets
+            </GlowingButton>
+            <Button
+              variant="outline"
+              className="px-8 py-4 text-lg border-white/10 hover:bg-white/5"
+              onClick={onToggleSecurityInfo}
             >
-              <LiveActivityFeed />
-            </motion.div>
-          </div>
+              Learn More
+            </Button>
+          </motion.div>
         </div>
+
+        {/* Right Column - Next Draw */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+          className="bg-[#1a2234] rounded-xl p-8"
+        >
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl text-gray-300">Next Draw</h2>
+            <SecurityBadge type="secure" />
+          </div>
+
+          <p className="text-[#4ade80] text-4xl font-bold mb-6">
+            ${jackpot.toLocaleString()} USDC
+          </p>
+
+          <CountdownTimer targetDate={targetDate} />
+
+          <div className="mt-8">
+            <GlowingButton
+              onClick={onBuyTicket}
+              className="w-full py-4 text-lg"
+              glowColor="rgba(139, 92, 246, 0.5)"
+            >
+              Buy Ticket
+            </GlowingButton>
+          </div>
+        </motion.div>
       </div>
-
-      {/* Buy Tickets Modal */}
-      <BuyTicketsModal
-        isOpen={showBuyTicketsModal}
-        onClose={() => setShowBuyTicketsModal(false)}
-        jackpotAmount={`$${jackpot.toLocaleString()} USDC`}
-        countdown={{
-          days: "01",
-          hours: "23",
-          minutes: "45",
-          seconds: "30",
-        }}
-        balance={currentBalance}
-        ticketPrice={5}
-        onPurchase={handleTicketPurchase}
-      />
-
-      {/* Confirmation Modal */}
-      <ConfirmationModal
-        isOpen={showConfirmation}
-        onClose={() => setShowConfirmation(false)}
-        onConfirm={handleConfirmPurchase}
-        numTickets={purchaseDetails?.quantity || 0}
-        tickets={tickets}
-        totalPrice={purchaseDetails?.totalPrice || 0}
-        currentBalance={currentBalance}
-      />
     </motion.section>
   );
 }

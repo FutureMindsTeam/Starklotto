@@ -1,6 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { TicketModal } from "./ticket-modal";
+import { useState } from "react";
 
 interface TicketProps {
   ticket: {
@@ -17,114 +19,136 @@ interface TicketProps {
 }
 
 export default function TicketCard({ ticket }: TicketProps) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedTicket, setSelectedTicket] = useState(ticket);
+
+  const handleTicketClick = () => {
+    setSelectedTicket(ticket);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
   return (
-    <motion.div
-      whileHover={{ scale: 1.01 }}
-      transition={{ duration: 0.2 }}
-      className="rounded-lg overflow-hidden shadow-lg border"
-      style={{
-        background: "#1A1333",
-        borderRadius: "12px",
-        borderColor: "rgba(255, 255, 255, 0.2)",
-      }}
-    >
-      <div
-        className="p-4 flex justify-between items-center"
+    <>
+      <motion.div
+        whileHover={{ scale: 1.01 }}
+        transition={{ duration: 0.2 }}
+        className="rounded-lg overflow-hidden shadow-lg border"
         style={{
-          background:
-            "linear-gradient(to right, rgba(88, 28, 135, 0.3), rgba(49, 46, 129, 0.3))",
+          background: "#1A1333",
+          borderRadius: "12px",
+          borderColor: "rgba(255, 255, 255, 0.2)",
         }}
+        onClick={handleTicketClick}
       >
-        <div>
-          <div className="text-gray-400 text-xs">Ticket ID</div>
-          <div className="font-mono text-white text-base">{ticket.id}</div>
-        </div>
-        <StatusBadge status={ticket.status} />
-      </div>
-
-      <div className="p-4 bg-[#13102A]">
-        <div className="text-gray-400 text-xs mb-3">Your Numbers</div>
-        <div className="flex flex-wrap gap-2 mb-4">
-          {ticket.numbers.map((number, index) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-            <NumberBubble
-              key={index}
-              number={number}
-              status={ticket.status}
-              index={index}
-            />
-          ))}
+        <div
+          className="p-4 flex justify-between items-center"
+          style={{
+            background:
+              "linear-gradient(to right, rgba(88, 28, 135, 0.3), rgba(49, 46, 129, 0.3))",
+          }}
+        >
+          <div>
+            <div className="text-gray-400 text-xs">Ticket ID</div>
+            <div className="font-mono text-white text-base">{ticket.id}</div>
+          </div>
+          <StatusBadge status={ticket.status} />
         </div>
 
-        <div className="space-y-2">
-          <div className="flex justify-between">
-            <div className="text-gray-400 text-sm">Draw Date</div>
-            <div className="text-white text-sm">{ticket.drawDate}</div>
-          </div>
-          <div className="flex justify-between">
-            <div className="text-gray-400 text-sm">Draw Amount</div>
-            <div className="text-white text-sm">{ticket.drawAmount}</div>
+        <div className="p-4 bg-[#13102A]">
+          <div className="text-gray-400 text-xs mb-3">Your Numbers</div>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {ticket.numbers.map((number, index) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+              <NumberBubble
+                key={index}
+                number={number}
+                status={ticket.status}
+                index={index}
+                className="w-10 h-10 text-base"
+              />
+            ))}
           </div>
 
-          {(ticket.status === "finished" || ticket.status === "winner") && (
-            <>
-              <div className="flex justify-between">
-                <div className="text-gray-400 text-sm">Matched Numbers</div>
-                <div className="text-white text-sm">
-                  {ticket.matchedNumbers}
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <div className="text-gray-400 text-sm">Draw Date</div>
+              <div className="text-white text-sm">{ticket.drawDate}</div>
+            </div>
+            <div className="flex justify-between">
+              <div className="text-gray-400 text-sm">Draw Amount</div>
+              <div className="text-white text-sm">{ticket.drawAmount}</div>
+            </div>
+
+            {(ticket.status === "finished" || ticket.status === "winner") && (
+              <>
+                <div className="flex justify-between">
+                  <div className="text-gray-400 text-sm">Matched Numbers</div>
+                  <div className="text-white text-sm">
+                    {ticket.matchedNumbers}
+                  </div>
                 </div>
-              </div>
-              <div className="flex justify-between">
-                <div className="text-gray-400 text-sm">Win Amount</div>
-                <div
-                  className={`text-sm ${ticket.status === "winner" ? "text-[#F5A623] font-bold" : "text-white"}`}
-                >
-                  {ticket.winAmount}
+                <div className="flex justify-between">
+                  <div className="text-gray-400 text-sm">Win Amount</div>
+                  <div
+                    className={`text-sm ${ticket.status === "winner" ? "text-[#F5A623] font-bold" : "text-white"}`}
+                  >
+                    {ticket.winAmount}
+                  </div>
                 </div>
-              </div>
-            </>
+              </>
+            )}
+          </div>
+        </div>
+
+        <div
+          className="p-4 flex justify-between items-center"
+          style={{ background: "#231945" }}
+        >
+          <div className="text-gray-400 text-sm">
+            Purchased: {ticket.purchaseDate}
+          </div>
+          {ticket.daysLeft !== undefined && (
+            <div className="flex items-center bg-[#6C2BD9] bg-opacity-30 px-3 py-1 rounded-full">
+              {/* biome-ignore lint/a11y/noSvgWithoutTitle: <explanation> */}
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="mr-1 text-[#9042F0]"
+              >
+                <circle
+                  cx="12"
+                  cy="12"
+                  r="9"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                />
+                <path
+                  d="M12 7V12L15 14"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                />
+              </svg>
+              <span className="text-[#9042F0] text-sm">
+                {ticket.daysLeft} days left
+              </span>
+            </div>
           )}
         </div>
-      </div>
+      </motion.div>
 
-      <div
-        className="p-4 flex justify-between items-center"
-        style={{ background: "#231945" }}
-      >
-        <div className="text-gray-400 text-sm">
-          Purchased: {ticket.purchaseDate}
-        </div>
-        {ticket.daysLeft !== undefined && (
-          <div className="flex items-center bg-[#6C2BD9] bg-opacity-30 px-3 py-1 rounded-full">
-            {/* biome-ignore lint/a11y/noSvgWithoutTitle: <explanation> */}
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              className="mr-1 text-[#9042F0]"
-            >
-              <circle
-                cx="12"
-                cy="12"
-                r="9"
-                stroke="currentColor"
-                strokeWidth="1.5"
-              />
-              <path
-                d="M12 7V12L15 14"
-                stroke="currentColor"
-                strokeWidth="1.5"
-              />
-            </svg>
-            <span className="text-[#9042F0] text-sm">
-              {ticket.daysLeft} days left
-            </span>
-          </div>
-        )}
-      </div>
-    </motion.div>
+      <TicketModal
+        ticket={selectedTicket}
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+      />
+    </>
   );
 }
 
@@ -236,14 +260,16 @@ function StatusBadge({ status }: { status: string }) {
   return null;
 }
 
-function NumberBubble({
+export function NumberBubble({
   number,
   status,
   index,
+  className,
 }: {
   number: number;
   status: string;
   index: number;
+  className?: string;
 }) {
   if (status === "finished" || status === "winner") {
     return (
@@ -252,7 +278,7 @@ function NumberBubble({
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.3, delay: 0.05 * index }}
         whileHover={{ scale: 1.1 }}
-        className="w-10 h-10 rounded-full flex items-center justify-center font-medium text-base shadow-md"
+        className={`rounded-full flex items-center justify-center font-medium shadow-md ${className}`}
         style={{
           background: "linear-gradient(135deg, #FBBF24 0%, #D97706 100%)",
           color: "#fff",
@@ -269,7 +295,7 @@ function NumberBubble({
       animate={{ scale: 1, opacity: 1 }}
       transition={{ duration: 0.3, delay: 0.05 * index }}
       whileHover={{ scale: 1.1 }}
-      className="w-10 h-10 rounded-full flex items-center justify-center font-medium text-base bg-black text-white shadow-md"
+      className={`rounded-full flex items-center justify-center font-medium bg-black text-white shadow-md ${className}`}
     >
       {number}
     </motion.div>

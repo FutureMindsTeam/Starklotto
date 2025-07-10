@@ -6,10 +6,8 @@ import { useNetwork } from "@starknet-react/core";
 import Image from "next/image";
 import GenericModal from "./CustomConnectButton/GenericModal";
 import { useTheme } from "next-themes";
-import { useState } from "react";
 
 export const BlockExplorerSepolia = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const { chain: ConnectedChain } = useNetwork();
 
   const sepoliaBlockExplorers = [
@@ -41,26 +39,27 @@ export const BlockExplorerSepolia = () => {
   return (
     <div>
       <label
-        onClick={() => setIsModalOpen(true)}
+        htmlFor="sepolia-blockexplorer-modal"
         className="btn btn-sm font-normal gap-1 border border-[#32BAC4] shadow-none"
       >
         <MagnifyingGlassIcon className="h-4 w-4 text-[#32BAC4]" />
         <span>Block Explorer</span>
       </label>
-      <GenericModal
-        modalId="sepolia-blockexplorer-modal"
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-      >
+      <input
+        type="checkbox"
+        id="sepolia-blockexplorer-modal"
+        className="modal-toggle"
+      />
+      <GenericModal modalId="sepolia-blockexplorer-modal" onClose={() => {}}>
         <>
           <div className="flex items-center justify-between">
             <h3 className="text-xl font-bold">Sepolia Block Explorers</h3>
-            <button
-              onClick={() => setIsModalOpen(false)}
+            <label
+              htmlFor="sepolia-blockexplorer-modal"
               className="btn btn-ghost btn-sm btn-circle"
             >
               ✕
-            </button>
+            </label>
           </div>
           <div className="mb-4 mt-6">
             <div className="flex flex-col gap-4">

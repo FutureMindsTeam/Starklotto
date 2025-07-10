@@ -80,31 +80,26 @@ export const WriteOnlyFunctionForm = ({
   }, [error]);
 
   const handleWrite = async () => {
-    if (sendAsync) {
-      try {
-        const makeWriteWithParams = () =>
-          sendAsync(
-            !!contractInstance
-              ? [
-                  contractInstance.populate(
-                    abiFunction.name,
-                    getArgsAsStringInputFromForm(form),
-                  ),
-                ]
-              : [],
-          );
-        await writeTxn(makeWriteWithParams);
-        onChange();
-      } catch (e: any) {
-        const errorPattern = /Contract (.*?)"}/;
-        const match = errorPattern.exec(e.message);
-        const message = match ? match[1] : e.message;
+    try {
+      const tx = !!contractInstance
+        ? [
+            contractInstance.populate(
+              abiFunction.name,
+              getArgsAsStringInputFromForm(form),
+            ),
+          ]
+        : [];
+      await writeTxn.writeTransaction(tx);
+      onChange();
+    } catch (e: any) {
+      const errorPattern = /Contract (.*?)"}/;
+      const match = errorPattern.exec(e.message);
+      const message = match ? match[1] : e.message;
 
-        console.error(
-          "⚡️ ~ file: WriteOnlyFunctionForm.tsx:handleWrite ~ error",
-          message,
-        );
-      }
+      console.error(
+        "⚡️ ~ file: WriteOnlyFunctionForm.tsx:handleWrite ~ error",
+        message,
+      );
     }
   };
 
@@ -114,7 +109,11 @@ export const WriteOnlyFunctionForm = ({
     hash: result?.transaction_hash,
   });
   useEffect(() => {
-    setDisplayedTxResult(txResult as InvokeTransactionReceiptResponse);
+    if (txResult) {
+      setDisplayedTxResult(
+        txResult as unknown as InvokeTransactionReceiptResponse,
+      );
+    }
   }, [txResult]);
 
   // TODO use `useMemo` to optimize also update in ReadOnlyFunctionForm

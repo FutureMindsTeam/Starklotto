@@ -7,7 +7,7 @@ const SettingsCard: FC = () => {
   const router = useRouter();
 
   return (
-    <div className="bg-black/70 border border-zinc-800 text-white p-6 m-3 rounded-2xl shadow-md w-80 text-center">
+    <div className="w-full max-w-xs bg-black/70 border border-zinc-800 text-white p-6 rounded-2xl shadow-md text-center">
       <div className="flex flex-col items-center space-y-4">
         <div className="bg-[#8A3FFC]/30 p-3 rounded-full">
           <Settings className="w-8 h-8 text-[#8A3FFC]" />

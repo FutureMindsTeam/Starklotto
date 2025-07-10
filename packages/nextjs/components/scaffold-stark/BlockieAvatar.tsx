@@ -1,7 +1,6 @@
 "use client";
 
 import { blo } from "blo";
-import Image from "next/image";
 
 interface BlockieAvatarProps {
   address: string;
@@ -17,7 +16,7 @@ export const BlockieAvatar = ({
 }: BlockieAvatarProps) => (
   // Don't want to use nextJS Image here (and adding remote patterns for the URL)
   // eslint-disable-next-line @next/next/no-img-element
-  <Image
+  <img
     className="rounded-full"
     src={ensImage || blo(address as `0x${string}`)}
     width={size}

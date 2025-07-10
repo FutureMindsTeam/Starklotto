@@ -13,14 +13,13 @@ StarkLotto is a decentralized lottery game built on **Starknet**, designed to of
 
 Before you begin, make sure you have the following requirements installed:
 
-| Herramienta          | Versión recomendada |
-|----------------------|--------------------|
-| **Node.js**         | >= v18.17          |
-| **Yarn**            | v1 o v2+           |
-| **Git**             | Última versión     |
-| **Rust**            | Última versión     |
-| **asdf**            | Última versión     |
-| **Extensión Cairo** | 1.0 (VSCode)       |
+## Compatible versions
+
+- Starknet-devnet - v0.4.0
+- Scarb - v2.11.4
+- Snforge - v0.41.0
+- Cairo - v2.11.4
+- Rpc - v0.8.0
 
 ## 🔧 Installation
 
@@ -59,7 +58,7 @@ yarn start
 ```
 Next, open your browser and visit: [http://localhost:3000](http://localhost:3000)
 
-## ⚡ Usage
+## �?Usage
 
 ### 1️⃣ Compile and deploy the smart contract
 
@@ -95,3 +94,34 @@ If you have questions or want to contribute, you can contact us at:
 - Discord: [FutureMinds Community](https://discord.gg/ZAhZZDYn)
 - X: [@futureminds_7](https://x.com/futureminds_7)
 - Telegram Group: [Starklotto Contributors](https://t.me/StarklottoContributors)
+This repo prefer yarn as package manager.
+
+Commands:
+
+| Command          | Description                                                                               |
+| ---------------- | ----------------------------------------------------------------------------------------- |
+| format:check     | (Read only) Batch checks for format inconsistencies for the nextjs and snfoundry codebase |
+| next:check-types | Compile typscript project                                                                 |
+| next:lint        | Runs next lint                                                                            |
+| prepare          | Install husky's git hooks                                                                 |
+| usage            | Show this text                                                                            |
+
+### CLI Smart Contracts
+
+| Command         | Description                                                                         |
+| --------------- | ----------------------------------------------------------------------------------- |
+| compile         | Compiles contracts.                                                                 |
+| test            | Runs snfoundry tests                                                                |
+| chain           | Starts the local blockchain network.                                                |
+| deploy          | Deploys contract to the configured network discarding previous deployments.         |
+| deploy:no-reset | Deploys contract to the configured network without discarding previous deployments. |
+| verify          | Verify Smart Contracts with Walnut                                                  |
+
+### CLI Frontend
+
+| Command     | Description                                  |
+| ----------- | -------------------------------------------- |
+| start       | Starts the frontend server                   |
+| test:nextjs | Runs the nextjs tests                        |
+| vercel      | Deploys app to vercel                        |
+| vercel:yolo | Force deploy app to vercel (ignoring errors) |

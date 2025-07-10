@@ -1,16 +1,45 @@
+use starknet::ContractAddress;
+
+#[starknet::interface]
+pub trait IStarkPlayVault<TContractState> {
+    //=======================================================================================
+    //get functions
+    fn GetFeePercentage(self: @TContractState) -> u64;
+    fn GetAccumulatedPrizeConversionFees(self: @TContractState) -> u256;
+    fn get_mint_limit(self: @TContractState) -> u256;
+    fn get_burn_limit(self: @TContractState) -> u256;
+
+    //=======================================================================================
+    //set functions
+    fn setMintLimit(ref self: TContractState, new_limit: u256);
+    fn setBurnLimit(ref self: TContractState, new_limit: u256);
+    fn setFeePercentage(ref self: TContractState, new_fee: u64) -> bool;
+    fn convert_to_strk(ref self: TContractState, amount: u256);
+    //=======================================================================================
+    //mint functions
+    fn mint_strk_play(self: @TContractState, user: ContractAddress, amount: u256) -> bool;
+}
+
+
 #[starknet::contract]
-mod StarkPlayVault {
+pub mod StarkPlayVault {
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //imports
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    use crate::StarkPlayERC20::{
-        IBurnable, IMintable, IMintableDispatcher, IMintableDispatcherTrait,
-    };
     use openzeppelin_access::ownable::OwnableComponent;
     use openzeppelin_token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
-    use starknet::contract_address_const;
-    use starknet::{ContractAddress, get_caller_address, get_contract_address};
-
+    use starknet::storage::{
+        Map, StorageMapReadAccess, StorageMapWriteAccess, StoragePathEntry,
+        StoragePointerReadAccess, StoragePointerWriteAccess,
+    };
+    use starknet::{
+        ContractAddress, contract_address_const, get_caller_address, get_contract_address,
+    };
+    use crate::StarkPlayERC20::{
+        IBurnableDispatcher, IBurnableDispatcherTrait, IMintable, IMintableDispatcher,
+        IMintableDispatcherTrait, IPrizeTokenDispatcher, IPrizeTokenDispatcherTrait,
+    };
+    use super::IStarkPlayVault;
 
     component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
 
@@ -25,7 +54,8 @@ mod StarkPlayVault {
 
     const TOKEN_STRK_ADDRESS: felt252 =
         0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d;
-    const Initial_Fee_Percentage: u64 = 5;
+    const Initial_Fee_Percentage: u64 = 50_u64; // 50 basis points = 0.5%
+    const BASIS_POINTS_DENOMINATOR: u256 = 10000_u256; // 10000 basis points = 100%
     const DECIMALS_FACTOR: u256 = 1_000_000_000_000_000_000; // 10^18
     const MAX_MINT_AMOUNT: u256 = 1_000_000 * 1_000_000_000_000_000_000; // 1 millón de tokens
     const MAX_BURN_AMOUNT: u256 = 1_000_000 * 1_000_000_000_000_000_000; // 1 millón de tokens
@@ -42,13 +72,20 @@ mod StarkPlayVault {
         totalStarkPlayMinted: u256,
         totalStarkPlayBurned: u256,
         starkPlayToken: ContractAddress,
+        //fee percentage for the vault to mint STRKP
         feePercentage: u64,
+        //this don't change after the constructor
+        feePercentageMin: u64, //min fee percentage for the vault to mint STRKP (0.1% = 10 basis points)
+        feePercentageMax: u64, //max fee percentage for the vault to mint STRKP (5% = 500 basis points)
+        //------------------------------------------------
+        //owner of the vault
         owner: ContractAddress,
         paused: bool,
         mintLimit: u256,
         burnLimit: u256,
         reentrant_locked: bool,
         accumulatedFee: u256,
+        accumulatedPrizeConversionFees: u256,
         #[substorage(v0)]
         ownable: OwnableComponent::Storage,
     }
@@ -58,7 +95,7 @@ mod StarkPlayVault {
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     #[constructor]
-    fn constructor(
+    pub fn constructor(
         ref self: ContractState,
         owner: ContractAddress,
         starkPlayToken: ContractAddress,
@@ -66,13 +103,17 @@ mod StarkPlayVault {
     ) {
         self.strkToken.write(TOKEN_STRK_ADDRESS);
         self.starkPlayToken.write(starkPlayToken);
-        self.feePercentage.write(feePercentage);
         self.owner.write(starknet::get_caller_address());
         self.ownable.initializer(owner);
         self.mintLimit.write(MAX_MINT_AMOUNT);
         self.burnLimit.write(MAX_BURN_AMOUNT);
         self.paused.write(false);
         self.reentrant_locked.write(false);
+        self.accumulatedPrizeConversionFees.write(0);
+        //set fee percentage
+        self.feePercentage.write(feePercentage);
+        self.feePercentageMin.write(10); //0.1%
+        self.feePercentageMax.write(500); //5%
     }
 
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -142,9 +183,35 @@ mod StarkPlayVault {
         amount: u256,
     }
 
+    #[derive(Drop, starknet::Event)]
+    struct ConvertedToSTRK {
+        #[key]
+        user: ContractAddress,
+        #[key]
+        amount: u256,
+    }
+
+    #[derive(Drop, starknet::Event)]
+    struct MintLimitUpdated {
+        new_mint_limit: u256,
+    }
+
+    #[derive(Drop, starknet::Event)]
+    struct BurnLimitUpdated {
+        new_burn_limit: u256,
+    }
+
+    #[derive(Drop, starknet::Event)]
+    struct SetFeePercentage {
+        #[key]
+        owner: ContractAddress,
+        old_fee: u64,
+        new_fee: u64,
+    }
+
     #[event]
     #[derive(Drop, starknet::Event)]
-    enum Event {
+    pub enum Event {
         #[flat]
         OwnableEvent: OwnableComponent::Event,
         STRKDeposited: STRKDeposited,
@@ -155,7 +222,12 @@ mod StarkPlayVault {
         Unpaused: Unpaused,
         StarkPlayBurnedByOwner: StarkPlayBurnedByOwner,
         FeeCollected: FeeCollected,
+        ConvertedToSTRK: ConvertedToSTRK,
+        MintLimitUpdated: MintLimitUpdated,
+        BurnLimitUpdated: BurnLimitUpdated,
+        SetFeePercentage: SetFeePercentage,
     }
+
 
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //modifiers
@@ -199,7 +271,7 @@ mod StarkPlayVault {
         let balance = strk_dispatcher.balance_of(user);
 
         // set mount with fee
-        let fee = (amountSTRK * self.feePercentage.read().into()) / 100;
+        let fee = (amountSTRK * self.feePercentage.read().into()) / BASIS_POINTS_DENOMINATOR.into();
         let total_amount_with_fee = amountSTRK + fee;
 
         //if balance is greater than total_amount_with_fee return true
@@ -207,7 +279,7 @@ mod StarkPlayVault {
     }
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     fn _amount_to_mint(self: @ContractState, amountSTRK: u256) -> u256 {
-        let fee = (amountSTRK * self.feePercentage.read().into()) / 100;
+        let fee = (amountSTRK * self.feePercentage.read().into()) / BASIS_POINTS_DENOMINATOR.into();
         let total_amount_with_fee = amountSTRK - fee;
         total_amount_with_fee
     }
@@ -221,16 +293,13 @@ mod StarkPlayVault {
 
     //TODO: delete fn public
     //#[external(v0)]
-    fn mint_strk_play(self: @ContractState, user: ContractAddress, amount: u256) -> bool {
+    fn _mint_strk_play(self: @ContractState, user: ContractAddress, amount: u256) -> bool {
         let starkPlayContractAddress = self.starkPlayToken.read();
         let mintDispatcher = IMintableDispatcher { contract_address: starkPlayContractAddress };
         mintDispatcher.mint(user, amount);
         true
     }
 
-    fn _mint_strk_play(self: @ContractState, user: ContractAddress, amount: u256) -> bool {
-        mint_strk_play(self, user, amount)
-    }
 
 
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -255,7 +324,7 @@ mod StarkPlayVault {
         assert(transfer_result, 'Error al transferir el STRK');
 
         //recollect fee
-        let fee = (amountSTRK * self.feePercentage.read().into()) / 100;
+        let fee = (amountSTRK * self.feePercentage.read().into()) / BASIS_POINTS_DENOMINATOR.into();
         self.accumulatedFee.write(self.accumulatedFee.read() + fee);
         self.emit(FeeCollected { user, amount: fee, accumulatedFee: self.accumulatedFee.read() });
 
@@ -278,18 +347,50 @@ mod StarkPlayVault {
 
         return success;
     }
+
+    fn convert_to_strk(ref self: ContractState, amount: u256) {
+        _assert_not_paused(@self);
+        let user = get_caller_address();
+        let starkPlayContractAddress = self.starkPlayToken.read();
+        let prizeDispatcher = IPrizeTokenDispatcher { contract_address: starkPlayContractAddress };
+        let prize_balance = prizeDispatcher.get_prize_balance(user);
+        assert(prize_balance >= amount, 'Insufficient prize tokens');
+        
+        // Calculate conversion fee
+        let prizeFeeAmount = (amount * self.feePercentage.read().into()) / BASIS_POINTS_DENOMINATOR;
+        let netAmount = amount - prizeFeeAmount;
+        
+        // Burn the full amount of prize tokens from user
+        let mut burnDispatcher = IBurnableDispatcher { contract_address: starkPlayContractAddress };
+        burnDispatcher.burn_from(user, amount);
+        self.totalStarkPlayBurned.write(self.totalStarkPlayBurned.read() + amount);
+        self.emit(StarkPlayBurned { user, amount });
+        
+        // Update accumulated prize conversion fees
+        self.accumulatedPrizeConversionFees.write(self.accumulatedPrizeConversionFees.read() + prizeFeeAmount);
+        
+        // Emit FeeCollected event
+        self.emit(FeeCollected { user, amount: prizeFeeAmount, accumulatedFee: self.accumulatedPrizeConversionFees.read() });
+        
+        // Transfer the net amount (after deducting fee) to user
+        let strk_contract_address = contract_address_const::<TOKEN_STRK_ADDRESS>();
+        let strk_dispatcher = IERC20Dispatcher { contract_address: strk_contract_address };
+        strk_dispatcher.transfer(user, netAmount);
+        self.totalSTRKStored.write(self.totalSTRKStored.read() - netAmount);
+        self.emit(ConvertedToSTRK { user, amount: netAmount });
+    }
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//private functions
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    //private functions
+    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     //fn depositSTRK(ref self: ContractState, user: ContractAddress, amount: u256) -> bool {
-//deposit strk to vault
-//emit event STRKDeposited
-//return true
+    //deposit strk to vault
+    //emit event STRKDeposited
+    //return true
 
     //in case of error al depositar el STRK
-//return false
-//}
+    //return false
+    //}
 
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -298,11 +399,12 @@ mod StarkPlayVault {
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     //fn setFee(ref self: ContractState, new_fee: u64) -> bool {
-//    self.assert_only_owner();
-//   assert(new_fee <= 10000, 'Fee too high'); // Máximo 100%
-//   self.feePercentage.write(new_fee);
-//    true
-//}
+    //    self.assert_only_owner();
+    //   assert(new_fee <= BASIS_POINTS_DENOMINATOR, 'Fee too high'); // Máximo 100% (10000 basis
+    //   points)
+    //   self.feePercentage.write(new_fee);
+    //    true
+    //}
 
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -336,10 +438,58 @@ mod StarkPlayVault {
 
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    //fn  getFeePercentage(): u64{
+    #[abi(embed_v0)]
+    impl StarkPlayVaultImpl of IStarkPlayVault<ContractState> {
+        fn GetFeePercentage(self: @ContractState) -> u64 {
+            self.feePercentage.read()
+        }
 
-    //}
+        fn GetAccumulatedPrizeConversionFees(self: @ContractState) -> u256 {
+            self.accumulatedPrizeConversionFees.read()
+        }
 
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        fn convert_to_strk(ref self: ContractState, amount: u256) {
+            convert_to_strk(ref self, amount)
+        }
 
+        fn setMintLimit(ref self: ContractState, new_limit: u256) {
+            self.ownable.assert_only_owner();
+
+            assert(new_limit > 0, 'Invalid Mint limit');
+            self.mintLimit.write(new_limit);
+
+            self.emit(MintLimitUpdated { new_mint_limit: new_limit });
+        }
+
+        fn setBurnLimit(ref self: ContractState, new_limit: u256) {
+            self.ownable.assert_only_owner();
+            assert(new_limit > 0, 'Invalid Burn limit');
+            self.burnLimit.write(new_limit);
+
+            self.emit(BurnLimitUpdated { new_burn_limit: new_limit });
+        }
+
+        fn setFeePercentage(ref self: ContractState, new_fee: u64) -> bool {
+            assert_only_owner(@self);
+            assert(new_fee >= self.feePercentageMin.read(), 'Fee percentage is too low');
+            assert(new_fee <= self.feePercentageMax.read(), 'Fee percentage is too high');
+            let old_fee = self.feePercentage.read();
+            self.feePercentage.write(new_fee);
+            self.emit(SetFeePercentage { owner: get_caller_address(), old_fee, new_fee });
+            true
+        }
+
+        fn get_mint_limit(self: @ContractState) -> u256 {
+            self.mintLimit.read()
+        }
+
+        fn get_burn_limit(self: @ContractState) -> u256 {
+            self.burnLimit.read()
+        }
+        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        fn mint_strk_play(self: @ContractState, user: ContractAddress, amount: u256) -> bool {
+            _mint_strk_play(self, user, amount)
+        }
+        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    }
 }

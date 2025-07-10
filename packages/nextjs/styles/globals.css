@@ -78,6 +78,9 @@ body {
 
 .bg-modal {
   backdrop-filter: blur(7.449999809265137px);
+  background: rgba(17, 25, 40, 0.9);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 .custom::after {
@@ -235,4 +238,61 @@ td {
 
 tr:last-child td {
   border-bottom: none;
+}
+
+.text-gradient {
+  background: linear-gradient(to right, #c084fc 0%, #f472b6 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.modal-content {
+  position: relative;
+  margin: 1.75rem auto;
+  pointer-events: auto;
+  border-radius: 8px;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(0);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-modalFadeIn {
+  animation: modalFadeIn 0.2s ease-out forwards;
+}
+
+.modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.modal-backdrop-enter {
+  opacity: 1;
+}
+
+/* Asegurarse que el modal siempre esté por encima de todo */
+#__next {
+  position: relative;
+  z-index: 1;
 }

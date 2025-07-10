@@ -19,7 +19,9 @@ import { useProvider } from "@starknet-react/core";
 import { hash, RpcProvider } from "starknet";
 import { events as starknetEvents, CallData } from "starknet";
 import { parseEventData } from "~~/utils/scaffold-stark/eventsData";
+import { composeEventFilterKeys } from "~~/utils/scaffold-stark/eventKeyFilter";
 
+const MAX_KEYS_COUNT = 16;
 /**
  * Reads events from a deployed contract
  * @param config - The config settings
@@ -74,14 +76,19 @@ export const useScaffoldEventHistory = <
   }, [targetNetwork.rpcUrls.public.http]);
 
   const readEvents = async (fromBlock?: bigint) => {
+    if (!enabled) {
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     try {
-      if (!deployedContractData) {
-        throw new Error("Contract not found");
+      if (deployedContractLoading) {
+        return;
       }
 
-      if (!enabled) {
-        throw new Error("Hook disabled");
+      if (!deployedContractData) {
+        throw new Error("Contract not found");
       }
 
       const event = (deployedContractData.abi as Abi).find(
@@ -95,11 +102,18 @@ export const useScaffoldEventHistory = <
         (fromBlock && blockNumber >= fromBlock) ||
         blockNumber >= fromBlockUpdated
       ) {
+        let keys: string[][] = [
+          [hash.getSelectorFromName(event.name.split("::").slice(-1)[0])],
+        ];
+        if (filters) {
+          keys = keys.concat(
+            composeEventFilterKeys(filters, event, deployedContractData.abi),
+          );
+        }
+        keys = keys.slice(0, MAX_KEYS_COUNT);
         const rawEventResp = await publicClient.getEvents({
           chunk_size: 100,
-          keys: [
-            [hash.getSelectorFromName(event.name.split("::").slice(-1)[0])],
-          ],
+          keys,
           address: deployedContractData?.address,
           from_block: { block_number: Number(fromBlock || fromBlockUpdated) },
           to_block: { block_number: blockNumber },
@@ -218,7 +232,7 @@ export const useScaffoldEventHistory = <
 
   return {
     data: eventHistoryData,
-    isLoading: isLoading,
+    isLoading: isLoading || deployedContractLoading,
     error: error,
   };
 };

@@ -7,24 +7,25 @@ import { BarChart3, ArrowRight } from "lucide-react";
 
 const StatisticsCard: React.FC = () => {
   return (
-    <div className="bg-[#151515] border border-white/5 rounded-lg shadow-md p-6 flex flex-col justify-between">
-      <div className="flex flex-col items-center text-center">
-        <div className="h-12 w-12 rounded-full bg-green-700 flex items-center justify-center mb-4">
-          <BarChart3 className="h-6 w-6 text-white" />
+    <div className="w-full max-w-xs bg-black/70 border border-zinc-800 text-white p-6 rounded-2xl shadow-md text-center">
+      <div className="flex flex-col items-center space-y-4">
+        <div className="bg-[#469d2d]/30 p-3 rounded-full">
+          <BarChart3 className="h-8 w-8 text-[#469d2d]" />
         </div>
-        <h2 className="text-xl font-semibold mb-0">Statistics</h2>
-        <p className="text-gray-400 mb-4">View system metrics</p>
+        <h2 className="text-xl font-semibold">Statistics</h2>
+        <p className="text-base text-gray-400">View system metrics</p>
+
+        {/* Cambiar el # por la direccion del archivo que quieren visualizar */}
+        <Link href="#">
+          <Button className="bg-purple-600 hover:bg-purple-700 px-4 text-sm py-2 rounded-md text-white flex items-center space-x-2">
+            <span>View Statistics</span>
+            <span className="ml-1">→</span>
+            {/* <ArrowRight className="ml-2 h-4 w-4" /> */}
+          </Button>
+        </Link>
+
+        {/* Fin div principal */}
       </div>
-
-      {/* Cambiar el # por la direccion del archivo que quieren visualizar */}
-      <Link href="#">
-        <Button className="w-full">
-          View Statistics
-          <ArrowRight className="ml-2 h-4 w-4" />
-        </Button>
-      </Link>
-
-      {/* Fin div principal */}
     </div>
   );
 };
