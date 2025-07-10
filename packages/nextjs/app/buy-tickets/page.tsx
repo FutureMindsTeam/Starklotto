@@ -44,8 +44,8 @@ export default function BuyTicketsPage() {
   const { chain } = useNetwork();
   const { targetNetwork } = useTargetNetwork();
 
-  // For demo, use drawId = 2 (should be dynamic if you have multiple draws)
-  const drawId = 2;
+  // For demo, use drawId = 7 (should be dynamic if you have multiple draws)
+  const drawId = 7;
 
   // Check if all tickets have 5 numbers
   const allTicketsValid = Object.values(selectedNumbers).every(

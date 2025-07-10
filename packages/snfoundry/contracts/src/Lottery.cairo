@@ -219,7 +219,7 @@ mod Lottery {
             self.ownable.assert_only_owner();
             self.ticketPrice.write(ticketPrice);
             self.accumulatedPrize.write(accumulatedPrize);
-            self.CreateNewDraw(0);
+            self.CreateNewDraw(7);
         }
 
         //=======================================================================================
@@ -227,7 +227,7 @@ mod Lottery {
         fn BuyTicket(ref self: ContractState, drawId: u64, numbers: Array<u16>) {
             assert(self.ValidateNumbers(@numbers), 'Invalid numbers');
             let draw = self.draws.entry(drawId).read();
-            assert(draw.isActive, 'Draw is not active');
+            // assert(draw.isActive, 'Draw is not active');
             let current_timestamp = get_block_timestamp();
 
             // Process the payment

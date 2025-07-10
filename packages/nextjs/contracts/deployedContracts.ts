@@ -7,7 +7,7 @@ const deployedContracts = {
   devnet: {
     Lottery: {
       address:
-        "0x19f2682599ee7fd597187558d89c6aafabdfcd2969231aa706f4d4dc88d16d6",
+        "0x47d3d9b2d8dcc9cc720025a07dee4a82fe165068a50857acdbdf92884d4058d",
       abi: [
         {
           type: "impl",
@@ -241,7 +241,7 @@ const deployedContracts = {
             },
             {
               type: "function",
-              name: "GetUserTickets",
+              name: "GetUserTicketIds",
               inputs: [
                 {
                   name: "drawId",
@@ -258,6 +258,26 @@ const deployedContracts = {
                 },
               ],
               state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "GetUserTickets",
+              inputs: [
+                {
+                  name: "drawId",
+                  type: "core::integer::u64",
+                },
+                {
+                  name: "player",
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::array::Array::<contracts::Lottery::Ticket>",
+                },
+              ],
+              state_mutability: "external",
             },
             {
               type: "function",
@@ -522,6 +542,55 @@ const deployedContracts = {
         },
         {
           type: "event",
+          name: "contracts::Lottery::Lottery::UserTicketsInfo",
+          kind: "struct",
+          members: [
+            {
+              name: "player",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+            {
+              name: "drawId",
+              type: "core::integer::u64",
+              kind: "data",
+            },
+            {
+              name: "tickets",
+              type: "core::array::Array::<contracts::Lottery::Ticket>",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "contracts::Lottery::Lottery::JackpotIncreased",
+          kind: "struct",
+          members: [
+            {
+              name: "drawId",
+              type: "core::integer::u64",
+              kind: "key",
+            },
+            {
+              name: "previousAmount",
+              type: "core::integer::u256",
+              kind: "data",
+            },
+            {
+              name: "newAmount",
+              type: "core::integer::u256",
+              kind: "data",
+            },
+            {
+              name: "timestamp",
+              type: "core::integer::u64",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
           name: "contracts::Lottery::Lottery::Event",
           kind: "enum",
           variants: [
@@ -545,15 +614,25 @@ const deployedContracts = {
               type: "contracts::Lottery::Lottery::PrizeClaimed",
               kind: "nested",
             },
+            {
+              name: "UserTicketsInfo",
+              type: "contracts::Lottery::Lottery::UserTicketsInfo",
+              kind: "nested",
+            },
+            {
+              name: "JackpotIncreased",
+              type: "contracts::Lottery::Lottery::JackpotIncreased",
+              kind: "nested",
+            },
           ],
         },
       ],
       classHash:
-        "0x78c9c4de67a74a7d30b3b166b9fe2ca4eab8af7e873c8d345bd1004e33f43f8",
+        "0x30e956763b9765173a8ae7b0f94f4285221fdd97d7fef6caf2b270600b863f7",
     },
     StarkPlayERC20: {
       address:
-        "0x383bbb33444bc01fba541317c72c34dddfa7eb7e05d47f3b449f812ad94bb08",
+        "0x2d7e2e6931d92dced218b47f7d9b67f4f753d5edf9afacb4629ec7e6fe3ba79",
       abi: [
         {
           type: "impl",
@@ -856,6 +935,44 @@ const deployedContracts = {
               ],
               outputs: [],
               state_mutability: "external",
+            },
+          ],
+        },
+        {
+          type: "impl",
+          name: "TestingHelpers",
+          interface_name: "contracts::StarkPlayERC20::ITestingHelpers",
+        },
+        {
+          type: "interface",
+          name: "contracts::StarkPlayERC20::ITestingHelpers",
+          items: [
+            {
+              type: "function",
+              name: "getTotalSupply",
+              inputs: [],
+              outputs: [
+                {
+                  type: "core::integer::u256",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "getAllAllowances",
+              inputs: [
+                {
+                  name: "account",
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              outputs: [
+                {
+                  type: "(core::integer::u256, core::integer::u256)",
+                },
+              ],
+              state_mutability: "view",
             },
           ],
         },
@@ -1693,12 +1810,98 @@ const deployedContracts = {
         },
       ],
       classHash:
-        "0x2f1ed0054b4fea83d34a0bcedabea240800d13e0c5c303139ecd8ed18fc533a",
+        "0x4a44a19547caca53b0e2beb2cc1bb67f496e007e43c3787b578e56b402b3442",
     },
     StarkPlayVault: {
       address:
-        "0x66b189f6c032db2f9dcfe7b3a96c4658b654526515b578139c16f21caeeb37b",
+        "0x7be4c9512f7cfc64bbb5be3ce6a16608438d5bd131b34424d04c912209dcfad",
       abi: [
+        {
+          type: "impl",
+          name: "StarkPlayVaultImpl",
+          interface_name: "contracts::StarkPlayVault::IStarkPlayVault",
+        },
+        {
+          type: "enum",
+          name: "core::bool",
+          variants: [
+            {
+              name: "False",
+              type: "()",
+            },
+            {
+              name: "True",
+              type: "()",
+            },
+          ],
+        },
+        {
+          type: "struct",
+          name: "core::integer::u256",
+          members: [
+            {
+              name: "low",
+              type: "core::integer::u128",
+            },
+            {
+              name: "high",
+              type: "core::integer::u128",
+            },
+          ],
+        },
+        {
+          type: "interface",
+          name: "contracts::StarkPlayVault::IStarkPlayVault",
+          items: [
+            {
+              type: "function",
+              name: "GetFeePercentage",
+              inputs: [],
+              outputs: [
+                {
+                  type: "core::integer::u64",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "setFeePercentage",
+              inputs: [
+                {
+                  name: "new_fee",
+                  type: "core::integer::u64",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::bool",
+                },
+              ],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "mint_strk_play",
+              inputs: [
+                {
+                  name: "user",
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+                {
+                  name: "amount",
+                  type: "core::integer::u256",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::bool",
+                },
+              ],
+              state_mutability: "view",
+            },
+          ],
+        },
         {
           type: "impl",
           name: "OwnableImpl",
@@ -1806,20 +2009,6 @@ const deployedContracts = {
               name: "OwnershipTransferStarted",
               type: "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferStarted",
               kind: "nested",
-            },
-          ],
-        },
-        {
-          type: "struct",
-          name: "core::integer::u256",
-          members: [
-            {
-              name: "low",
-              type: "core::integer::u128",
-            },
-            {
-              name: "high",
-              type: "core::integer::u128",
             },
           ],
         },
@@ -1978,6 +2167,28 @@ const deployedContracts = {
         },
         {
           type: "event",
+          name: "contracts::StarkPlayVault::StarkPlayVault::SetFeePercentage",
+          kind: "struct",
+          members: [
+            {
+              name: "owner",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+            {
+              name: "old_fee",
+              type: "core::integer::u64",
+              kind: "data",
+            },
+            {
+              name: "new_fee",
+              type: "core::integer::u64",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
           name: "contracts::StarkPlayVault::StarkPlayVault::Event",
           kind: "enum",
           variants: [
@@ -2031,15 +2242,20 @@ const deployedContracts = {
               type: "contracts::StarkPlayVault::StarkPlayVault::ConvertedToSTRK",
               kind: "nested",
             },
+            {
+              name: "SetFeePercentage",
+              type: "contracts::StarkPlayVault::StarkPlayVault::SetFeePercentage",
+              kind: "nested",
+            },
           ],
         },
       ],
       classHash:
-        "0x23ca3229e3818ee513d4407566bba0ce4e8dd0968d1ebf301423e00c976b769",
+        "0x4ffc06dc0cc61c68c165528b972fa729404639e6646ae1171cb22b6f2455c31",
     },
     LottoTicketNFT: {
       address:
-        "0x2708522e7f19e584b8db7550d497bfb08583b47183cab06c162675582368f55",
+        "0x27877a1cff1c2fb42d0ac14f044f3160e118faf4afc85112a7243a51d1a1b8",
       abi: [
         {
           type: "impl",
@@ -2656,7 +2872,7 @@ const deployedContracts = {
         },
       ],
       classHash:
-        "0x2d83b9d9cfae6a90d909c33a6211d367f29fe94cdee998bdb9083a333640471",
+        "0xb607343629eb5a4352883ba117ec8c5ee60c30cf72c204d94c9893f364b9fd",
     },
   },
 } as const;
