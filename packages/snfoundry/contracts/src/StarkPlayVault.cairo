@@ -11,6 +11,7 @@ pub trait IStarkPlayVault<TContractState> {
 
     //=======================================================================================
     //set functions
+    fn set_fee(ref self: TContractState, new_fee: u64) -> bool;
     fn setMintLimit(ref self: TContractState, new_limit: u256);
     fn setBurnLimit(ref self: TContractState, new_limit: u256);
     fn setFeePercentage(ref self: TContractState, new_fee: u64) -> bool;
@@ -59,7 +60,7 @@ pub mod StarkPlayVault {
     const DECIMALS_FACTOR: u256 = 1_000_000_000_000_000_000; // 10^18
     const MAX_MINT_AMOUNT: u256 = 1_000_000 * 1_000_000_000_000_000_000; // 1 millón de tokens
     const MAX_BURN_AMOUNT: u256 = 1_000_000 * 1_000_000_000_000_000_000; // 1 millón de tokens
-
+    const MAX_FEE_PERCENTAGE: u64 = 10000; // 100%
 
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //storage
@@ -208,6 +209,13 @@ pub mod StarkPlayVault {
         old_fee: u64,
         new_fee: u64,
     }
+    #[derive(Drop, starknet::Event)]
+    pub struct FeeUpdated {
+        #[key]
+        pub admin: ContractAddress,
+        pub old_fee: u64,
+        pub new_fee: u64,
+    }
 
     #[event]
     #[derive(Drop, starknet::Event)]
@@ -226,6 +234,7 @@ pub mod StarkPlayVault {
         MintLimitUpdated: MintLimitUpdated,
         BurnLimitUpdated: BurnLimitUpdated,
         SetFeePercentage: SetFeePercentage,
+        FeeUpdated: FeeUpdated,
     }
 
 
@@ -301,7 +310,6 @@ pub mod StarkPlayVault {
     }
 
 
-
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //public functions
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -355,23 +363,32 @@ pub mod StarkPlayVault {
         let prizeDispatcher = IPrizeTokenDispatcher { contract_address: starkPlayContractAddress };
         let prize_balance = prizeDispatcher.get_prize_balance(user);
         assert(prize_balance >= amount, 'Insufficient prize tokens');
-        
+
         // Calculate conversion fee
         let prizeFeeAmount = (amount * self.feePercentage.read().into()) / BASIS_POINTS_DENOMINATOR;
         let netAmount = amount - prizeFeeAmount;
-        
+
         // Burn the full amount of prize tokens from user
         let mut burnDispatcher = IBurnableDispatcher { contract_address: starkPlayContractAddress };
         burnDispatcher.burn_from(user, amount);
         self.totalStarkPlayBurned.write(self.totalStarkPlayBurned.read() + amount);
         self.emit(StarkPlayBurned { user, amount });
-        
+
         // Update accumulated prize conversion fees
-        self.accumulatedPrizeConversionFees.write(self.accumulatedPrizeConversionFees.read() + prizeFeeAmount);
-        
+        self
+            .accumulatedPrizeConversionFees
+            .write(self.accumulatedPrizeConversionFees.read() + prizeFeeAmount);
+
         // Emit FeeCollected event
-        self.emit(FeeCollected { user, amount: prizeFeeAmount, accumulatedFee: self.accumulatedPrizeConversionFees.read() });
-        
+        self
+            .emit(
+                FeeCollected {
+                    user,
+                    amount: prizeFeeAmount,
+                    accumulatedFee: self.accumulatedPrizeConversionFees.read(),
+                },
+            );
+
         // Transfer the net amount (after deducting fee) to user
         let strk_contract_address = contract_address_const::<TOKEN_STRK_ADDRESS>();
         let strk_dispatcher = IERC20Dispatcher { contract_address: strk_contract_address };
@@ -491,5 +508,15 @@ pub mod StarkPlayVault {
             _mint_strk_play(self, user, amount)
         }
         //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        fn set_fee(ref self: ContractState, new_fee: u64) -> bool {
+            self.ownable.assert_only_owner();
+            assert(new_fee <= MAX_FEE_PERCENTAGE, 'Fee too high');
+
+            let old_fee = self.feePercentage.read();
+            self.feePercentage.write(new_fee);
+
+            self.emit(FeeUpdated { admin: get_caller_address(), old_fee, new_fee });
+            true
+        }
     }
 }
