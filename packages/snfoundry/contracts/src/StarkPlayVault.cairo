@@ -1,8 +1,14 @@
+#[starknet::interface]
+pub trait IStarkPlayVault<T> {
+    fn convert_to_strk(ref self: T);
+}
+
 #[starknet::contract]
 mod StarkPlayVault {
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //imports
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    use super::IStarkPlayVault;
     use crate::StarkPlayERC20::{
         IBurnable, IMintable, IMintableDispatcher, IMintableDispatcherTrait,
     };
@@ -277,6 +283,14 @@ mod StarkPlayVault {
         self.reentrant_locked.write(false);
 
         return success;
+    }
+
+    #[abi(embed_v0)]
+    impl StarkPlayVaultImpl of IStarkPlayVault<ContractState> {
+        fn convert_to_strk(ref self: ContractState) {
+            // TODO: Implement conversion logic
+            return;
+        }
     }
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //private functions
