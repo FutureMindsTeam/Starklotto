@@ -35,7 +35,7 @@ export function FAQSection({ faqY }: FAQSectionProps) {
         </motion.div>
 
         <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 py-12 md:grid-cols-2">
-          {t("home.faq.questions", { returnObjects: true }).map(
+          {(t("home.faq.questions", { returnObjects: true }) as string[]).map(
             (faq: any, index: number) => (
               <Card key={index} className="bg-black/20 border-white/10">
                 <CardContent className="p-6">

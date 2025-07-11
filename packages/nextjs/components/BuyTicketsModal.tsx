@@ -498,9 +498,7 @@ export default function BuyTicketsModal({
                     {t("buyTickets.gameRules.title")}
                   </h3>
                   <ul className="text-gray-400 space-y-1 text-sm">
-                    {t("buyTickets.gameRules.rules", {
-                      returnObjects: true,
-                    }).map((rule: string, index: number) => (
+                    {(t("buyTickets.gameRules.rules", { returnObjects: true }) as string[]).map((rule: string, index: number) => (
                       <li key={index}>• {rule}</li>
                     ))}
                   </ul>
