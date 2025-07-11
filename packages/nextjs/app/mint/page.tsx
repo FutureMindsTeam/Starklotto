@@ -33,7 +33,8 @@ export default function MintPage() {
               Mint STRKP Tokens
             </h1>
             <p className="max-w-2xl mx-auto text-gray-300 text-lg">
-              Convert your STRK tokens to STRKP tokens to participate in our gaming ecosystem.
+              Convert your STRK tokens to STRKP tokens to participate in our
+              gaming ecosystem.
             </p>
           </div>
 
@@ -61,13 +62,15 @@ export default function MintPage() {
                 About STRKP Tokens
               </h2>
               <p className="text-gray-300 mb-4">
-                STRKP tokens are the native gaming currency of our platform. 
-                These tokens are required to participate in lottery games, purchase tickets, 
-                and access premium features within the StarkLotto ecosystem.
+                STRKP tokens are the native gaming currency of our platform.
+                These tokens are required to participate in lottery games,
+                purchase tickets, and access premium features within the
+                StarkLotto ecosystem.
               </p>
               <p className="text-gray-300">
-                The minting process converts your STRK tokens at a 1:1 ratio, 
-                with a minimal fee of 0.5% to support platform development and maintenance.
+                The minting process converts your STRK tokens at a 1:1 ratio,
+                with a minimal fee of 0.5% to support platform development and
+                maintenance.
               </p>
             </div>
             <div className="bg-gray-900 rounded-xl p-6 border border-purple-500/20">
@@ -109,7 +112,9 @@ export default function MintPage() {
                 <div className="w-12 h-12 mx-auto mb-3 bg-purple-500/20 rounded-full flex items-center justify-center">
                   <span className="text-2xl">🎮</span>
                 </div>
-                <h3 className="font-semibold text-purple-300 mb-2">Gaming Access</h3>
+                <h3 className="font-semibold text-purple-300 mb-2">
+                  Gaming Access
+                </h3>
                 <p className="text-gray-300 text-sm">
                   Required currency for all lottery games and premium features
                 </p>
@@ -118,16 +123,21 @@ export default function MintPage() {
                 <div className="w-12 h-12 mx-auto mb-3 bg-purple-500/20 rounded-full flex items-center justify-center">
                   <span className="text-2xl">⚡</span>
                 </div>
-                <h3 className="font-semibold text-purple-300 mb-2">Instant Conversion</h3>
+                <h3 className="font-semibold text-purple-300 mb-2">
+                  Instant Conversion
+                </h3>
                 <p className="text-gray-300 text-sm">
-                  Quick and seamless token conversion with immediate availability
+                  Quick and seamless token conversion with immediate
+                  availability
                 </p>
               </div>
               <div>
                 <div className="w-12 h-12 mx-auto mb-3 bg-purple-500/20 rounded-full flex items-center justify-center">
                   <span className="text-2xl">🔒</span>
                 </div>
-                <h3 className="font-semibold text-purple-300 mb-2">Secure Process</h3>
+                <h3 className="font-semibold text-purple-300 mb-2">
+                  Secure Process
+                </h3>
                 <p className="text-gray-300 text-sm">
                   Protected by smart contracts on the Starknet blockchain
                 </p>
@@ -138,4 +148,4 @@ export default function MintPage() {
       </main>
     </div>
   );
-} 
+}

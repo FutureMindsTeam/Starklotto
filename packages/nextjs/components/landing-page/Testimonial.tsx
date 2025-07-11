@@ -4,15 +4,12 @@ import { Coins, Star, Trophy, Users } from "lucide-react";
 import { Card } from "../ui/card";
 import { FadeInSection } from "./motion";
 
-
 type Testimonial = {
   name: String;
   role: String;
   content: String;
   avatar: String;
 };
-
-
 
 const testimonials: Testimonial[] = [
   {
@@ -37,7 +34,6 @@ const testimonials: Testimonial[] = [
     avatar: "/placeholder.svg?height=40&width=40",
   },
 ];
-
 
 function Testimonial() {
   return (

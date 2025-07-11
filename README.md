@@ -58,7 +58,7 @@ yarn start
 ```
 Next, open your browser and visit: [http://localhost:3000](http://localhost:3000)
 
-## �?Usage
+## ⚡ Usage
 
 ### 1️⃣ Compile and deploy the smart contract
 

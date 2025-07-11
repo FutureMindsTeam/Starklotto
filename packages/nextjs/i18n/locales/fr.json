@@ -1,0 +1,154 @@
+{
+  "common": {
+    "close": "Fermer",
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès"
+  },
+  "buyTickets": {
+    "title": "Acheter des Billets",
+    "nextDraw": "Prochain Tirage",
+    "countdown": {
+      "days": "Jours",
+      "hours": "Heures",
+      "minutes": "Minutes",
+      "seconds": "Secondes"
+    },
+    "balance": "Solde: {{balance}} $tarkPlay",
+    "pricePerTicket": "Prix par billet: {{price}} $tarkPlay",
+    "ticketCount": "{{count}} Billet{{s}}",
+    "randomForAll": "Aléatoire pour tous",
+    "random": "Aléatoire",
+    "ticketNumber": "Billet #{{number}}",
+    "totalCost": "Coût total:",
+    "buyButton": "Acheter des Billets",
+    "gameRules": {
+      "title": "Règles du Jeu",
+      "rules": [
+        "Sélectionnez 5 numéros de 00 à 40 pour chaque billet",
+        "Vous pouvez acheter jusqu'à 10 billets par transaction",
+        "Le tirage a lieu quotidiennement à 20:00 UTC",
+        "Associez tous les numéros pour gagner le jackpot",
+        "Prix plus petits pour les correspondances partielles"
+      ]
+    }
+  },
+  "buyPage": {
+    "title": "Acheter des Billets",
+    "nextDraw": "Prochain Tirage",
+    "countdown": {
+      "days": "Jours",
+      "hours": "Heures",
+      "minutes": "Minutes",
+      "seconds": "Secondes"
+    },
+    "ticketCount": "{{count}} Billet{{s}}",
+    "randomForAll": "Aléatoire pour tous",
+    "random": "Aléatoire",
+    "totalCost": "Coût total:",
+    "buyButton": "Acheter des Billets"
+  },
+  "navigation": {
+    "home": "Accueil",
+    "howItWorks": "Comment ça Marche",
+    "rewards": "Récompenses",
+    "faq": "FAQ",
+    "play": "Jouer",
+    "profile": "Profil",
+    "about": "À Propos",
+    "contact": "Contact",
+    "features": "Fonctionnalités"
+  },
+  "home": {
+    "hero": {
+      "title": "La Loterie Web3 la Plus Sécurisée et Passionnante",
+      "subtitle": "Jouez, gagnez et collectez des prix instantanément avec la sécurité blockchain.",
+      "playNow": "Acheter des Billets",
+      "learnMore": "En Savoir Plus"
+    },
+    "features": {
+      "title": "Fonctionnalités de Sécurité",
+      "subtitle": "Notre plateforme utilise des contrats intelligents audités et vérifiés pour assurer la transparence et la sécurité.",
+      "auditedContracts": {
+        "title": "Contrats Audités",
+        "description": "Tous nos contrats intelligents ont été audités par des entreprises de sécurité de premier plan."
+      },
+      "secureTransactions": {
+        "title": "Transactions Sécurisées",
+        "description": "Toutes les transactions sont sécurisées et vérifiées sur la blockchain."
+      },
+      "instantPrizes": {
+        "title": "Prix Instantanés",
+        "description": "Les gagnants reçoivent leurs prix automatiquement et instantanément."
+      }
+    },
+    "faq": {
+      "title": "Questions Fréquemment Posées",
+      "subtitle": "Trouvez des réponses aux questions courantes sur notre plateforme.",
+      "questions": [
+        {
+          "question": "Comment l'aléatoire est-il garanti ?",
+          "answer": "Nous utilisons Chainlink VRF (Verifiable Random Function) pour assurer une génération de nombres aléatoires équitable et vérifiable."
+        },
+        {
+          "question": "Quand recevrai-je mes gains ?",
+          "answer": "Les gains sont automatiquement envoyés à votre portefeuille immédiatement après le tirage."
+        },
+        {
+          "question": "Quelles cryptomonnaies sont acceptées ?",
+          "answer": "Nous acceptons actuellement l'USDC sur plusieurs réseaux, y compris Ethereum et Polygon."
+        },
+        {
+          "question": "Comment vérifier les résultats ?",
+          "answer": "Tous les tirages sont enregistrés sur la blockchain et peuvent être vérifiés via notre explorateur."
+        }
+      ]
+    }
+  },
+  "lastDraw": {
+    "title": "Résultats du Dernier Tirage",
+    "winningNumbers": "Numéros Gagnants",
+    "jackpotAmount": "Montant du Jackpot",
+    "winners": "Gagnants",
+    "noWinners": "Aucun gagnant",
+    "viewPrevious": "Voir les Tirages Précédents"
+  },
+  "howItWorks": {
+    "title": "Comment ça Marche",
+    "subtitle": "Commencer est facile. Suivez ces étapes simples pour participer.",
+    "steps": [
+      {
+        "title": "1. Connecter le Portefeuille",
+        "desc": "Connectez votre portefeuille Web3 pour commencer."
+      },
+      {
+        "title": "2. Choisir les Numéros",
+        "desc": "Sélectionnez vos numéros chanceux et achetez des billets."
+      },
+      {
+        "title": "3. Gagner et Collecter",
+        "desc": "Les gagnants reçoivent automatiquement les prix dans leur portefeuille."
+      }
+    ]
+  },
+  "cta": {
+    "title": "Prêt à Tenter Votre Chance ?",
+    "subtitle": "Rejoignez des milliers de joueurs qui gagnent déjà sur notre plateforme.",
+    "playNow": "Jouer Maintenant",
+    "learnMore": "En Savoir Plus"
+  },
+  "language": {
+    "en": "English",
+    "es": "Español",
+    "fr": "Français",
+    "pt": "Português"
+  },
+  "connect": {
+    "button": "Connecter",
+    "modal": {
+      "title": "Connecter un Portefeuille",
+      "chooseAccount": "Choisir un compte",
+      "close": "✕"
+    }
+  }
+}

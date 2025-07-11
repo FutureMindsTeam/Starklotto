@@ -8,6 +8,7 @@ import { SecurityBadge } from "~~/components/security-badge";
 import { GlowingButton } from "~~/components/glowing-button";
 import { CountdownTimer } from "~~/components/countdown-timer";
 import { useRouter } from "next/navigation";
+import { useTranslation } from "react-i18next";
 
 interface HeroSectionProps {
   heroY: any;
@@ -31,6 +32,7 @@ export function HeroSection({
   onToggleSecurityInfo,
 }: HeroSectionProps) {
   const router = useRouter();
+  const { t } = useTranslation();
 
   return (
     <motion.section
@@ -46,10 +48,10 @@ export function HeroSection({
             transition={{ duration: 0.5 }}
           >
             <h1 className="text-4xl md:text-6xl font-bold text-purple-400 mb-4">
-              The Most Secure and Exciting Web3 Lottery
+              {t("home.hero.title")}
             </h1>
             <p className="text-gray-300 text-lg mb-8">
-              Play, win, and collect prizes instantly with blockchain security.
+              {t("home.hero.subtitle")}
             </p>
           </motion.div>
 
@@ -64,14 +66,14 @@ export function HeroSection({
               className="px-8 py-4 text-lg"
               glowColor="rgba(139, 92, 246, 0.5)"
             >
-              Buy Tickets
+              {t("home.hero.playNow")}
             </GlowingButton>
             <Button
               variant="outline"
               className="px-8 py-4 text-lg border-white/10 hover:bg-white/5"
               onClick={onToggleSecurityInfo}
             >
-              Learn More
+              {t("home.hero.learnMore")}
             </Button>
           </motion.div>
         </div>
@@ -84,7 +86,9 @@ export function HeroSection({
           className="bg-[#1a2234] rounded-xl p-8"
         >
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl text-gray-300">Next Draw</h2>
+            <h2 className="text-xl text-gray-300">
+              {t("buyTickets.nextDraw")}
+            </h2>
             <SecurityBadge type="secure" />
           </div>
 
@@ -100,7 +104,7 @@ export function HeroSection({
               className="w-full py-4 text-lg"
               glowColor="rgba(139, 92, 246, 0.5)"
             >
-              Buy Ticket
+              {t("buyTickets.buyButton")}
             </GlowingButton>
           </div>
         </motion.div>
