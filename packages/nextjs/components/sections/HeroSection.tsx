@@ -48,10 +48,10 @@ export function HeroSection({
             transition={{ duration: 0.5 }}
           >
             <h1 className="text-4xl md:text-6xl font-bold text-purple-400 mb-4">
-              {t('home.hero.title')}
+              {t("home.hero.title")}
             </h1>
             <p className="text-gray-300 text-lg mb-8">
-              {t('home.hero.subtitle')}
+              {t("home.hero.subtitle")}
             </p>
           </motion.div>
 
@@ -66,14 +66,14 @@ export function HeroSection({
               className="px-8 py-4 text-lg"
               glowColor="rgba(139, 92, 246, 0.5)"
             >
-              {t('home.hero.playNow')}
+              {t("home.hero.playNow")}
             </GlowingButton>
             <Button
               variant="outline"
               className="px-8 py-4 text-lg border-white/10 hover:bg-white/5"
               onClick={onToggleSecurityInfo}
             >
-              {t('home.hero.learnMore')}
+              {t("home.hero.learnMore")}
             </Button>
           </motion.div>
         </div>
@@ -86,7 +86,9 @@ export function HeroSection({
           className="bg-[#1a2234] rounded-xl p-8"
         >
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl text-gray-300">{t('buyTickets.nextDraw')}</h2>
+            <h2 className="text-xl text-gray-300">
+              {t("buyTickets.nextDraw")}
+            </h2>
             <SecurityBadge type="secure" />
           </div>
 
@@ -102,7 +104,7 @@ export function HeroSection({
               className="w-full py-4 text-lg"
               glowColor="rgba(139, 92, 246, 0.5)"
             >
-              {t('buyTickets.buyButton')}
+              {t("buyTickets.buyButton")}
             </GlowingButton>
           </div>
         </motion.div>

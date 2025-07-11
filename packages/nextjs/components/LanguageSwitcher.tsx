@@ -1,14 +1,14 @@
 "use client";
 
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Globe, ChevronDown } from 'lucide-react';
-import { useLanguage } from '../hooks/useLanguage';
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { motion, AnimatePresence } from "framer-motion";
+import { Globe, ChevronDown } from "lucide-react";
+import { useLanguage } from "../hooks/useLanguage";
 
 const languages = [
-  { code: 'en', name: 'English', flag: '🇺🇸' },
-  { code: 'es', name: 'Español', flag: '🇪🇸' },
+  { code: "en", name: "English", flag: "🇺🇸" },
+  { code: "es", name: "Español", flag: "🇪🇸" },
 ];
 
 export default function LanguageSwitcher() {
@@ -16,7 +16,8 @@ export default function LanguageSwitcher() {
   const { currentLanguage: currentLang, changeLanguage } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
 
-  const currentLanguage = languages.find(lang => lang.code === currentLang) || languages[0];
+  const currentLanguage =
+    languages.find((lang) => lang.code === currentLang) || languages[0];
 
   const handleLanguageChange = (languageCode: string) => {
     changeLanguage(languageCode);
@@ -51,23 +52,23 @@ export default function LanguageSwitcher() {
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ duration: 0.2 }}
           >
-                         {languages.map((language) => (
-               <motion.button
-                 key={language.code}
-                 onClick={() => handleLanguageChange(language.code)}
-                 className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-[#2a3244] transition-colors ${
-                   currentLang === language.code
-                     ? 'bg-purple-600 text-white'
-                     : 'text-gray-300'
-                 } ${language.code === 'en' ? 'rounded-t-lg' : ''} ${
-                   language.code === 'es' ? 'rounded-b-lg' : ''
-                 }`}
+            {languages.map((language) => (
+              <motion.button
+                key={language.code}
+                onClick={() => handleLanguageChange(language.code)}
+                className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-[#2a3244] transition-colors ${
+                  currentLang === language.code
+                    ? "bg-purple-600 text-white"
+                    : "text-gray-300"
+                } ${language.code === "en" ? "rounded-t-lg" : ""} ${
+                  language.code === "es" ? "rounded-b-lg" : ""
+                }`}
                 whileHover={{ x: 4 }}
                 whileTap={{ scale: 0.98 }}
               >
                 <span className="text-lg">{language.flag}</span>
                 <span>{language.name}</span>
-                                 {currentLang === language.code && (
+                {currentLang === language.code && (
                   <motion.div
                     className="ml-auto w-2 h-2 bg-white rounded-full"
                     initial={{ scale: 0 }}
@@ -82,4 +83,4 @@ export default function LanguageSwitcher() {
       </AnimatePresence>
     </div>
   );
-} 
+}

@@ -160,12 +160,12 @@ export default function BuyTicketsPage() {
                 animate={{ opacity: 1, y: 0 }}
               >
                 <h1 className="text-3xl font-bold text-purple-400 mb-6">
-                  {t('buyPage.title')}
+                  {t("buyPage.title")}
                 </h1>
 
                 {/* Next Draw */}
                 <div className="mb-6">
-                  <p className="text-gray-300 mb-1">{t('buyPage.nextDraw')}</p>
+                  <p className="text-gray-300 mb-1">{t("buyPage.nextDraw")}</p>
                   <motion.p
                     className="text-[#4ade80] text-4xl font-bold"
                     initial={{ scale: 0.9 }}
@@ -209,7 +209,10 @@ export default function BuyTicketsPage() {
                       -
                     </motion.button>
                     <p className="text-white">
-                      {t('buyPage.ticketCount', { count: ticketCount, s: ticketCount > 1 ? 's' : '' })}
+                      {t("buyPage.ticketCount", {
+                        count: ticketCount,
+                        s: ticketCount > 1 ? "s" : "",
+                      })}
                     </p>
                     <motion.button
                       onClick={increaseTickets}
@@ -229,7 +232,7 @@ export default function BuyTicketsPage() {
                     transition={{ duration: 0.2 }}
                   >
                     <Shuffle size={16} />
-                    {t('buyPage.randomForAll')}
+                    {t("buyPage.randomForAll")}
                   </motion.button>
                 </div>
 
@@ -257,7 +260,7 @@ export default function BuyTicketsPage() {
                             whileTap={{ scale: 0.95 }}
                           >
                             <Shuffle size={14} />
-                            {t('buyPage.random')}
+                            {t("buyPage.random")}
                           </motion.button>
                         </div>
 
@@ -287,11 +290,13 @@ export default function BuyTicketsPage() {
                       </motion.div>
                     );
                   })}
-            </div>
+                </div>
 
                 {/* Total Cost */}
                 <div className="bg-[#232b3b] rounded-lg p-4 flex justify-between items-center mt-6">
-                  <p className="text-white font-medium">{t('buyPage.totalCost')}</p>
+                  <p className="text-white font-medium">
+                    {t("buyPage.totalCost")}
+                  </p>
                   <p className="text-[#4ade80] font-medium">
                     ${totalCost} $tarkPlay
                   </p>
@@ -299,13 +304,13 @@ export default function BuyTicketsPage() {
 
                 {/* Buy Button */}
                 <div className="mt-6">
-                <GlowingButton
-                  onClick={handlePurchase}
-                  className="w-full"
-                  glowColor="rgba(139, 92, 246, 0.5)"
-                >
-                    {t('buyPage.buyButton')}
-                </GlowingButton>
+                  <GlowingButton
+                    onClick={handlePurchase}
+                    className="w-full"
+                    glowColor="rgba(139, 92, 246, 0.5)"
+                  >
+                    {t("buyPage.buyButton")}
+                  </GlowingButton>
                 </div>
               </motion.div>
             </div>

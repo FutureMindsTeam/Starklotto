@@ -71,7 +71,7 @@ const ConnectModal = () => {
         onClick={() => setIsOpen(true)}
         className="rounded-[18px] btn-sm font-bold px-8 bg-btn-wallet py-3 cursor-pointer"
       >
-        <span>{t('connect.button')}</span>
+        <span>{t("connect.button")}</span>
       </button>
 
       {isOpen && (
@@ -79,13 +79,15 @@ const ConnectModal = () => {
           <div className="flex flex-col gap-6">
             <div className="flex items-center justify-between">
               <h3 className="text-xl font-bold text-white">
-                {isBurnerWallet ? t('connect.modal.chooseAccount') : t('connect.modal.title')}
+                {isBurnerWallet
+                  ? t("connect.modal.chooseAccount")
+                  : t("connect.modal.title")}
               </h3>
               <button
                 onClick={handleCloseModal}
                 className="btn btn-ghost btn-sm btn-circle cursor-pointer text-white hover:bg-opacity-20 hover:bg-white"
               >
-                {t('connect.modal.close')}
+                {t("connect.modal.close")}
               </button>
             </div>
             <div className="flex flex-col gap-4">

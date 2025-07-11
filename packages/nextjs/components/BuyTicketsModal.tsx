@@ -212,7 +212,7 @@ export default function BuyTicketsModal({
                   transition={{ delay: 0.1 }}
                 >
                   <h2 className="text-2xl font-bold text-purple-400">
-                    {t('buyTickets.title')}
+                    {t("buyTickets.title")}
                   </h2>
                   <motion.button
                     onClick={onClose}
@@ -231,7 +231,9 @@ export default function BuyTicketsModal({
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
                 >
-                  <p className="text-gray-300 mb-1">{t('buyTickets.nextDraw')}</p>
+                  <p className="text-gray-300 mb-1">
+                    {t("buyTickets.nextDraw")}
+                  </p>
                   <motion.p
                     className="text-[#4ade80] text-3xl font-bold"
                     initial={{ scale: 0.9 }}
@@ -257,7 +259,9 @@ export default function BuyTicketsModal({
                       <p className="text-purple-400 text-2xl font-bold">
                         {countdown.days}
                       </p>
-                      <p className="text-gray-400 text-sm">{t('buyTickets.countdown.days')}</p>
+                      <p className="text-gray-400 text-sm">
+                        {t("buyTickets.countdown.days")}
+                      </p>
                     </motion.div>
                     <motion.div
                       className="text-center"
@@ -269,7 +273,9 @@ export default function BuyTicketsModal({
                       <p className="text-purple-400 text-2xl font-bold">
                         {countdown.hours}
                       </p>
-                      <p className="text-gray-400 text-sm">{t('buyTickets.countdown.hours')}</p>
+                      <p className="text-gray-400 text-sm">
+                        {t("buyTickets.countdown.hours")}
+                      </p>
                     </motion.div>
                     <motion.div
                       className="text-center"
@@ -281,7 +287,9 @@ export default function BuyTicketsModal({
                       <p className="text-purple-400 text-2xl font-bold">
                         {countdown.minutes}
                       </p>
-                      <p className="text-gray-400 text-sm">{t('buyTickets.countdown.minutes')}</p>
+                      <p className="text-gray-400 text-sm">
+                        {t("buyTickets.countdown.minutes")}
+                      </p>
                     </motion.div>
                     <motion.div
                       className="text-center"
@@ -293,7 +301,9 @@ export default function BuyTicketsModal({
                       <p className="text-purple-400 text-2xl font-bold">
                         {countdown.seconds}
                       </p>
-                      <p className="text-gray-400 text-sm">{t('buyTickets.countdown.seconds')}</p>
+                      <p className="text-gray-400 text-sm">
+                        {t("buyTickets.countdown.seconds")}
+                      </p>
                     </motion.div>
                   </div>
                 </motion.div>
@@ -332,11 +342,11 @@ export default function BuyTicketsModal({
                       </svg>
                     </div>
                     <p className="text-white">
-                      {t('buyTickets.balance', { balance })}
+                      {t("buyTickets.balance", { balance })}
                     </p>
                   </div>
                   <p className="text-white">
-                    {t('buyTickets.pricePerTicket', { price: ticketPrice })}
+                    {t("buyTickets.pricePerTicket", { price: ticketPrice })}
                   </p>
                 </motion.div>
 
@@ -358,7 +368,10 @@ export default function BuyTicketsModal({
                       -
                     </motion.button>
                     <p className="text-white">
-                      {t('buyTickets.ticketCount', { count: ticketCount, s: ticketCount > 1 ? 's' : '' })}
+                      {t("buyTickets.ticketCount", {
+                        count: ticketCount,
+                        s: ticketCount > 1 ? "s" : "",
+                      })}
                     </p>
                     <motion.button
                       onClick={increaseTickets}
@@ -378,7 +391,7 @@ export default function BuyTicketsModal({
                     transition={{ duration: 0.2 }}
                   >
                     <Shuffle size={16} />
-                    {t('buyTickets.randomForAll')}
+                    {t("buyTickets.randomForAll")}
                   </motion.button>
                 </motion.div>
 
@@ -399,7 +412,9 @@ export default function BuyTicketsModal({
                         >
                           <div className="flex justify-between items-center mb-4">
                             <p className="text-white font-medium">
-                              {t('buyTickets.ticketNumber', { number: ticketId })}
+                              {t("buyTickets.ticketNumber", {
+                                number: ticketId,
+                              })}
                             </p>
                             <motion.button
                               onClick={() => generateRandom(ticketId)}
@@ -408,7 +423,7 @@ export default function BuyTicketsModal({
                               whileTap={{ scale: 0.95 }}
                             >
                               <Shuffle size={14} />
-                              {t('buyTickets.random')}
+                              {t("buyTickets.random")}
                             </motion.button>
                           </div>
 
@@ -479,9 +494,13 @@ export default function BuyTicketsModal({
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5 }}
                 >
-                  <h3 className="text-white font-medium mb-2">{t('buyTickets.gameRules.title')}</h3>
+                  <h3 className="text-white font-medium mb-2">
+                    {t("buyTickets.gameRules.title")}
+                  </h3>
                   <ul className="text-gray-400 space-y-1 text-sm">
-                    {t('buyTickets.gameRules.rules', { returnObjects: true }).map((rule: string, index: number) => (
+                    {t("buyTickets.gameRules.rules", {
+                      returnObjects: true,
+                    }).map((rule: string, index: number) => (
                       <li key={index}>• {rule}</li>
                     ))}
                   </ul>
@@ -494,7 +513,9 @@ export default function BuyTicketsModal({
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.55 }}
                 >
-                  <p className="text-white font-medium">{t('buyTickets.totalCost')}</p>
+                  <p className="text-white font-medium">
+                    {t("buyTickets.totalCost")}
+                  </p>
                   <p className="text-[#4ade80] font-medium">
                     ${totalCost} $tarkPlay
                   </p>
@@ -511,7 +532,7 @@ export default function BuyTicketsModal({
                     className="w-full"
                     glowColor="rgba(139, 92, 246, 0.5)"
                   >
-                    {t('buyTickets.buyButton')}
+                    {t("buyTickets.buyButton")}
                   </GlowingButton>
                 </motion.div>
               </div>

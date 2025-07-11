@@ -10,7 +10,10 @@ interface HowItWorksSectionProps {
 
 export function HowItWorksSection({ howItWorksY }: HowItWorksSectionProps) {
   const { t } = useTranslation();
-  const steps = t('howItWorks.steps', { returnObjects: true }) as { title: string, desc: string }[];
+  const steps = t("howItWorks.steps", { returnObjects: true }) as {
+    title: string;
+    desc: string;
+  }[];
   return (
     <motion.section
       id="how-it-works"
@@ -26,10 +29,10 @@ export function HowItWorksSection({ howItWorksY }: HowItWorksSectionProps) {
         >
           <div className="space-y-2">
             <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">
-              {t('howItWorks.title')}
+              {t("howItWorks.title")}
             </h2>
             <p className="max-w-[900px] text-gray-400 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-              {t('howItWorks.subtitle')}
+              {t("howItWorks.subtitle")}
             </p>
           </div>
         </motion.div>

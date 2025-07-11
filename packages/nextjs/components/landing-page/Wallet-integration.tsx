@@ -60,7 +60,9 @@ function WalletIntegration() {
                     <div className="absolute -top-4 -right-2 w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
                       {index + 1}
                     </div>
-                    <h1 className="text-white my-4 leading-normal text-xl">{step.title}</h1>
+                    <h1 className="text-white my-4 leading-normal text-xl">
+                      {step.title}
+                    </h1>
                   </div>
                   <div>
                     <div className="text-gray-400 text-center">

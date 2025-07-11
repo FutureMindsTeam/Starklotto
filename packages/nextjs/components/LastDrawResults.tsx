@@ -105,7 +105,7 @@ export function LastDrawResults() {
             className="flex items-center gap-2 text-2xl font-semibold tracking-tight md:text-3xl"
           >
             <Trophy className="h-6 w-6" />
-            {t('lastDraw.title')}
+            {t("lastDraw.title")}
           </h2>
           {!isLoading && drawResult && (
             <p className="mt-1 text-sm text-white/90">
@@ -123,7 +123,7 @@ export function LastDrawResults() {
               <div className="space-y-6">
                 <div className="space-y-3">
                   <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                    {t('lastDraw.winningNumbers')}
+                    {t("lastDraw.winningNumbers")}
                   </h3>
                   <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
                     {drawResult.winningNumbers.map((number, index) => (
@@ -143,7 +143,7 @@ export function LastDrawResults() {
                 <div className="grid grid-cols-1 gap-4 pt-2 md:grid-cols-2">
                   <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-900">
                     <h3 className="mb-1 text-sm font-medium text-gray-500 dark:text-gray-400">
-                      {t('lastDraw.jackpotAmount')}
+                      {t("lastDraw.jackpotAmount")}
                     </h3>
                     <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                       {formatCurrency(drawResult.jackpotAmount)}
@@ -151,12 +151,12 @@ export function LastDrawResults() {
                   </div>
                   <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-900">
                     <h3 className="mb-1 text-sm font-medium text-gray-500 dark:text-gray-400">
-                      {t('lastDraw.winners')}
+                      {t("lastDraw.winners")}
                     </h3>
                     <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                       {drawResult.winnerCount > 0
-                        ? `${drawResult.winnerCount} ${t('lastDraw.winners')}`
-                        : t('lastDraw.noWinners')}
+                        ? `${drawResult.winnerCount} ${t("lastDraw.winners")}`
+                        : t("lastDraw.noWinners")}
                     </p>
                   </div>
                 </div>
@@ -168,7 +168,7 @@ export function LastDrawResults() {
         {/* Footer */}
         <div className="flex justify-between border-t border-gray-200 bg-gray-50/30 px-6 py-4 dark:border-gray-800 dark:bg-gray-900/30">
           <button className="inline-flex items-center text-sm font-medium text-indigo-600 transition-colors hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300">
-            {t('lastDraw.viewPrevious')}
+            {t("lastDraw.viewPrevious")}
             <ChevronRight className="ml-1 h-4 w-4" />
           </button>
         </div>

@@ -30,12 +30,15 @@ i18n/
 ## Components
 
 ### I18nProvider
+
 Wraps the application and provides translation context.
 
 ### LanguageSwitcher
+
 A dropdown component that allows users to switch between languages.
 
 ### useLanguage Hook
+
 Custom hook for managing language state and providing language switching functionality.
 
 ## Usage
@@ -43,12 +46,12 @@ Custom hook for managing language state and providing language switching functio
 ### Basic Translation
 
 ```tsx
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from "react-i18next";
 
 function MyComponent() {
   const { t } = useTranslation();
-  
-  return <h1>{t('home.hero.title')}</h1>;
+
+  return <h1>{t("home.hero.title")}</h1>;
 }
 ```
 
@@ -58,7 +61,7 @@ function MyComponent() {
 const { t } = useTranslation();
 
 // In translation file: "balance": "Balance: {{balance}} $tarkPlay"
-<p>{t('buyTickets.balance', { balance: 1000 })}</p>
+<p>{t("buyTickets.balance", { balance: 1000 })}</p>;
 ```
 
 ### Translation with Arrays
@@ -67,23 +70,23 @@ const { t } = useTranslation();
 const { t } = useTranslation();
 
 // In translation file: "rules": ["Rule 1", "Rule 2", "Rule 3"]
-{t('buyTickets.gameRules.rules', { returnObjects: true }).map((rule: string, index: number) => (
-  <li key={index}>{rule}</li>
-))}
+{
+  t("buyTickets.gameRules.rules", { returnObjects: true }).map(
+    (rule: string, index: number) => <li key={index}>{rule}</li>,
+  );
+}
 ```
 
 ### Language Switching
 
 ```tsx
-import { useLanguage } from '../hooks/useLanguage';
+import { useLanguage } from "../hooks/useLanguage";
 
 function MyComponent() {
   const { changeLanguage, currentLanguage } = useLanguage();
-  
+
   return (
-    <button onClick={() => changeLanguage('es')}>
-      Switch to Spanish
-    </button>
+    <button onClick={() => changeLanguage("es")}>Switch to Spanish</button>
   );
 }
 ```
@@ -91,6 +94,7 @@ function MyComponent() {
 ## Translation Keys Structure
 
 ### BuyTicketsModal
+
 - `buyTickets.title`: Modal title
 - `buyTickets.nextDraw`: Next draw label
 - `buyTickets.countdown.*`: Countdown labels (days, hours, minutes, seconds)
@@ -105,12 +109,14 @@ function MyComponent() {
 - `buyTickets.gameRules.*`: Game rules section
 
 ### Navigation
+
 - `navigation.home`: Home link
 - `navigation.howItWorks`: How it works link
 - `navigation.rewards`: Rewards link
 - `navigation.faq`: FAQ link
 
 ### Home Page
+
 - `home.hero.title`: Hero section title
 - `home.hero.subtitle`: Hero section subtitle
 - `home.hero.playNow`: Play now button
@@ -126,7 +132,7 @@ Example for French:
 
 ```tsx
 // In config.ts
-import fr from './locales/fr.json';
+import fr from "./locales/fr.json";
 
 const resources = {
   en: { translation: en },
@@ -138,9 +144,9 @@ const resources = {
 ```tsx
 // In LanguageSwitcher.tsx
 const languages = [
-  { code: 'en', name: 'English', flag: '🇺🇸' },
-  { code: 'es', name: 'Español', flag: '🇪🇸' },
-  { code: 'fr', name: 'Français', flag: '🇫🇷' }, // Add this
+  { code: "en", name: "English", flag: "🇺🇸" },
+  { code: "es", name: "Español", flag: "🇪🇸" },
+  { code: "fr", name: "Français", flag: "🇫🇷" }, // Add this
 ];
 ```
 
@@ -169,4 +175,4 @@ Language preferences are automatically saved to localStorage and restored on pag
 
 - Translations are loaded on-demand
 - Language detection is optimized
-- No unnecessary re-renders during language switching 
+- No unnecessary re-renders during language switching

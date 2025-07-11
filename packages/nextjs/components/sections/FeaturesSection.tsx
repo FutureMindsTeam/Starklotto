@@ -11,7 +11,7 @@ interface FeaturesSectionProps {
 
 export function FeaturesSection({ featuresY }: FeaturesSectionProps) {
   const { t } = useTranslation();
-  
+
   return (
     <motion.section
       id="features"
@@ -27,10 +27,10 @@ export function FeaturesSection({ featuresY }: FeaturesSectionProps) {
         >
           <div className="space-y-2">
             <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">
-              {t('home.features.title')}
+              {t("home.features.title")}
             </h2>
             <p className="max-w-[900px] text-gray-400 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-              {t('home.features.subtitle')}
+              {t("home.features.subtitle")}
             </p>
           </div>
         </motion.div>
@@ -50,9 +50,11 @@ export function FeaturesSection({ featuresY }: FeaturesSectionProps) {
               <Shield className="h-8 w-8 text-primary" />
             </motion.div>
             <div className="space-y-2">
-              <h3 className="text-xl font-bold">{t('home.features.auditedContracts.title')}</h3>
+              <h3 className="text-xl font-bold">
+                {t("home.features.auditedContracts.title")}
+              </h3>
               <p className="text-gray-400">
-                {t('home.features.auditedContracts.description')}
+                {t("home.features.auditedContracts.description")}
               </p>
             </div>
           </motion.div>
@@ -71,9 +73,11 @@ export function FeaturesSection({ featuresY }: FeaturesSectionProps) {
               <Lock className="h-8 w-8 text-primary" />
             </motion.div>
             <div className="space-y-2">
-              <h3 className="text-xl font-bold">{t('home.features.secureTransactions.title')}</h3>
+              <h3 className="text-xl font-bold">
+                {t("home.features.secureTransactions.title")}
+              </h3>
               <p className="text-gray-400">
-                {t('home.features.secureTransactions.description')}
+                {t("home.features.secureTransactions.description")}
               </p>
             </div>
           </motion.div>
@@ -92,9 +96,11 @@ export function FeaturesSection({ featuresY }: FeaturesSectionProps) {
               <Trophy className="h-8 w-8 text-primary" />
             </motion.div>
             <div className="space-y-2">
-              <h3 className="text-xl font-bold">{t('home.features.instantPrizes.title')}</h3>
+              <h3 className="text-xl font-bold">
+                {t("home.features.instantPrizes.title")}
+              </h3>
               <p className="text-gray-400">
-                {t('home.features.instantPrizes.description')}
+                {t("home.features.instantPrizes.description")}
               </p>
             </div>
           </motion.div>
