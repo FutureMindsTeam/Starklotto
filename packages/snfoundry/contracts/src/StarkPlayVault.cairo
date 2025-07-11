@@ -8,6 +8,8 @@ pub trait IStarkPlayVault<TContractState> {
     fn GetAccumulatedPrizeConversionFees(self: @TContractState) -> u256;
     fn get_mint_limit(self: @TContractState) -> u256;
     fn get_burn_limit(self: @TContractState) -> u256;
+    fn get_accumulated_fee(self: @TContractState) -> u256;
+    fn get_owner(self: @TContractState) -> ContractAddress;
 
     //=======================================================================================
     //set functions
@@ -18,6 +20,10 @@ pub trait IStarkPlayVault<TContractState> {
     //=======================================================================================
     //mint functions
     fn mint_strk_play(self: @TContractState, user: ContractAddress, amount: u256) -> bool;
+    fn buySTRKP(ref self: TContractState, user: ContractAddress, amountSTRK: u256) -> bool;
+    fn pause(ref self: TContractState) -> bool;
+    fn unpause(ref self: TContractState) -> bool;
+    fn is_paused(self: @TContractState) -> bool;
 }
 
 
@@ -486,6 +492,31 @@ pub mod StarkPlayVault {
         fn get_burn_limit(self: @ContractState) -> u256 {
             self.burnLimit.read()
         }
+
+        fn get_accumulated_fee(self: @ContractState) -> u256 {
+            self.accumulatedFee.read()
+        }
+
+        fn get_owner(self: @ContractState) -> ContractAddress {
+            self.owner.read()
+        }
+
+        fn is_paused(self: @ContractState) -> bool {
+            self.paused.read()
+        }
+
+        fn buySTRKP(ref self: ContractState, user: ContractAddress, amountSTRK: u256) -> bool {
+            buySTRKP(ref self, user, amountSTRK)
+        }
+
+        fn pause(ref self: ContractState) -> bool {
+            pause(ref self)
+        }
+
+        fn unpause(ref self: ContractState) -> bool {
+            unpause(ref self)
+        }
+
         //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         fn mint_strk_play(self: @ContractState, user: ContractAddress, amount: u256) -> bool {
             _mint_strk_play(self, user, amount)
