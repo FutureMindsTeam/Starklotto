@@ -108,14 +108,16 @@ export default function I18nDemoPage() {
             {t("buyTickets.gameRules.title")}
           </h2>
           <ul className="text-gray-400 space-y-2">
-            {(t("buyTickets.gameRules.rules", { returnObjects: true }) as string[]).map(
-              (rule: string, index: number) => (
-                <li key={index} className="flex items-start gap-2">
-                  <span className="text-purple-400 mt-1">•</span>
-                  <span>{rule}</span>
-                </li>
-              ),
-            )}
+            {(
+              t("buyTickets.gameRules.rules", {
+                returnObjects: true,
+              }) as string[]
+            ).map((rule: string, index: number) => (
+              <li key={index} className="flex items-start gap-2">
+                <span className="text-purple-400 mt-1">•</span>
+                <span>{rule}</span>
+              </li>
+            ))}
           </ul>
         </motion.div>
 
