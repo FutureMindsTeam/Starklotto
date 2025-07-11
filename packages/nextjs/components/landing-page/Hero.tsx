@@ -1,6 +1,6 @@
 import React from "react";
 
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 import { Play } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 

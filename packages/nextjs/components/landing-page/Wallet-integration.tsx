@@ -1,7 +1,7 @@
 import { ArrowRight, Coins, ShoppingCart, Wallet, Zap } from "lucide-react";
 import { FadeInSection } from "./motion";
 import { Card } from "../ui/card";
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 
 function WalletIntegration() {
   return (
