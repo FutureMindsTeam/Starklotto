@@ -2,7 +2,7 @@ import React from 'react'
 import { FadeInSection } from './motion'
 import { ExternalLink, FileText, Github, MessageCircle, Shield, Twitter } from 'lucide-react'
 import { Card } from '../ui/card'
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 
 
 function Community() {

@@ -2,6 +2,7 @@
   "name": "@ss-2/nextjs",
   "version": "0.1.2",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

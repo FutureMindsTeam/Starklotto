@@ -3,7 +3,7 @@ import type { LucideProps } from "lucide-react";
 import { FadeInSection } from "./motion";
 import { Award, Coins, Eye, Heart, Shield } from "lucide-react";
 
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 import { Card } from "../ui/card";
 
 type Benefit = {
