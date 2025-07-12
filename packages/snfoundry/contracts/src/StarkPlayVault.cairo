@@ -1,3 +1,5 @@
+ use starknet::{ContractAddress};
+
 #[starknet::interface]
 pub trait IStarkPlayVault<TContractState> {
     //=======================================================================================
@@ -6,6 +8,12 @@ pub trait IStarkPlayVault<TContractState> {
     //=======================================================================================
     //set functions
     fn setFeePercentage(ref self: TContractState, new_fee: u64) -> bool;
+    //=======================================================================================
+    fn withdrawGeneralFees(ref self: TContractState, recipient: ContractAddress, amount: u256) -> bool;
+    //=======================================================================================
+    fn withdrawPrizeConversionFees(ref self: TContractState, recipient: ContractAddress, amount: u256) -> bool;
+    //=======================================================================================
+    fn buySTRKP(ref self: TContractState, user: ContractAddress, amountSTRK: u256) -> bool;
 }
 
 
@@ -301,7 +309,7 @@ pub mod StarkPlayVault {
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //public functions
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    fn buySTRKP(ref self: ContractState, user: ContractAddress, amountSTRK: u256) -> bool {
+     fn buySTRKP(ref self: ContractState, user: ContractAddress, amountSTRK: u256) -> bool {
         //verify reentrancy and set reentrancy lock
         assert(!self.reentrant_locked.read(), 'ReentrancyGuard: reentrant call');
         self.reentrant_locked.write(true);
@@ -357,9 +365,15 @@ pub mod StarkPlayVault {
         self.emit(StarkPlayBurned { user, amount });
         let strk_contract_address = contract_address_const::<TOKEN_STRK_ADDRESS>();
         let strk_dispatcher = IERC20Dispatcher { contract_address: strk_contract_address };
-        strk_dispatcher.transfer(user, amount);
-        self.totalSTRKStored.write(self.totalSTRKStored.read() - amount);
-        self.emit(ConvertedToSTRK { user, amount });
+        // Calculate fee for prize conversion
+        let fee = (amount * self.feePercentage.read().into()) / BASIS_POINTS_DENOMINATOR.into();
+        let amount_after_fee = amount - fee;
+        // Accumulate the prize conversion fee
+        self.accumulatedPrizeConversionFees.write(self.accumulatedPrizeConversionFees.read() + fee);
+        // Transfer only the amount after fee to the user
+        strk_dispatcher.transfer(user, amount_after_fee);
+        self.totalSTRKStored.write(self.totalSTRKStored.read() - amount_after_fee);
+        self.emit(ConvertedToSTRK { user, amount: amount_after_fee });
     }
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //private functions
@@ -437,14 +451,7 @@ pub mod StarkPlayVault {
             true
         }
         //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    }
-    //fn  getFeePercentage(): u64{
-
-    //}
-
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    fn withdrawGeneralFees(ref self: ContractState, recipient: ContractAddress, amount: u256) -> bool {
+         fn withdrawGeneralFees(ref self: ContractState, recipient: ContractAddress, amount: u256) -> bool {
         // Only owner can withdraw
         assert_only_owner(@self);
         let current_fees = self.accumulatedFee.read();
@@ -475,5 +482,56 @@ pub mod StarkPlayVault {
         self.emit(PrizeConversionFeesWithdrawn { recipient, amount });
         true
     }
+
+    // fn buySTRKP(ref self: ContractState, user: ContractAddress, amountSTRK: u256) -> bool {
+    //     //verify reentrancy and set reentrancy lock
+    //     assert(!self.reentrant_locked.read(), 'ReentrancyGuard: reentrant call');
+    //     self.reentrant_locked.write(true);
+
+    //     let mut success = false;
+
+    //     assert(amountSTRK > 0, 'Amount must be greater than 0');
+    //     let has_balance = _check_user_balance(@self, user, amountSTRK);
+    //     assert(has_balance, 'Insufficient STRK balance');
+
+    //     _assert_not_paused(@self);
+    //     assert(amountSTRK <= self.mintLimit.read(), 'Exceeds mint limit');
+
+    //     // tranfer strk from user to contract
+    //     let transfer_result = _transfer_strk(@self, user, amountSTRK);
+    //     assert(transfer_result, 'Error al transferir el STRK');
+
+    //     //recollect fee
+    //     let fee = (amountSTRK * self.feePercentage.read().into()) / BASIS_POINTS_DENOMINATOR.into();
+    //     self.accumulatedFee.write(self.accumulatedFee.read() + fee);
+    //     self.emit(FeeCollected { user, amount: fee, accumulatedFee: self.accumulatedFee.read() });
+
+    //     //update totalSTRKStored
+    //     self.totalSTRKStored.write(self.totalSTRKStored.read() + amountSTRK);
+
+    //     //mint strk play to user
+    //     let amount_to_mint = _amount_to_mint(@self, amountSTRK);
+    //     _mint_strk_play(@self, user, amount_to_mint);
+
+    //     //update totalStarkPlayMinted
+    //     self.totalStarkPlayMinted.write(self.totalStarkPlayMinted.read() + amount_to_mint);
+
+    //     self.emit(StarkPlayMinted { user, amount: amount_to_mint });
+
+    //     success = true;
+
+    //     //unlock reentrancy always at the end
+    //     self.reentrant_locked.write(false);
+
+    //     return success;
+    // }
+    }
+    //fn  getFeePercentage(): u64{
+
+    //}
+
+    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    
 
 }
