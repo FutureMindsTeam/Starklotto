@@ -32,6 +32,7 @@
   "devDependencies": {
     "@next/swc-linux-x64-gnu": "^15.3.1",
     "@next/swc-linux-x64-musl": "^15.3.1",
+    "@tsparticles/engine": "^3.8.1",
     "daisyui": "^4.7.3",
     "husky": "^9.0.11",
     "pinst": "^3.0.0",
@@ -39,7 +40,8 @@
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
-    "framer-motion": "^12.5.0",
+    "@tsparticles/react": "^3.0.0",
+    "framer-motion": "^12.23.3",
     "i18next": "^25.3.0",
     "i18next-browser-languagedetector": "^8.2.0",
     "postcss": "^8.4.38",
