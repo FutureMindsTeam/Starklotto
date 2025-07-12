@@ -373,10 +373,8 @@ fn test_fee_consistency_after_pause_unpause() {
     assert(fee_after_unpause == expected_fee * 2, 'Fee must be consistent');
 
     // Verify fee percentage remains the same
-    assert(
-        vault.GetFeePercentage() == INITIAL_FEE_PERCENTAGE(), 'percentage remain
-    unchanged',
-    );
+    assert(vault.GetFeePercentage() == INITIAL_FEE_PERCENTAGE(), 'percentage remain
+    unchanged');
 }
 
 #[should_panic(expected: 'Contract is paused')]
@@ -529,8 +527,6 @@ fn test_complete_flow_integration() {
     assert(vault.get_accumulated_fee() == expected_fee * 3, 'Fee after pause/unpause');
 
     // Verify fee percentage remains consistent
-    assert(
-        vault.GetFeePercentage() == INITIAL_FEE_PERCENTAGE(), 'percentage remain
-    unchanged',
-    );
+    assert(vault.GetFeePercentage() == INITIAL_FEE_PERCENTAGE(), 'percentage remain
+    unchanged');
 }
