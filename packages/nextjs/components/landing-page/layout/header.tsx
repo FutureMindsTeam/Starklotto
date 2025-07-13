@@ -4,21 +4,22 @@ import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Menu, X } from 'lucide-react'
 
-/* -------------------------------- enlaces ------------------------------- */
+/* ------------------------------- LINKS --------------------------------- */
 const navLinks = [
-  { href: '#hero',      label: 'Inicio' },
-  { href: '#about',     label: '¿Qué es?' },
-  { href: '#roadmap',   label: 'Roadmap' },
-  { href: '#team',      label: 'Equipo' },
-  { href: '#community', label: 'Comunidad' },
+  { href: '#hero',      label: 'Home'        },
+  { href: '#about',     label: 'About'       },
+  { href: '#roadmap',   label: 'Roadmap'     },
+  { href: '#how',       label: 'How it works'},
+  { href: '#team',      label: 'Team'        },
+  { href: '#community', label: 'Community'   },
+  { href: '#launch',    label: 'Launch'      },
 ]
 
-/* -------------------------------- Header -------------------------------- */
+/* ------------------------------ HEADER --------------------------------- */
 export default function Header() {
   const [scrolled, setScrolled] = useState(false)
-  const [open,     setOpen]     = useState(false)
+  const [open, setOpen]       = useState(false)
 
-  /* sombra / blur al hacer scroll */
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40)
     onScroll()
@@ -26,61 +27,70 @@ export default function Header() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  /* variante de animación para cada link */
   const linkVariants = {
-    rest:  { scale: 1,   color: '#ffffff' },
-    hover: { scale: 1.08, color: '#F2075D' },
-    tap:   { scale: 0.95 },
+    rest:  { scale: 1,    color: '#fff' },
+    hover: { scale: 1.1,  color: '#F2075D' },
+    tap:   { scale: 0.95           },
+  }
+
+  const goTo = (hash: string) => {
+    setOpen(false)
+    const el = document.querySelector(hash)
+    if (el) el.scrollIntoView({ behavior: 'smooth' })
   }
 
   return (
     <>
-      {/* barra fija */}
       <header
-        className={`fixed inset-x-0 top-0 z-50 transition-all ${
-          scrolled
-            ? 'backdrop-blur bg-[#0b0d1c]/70 border-b border-white/10'
-            : 'bg-transparent'
-        }`}
+        className={`
+          fixed inset-x-0 top-0 z-50 transition-all duration-300
+          ${scrolled
+            ? 'backdrop-blur-md bg-[#0b0d1c]/70 border-b border-white/10'
+            : 'bg-transparent'}
+        `}
       >
-        <div className="relative container mx-auto px-6 h-16 flex items-center">
-          {/* Logo a la izquierda */}
-          <a
-            href="#hero"
-            className="font-extrabold text-xl md:text-2xl tracking-tight z-50"
+        <div className="container mx-auto flex items-center h-16 px-4 sm:px-6 lg:px-8">
+          {/* 1) Logo */}
+          <button
+            onClick={() => goTo('#hero')}
+            className="text-xl md:text-2xl font-extrabold text-white focus:outline-none"
           >
             <span className="text-[#F2075D]">Stark</span>Lotto
-          </a>
+          </button>
 
-          {/* --- Navegación Desktop centrada --- */}
-          <nav className="hidden md:block absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            <ul className="flex items-center gap-10">
-              {navLinks.map((link) => (
+          
+          <nav className="hidden md:flex flex-1 justify-center">
+            <ul className="flex gap-8 lg:gap-10">
+              {navLinks.map(({ href, label }) => (
                 <motion.li
-                  key={link.href}
+                  key={href}
                   variants={linkVariants}
                   initial="rest"
                   whileHover="hover"
                   whileTap="tap"
-                  className="cursor-pointer select-none"
+                  className="cursor-pointer text-white select-none"
+                  onClick={() => goTo(href)}
                 >
-                  <a href={link.href}>{link.label}</a>
+                  {label}
                 </motion.li>
               ))}
             </ul>
           </nav>
 
-          {/* ---- Botón menú móvil (a la derecha) ---- */}
+          
+          <div className="hidden md:block w-10 lg:w-12" />
+
+          
           <button
-            onClick={() => setOpen(!open)}
-            className="ml-auto md:hidden p-2 rounded-lg hover:bg-white/10 transition"
+            onClick={() => setOpen(o => !o)}
+            className="ml-auto md:hidden p-2 rounded hover:bg-white/10 text-white focus:outline-none"
           >
-            {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            {open ? <X size={24}/> : <Menu size={24}/>}
           </button>
         </div>
       </header>
 
-      {/* ---------------- Menú móvil ---------------- */}
+      
       <AnimatePresence>
         {open && (
           <motion.nav
@@ -88,18 +98,17 @@ export default function Header() {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.25 }}
-            className="fixed top-16 inset-x-0 z-40 md:hidden bg-[#0b0d1c]/95 backdrop-blur border-b border-white/10"
+            className="fixed inset-x-0 top-16 z-40 bg-[#0b0d1c]/95 backdrop-blur-md md:hidden"
           >
-            <ul className="flex flex-col px-6 py-4 gap-4 text-lg">
-              {navLinks.map((l) => (
-                <li key={l.href}>
-                  <a
-                    href={l.href}
-                    onClick={() => setOpen(false)}
-                    className="block py-2 hover:text-[#F2075D] transition-colors"
+            <ul className="flex flex-col gap-4 px-6 py-4 text-lg">
+              {navLinks.map(({ href, label }) => (
+                <li key={href}>
+                  <button
+                    onClick={() => goTo(href)}
+                    className="w-full text-left text-white py-2 rounded hover:text-[#F2075D] focus:outline-none"
                   >
-                    {l.label}
-                  </a>
+                    {label}
+                  </button>
                 </li>
               ))}
             </ul>

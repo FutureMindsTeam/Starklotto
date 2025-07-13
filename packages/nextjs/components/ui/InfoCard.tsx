@@ -18,7 +18,7 @@ export function InfoCard({ title, text }: InfoCardProps) {
   const x = useMotionValue(0)
   const y = useMotionValue(0)
 
-  /* gradiente que sigue el cursor/dedo */
+  
   const bg = useMotionTemplate`radial-gradient(
       650px circle at ${x}px ${y}px,
       rgba(242,7,93,0.25),
@@ -49,7 +49,7 @@ export function InfoCard({ title, text }: InfoCardProps) {
                  before:bg-[#0d0f1d] before:transition
                  hover:before:bg-opacity-60 overflow-hidden"
     >
-      {/* halo que aparece al hover */}
+      
       <span
         className="pointer-events-none absolute inset-0 rounded-xl opacity-0
                    group-hover:opacity-100 transition-opacity duration-700 blur-lg

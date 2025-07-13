@@ -3,11 +3,21 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
+/* ------------------------  Font imports  ------------------------ */
+/* Titulares: Clash Display */
+@import url("https://api.fontshare.com/v2/css?f[]=Clash_Display@400,600,700&display=swap");
+/* Cuerpo: Inter */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+
+
+
 /* ------------------------  Estilos globales  ------------------------ */
 :root,
 [data-theme] {
   background: oklch(var(--b2));
 }
+
 @media (max-width: 640px) {
   html { scroll-behavior: smooth; }
 }
@@ -26,6 +36,7 @@ body {
     linear-gradient(to bottom, transparent, #101326 100%);
   background-attachment: fixed;
   @apply overflow-y-auto overflow-x-hidden;
+  font-family: Inter, sans-serif;
 }
 
 h1,
@@ -34,6 +45,7 @@ h3,
 h4 {
   margin-bottom: 0.5rem;
   line-height: 1;
+  font-family: 'Clash Display', sans-serif;
 }
 
 p {
@@ -68,7 +80,7 @@ html {
   @apply shadow-none;
 }
 
-/* -------------------  Gradientes decorativos  ------------------- */
+
 .circle-gradient {
   border-radius: 630px;
   background: #bd93f1;
@@ -169,7 +181,7 @@ html {
   }
 }
 
-/* --------------------  Animaciones globales  -------------------- */
+
 @keyframes fade-in {
   0%   { opacity: 0; transform: translateY(-20px); }
   100% { opacity: 1; transform: translateY(0);    }
@@ -188,7 +200,7 @@ html {
 
 ::-webkit-scrollbar { display: none; }
 
-/* ---------------------  Tablas (Prizes page)  --------------------- */
+
 table {
   width: 100%;
   border-collapse: separate;
@@ -224,7 +236,7 @@ tr:last-child td { border-bottom: none; }
   -webkit-text-fill-color: transparent;
 }
 
-/* ---------------------  Modal animación  --------------------- */
+
 @keyframes modalFadeIn {
   from { opacity: 0; transform: scale(0.95) translateY(0); }
   to   { opacity: 1; transform: scale(1)    translateY(0); }
@@ -247,7 +259,7 @@ tr:last-child td { border-bottom: none; }
 
 #__next { position: relative; z-index: 1; }
 
-/* -----------  Fondo tipo “moléculas” / partículas sueltas ----------- */
+
 @keyframes float {
   0%   { transform: translateY(0);   opacity: 0.3; }
   50%  { transform: translateY(-20px); opacity: 0.6; }
@@ -262,18 +274,16 @@ tr:last-child td { border-bottom: none; }
 }
 #particle-container { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
 
-/* -------------------------------------------------------------------- */
-/*                NUEVO: Glow del punto activo en Roadmap               */
-/* -------------------------------------------------------------------- */
+
 .dot-glow {
   @apply bg-gradient-to-br from-[#F2075D] to-[#8A26A6];
   box-shadow:
-    0 0 6px  rgba(242,  7, 93, 0.8),
+    0 0 6px  rgba(242,  7,93, 0.8),
     0 0 12px rgba(138, 38,166, 0.6);
   animation: pulse 4s ease-in-out infinite;
 }
 
 @keyframes pulse {
   0%,100% { transform: scale(1);   }
-  50%     { transform: scale(1.35);}
+  50%     { transform: scale(1.35); }
 }

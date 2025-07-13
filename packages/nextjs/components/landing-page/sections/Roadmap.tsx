@@ -5,43 +5,43 @@ import { motion } from 'framer-motion'
 /* ------------------------------- DATA ----------------------------------- */
 const phases = [
   {
-    title: 'Fase 1 · Creación y Diseño',
-    range: '0 – 7 meses',
+    title: 'Phase 1 · Creation & Design',
+    range: '0 – 7 months',
     current: true,
     bullets: [
-      'Visión y modelo de impacto',
-      'Wireframes Web3 / móvil',
-      'Mecánica de lotería y oráculos',
-      'Alianzas iniciales',
+      'Vision & impact model',
+      'Web3 / mobile wireframes',
+      'Lottery mechanics & oracles',
+      'Initial partnerships',
     ],
   },
   {
-    title: 'Fase 2 · Lanzamiento & Comunidad',
-    range: '7 – 10 meses',
+    title: 'Phase 2 · Launch & Community',
+    range: '7 – 10 months',
     bullets: [
-      'StarkLotto beta en vivo',
-      'Gobernanza Snapshot',
-      'Donaciones on-chain',
-      'Marketing inicial',
+      'StarkLotto beta live',
+      'Governance via Snapshot',
+      'On-chain donations',
+      'Initial marketing',
     ],
   },
   {
-    title: 'Fase 3 · Expansión Global',
-    range: '10 – 12 meses',
-    bullets: ['NFTs + marketplace', 'Alianzas internacionales'],
+    title: 'Phase 3 · Global Expansion',
+    range: '10 – 12 months',
+    bullets: ['NFTs & marketplace', 'International partnerships'],
   },
   {
-    title: 'Fase 4 · DAO on-chain',
-    range: '12 + meses',
-    bullets: ['Contratos de gobernanza', 'Migración completa a DAO'],
+    title: 'Phase 4 · On-chain DAO',
+    range: '12+ months',
+    bullets: ['Governance contracts', 'Full DAO migration'],
   },
   {
-    title: 'Fase 5 · IA & Sostenibilidad',
-    range: '12 + meses',
+    title: 'Phase 5 · AI & Sustainability',
+    range: '12+ months',
     bullets: [
-      'Recomendaciones con IA',
-      'Nuevos juegos vía DAO',
-      'Green-trading de la tesorería',
+      'AI-driven recommendations',
+      'New games via DAO',
+      'Treasury green-trading',
     ],
   },
 ]
@@ -49,8 +49,11 @@ const phases = [
 /* ------------------------------ SECTION --------------------------------- */
 export default function Roadmap() {
   return (
-    <section id="roadmap" className="relative overflow-hidden py-28 md:py-36">
-      {/* fondo gradiente + patrón sutil */}
+    <section
+      id="roadmap"
+      className="relative overflow-hidden py-16 sm:py-20 md:py-28 lg:py-36"
+    >
+      
       <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#181b2f] to-[#0b0d1c]" />
       <div
         className="absolute inset-0 z-0 opacity-[0.04] mix-blend-overlay"
@@ -60,23 +63,25 @@ export default function Roadmap() {
         }}
       />
 
-      {/* línea vertical desplazada para no tocar el título */}
-      <div className="hidden md:block absolute left-1/2 -translate-x-1/2 top-[152px] h-[calc(100%-152px)] w-[3px] bg-gradient-to-b from-[#F2075D] via-[#8A26A6] to-[#2740ff]/30 z-20" />
-      <div className="md:hidden absolute left-4 top-[152px] h-[calc(100%-152px)] w-[3px] bg-gradient-to-b from-[#F2075D] via-[#8A26A6] to-[#2740ff]/30 z-20" />
-
-      {/* contenido */}
-      <div className="relative z-30 container mx-auto px-6 text-white">
+      
+      <div className="relative z-30 container mx-auto px-4 sm:px-6 text-white">
+        
         <motion.h2
           initial={{ y: 40, opacity: 0 }}
           whileInView={{ y: 0, opacity: 1 }}
-          viewport={{ once: true }}
+          viewport={{ once: false, amount: 0.3 }}
           transition={{ duration: 0.7 }}
-          className="text-center text-4xl md:text-5xl font-bold mb-20"
+          className="text-center text-2xl xs:text-3xl sm:text-4xl md:text-5xl font-bold mb-20"
         >
           Roadmap
         </motion.h2>
 
-        <div className="flex flex-col md:flex-row md:flex-wrap md:justify-center gap-16">
+        
+        <div className="hidden lg:block absolute left-1/2 -translate-x-1/2 top-32 h-[calc(100%-8rem)] w-[3px] bg-gradient-to-b from-[#F2075D] via-[#8A26A6] to-[#2740ff]/30 z-20" />
+        <div className="lg:hidden absolute left-4 top-32 h-[calc(100%-8rem)] w-[2px] bg-gradient-to-b from-[#F2075D] via-[#8A26A6] to-[#2740ff]/30 z-20" />
+
+        
+        <div className="flex flex-col lg:flex-row lg:flex-wrap lg:justify-center gap-8 sm:gap-12 md:gap-16">
           {phases.map((p, i) => (
             <PhaseCard key={p.title} phase={p} index={i} />
           ))}
@@ -94,34 +99,46 @@ function PhaseCard({
   phase: (typeof phases)[number]
   index: number
 }) {
-  const align = index % 2 === 0 ? 'md:pr-14' : 'md:pl-14'
+  const align = index % 2 === 0 ? 'lg:pr-14' : 'lg:pl-14'
 
   return (
     <motion.div
       initial={{ y: 50, opacity: 0 }}
       whileInView={{ y: 0, opacity: 1 }}
-      viewport={{ once: true }}
+      viewport={{ once: false, amount: 0.3 }}
       transition={{ duration: 0.55, delay: index * 0.12 }}
-      className={`relative md:w-1/2 ${align}`}
+      className={`relative lg:w-1/2 ${align}`}
     >
-      {/* punto del timeline */}
+      
       <span
-        className={`absolute md:static left-[13px] md:left-auto top-0 md:top-auto
-                     flex h-4 w-4 rounded-full md:mx-auto
-                     ${phase.current ? 'dot-glow' : 'bg-white/25'}`}
+        className={`
+          absolute lg:static
+          left-[11px] sm:left-[13px] lg:left-auto
+          top-0 lg:top-auto
+          flex h-3 w-3 sm:h-4 sm:w-4 rounded-full lg:mx-auto
+          ${phase.current ? 'dot-glow' : 'bg-white/25'}
+        `}
       />
 
-      {/* card */}
+      
       <motion.div
         whileHover={{ scale: 1.03 }}
         transition={{ type: 'spring', stiffness: 150, damping: 18 }}
-        className="mt-6 md:mt-10 rounded-xl bg-white/5 backdrop-blur-md p-6 border border-white/10"
+        className="mt-4 sm:mt-6 lg:mt-10 ml-8 sm:ml-10 lg:ml-0
+                   rounded-xl bg-white/5 backdrop-blur-md p-4 sm:p-5 md:p-6
+                   border border-white/10 shadow-lg hover:shadow-xl transition-shadow duration-300"
       >
-        <h3 className="font-semibold text-lg mb-1">{phase.title}</h3>
-        <p className="text-sm text-[#F2075D]/80 mb-3">{phase.range}</p>
-        <ul className="list-disc ml-5 marker:text-[#F2075D]/90 space-y-1 text-sm text-neutral-200">
+        <h3 className="font-semibold text-base sm:text-lg mb-1 sm:mb-2">
+          {phase.title}
+        </h3>
+        <p className="text-xs sm:text-sm text-[#F2075D]/80 mb-2 sm:mb-3">
+          {phase.range}
+        </p>
+        <ul className="list-disc ml-4 sm:ml-5 marker:text-[#F2075D]/90 space-y-1 text-xs sm:text-sm text-neutral-200">
           {phase.bullets.map((b) => (
-            <li key={b}>{b}</li>
+            <li key={b} className="leading-relaxed">
+              {b}
+            </li>
           ))}
         </ul>
       </motion.div>

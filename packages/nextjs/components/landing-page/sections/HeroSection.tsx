@@ -8,30 +8,24 @@ import type { Engine } from '@tsparticles/engine'
 import { Button } from '../../ui/button'
 import { ChevronRight } from 'lucide-react'
 
-
 import {
   particlePresets,
-  loadOrbitPlugin, 
+  loadOrbitPlugin,
 } from '../../../lib/particlePresets'
 
-
 type PresetName = keyof typeof particlePresets
-
 interface HeroProps {
-
   variant?: PresetName
 }
 
 export default function Hero({ variant = 'hexGridStark' }: HeroProps) {
   const [ready, setReady] = useState(false)
 
-  /* Cargar motor + plugin orbit si lo pide el preset */
+  /* Init tsParticles (and orbit plug-in when selected) */
   useEffect(() => {
     initParticlesEngine(async (engine: Engine) => {
-      if (variant === 'orbit') {
-        await loadOrbitPlugin(engine) // carga curvesPath
-      }
-      await loadFull(engine) // plugins core
+      if (variant === 'orbit') await loadOrbitPlugin(engine)
+      await loadFull(engine)
     }).then(() => setReady(true))
   }, [variant])
 
@@ -40,9 +34,9 @@ export default function Hero({ variant = 'hexGridStark' }: HeroProps) {
   return (
     <section
       id="hero"
-      className="relative flex items-center justify-center min-h-[100svh] overflow-hidden py-24"
+      className="relative flex items-center justify-center min-h-[100svh] overflow-hidden py-16 sm:py-24"
     >
-      {/* Fondos */}
+      
       <div className="absolute inset-0 -z-20 bg-gradient-to-b from-[#181240] to-[#101326]" />
       <div
         className="absolute inset-0 -z-10 opacity-25"
@@ -52,72 +46,94 @@ export default function Hero({ variant = 'hexGridStark' }: HeroProps) {
         }}
       />
 
-      {/* Partículas preseteadas */}
+      
       <Particles
         id="stark-particles"
         className="absolute inset-0 z-0 pointer-events-none"
         options={options}
       />
 
-      {/* Contenido centrado */}
-      <div className="relative z-10 container mx-auto px-6 text-center">
+      {/* Content */}
+      <div className="relative z-10 w-full px-6 sm:px-10 lg:px-16">
         <motion.h1
           initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: ready ? 1 : 0, y: 0 }}
+          whileInView={{ opacity: ready ? 1 : 0, y: 0 }}
+          viewport={{ once: false, amount: 0.3 }}
           transition={{ duration: 0.8 }}
-          className="mx-auto max-w-4xl text-5xl md:text-7xl font-extrabold leading-tight"
+          className="
+            mx-auto
+            font-extrabold leading-tight text-center
+            text-4xl sm:text-5xl md:text-6xl lg:text-7xl
+            max-w-[55rem]
+          "
         >
           StarkLotto&nbsp;
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#F2075D] via-[#FF4D88] to-white bg-[length:400%_100%] animate-slower-shimmer">
-            cada boleto cambia vidas
+          <span
+            className="
+              bg-clip-text text-transparent
+              bg-gradient-to-r from-[#F2075D] via-[#FF4D88] to-white
+              bg-[length:400%_100%] animate-slower-shimmer
+            "
+          >
+            every ticket changes lives
           </span>
         </motion.h1>
 
         <motion.p
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: ready ? 1 : 0, y: 0 }}
+          whileInView={{ opacity: ready ? 1 : 0, y: 0 }}
+          viewport={{ once: false, amount: 0.2 }}
           transition={{ duration: 0.8, delay: 0.6 }}
-          className="mx-auto mt-6 max-w-2xl text-lg md:text-2xl text-neutral-300"
+          className="
+            mx-auto mt-6
+            max-w-[48rem] text-base sm:text-lg md:text-xl
+            text-neutral-300 text-center
+          "
         >
-          Participá en loterías transparentes on-chain, ganá premios y apoyá
-          causas sociales y ambientales con cada jugada.
+          Play transparent on-chain lotteries, win prizes, and support social&nbsp;and environmental causes with every play.
         </motion.p>
 
+        
         <motion.div
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: ready ? 1 : 0, y: 0 }}
+          whileInView={{ opacity: ready ? 1 : 0, y: 0 }}
+          viewport={{ once: false, amount: 0.2 }}
           transition={{ duration: 0.8, delay: 1.2 }}
-          className="mt-10 flex flex-col sm:flex-row gap-4 justify-center"
+          className="
+            mt-10 flex flex-col gap-4
+            sm:flex-row sm:gap-6
+            w-full max-w-[28rem] mx-auto
+          "
         >
+
           <Button
             size="lg"
-            className="px-8 py-6 text-lg bg-[#F2075D] hover:bg-[#FF4D88] text-white"
+            className="flex-1 px-8 py-6 text-lg bg-[#F2075D] hover:bg-[#FF4D88] text-white"
             onClick={() =>
-              document
-                .getElementById('games')
-                ?.scrollIntoView({ behavior: 'smooth' })
+              document.getElementById('games')?.scrollIntoView({ behavior: 'smooth' })
             }
           >
-            Jugar ahora <ChevronRight className="ml-2 h-5 w-5" />
+            Play&nbsp;now <ChevronRight className="ml-2 h-5 w-5 shrink-0" />
           </Button>
 
           <Button
             variant="outline"
             size="lg"
-            className="px-8 py-6 text-lg border-neutral-300 text-neutral-300 hover:bg-[#F2075D] hover:text-white"
-            onClick={() =>
-              window.open(
-                'https://raw.githubusercontent.com/StarkLotto/whitepaper/main/StarkLotto_Whitepaper.pdf',
-                '_blank'
-              )
-            }
+            className="
+              flex-1 px-8 py-6 text-lg
+              border border-[#F2075D] text-neutral-300 bg-transparent
+              hover:bg-transparent focus-visible:bg-transparent
+              hover:shadow-[0_0_8px_0_rgba(242,7,93,0.6)]
+              focus-visible:shadow-[0_0_8px_0_rgba(242,7,93,0.8)]
+              animate-pulse-border
+            "
+            onClick={() => window.open('https://t.me/StarklottoContributors', '_blank')}
           >
-            Leer Whitepaper
+            Join&nbsp;community
           </Button>
         </motion.div>
       </div>
 
-      {/* Fade a la sección siguiente */}
       <div className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-[#101326] to-transparent pointer-events-none" />
     </section>
   )

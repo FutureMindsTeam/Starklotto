@@ -1,58 +1,68 @@
+// tailwind.config.ts
 import type { Config } from "tailwindcss";
+import daisyui from "daisyui";
 
 const config: Config = {
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./app/**/*.{js,ts,jsx,tsx}",
+    "./components/**/*.{js,ts,jsx,tsx}",
+    "./utils/**/*.{js,ts,jsx,tsx}",
   ],
-  daisyui: {
-    themes: [
-      {
-        mytheme: {
-          primary: "#794BFC",
-
-          secondary: "F4F1FD",
-
-          accent: "#ff00ff",
-
-          neutral: "#ff00ff",
-
-          "base-100": "#ffffff",
-
-          info: "#0000ff",
-
-          success: "#00ffff",
-
-          warning: "#00ff00",
-
-          error: "#ff0000",
-        },
-      },
-    ],
-  },
+  darkMode: "class",
   theme: {
     extend: {
+      fontFamily: {
+        display: ["'Clash Display'", "sans-serif"],
+        body: ["Inter", "sans-serif"],
+      },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
         "gradient-conic":
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
       },
+      boxShadow: {
+        center: "0 0 12px -2px rgb(0 0 0 / 5%)",
+        glow: "0 0 15px rgba(123,97,255,0.2)",
+      },
+      animation: {
+        "pulse-fast": "pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        float: "float 3s ease-in-out infinite",
+        shimmer: "shimmer 2s linear infinite",
+      },
+      keyframes: {
+        float: {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-10px)" },
+        },
+        shimmer: {
+          "0%": { backgroundPosition: "200% 0" },
+          "100%": { backgroundPosition: "-200% 0" },
+        },
+      },
+      colors: {
+        menu: {
+          default: "#64748B",
+          hover: "#8B45FC",
+          active: "#794BFC",
+        },
+        background: {
+          DEFAULT: "#000000",
+          light: "#1A1A1A",
+        },
+      },
+      transitionProperty: {
+        colors: "color, background-color, fill, stroke",
+        transform: "transform",
+      },
+      backdropBlur: {
+        xs: "2px",
+      },
     },
   },
-  plugins: [require("daisyui")],
-};
-export default config;
-/** @type {import('tailwindcss').Config} */
-module.exports = {
-  content: [
-    "./app/**/*.{js,ts,jsx,tsx}",
-    "./components/**/*.{js,ts,jsx,tsx}",
-    "./utils/**/*.{js,ts,jsx,tsx}",
-  ],
-  plugins: [require("daisyui")],
-  darkTheme: "dark",
-  // DaisyUI theme colors
+  plugins: [daisyui],
   daisyui: {
     themes: [
       {
@@ -68,14 +78,12 @@ module.exports = {
           "base-100": "#ffffff",
           "base-200": "#f4f8ff",
           "base-300": "#ffffff",
-          "menu-active": "#794BFC",
-          "menu-hover": "#8B45FC",
-          "menu-default": "#64748B",
           "base-content": "#212638",
           info: "#93BBFB",
           success: "#34EEB6",
           warning: "#FFCF72",
           error: "#FF8863",
+          // custom utilities
           ".bg-gradient-modal": {
             "background-image":
               "linear-gradient(270deg, #A7ECFF -17.42%, #E8B6FF 109.05%)",
@@ -92,47 +100,6 @@ module.exports = {
           },
           ".bg-main": {
             background: "#FFFFFF",
-          },
-          ".bg-underline": {
-            background:
-              "linear-gradient(270deg, #A7ECFF -17.42%, #E8B6FF 109.05%)",
-          },
-          ".bg-container": {
-            background: "transparent",
-          },
-          ".bg-btn-wallet": {
-            "background-image":
-              "linear-gradient(270deg, #A7ECFF -17.42%, #E8B6FF 109.05%)",
-          },
-          ".bg-input": {
-            background: "rgba(0, 0, 0, 0.07)",
-          },
-          ".bg-component": {
-            background: "rgba(255, 255, 255, 0.55)",
-          },
-          ".bg-function": {
-            background:
-              "linear-gradient(270deg, #A7ECFF -17.42%, #E8B6FF 109.05%)",
-          },
-          ".text-function": {
-            color: "#3C1DFF",
-          },
-          ".text-network": {
-            color: "#7800FF",
-          },
-          "--rounded-btn": "9999rem",
-
-          ".tooltip": {
-            "--tooltip-tail": "6px",
-          },
-          ".link": {
-            textUnderlineOffset: "2px",
-          },
-          ".link:hover": {
-            opacity: "80%",
-          },
-          ".contract-content": {
-            background: "white",
           },
         },
       },
@@ -170,105 +137,10 @@ module.exports = {
           ".bg-main": {
             background: "#141A31",
           },
-          ".bg-underline": {
-            background: "#5368B4",
-          },
-          ".bg-container": {
-            background: "#141a30",
-          },
-          ".bg-btn-wallet": {
-            "background-image":
-              "linear-gradient(180deg, #3457D1 0%, #8A45FC 100%)",
-          },
-          ".bg-input": {
-            background: "rgba(255, 255, 255, 0.07)",
-          },
-          ".bg-component": {
-            background:
-              "linear-gradient(113deg,rgba(43, 34, 67, 0.6) 20.48%,rgba(37, 55, 81, 0.6) 99.67%)",
-          },
-          ".bg-function": {
-            background: "rgba(139, 69, 253, 0.37)",
-          },
-          ".text-function": {
-            color: "#1DD6FF",
-          },
-          ".text-network": {
-            color: "#D0A6FF",
-          },
-
-          "--rounded-btn": "9999rem",
-
-          ".tooltip": {
-            "--tooltip-tail": "6px",
-            "--tooltip-color": "oklch(var(--p))",
-          },
-          ".link": {
-            textUnderlineOffset: "2px",
-          },
-          ".link:hover": {
-            opacity: "80%",
-          },
-          ".contract-content": {
-            background:
-              "linear-gradient(113.34deg, rgba(43, 34, 67, 0.6) 20.48%, rgba(37, 55, 81, 0.6) 99.67%)",
-          },
         },
       },
     ],
   },
-  theme: {
-    extend: {
-      boxShadow: {
-        center: "0 0 12px -2px rgb(0 0 0 / 0.05)",
-        glow: "0 0 15px rgba(123,97,255,0.2)",
-      },
-      animation: {
-        "pulse-fast": "pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite",
-        float: "float 3s ease-in-out infinite",
-        shimmer: "shimmer 2s linear infinite",
-      },
-      keyframes: {
-        float: {
-          "0%, 100%": { transform: "translateY(0)" },
-          "50%": { transform: "translateY(-10px)" },
-        },
-        shimmer: {
-          "0%": { backgroundPosition: "200% 0" },
-          "100%": { backgroundPosition: "-200% 0" },
-        },
-      },
-      backgroundImage: {
-        "gradient-light":
-          "linear-gradient(270deg, #A7ECFF -17.42%, #E8B6FF 109.05%)",
-        "gradient-dark":
-          "var(--gradient, linear-gradient(90deg, #42D2F1 0%, #B248DD 100%))",
-        "gradient-vertical":
-          "linear-gradient(180deg, #3457D1 0%, #8A45FC 100%)",
-        "gradient-icon":
-          "var(--gradient, linear-gradient(90deg, #42D2F1 0%, #B248DD 100%))",
-        "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
-        "gradient-conic":
-          "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
-      },
-      colors: {
-        menu: {
-          default: "#64748B",
-          hover: "#8B45FC",
-          active: "#794BFC",
-        },
-        background: {
-          DEFAULT: "#000000",
-          light: "#1A1A1A",
-        },
-      },
-      transitionProperty: {
-        colors: "color, background-color, fill, stroke",
-        transform: "transform",
-      },
-      backdropBlur: {
-        xs: "2px",
-      },
-    },
-  },
 };
+
+export default config;
