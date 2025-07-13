@@ -6,20 +6,21 @@ import { Menu, X } from 'lucide-react'
 
 /* ------------------------------- LINKS --------------------------------- */
 const navLinks = [
-  { href: '#hero',      label: 'Home'        },
-  { href: '#about',     label: 'About'       },
-  { href: '#roadmap',   label: 'Roadmap'     },
-  { href: '#how',       label: 'How it works'},
-  { href: '#team',      label: 'Team'        },
-  { href: '#community', label: 'Community'   },
-  { href: '#launch',    label: 'Launch'      },
+  { href: '#hero',      label: 'Home'       },
+  { href: '#about',     label: 'About'      },
+  { href: '#roadmap',   label: 'Roadmap'    },
+  { href: '#how',       label: 'How it works' },
+  { href: '#team',      label: 'Team'       },
+  { href: '#community', label: 'Community'  },
+  { href: '#launch',    label: 'Launch'     },
 ]
 
 /* ------------------------------ HEADER --------------------------------- */
 export default function Header() {
   const [scrolled, setScrolled] = useState(false)
-  const [open, setOpen]       = useState(false)
+  const [open,     setOpen]     = useState(false)
 
+  /* sombreado cuando se hace scroll */
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40)
     onScroll()
@@ -28,39 +29,38 @@ export default function Header() {
   }, [])
 
   const linkVariants = {
-    rest:  { scale: 1,    color: '#fff' },
-    hover: { scale: 1.1,  color: '#F2075D' },
-    tap:   { scale: 0.95           },
+    rest : { scale: 1,    color: '#ffffff' },
+    hover: { scale: 1.08, color: '#F2075D' },
+    tap  : { scale: 0.95 }
   }
 
   const goTo = (hash: string) => {
     setOpen(false)
-    const el = document.querySelector(hash)
-    if (el) el.scrollIntoView({ behavior: 'smooth' })
+    document.querySelector(hash)?.scrollIntoView({ behavior: 'smooth' })
   }
 
   return (
     <>
+      {/* ---------- top bar ---------- */}
       <header
-        className={`
-          fixed inset-x-0 top-0 z-50 transition-all duration-300
-          ${scrolled
-            ? 'backdrop-blur-md bg-[#0b0d1c]/70 border-b border-white/10'
-            : 'bg-transparent'}
-        `}
+        className={`fixed inset-x-0 top-0 z-50 transition-all ${
+          scrolled
+            ? 'backdrop-blur bg-[#0b0d1c]/70 border-b border-white/10'
+            : 'bg-transparent'
+        }`}
       >
-        <div className="container mx-auto flex items-center h-16 px-4 sm:px-6 lg:px-8">
-          {/* 1) Logo */}
+        <div className="relative container mx-auto flex h-16 items-center px-6">
+          {/* logo */}
           <button
             onClick={() => goTo('#hero')}
-            className="text-xl md:text-2xl font-extrabold text-white focus:outline-none"
+            className="z-50 text-xl font-extrabold tracking-tight lg:text-2xl"
           >
             <span className="text-[#F2075D]">Stark</span>Lotto
           </button>
 
-          
-          <nav className="hidden md:flex flex-1 justify-center">
-            <ul className="flex gap-8 lg:gap-10">
+          {/* -------- desktop nav (solo >= lg) -------- */}
+          <nav className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 lg:block">
+            <ul className="flex items-center gap-10">
               {navLinks.map(({ href, label }) => (
                 <motion.li
                   key={href}
@@ -68,7 +68,7 @@ export default function Header() {
                   initial="rest"
                   whileHover="hover"
                   whileTap="tap"
-                  className="cursor-pointer text-white select-none"
+                  className="cursor-pointer select-none"
                   onClick={() => goTo(href)}
                 >
                   {label}
@@ -77,20 +77,17 @@ export default function Header() {
             </ul>
           </nav>
 
-          
-          <div className="hidden md:block w-10 lg:w-12" />
-
-          
+          {/* -------- hamburguesa (móvil + tablet) -------- */}
           <button
-            onClick={() => setOpen(o => !o)}
-            className="ml-auto md:hidden p-2 rounded hover:bg-white/10 text-white focus:outline-none"
+            onClick={() => setOpen(!open)}
+            className="ml-auto rounded-lg p-2 transition hover:bg-white/10 lg:hidden"
           >
-            {open ? <X size={24}/> : <Menu size={24}/>}
+            {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         </div>
       </header>
 
-      
+      {/* ---------------- mobile / tablet drawer ---------------- */}
       <AnimatePresence>
         {open && (
           <motion.nav
@@ -98,14 +95,14 @@ export default function Header() {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.25 }}
-            className="fixed inset-x-0 top-16 z-40 bg-[#0b0d1c]/95 backdrop-blur-md md:hidden"
+            className="fixed inset-x-0 top-16 z-40 bg-[#0b0d1c]/95 backdrop-blur lg:hidden"
           >
             <ul className="flex flex-col gap-4 px-6 py-4 text-lg">
               {navLinks.map(({ href, label }) => (
                 <li key={href}>
                   <button
                     onClick={() => goTo(href)}
-                    className="w-full text-left text-white py-2 rounded hover:text-[#F2075D] focus:outline-none"
+                    className="block w-full py-2 text-left transition-colors hover:text-[#F2075D]"
                   >
                     {label}
                   </button>
