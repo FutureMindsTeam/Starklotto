@@ -46,7 +46,7 @@ export function ConfirmationModal({
       opacity: 1,
       transition: {
         delay: i * 0.06,
-        type: "spring",
+        type: "spring" as const,
         stiffness: 300,
         damping: 15,
       },
@@ -88,7 +88,7 @@ export function ConfirmationModal({
                   opacity: 1,
                   y: 0,
                   transition: {
-                    type: "spring",
+                    type: "spring" as const,
                     damping: 25,
                     stiffness: 300,
                   },

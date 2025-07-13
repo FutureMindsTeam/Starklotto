@@ -1,9 +1,10 @@
+use contracts::StarkPlayVault::StarkPlayVault::{Event, FeeUpdated};
 use contracts::StarkPlayVault::{
     IStarkPlayVault, IStarkPlayVaultDispatcher, IStarkPlayVaultDispatcherTrait, StarkPlayVault,
 };
 use snforge_std::{
-    ContractClassTrait, DeclareResultTrait, Event, EventSpyAssertionsTrait, EventSpyTrait, declare,
-    load, spy_events, start_cheat_caller_address, stop_cheat_caller_address, test_address,
+    ContractClassTrait, DeclareResultTrait, EventSpyAssertionsTrait, EventSpyTrait, declare, load,
+    spy_events, start_cheat_caller_address, stop_cheat_caller_address, test_address,
 };
 use starknet::storage::StorableStoragePointerReadAccess;
 use starknet::{ContractAddress, contract_address_const};
@@ -213,4 +214,197 @@ fn test_burn_limit_zero_value() {
 
     // set new mint limit to zero
     vault.setBurnLimit(0_u256);
+}
+#[test]
+fn test_set_fee_by_owner() {
+    // Setup
+    let mut state = init_vault();
+    let owner = contract_address_const::<5>();
+    let new_fee = 5000_u64; // 50% (5000 basis points)
+    let contract_address = test_address();
+
+    // Check initial state - constructor sets fee to 10000 (100%)
+    let initial_fee = state.GetFeePercentage();
+    assert(initial_fee == 10000_u64, 'Wrong initial fee');
+
+    // Set caller as owner
+    start_cheat_caller_address(contract_address, owner);
+
+    // Set new fee
+    let result = state.set_fee(new_fee);
+    assert(result == true, 'set_fee should return true');
+
+    // Verify fee was updated
+    let final_fee = state.GetFeePercentage();
+    assert(final_fee == new_fee, 'Fee not updated');
+}
+
+#[should_panic(expected: 'Caller is not the owner')]
+#[test]
+fn test_set_fee_by_non_owner() {
+    // Setup
+    let dispatcher = deploy_vault();
+    let non_owner = contract_address_const::<6>();
+    let new_fee = 5000_u64;
+
+    // Set caller as non-owner
+    start_cheat_caller_address(dispatcher.contract_address, non_owner);
+
+    // Attempt to set new fee
+    dispatcher.set_fee(new_fee);
+}
+
+#[should_panic(expected: 'Fee too high')]
+#[test]
+fn test_set_fee_exceeds_maximum() {
+    // Setup
+    let dispatcher = deploy_vault();
+    let owner = contract_address_const::<5>();
+    let invalid_fee = 10001_u64; // Exceeds MAX_FEE_PERCENTAGE (10000)
+    let contract_address = dispatcher.contract_address;
+
+    // Set caller as owner
+    start_cheat_caller_address(contract_address, owner);
+
+    // Attempt to set fee above maximum
+    dispatcher.set_fee(invalid_fee);
+}
+
+#[test]
+fn test_set_fee_at_maximum_boundary() {
+    // Setup
+    let dispatcher = deploy_vault();
+    let owner = contract_address_const::<5>();
+    let max_fee = 10000_u64; // MAX_FEE_PERCENTAGE
+    let contract_address = dispatcher.contract_address;
+
+    // Set caller as owner
+    start_cheat_caller_address(contract_address, owner);
+
+    // Set fee at maximum boundary
+    let result = dispatcher.set_fee(max_fee);
+    assert(result == true, 'set_fee should return true');
+
+    // Verify fee was updated
+    let final_fee = dispatcher.GetFeePercentage();
+    assert(final_fee == max_fee, 'Fee not updated to max');
+}
+
+#[test]
+fn test_set_fee_to_zero() {
+    // Setup
+    let dispatcher = deploy_vault();
+    let owner = contract_address_const::<5>();
+    let zero_fee = 0_u64;
+    let contract_address = dispatcher.contract_address;
+
+    // Set caller as owner
+    start_cheat_caller_address(contract_address, owner);
+
+    // Set fee to zero
+    let result = dispatcher.set_fee(zero_fee);
+    assert(result == true, 'set_fee should return true');
+
+    // Verify fee was updated
+    let final_fee = dispatcher.GetFeePercentage();
+    assert(final_fee == zero_fee, 'Fee not updated to zero');
+}
+
+#[test]
+fn test_set_fee_emit_event() {
+    // Setup
+    let dispatcher = deploy_vault();
+    let owner = contract_address_const::<5>();
+    let new_fee = 2500_u64; // 25%
+    let contract_address = dispatcher.contract_address;
+    let mut spy = spy_events();
+
+    // Set caller as owner
+    start_cheat_caller_address(contract_address, owner);
+
+    // Get initial fee for comparison
+    let old_fee = dispatcher.GetFeePercentage();
+
+    // Set new fee
+    dispatcher.set_fee(new_fee);
+
+    // Verify fee was updated
+    let updated_fee = dispatcher.GetFeePercentage();
+    assert(updated_fee == new_fee, 'Fee not updated');
+
+    // Check event emission
+    let events = spy.get_events();
+    assert(events.events.len() == 1, 'Event not emitted');
+
+    let expected_event = StarkPlayVault::Event::FeeUpdated(
+        StarkPlayVault::FeeUpdated { admin: owner, old_fee, new_fee },
+    );
+    let expected_events = array![(contract_address, expected_event)];
+    spy.assert_emitted(@expected_events);
+}
+
+#[test]
+fn test_set_fee_multiple_times() {
+    // Setup
+    let dispatcher = deploy_vault();
+    let owner = contract_address_const::<5>();
+    let contract_address = dispatcher.contract_address;
+
+    // Set caller as owner
+    start_cheat_caller_address(contract_address, owner);
+
+    // Set fee multiple times
+    let fee1 = 1000_u64; // 10%
+    let fee2 = 5000_u64; // 50%
+    let fee3 = 100_u64; // 1%
+
+    // First update
+    let result1 = dispatcher.set_fee(fee1);
+    assert(result1 == true, 'First fee should return true');
+    assert(dispatcher.GetFeePercentage() == fee1, 'First fee not updated');
+
+    // Second update
+    let result2 = dispatcher.set_fee(fee2);
+    assert(result2 == true, 'Second fee should return true');
+    assert(dispatcher.GetFeePercentage() == fee2, 'Second fee not updated');
+
+    // Third update
+    let result3 = dispatcher.set_fee(fee3);
+    assert(result3 == true, 'Thirdfee should return true');
+    assert(dispatcher.GetFeePercentage() == fee3, 'Third fee not updated');
+}
+
+#[test]
+fn test_fee_queries_reflect_changes() {
+    // Setup
+    let dispatcher = deploy_vault();
+    let owner = contract_address_const::<5>();
+    let contract_address = dispatcher.contract_address;
+
+    // Set caller as owner
+    start_cheat_caller_address(contract_address, owner);
+
+    // Test multiple fee changes and verify queries
+    let fee_sequence = array![100_u64, 250_u64, 500_u64, 0_u64, 1000_u64]; // 1%, 2.5%, 5%, 0%, 10%
+
+    let mut i = 0;
+    while i < fee_sequence.len() {
+        let new_fee = *fee_sequence.at(i);
+
+        // Set new fee
+        let result = dispatcher.set_fee(new_fee);
+        assert(result == true, 'set_fee should return true');
+
+        // Query and verify immediately
+        let queried_fee = dispatcher.GetFeePercentage();
+        assert(queried_fee == new_fee, 'Immediate query should match');
+
+        // Query again after some operations (to ensure persistence)
+        let queried_fee_again = dispatcher.GetFeePercentage();
+        assert(queried_fee_again == new_fee, 'Persistent query should match');
+
+        i += 1;
+    }
+
+    stop_cheat_caller_address(contract_address);
 }

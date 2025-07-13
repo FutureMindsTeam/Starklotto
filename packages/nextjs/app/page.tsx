@@ -10,7 +10,7 @@ import {
   HeroSection,
   FeaturesSection,
   HowItWorksSection,
-    FAQSection,
+  FAQSection,
   CTASection,
 } from "~~/components/sections";
 import { useAccount } from "@starknet-react/core";

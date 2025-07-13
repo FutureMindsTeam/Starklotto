@@ -86,7 +86,7 @@ export default function JackpotGrowthChart({ data }: JackpotGrowthChartProps) {
                   strokeDasharray="5 5"
                   strokeWidth={2}
                 />
-              ) : null
+              ) : null,
             )}
 
             <Line

@@ -14,32 +14,34 @@ import {
   QuestionMarkCircleIcon,
 } from "@heroicons/react/24/outline";
 import { CustomConnectButton } from "./scaffold-stark/CustomConnectButton";
+import LanguageSwitcher from "./LanguageSwitcher";
+import { useTranslation } from "react-i18next";
 import { useRouter } from "next/navigation";
 
 const menuLinks = [
   {
-    label: "Home",
+    labelKey: "navigation.home",
     href: "#home",
     icon: (
       <HomeIcon className="h-6 w-6 text-white group-hover:text-yellow-400 transition duration-300" />
     ),
   },
   {
-    label: "How It Works",
+    labelKey: "navigation.howItWorks",
     href: "#how-it-works",
     icon: (
       <BookOpenIcon className="h-6 w-6 text-white group-hover:text-yellow-400 transition duration-300" />
     ),
   },
   {
-    label: "Rewards",
+    labelKey: "navigation.rewards",
     href: "#rewards",
     icon: (
       <TrophyIcon className="h-6 w-6 text-white group-hover:text-yellow-400 transition duration-300" />
     ),
   },
   {
-    label: "FAQ",
+    labelKey: "navigation.faq",
     href: "#faq",
     icon: (
       <QuestionMarkCircleIcon className="h-6 w-6 text-white group-hover:text-yellow-400 transition duration-300" />
@@ -49,6 +51,7 @@ const menuLinks = [
 
 export const Header = () => {
   const router = useRouter();
+  const { t } = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -88,14 +91,14 @@ export const Header = () => {
 
         {/* Desktop Navigation */}
         <ul className="hidden md:flex space-x-8">
-          {menuLinks.map(({ label, href, icon }) => (
+          {menuLinks.map(({ labelKey, href, icon }) => (
             <li key={href}>
               <Link
                 href={href}
                 passHref
                 className="group text-white hover:text-yellow-400 transition duration-300 flex items-center gap-2"
               >
-                {label}
+                {t(labelKey)}
                 {icon}
               </Link>
             </li>
@@ -104,9 +107,7 @@ export const Header = () => {
 
         {/* Icons */}
         <div className="hidden md:flex items-center space-x-4">
-          {/*           <button className="p-2 bg-transparent hover:bg-gray-700 rounded-full transition">
-            <CustomConnectButton isHeader={true} />
-          </button> */}
+          <LanguageSwitcher />
           <button className="text-white font-semibold rounded-full hover:opacity-90 transition">
             <CustomConnectButton />
           </button>
@@ -135,7 +136,7 @@ export const Header = () => {
       {isMenuOpen && (
         <div className="md:hidden bg-gray-900 bg-opacity-90 shadow-lg">
           <ul className="flex flex-col items-center space-y-4 py-4">
-            {menuLinks.map(({ label, href }) => (
+            {menuLinks.map(({ labelKey, href }) => (
               <li key={href}>
                 <Link
                   href={href}
@@ -143,7 +144,7 @@ export const Header = () => {
                   onClick={toggleMenu}
                   className="text-white text-lg hover:text-yellow-400 transition duration-300"
                 >
-                  {label}
+                  {t(labelKey)}
                 </Link>
               </li>
             ))}
@@ -151,6 +152,7 @@ export const Header = () => {
 
           {/* Icons for Mobile */}
           <div className="flex justify-center space-x-6 py-4">
+            <LanguageSwitcher />
             <button className="p-2 bg-transparent hover:bg-gray-700 rounded-full transition">
               <WalletIcon className="h-6 w-6 text-white" />
             </button>

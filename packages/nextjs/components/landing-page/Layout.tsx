@@ -31,13 +31,10 @@ export default function StarkLottoLanding() {
 
   return (
     <div className="min-h-screen bg-black/30 relative overflow-hidden">
-
-
       {/* Scattered Chain Icons Background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         <FloatingCoins />
         <FloatingCoins />
-      
       </div>
 
       {/* Floating Help button */}
@@ -401,7 +398,7 @@ export default function StarkLottoLanding() {
       {/* Community & Transparency */}
       <Community />
       {/* Testimonials & System Statistics */}
-      <Testimonial/>
+      <Testimonial />
 
       {/* Final Call to Action */}
       <section className="py-20 px-4 bg-gradient-to-r from-cyan-500/10 to-purple-600/10 border-y border-gray-800 relative z-10">
