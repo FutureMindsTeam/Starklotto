@@ -2,6 +2,7 @@ use contracts::Lottery::ILotteryDispatcher;
 use contracts::Lottery::ILotteryDispatcherTrait;
 use snforge_std::{declare, ContractClassTrait, DeclareResultTrait, start_cheat_caller_address, stop_cheat_caller_address};
 use starknet::ContractAddress;
+use core::array::{Array, ArrayTrait};
 
 // Helper constants
 pub fn OWNER() -> ContractAddress {
@@ -22,6 +23,31 @@ fn deploy_lottery() -> ContractAddress {
     lottery_addr
 }
 
+// Helper functions to access JackpotEntry data through getter functions
+fn get_jackpot_entry_draw_id(lottery_dispatcher: ILotteryDispatcher, draw_id: u64) -> u64 {
+    lottery_dispatcher.GetJackpotEntryDrawId(draw_id)
+}
+
+fn get_jackpot_entry_amount(lottery_dispatcher: ILotteryDispatcher, draw_id: u64) -> u256 {
+    lottery_dispatcher.GetJackpotEntryAmount(draw_id)
+}
+
+fn get_jackpot_entry_start_time(lottery_dispatcher: ILotteryDispatcher, draw_id: u64) -> u64 {
+    lottery_dispatcher.GetJackpotEntryStartTime(draw_id)
+}
+
+fn get_jackpot_entry_end_time(lottery_dispatcher: ILotteryDispatcher, draw_id: u64) -> u64 {
+    lottery_dispatcher.GetJackpotEntryEndTime(draw_id)
+}
+
+fn get_jackpot_entry_is_active(lottery_dispatcher: ILotteryDispatcher, draw_id: u64) -> bool {
+    lottery_dispatcher.GetJackpotEntryIsActive(draw_id)
+}
+
+fn get_jackpot_entry_is_completed(lottery_dispatcher: ILotteryDispatcher, draw_id: u64) -> bool {
+    lottery_dispatcher.GetJackpotEntryIsCompleted(draw_id)
+}
+
 #[test]
 fn test_get_jackpot_history_basic() {
     let lottery_addr = deploy_lottery();
@@ -36,10 +62,10 @@ fn test_get_jackpot_history_basic() {
     let jackpot_history = lottery_dispatcher.get_jackpot_history();
     assert!(jackpot_history.len() == 1, "Should have 1 jackpot entry");
 
-    let first_entry = *jackpot_history.at(0);
-    assert!(first_entry.drawId == 1, "First draw should have ID 1");
-    assert!(first_entry.isActive, "First draw should be active");
-    assert!(!first_entry.isCompleted, "First draw should not be completed");
+    // Use getter functions to access the data
+    assert!(get_jackpot_entry_draw_id(lottery_dispatcher, 1) == 1, "First draw should have ID 1");
+    assert!(get_jackpot_entry_is_active(lottery_dispatcher, 1), "First draw should be active");
+    assert!(!get_jackpot_entry_is_completed(lottery_dispatcher, 1), "First draw should not be completed");
 }
 
 #[test]
@@ -59,18 +85,14 @@ fn test_get_jackpot_history_multiple_draws() {
     let jackpot_history = lottery_dispatcher.get_jackpot_history();
     assert!(jackpot_history.len() == 3, "Should have 3 jackpot entries");
 
-    // Verify each entry
-    let entry1 = *jackpot_history.at(0);
-    let entry2 = *jackpot_history.at(1);
-    let entry3 = *jackpot_history.at(2);
+    // Verify each entry using getter functions
+    assert!(get_jackpot_entry_draw_id(lottery_dispatcher, 1) == 1, "First entry should have drawId 1");
+    assert!(get_jackpot_entry_draw_id(lottery_dispatcher, 2) == 2, "Second entry should have drawId 2");
+    assert!(get_jackpot_entry_draw_id(lottery_dispatcher, 3) == 3, "Third entry should have drawId 3");
 
-    assert!(entry1.drawId == 1, "First entry should have drawId 1");
-    assert!(entry2.drawId == 2, "Second entry should have drawId 2");
-    assert!(entry3.drawId == 3, "Third entry should have drawId 3");
-
-    assert!(entry1.jackpotAmount == 1000000000000000000000_u256, "First jackpot amount incorrect");
-    assert!(entry2.jackpotAmount == 2000000000000000000000_u256, "Second jackpot amount incorrect");
-    assert!(entry3.jackpotAmount == 3000000000000000000000_u256, "Third jackpot amount incorrect");
+    assert!(get_jackpot_entry_amount(lottery_dispatcher, 1) == 1000000000000000000000_u256, "First jackpot amount incorrect");
+    assert!(get_jackpot_entry_amount(lottery_dispatcher, 2) == 2000000000000000000000_u256, "Second jackpot amount incorrect");
+    assert!(get_jackpot_entry_amount(lottery_dispatcher, 3) == 3000000000000000000000_u256, "Third jackpot amount incorrect");
 }
 
 #[test]
@@ -89,10 +111,10 @@ fn test_get_jackpot_history_completed_draw() {
     let jackpot_history = lottery_dispatcher.get_jackpot_history();
     assert!(jackpot_history.len() == 1, "Should have 1 jackpot entry");
 
-    let entry = *jackpot_history.at(0);
-    assert!(entry.drawId == 1, "Entry should have drawId"); 
-    assert!(!entry.isActive, "Draw should not be active after completion");
-    assert!(entry.isCompleted, "Draw should be completed");
+    // Use getter functions to verify the completed draw
+    assert!(get_jackpot_entry_draw_id(lottery_dispatcher, 1) == 1, "Entry should have drawId"); 
+    assert!(!get_jackpot_entry_is_active(lottery_dispatcher, 1), "Draw should not be active after completion");
+    assert!(get_jackpot_entry_is_completed(lottery_dispatcher, 1), "Draw should be completed");
 }
 
 #[test]
@@ -115,8 +137,7 @@ fn test_get_jackpot_history_performance() {
     let jackpot_history = lottery_dispatcher.get_jackpot_history();
     assert!(jackpot_history.len() == 11, "Should have 11 jackpot entries");
 
-    // Verify the last entry
-    let last_entry = *jackpot_history.at(10);
-    assert!(last_entry.drawId == 11, "Last entry should have drawId 11");
-    assert!(last_entry.jackpotAmount == 11000000000000000000000_u256, "Last jackpot amount incorrect");
+    // Verify the last entry using getter functions
+    assert!(get_jackpot_entry_draw_id(lottery_dispatcher, 11) == 11, "Last entry should have drawId 11");
+    assert!(get_jackpot_entry_amount(lottery_dispatcher, 11) == 11000000000000000000000_u256, "Last jackpot amount incorrect");
 } 
