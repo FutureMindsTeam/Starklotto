@@ -1,35 +1,34 @@
-'use client'
-import { motion } from 'framer-motion'
+"use client";
+import { motion } from "framer-motion";
 
 /* ─────────────────────────────────  DATA  ───────────────────────────────── */
 const members = [
   {
-    name: 'David Meléndez',
-    role: 'Full-Stack / Smart Contracts',
-    gh: 'davidmelendez',
+    name: "David Meléndez",
+    role: "Full-Stack / Smart Contracts",
+    gh: "davidmelendez",
   },
   {
-    name: 'Kimberly Cascante',
-    role: 'Full-Stack Developer',
-    gh: 'kimcascante',
+    name: "Kimberly Cascante",
+    role: "Full-Stack Developer",
+    gh: "kimcascante",
   },
   {
-    name: 'Jefferson Calderón',
-    role: 'Frontend (UI/UX)',
-    gh: 'xJeffx23',
+    name: "Jefferson Calderón",
+    role: "Frontend (UI/UX)",
+    gh: "xJeffx23",
   },
   {
-    name: 'Joseph Poveda',
-    role: 'Backend Engineer',
-    gh: 'josephpdf',
+    name: "Joseph Poveda",
+    role: "Backend Engineer",
+    gh: "josephpdf",
   },
   {
-    name: 'Andrés Villanueva',
-    role: 'Frontend Developer',
-    gh: 'drakkomaximo',
+    name: "Andrés Villanueva",
+    role: "Frontend Developer",
+    gh: "drakkomaximo",
   },
-]
-
+];
 
 /* ──────────────────────  SECTION: Our Team  ────────────────────── */
 export default function TeamSection() {
@@ -41,11 +40,9 @@ export default function TeamSection() {
         className="absolute inset-0 z-0 opacity-[0.04] mix-blend-overlay"
         style={{
           backgroundImage:
-            'repeating-linear-gradient(135deg,transparent 0 2px,#202241 2px 4px)',
+            "repeating-linear-gradient(135deg,transparent 0 2px,#202241 2px 4px)",
         }}
       />
-     
-
 
       {/* contenido */}
       <div className="relative z-10 container mx-auto px-6 text-center max-w-6xl">
@@ -58,7 +55,6 @@ export default function TeamSection() {
         >
           Our Team
         </motion.h2>
-
 
         <motion.div
           initial="hidden"
@@ -76,9 +72,8 @@ export default function TeamSection() {
         </motion.div>
       </div>
     </section>
-  )
+  );
 }
-
 
 /* ────────────────────────  CARD: Team Member  ─────────────────────── */
 function MemberCard({
@@ -86,12 +81,11 @@ function MemberCard({
   role,
   gh,
 }: {
-  name: string
-  role: string
-  gh: string
+  name: string;
+  role: string;
+  gh: string;
 }) {
-  const avatar = `https://avatars.githubusercontent.com/${gh}?size=200`
-
+  const avatar = `https://avatars.githubusercontent.com/${gh}?size=200`;
 
   return (
     <motion.div
@@ -100,7 +94,7 @@ function MemberCard({
         show: { opacity: 1, y: 0 },
       }}
       whileHover={{ rotateX: 5, rotateY: -5 }}
-      transition={{ type: 'spring', stiffness: 140, damping: 16 }}
+      transition={{ type: "spring", stiffness: 140, damping: 16 }}
       className="
         relative w-full max-w-xs rounded-xl p-8 bg-white/5 backdrop-blur-lg
         border border-white/10 text-center transform-gpu
@@ -108,13 +102,14 @@ function MemberCard({
       "
     >
       {/* Neon halo on hover */}
-      <span className="
+      <span
+        className="
         absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100
         transition duration-500
         bg-gradient-to-br from-[#F2075D]/25 via-[#8A26A6]/25 to-transparent
         blur-sm
-      " />
-
+      "
+      />
 
       <img
         src={avatar}
@@ -122,10 +117,8 @@ function MemberCard({
         className="relative z-10 h-28 w-28 mx-auto rounded-full object-cover mb-4 border-2 border-[#8A26A6]/50"
       />
 
-
       <h3 className="relative z-10 font-semibold text-lg text-white">{name}</h3>
       <p className="relative z-10 text-sm text-neutral-400 mb-4">{role}</p>
-
 
       <a
         href={`https://github.com/${gh}`}
@@ -137,5 +130,5 @@ function MemberCard({
         github.com/{gh}
       </a>
     </motion.div>
-  )
+  );
 }

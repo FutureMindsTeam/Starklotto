@@ -1,39 +1,38 @@
-'use client'
-import { motion } from 'framer-motion'
-import { SiTelegram, SiGithub, SiX } from 'react-icons/si'
-import type { IconType } from 'react-icons'
+"use client";
+import { motion } from "framer-motion";
+import { SiTelegram, SiGithub, SiX } from "react-icons/si";
+import type { IconType } from "react-icons";
 
 /* ───────────────────────────  DATA  ──────────────────────────── */
 const socials: Array<{
-  title: string
-  url: string
-  Icon: IconType
-  bg: string
-  fg: string
+  title: string;
+  url: string;
+  Icon: IconType;
+  bg: string;
+  fg: string;
 }> = [
-    {
-      title: 'Follow us on X',
-      url: 'https://x.com/starklottoio',
-      Icon: SiX,
-      bg: '#000000',
-      fg: '#FFFFFF',
-    },
-    {
-      title: 'Join us on Telegram',
-      url: 'https://t.me/StarklottoContributors',
-      Icon: SiTelegram,
-      bg: '#28A9E0',
-      fg: '#FFFFFF',
-    },
-    {
-      title: 'Contribute on GitHub',
-      url: 'https://github.com/FutureMindsTeam/starklotto',
-      Icon: SiGithub,
-      bg: '#0D1117',
-      fg: '#FFFFFF',
-    },
-  ]
-
+  {
+    title: "Follow us on X",
+    url: "https://x.com/starklottoio",
+    Icon: SiX,
+    bg: "#000000",
+    fg: "#FFFFFF",
+  },
+  {
+    title: "Join us on Telegram",
+    url: "https://t.me/StarklottoContributors",
+    Icon: SiTelegram,
+    bg: "#28A9E0",
+    fg: "#FFFFFF",
+  },
+  {
+    title: "Contribute on GitHub",
+    url: "https://github.com/FutureMindsTeam/starklotto",
+    Icon: SiGithub,
+    bg: "#0D1117",
+    fg: "#FFFFFF",
+  },
+];
 
 /* ─────────────────────────  SECTION  ─────────────────────────── */
 export default function CommunitySection() {
@@ -50,12 +49,14 @@ export default function CommunitySection() {
           Our&nbsp;<span className="text-[#F2075D]">Community</span>
         </motion.h2>
 
-
         <motion.div
           initial="hidden"
           whileInView="show"
           viewport={{ once: true }}
-          variants={{ hidden: {}, show: { transition: { staggerChildren: 0.15 } } }}
+          variants={{
+            hidden: {},
+            show: { transition: { staggerChildren: 0.15 } },
+          }}
           className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
         >
           {socials.map((s) => (
@@ -64,9 +65,8 @@ export default function CommunitySection() {
         </motion.div>
       </div>
     </section>
-  )
+  );
 }
-
 
 /* ───────────────────────────  CARD  ──────────────────────────── */
 function SocialCard({
@@ -76,11 +76,11 @@ function SocialCard({
   bg,
   fg,
 }: {
-  title: string
-  url: string
-  Icon: IconType
-  bg: string
-  fg: string
+  title: string;
+  url: string;
+  Icon: IconType;
+  bg: string;
+  fg: string;
 }) {
   return (
     <motion.a
@@ -92,7 +92,7 @@ function SocialCard({
         show: { opacity: 1, y: 0 },
       }}
       whileHover={{ y: -6 }}
-      transition={{ type: 'spring', stiffness: 160, damping: 14 }}
+      transition={{ type: "spring", stiffness: 160, damping: 14 }}
       className="
         group relative flex flex-col items-center justify-center
         rounded-xl border border-white/10 bg-white/5 p-6 backdrop-blur-md
@@ -105,25 +105,23 @@ function SocialCard({
                    transition duration-300"
         style={{
           background:
-            'radial-gradient(circle at 50% 40%, rgba(242,7,93,0.25), transparent 70%)',
-          filter: 'blur(30px)',
-          animation: 'pulse 4s ease-in-out infinite',
+            "radial-gradient(circle at 50% 40%, rgba(242,7,93,0.25), transparent 70%)",
+          filter: "blur(30px)",
+          animation: "pulse 4s ease-in-out infinite",
         }}
       />
-
 
       {/* icon */}
       <motion.div
         whileHover={{ scale: 1.1 }}
-        transition={{ type: 'spring', stiffness: 220, damping: 15 }}
+        transition={{ type: "spring", stiffness: 220, damping: 15 }}
         className="relative z-10 mb-4 grid place-items-center rounded-full p-3 border border-white/10"
         style={{ backgroundColor: bg }}
       >
         <Icon className="h-6 w-6" style={{ color: fg }} />
       </motion.div>
 
-
       <p className="relative z-10 font-medium">{title}</p>
     </motion.a>
-  )
+  );
 }

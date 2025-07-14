@@ -5,7 +5,3 @@ export type Tuple<
 > = Current["length"] extends MaxLength
   ? Current
   : Current | Tuple<T, MaxLength, [T, ...Current]>;
-
-
-
-

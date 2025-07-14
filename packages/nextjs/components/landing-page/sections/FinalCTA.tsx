@@ -1,16 +1,15 @@
-'use client'
-import { useState } from 'react'
-import { motion } from 'framer-motion'
+"use client";
+import { useState } from "react";
+import { motion } from "framer-motion";
 
 export default function FinalCTA() {
-  const [email, setEmail] = useState('')
-  const [sent, setSent]   = useState(false)
-
+  const [email, setEmail] = useState("");
+  const [sent, setSent] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
+    e.preventDefault();
     // TODO: POST to your backend / API route
-    setSent(true)
+    setSent(true);
   }
 
   return (
@@ -20,7 +19,6 @@ export default function FinalCTA() {
                  bg-gradient-to-b from-[#0b0d1c] via-[#0e1020] to-[#181b2f]
                  text-white"
     >
-     
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div
           className="absolute -top-44 left-1/2 -translate-x-1/2
@@ -29,9 +27,7 @@ export default function FinalCTA() {
         />
       </div>
 
-
       <div className="container mx-auto max-w-2xl px-6 text-center">
-       
         <motion.h2
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -43,8 +39,6 @@ export default function FinalCTA() {
           <span className="text-[#F2075D]">launch list</span>
         </motion.h2>
 
-
-       
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -62,8 +56,6 @@ export default function FinalCTA() {
           your email and be the first to try it.
         </motion.p>
 
-
-       
         {sent ? (
           <motion.p
             initial={{ opacity: 0 }}
@@ -105,5 +97,5 @@ export default function FinalCTA() {
         )}
       </div>
     </section>
-  )
+  );
 }

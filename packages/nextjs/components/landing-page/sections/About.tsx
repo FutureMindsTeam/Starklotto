@@ -1,6 +1,5 @@
-'use client'
-import { motion } from 'framer-motion'
-
+"use client";
+import { motion } from "framer-motion";
 
 /* ──────────────────────── mini card ──────────────────────── */
 function InfoCard({ title, text }: { title: string; text: string }) {
@@ -15,7 +14,6 @@ function InfoCard({ title, text }: { title: string; text: string }) {
         bg-white/5 p-6 backdrop-blur-md shadow-lg
       "
     >
-     
       <span
         className="
           absolute inset-0 rounded-xl opacity-0
@@ -31,7 +29,7 @@ function InfoCard({ title, text }: { title: string; text: string }) {
         {text}
       </p>
     </motion.div>
-  )
+  );
 }
 
 /* ──────────────────────── section ───────────────────────── */
@@ -83,5 +81,5 @@ export default function About() {
         </div>
       </div>
     </section>
-  )
+  );
 }

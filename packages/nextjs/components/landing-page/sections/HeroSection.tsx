@@ -1,58 +1,50 @@
-'use client'
-import { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
-import Particles, { initParticlesEngine } from '@tsparticles/react'
-import { loadFull } from 'tsparticles'
-import type { Engine } from '@tsparticles/engine'
-import { Button } from '../../ui/button'
-import { ChevronRight } from 'lucide-react'
+"use client";
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import Particles, { initParticlesEngine } from "@tsparticles/react";
+import { loadFull } from "tsparticles";
+import type { Engine } from "@tsparticles/engine";
+import { Button } from "../../ui/button";
+import { ChevronRight } from "lucide-react";
 
-import {
-  particlePresets,
-  loadOrbitPlugin,
-} from '../../../lib/particlePresets'
+import { particlePresets, loadOrbitPlugin } from "../../../lib/particlePresets";
 
-type PresetName = keyof typeof particlePresets
+type PresetName = keyof typeof particlePresets;
 interface HeroProps {
-  variant?: PresetName
+  variant?: PresetName;
 }
 
-export default function Hero({ variant = 'hexGridStark' }: HeroProps) {
-  const [ready, setReady] = useState(false)
+export default function Hero({ variant = "hexGridStark" }: HeroProps) {
+  const [ready, setReady] = useState(false);
 
   /* Init tsParticles (and orbit plug-in when selected) */
   useEffect(() => {
     initParticlesEngine(async (engine: Engine) => {
-      if (variant === 'orbit') await loadOrbitPlugin(engine)
-      await loadFull(engine)
-    }).then(() => setReady(true))
-  }, [variant])
+      if (variant === "orbit") await loadOrbitPlugin(engine);
+      await loadFull(engine);
+    }).then(() => setReady(true));
+  }, [variant]);
 
-
-  const options = particlePresets[variant]
+  const options = particlePresets[variant];
   return (
     <section
       id="hero"
       className="relative flex items-center justify-center min-h-[100svh] overflow-hidden py-16 sm:py-24"
     >
-     
       <div className="absolute inset-0 -z-20 bg-gradient-to-b from-[#181240] to-[#101326]" />
       <div
         className="absolute inset-0 -z-10 opacity-25"
         style={{
           background:
-            'radial-gradient(circle at 50% 30%, rgba(242,7,93,0.25), transparent 60%)',
+            "radial-gradient(circle at 50% 30%, rgba(242,7,93,0.25), transparent 60%)",
         }}
       />
 
-
-     
       <Particles
         id="stark-particles"
         className="absolute inset-0 z-0 pointer-events-none"
         options={options}
       />
-
 
       {/* Content */}
       <div className="relative z-10 w-full px-6 sm:px-10 lg:px-16">
@@ -80,7 +72,6 @@ export default function Hero({ variant = 'hexGridStark' }: HeroProps) {
           </span>
         </motion.h1>
 
-
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: ready ? 1 : 0, y: 0 }}
@@ -92,11 +83,10 @@ export default function Hero({ variant = 'hexGridStark' }: HeroProps) {
             text-neutral-300 text-center
           "
         >
-          Play transparent on-chain lotteries, win prizes, and support social&nbsp;and environmental causes with every play.
+          Play transparent on-chain lotteries, win prizes, and support
+          social&nbsp;and environmental causes with every play.
         </motion.p>
 
-
-       
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: ready ? 1 : 0, y: 0 }}
@@ -108,18 +98,17 @@ export default function Hero({ variant = 'hexGridStark' }: HeroProps) {
             w-full max-w-[28rem] mx-auto
           "
         >
-
-
           <Button
             size="lg"
             className="flex-1 px-8 py-6 text-lg bg-[#F2075D] hover:bg-[#FF4D88] text-white"
             onClick={() =>
-              document.getElementById('games')?.scrollIntoView({ behavior: 'smooth' })
+              document
+                .getElementById("games")
+                ?.scrollIntoView({ behavior: "smooth" })
             }
           >
             Play&nbsp;now <ChevronRight className="ml-2 h-5 w-5 shrink-0" />
           </Button>
-
 
           <Button
             variant="outline"
@@ -132,15 +121,16 @@ export default function Hero({ variant = 'hexGridStark' }: HeroProps) {
               focus-visible:shadow-[0_0_8px_0_rgba(242,7,93,0.8)]
               animate-pulse-border
             "
-            onClick={() => window.open('https://t.me/StarklottoContributors', '_blank')}
+            onClick={() =>
+              window.open("https://t.me/StarklottoContributors", "_blank")
+            }
           >
             Join&nbsp;community
           </Button>
         </motion.div>
       </div>
 
-
       <div className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-[#101326] to-transparent pointer-events-none" />
     </section>
-  )
+  );
 }

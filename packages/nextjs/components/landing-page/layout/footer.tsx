@@ -1,35 +1,36 @@
-'use client'
-import { motion } from 'framer-motion'
-import Link from 'next/link'
-import { SiTelegram, SiGithub, SiX } from 'react-icons/si'
+"use client";
+import { motion } from "framer-motion";
+import Link from "next/link";
+import { SiTelegram, SiGithub, SiX } from "react-icons/si";
 
 const navLinks = [
-  { label: 'Home',      id: 'hero'      },
-  { label: 'About',     id: 'about'     },
-  { label: 'Roadmap',   id: 'roadmap'   },
-  { label: 'Team',      id: 'team'      },
-  { label: 'Community', id: 'community' }
-]
+  { label: "Home", id: "hero" },
+  { label: "About", id: "about" },
+  { label: "Roadmap", id: "roadmap" },
+  { label: "Team", id: "team" },
+  { label: "Community", id: "community" },
+];
 
 const socials = [
-  { Icon: SiX,        url: 'https://x.com/starklottoio',                 color: '#ffffff' },
-  { Icon: SiTelegram, url: 'https://t.me/StarklottoContributors',        color: '#28A9E0' },
-  { Icon: SiGithub,   url: 'https://github.com/FutureMindsTeam/starklotto', color: '#ffffff' }
-]
-
-
-
+  { Icon: SiX, url: "https://x.com/starklottoio", color: "#ffffff" },
+  {
+    Icon: SiTelegram,
+    url: "https://t.me/StarklottoContributors",
+    color: "#28A9E0",
+  },
+  {
+    Icon: SiGithub,
+    url: "https://github.com/FutureMindsTeam/starklotto",
+    color: "#ffffff",
+  },
+];
 
 const scrollTo = (id: string) =>
-  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
-
-
-
+  document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
 
 export default function Footer() {
   return (
     <footer className="relative overflow-hidden pt-24 pb-12 bg-[#0e1020] text-neutral-300/90">
-     
       <svg
         viewBox="0 0 1440 60"
         preserveAspectRatio="none"
@@ -38,17 +39,14 @@ export default function Footer() {
         <path d="M0,20 C240,80 480,-40 720,20 C960,80 1200,-40 1440,20 L1440,60 L0,60 Z" />
       </svg>
 
-
       {/* ----- subtle background halo ----- */}
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#F2075D]/10 via-transparent to-transparent blur-[180px]" />
-
 
       <div className="relative z-10 mx-auto flex max-w-6xl flex-col items-center gap-14 px-6">
         {/* ---------------- logo ---------------- */}
         <Link href="/" className="text-3xl font-extrabold tracking-tight">
           <span className="text-[#F2075D]">Stark</span>Lotto
         </Link>
-
 
         {/* --------------- navigation --------------- */}
         <nav className="flex flex-wrap justify-center gap-6 text-sm md:text-base">
@@ -68,7 +66,6 @@ export default function Footer() {
           ))}
         </nav>
 
-
         {/* -------------- social icons -------------- */}
         <div className="flex gap-6">
           {socials.map(({ Icon, url, color }) => (
@@ -78,7 +75,7 @@ export default function Footer() {
               target="_blank"
               rel="noreferrer"
               whileHover={{ scale: 1.15, rotate: 6 }}
-              transition={{ type: 'spring', stiffness: 260, damping: 18 }}
+              transition={{ type: "spring", stiffness: 260, damping: 18 }}
               className="grid place-items-center rounded-full border border-white/10 bg-white/5
                          p-3 backdrop-blur-md"
             >
@@ -87,12 +84,8 @@ export default function Footer() {
           ))}
         </div>
 
-
-       
         <hr className="w-full max-w-sm border-t border-white/10" />
 
-
-       
         <p className="text-center text-xs text-neutral-400">
           © 2025&nbsp;StarkLotto&nbsp;•&nbsp;Building the next generation of
           decentralized lotteries on&nbsp;
@@ -100,5 +93,5 @@ export default function Footer() {
         </p>
       </div>
     </footer>
-  )
+  );
 }
