@@ -7,6 +7,10 @@ import { GlowingButton } from "~~/components/glowing-button";
 import { Navbar } from "~~/components/Navbar";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { Abi, useContract } from "@starknet-react/core";
+import { useTransactor } from "~~/hooks/scaffold-stark/useTransactor";
+import deployedContracts from "~~/contracts/deployedContracts";
+import { LOTT_CONTRACT_NAME } from "~~/utils/Constants";
 
 export default function BuyTicketsPage() {
   const router = useRouter();
@@ -16,6 +20,10 @@ export default function BuyTicketsPage() {
   >({
     1: [],
   });
+  const drawId = 1;
+  const [isLoading, setIsLoading] = useState(false);
+  const [txError, setTxError] = useState<string | null>(null);
+  const [txSuccess, setTxSuccess] = useState<string | null>(null);
 
   // Mock data - in real app, this would come from props or API
   const jackpotAmount = "$250,295 USDC";
@@ -91,11 +99,36 @@ export default function BuyTicketsPage() {
     setSelectedNumbers(newSelections);
   };
 
+  const contractInfo = deployedContracts.devnet[LOTT_CONTRACT_NAME];
+  const abi = contractInfo.abi as Abi;
+  const contractAddress = contractInfo.address;
+  
+  const { contract: contractInstance } = useContract({
+    abi,
+    address: contractAddress,
+  });
+
+  const writeTxn = useTransactor();
+
+
   const totalCost = ticketCount * ticketPrice;
 
-  const handlePurchase = () => {
-    // Handle purchase logic here
-    console.log("Purchase:", { selectedNumbers, totalCost });
+  const handlePurchase = async () => {
+    setTxError(null);
+    setTxSuccess(null);
+    if (!contractInstance) return;
+    setIsLoading(true);
+    try {
+      const txs = Object.values(selectedNumbers).map((nums) =>
+        contractInstance.populate("BuyTicket", [drawId, nums])
+      );
+      await writeTxn.writeTransaction(txs);
+      setTxSuccess("Tickets purchased successfully!");
+    } catch (e: any) {
+      setTxError(e?.message || "Transaction failed");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Animation variants
@@ -394,12 +427,17 @@ export default function BuyTicketsPage() {
                 </div>
 
                 <GlowingButton
-                  onClick={handlePurchase}
-                  className="w-full"
-                  glowColor="rgba(139, 92, 246, 0.5)"
-                >
-                  Buy Tickets
-                </GlowingButton>
+                    onClick={handlePurchase}
+                    className="w-full"
+                    glowColor="rgba(139, 92, 246, 0.5)"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Processing..." : "Buy Tickets"}
+                  </GlowingButton>
+                  {txError && <p className="text-red-500 mt-2">{txError}</p>}
+                  {txSuccess && (
+                    <p className="text-green-500 mt-2">{txSuccess}</p>
+                  )}
               </motion.div>
             </div>
           </div>
