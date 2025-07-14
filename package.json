@@ -37,6 +37,6 @@
   "dependencies": {
     "@heroicons/react": "^2.2.0",
     "framer-motion": "^12.5.0",
-    "postcss": "^8.4.38"
+    "postcss": "^8.5.6"
   }
 }
