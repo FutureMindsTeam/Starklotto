@@ -32,7 +32,7 @@ export const allJackpotData = [
   { date: "May 26", amount: 50000, isReset: true, fullDate: "2025-05-26" },
   { date: "May 27", amount: 75000, isReset: false, fullDate: "2025-05-27" },
   { date: "May 28", amount: 100000, isReset: false, fullDate: "2025-05-28" },
-]
+];
 
 export const allDailyGrowthData = [
   { date: "Apr 26", growth: 0, fullDate: "2025-04-26" },
@@ -68,7 +68,7 @@ export const allDailyGrowthData = [
   { date: "May 26", growth: -87.5, fullDate: "2025-05-26" },
   { date: "May 27", growth: 50, fullDate: "2025-05-27" },
   { date: "May 28", growth: 33.33, fullDate: "2025-05-28" },
-]
+];
 
 export const drawHistoryData = [
   {
@@ -161,4 +161,4 @@ export const drawHistoryData = [
     winner: "No winner",
     fullDate: "2025-05-19",
   },
-]
+];

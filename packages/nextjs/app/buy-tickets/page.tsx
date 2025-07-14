@@ -11,8 +11,11 @@ import { Abi, useContract } from "@starknet-react/core";
 import { useTransactor } from "~~/hooks/scaffold-stark/useTransactor";
 import deployedContracts from "~~/contracts/deployedContracts";
 import { LOTT_CONTRACT_NAME } from "~~/utils/Constants";
+import { useTranslation } from "react-i18next";
+
 
 export default function BuyTicketsPage() {
+  const { t } = useTranslation();
   const router = useRouter();
   const [ticketCount, setTicketCount] = useState(1);
   const [selectedNumbers, setSelectedNumbers] = useState<
@@ -191,12 +194,12 @@ export default function BuyTicketsPage() {
                 animate={{ opacity: 1, y: 0 }}
               >
                 <h1 className="text-3xl font-bold text-purple-400 mb-6">
-                  Buy Tickets
+                  {t("buyPage.title")}
                 </h1>
 
                 {/* Next Draw */}
                 <div className="mb-6">
-                  <p className="text-gray-300 mb-1">Next Draw</p>
+                  <p className="text-gray-300 mb-1">{t("buyPage.nextDraw")}</p>
                   <motion.p
                     className="text-[#4ade80] text-4xl font-bold"
                     initial={{ scale: 0.9 }}
@@ -220,7 +223,7 @@ export default function BuyTicketsPage() {
                           {value}
                         </p>
                         <p className="text-gray-400 text-sm capitalize">
-                          {key}
+                          {t(`buyPage.countdown.${key}`)}
                         </p>
                       </motion.div>
                     ))}
@@ -235,17 +238,22 @@ export default function BuyTicketsPage() {
                       className="bg-purple-600 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
+                      transition={{ duration: 0.2 }}
                     >
                       -
                     </motion.button>
                     <p className="text-white">
-                      {ticketCount} Ticket{ticketCount > 1 ? "s" : ""}
+                      {t("buyPage.ticketCount", {
+                        count: ticketCount,
+                        s: ticketCount > 1 ? "s" : "",
+                      })}
                     </p>
                     <motion.button
                       onClick={increaseTickets}
                       className="bg-purple-600 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
+                      transition={{ duration: 0.2 }}
                     >
                       +
                     </motion.button>
@@ -255,23 +263,25 @@ export default function BuyTicketsPage() {
                     className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
+                    transition={{ duration: 0.2 }}
                   >
                     <Shuffle size={16} />
-                    Random for all
+                    {t("buyPage.randomForAll")}
                   </motion.button>
                 </div>
 
                 {/* Ticket Selection */}
-                <div className="space-y-4">
+                <div className="space-y-0">
                   {Array.from({ length: ticketCount }).map((_, idx) => {
                     const ticketId = idx + 1;
                     return (
                       <motion.div
                         key={ticketId}
-                        className="bg-[#111827] rounded-lg p-4"
+                        className="bg-[#232b3b] rounded-lg p-4 mb-4"
                         variants={ticketVariants}
                         initial="hidden"
                         animate="visible"
+                        custom={idx}
                       >
                         <div className="flex justify-between items-center mb-4">
                           <p className="text-white font-medium">
@@ -284,7 +294,7 @@ export default function BuyTicketsPage() {
                             whileTap={{ scale: 0.95 }}
                           >
                             <Shuffle size={14} />
-                            Random
+                            {t("buyPage.random")}
                           </motion.button>
                         </div>
 
@@ -311,116 +321,16 @@ export default function BuyTicketsPage() {
                             );
                           })}
                         </div>
-
-                        <motion.div
-                          className="flex justify-center mt-4 gap-2"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                        >
-                          {selectedNumbers[ticketId]?.length > 0
-                            ? selectedNumbers[ticketId].map((num, i) => (
-                                <motion.div
-                                  key={i}
-                                  className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center text-white"
-                                  initial={{ scale: 0 }}
-                                  animate={{ scale: 1 }}
-                                  transition={{ delay: i * 0.1 }}
-                                >
-                                  {num < 10 ? `0${num}` : num}
-                                </motion.div>
-                              ))
-                            : Array.from({ length: 5 }).map((_, i) => (
-                                <motion.div
-                                  key={i}
-                                  className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-gray-400"
-                                  initial={{ opacity: 0 }}
-                                  animate={{ opacity: 1 }}
-                                  transition={{ delay: i * 0.1 }}
-                                >
-                                  ?
-                                </motion.div>
-                              ))}
-                        </motion.div>
                       </motion.div>
                     );
                   })}
                 </div>
-              </motion.div>
-            </div>
 
-            {/* Right Column - Summary */}
-            <div className="space-y-6">
-              {/* Balance and Price */}
-              <motion.div
-                className="bg-[#1a2234] rounded-xl p-6"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-              >
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="text-[#4ade80]">
-                    <svg
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <rect
-                        x="2"
-                        y="6"
-                        width="20"
-                        height="12"
-                        rx="2"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      />
-                      <path
-                        d="M6 10H10"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                  </div>
-                  <p className="text-white">
-                    Balance:{" "}
-                    <span className="text-[#4ade80]">${balance} $tarkPlay</span>
+                {/* Total Cost */}
+                <div className="bg-[#232b3b] rounded-lg p-4 flex justify-between items-center mt-6">
+                  <p className="text-white font-medium">
+                    {t("buyPage.totalCost")}
                   </p>
-                </div>
-                <p className="text-white">
-                  Price per ticket:{" "}
-                  <span className="text-[#4ade80]">
-                    ${ticketPrice} $tarkPlay
-                  </span>
-                </p>
-              </motion.div>
-
-              {/* Game Rules */}
-              <motion.div
-                className="bg-[#1a2234] rounded-xl p-6"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2 }}
-              >
-                <h3 className="text-white font-medium mb-4">Game Rules</h3>
-                <ul className="text-gray-400 space-y-2">
-                  <li>• Select 5 numbers from 00 to 40 for each ticket</li>
-                  <li>• You can purchase up to 10 tickets per transaction</li>
-                  <li>• The draw takes place daily at 20:00 UTC</li>
-                  <li>• Match all numbers to win the jackpot</li>
-                  <li>• Smaller prizes for partial matches</li>
-                </ul>
-              </motion.div>
-
-              {/* Purchase Summary */}
-              <motion.div
-                className="bg-[#1a2234] rounded-xl p-6 sticky top-6"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 }}
-              >
-                <div className="flex justify-between items-center mb-6">
-                  <p className="text-white font-medium">Total cost:</p>
                   <p className="text-[#4ade80] font-medium">
                     ${totalCost} $tarkPlay
                   </p>
@@ -432,13 +342,29 @@ export default function BuyTicketsPage() {
                     glowColor="rgba(139, 92, 246, 0.5)"
                     disabled={isLoading}
                   >
-                    {isLoading ? "Processing..." : "Buy Tickets"}
+                    {isLoading ? "Processing..." : {t("buyPage.buyButton")}}
                   </GlowingButton>
                   {txError && <p className="text-red-500 mt-2">{txError}</p>}
                   {txSuccess && (
                     <p className="text-green-500 mt-2">{txSuccess}</p>
                   )}
               </motion.div>
+            </div>
+
+            {/* Right Column - Illustration */}
+            <div className="hidden lg:block">
+              <div className="flex flex-col items-center justify-center h-full">
+                <Image
+                  src="/jackpot.svg"
+                  alt="Jackpot Illustration"
+                  width={320}
+                  height={320}
+                  className="mb-6"
+                />
+                <p className="text-gray-400 text-center">
+                  {/* Puedes agregar aquí más textos traducibles si lo deseas */}
+                </p>
+              </div>
             </div>
           </div>
         </div>

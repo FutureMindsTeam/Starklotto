@@ -7,12 +7,14 @@ import { useTheme } from "next-themes";
 import { BlockieAvatar } from "../BlockieAvatar";
 import GenericModal from "./GenericModal";
 import { LAST_CONNECTED_TIME_LOCALSTORAGE_KEY } from "~~/utils/Constants";
+import { useTranslation } from "react-i18next";
 
 const loader = ({ src }: { src: string }) => {
   return src;
 };
 
 const ConnectModal = () => {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [isBurnerWallet, setIsBurnerWallet] = useState(false);
   const { resolvedTheme } = useTheme();
@@ -69,7 +71,7 @@ const ConnectModal = () => {
         onClick={() => setIsOpen(true)}
         className="rounded-[18px] btn-sm font-bold px-8 bg-btn-wallet py-3 cursor-pointer"
       >
-        <span>Connect</span>
+        <span>{t("connect.button")}</span>
       </button>
 
       {isOpen && (
@@ -77,13 +79,15 @@ const ConnectModal = () => {
           <div className="flex flex-col gap-6">
             <div className="flex items-center justify-between">
               <h3 className="text-xl font-bold text-white">
-                {isBurnerWallet ? "Choose account" : "Connect a Wallet"}
+                {isBurnerWallet
+                  ? t("connect.modal.chooseAccount")
+                  : t("connect.modal.title")}
               </h3>
               <button
                 onClick={handleCloseModal}
                 className="btn btn-ghost btn-sm btn-circle cursor-pointer text-white hover:bg-opacity-20 hover:bg-white"
               >
-                ✕
+                {t("connect.modal.close")}
               </button>
             </div>
             <div className="flex flex-col gap-4">

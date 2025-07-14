@@ -84,14 +84,13 @@ trait ILottery<TContractState> {
 mod Lottery {
     use core::array::{Array, ArrayTrait};
     use core::dict::{Felt252Dict, Felt252DictTrait};
+    use core::traits::TryInto;
     use openzeppelin_access::ownable::OwnableComponent;
     use openzeppelin_token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
     use starknet::storage::{
         Map, StoragePathEntry, StoragePointerReadAccess, StoragePointerWriteAccess,
     };
-    use starknet::{
-        ContractAddress, contract_address_const, get_block_timestamp, get_caller_address,
-    };
+    use starknet::{ContractAddress, get_block_timestamp, get_caller_address, get_contract_address};
     use super::{Draw, ILottery, Ticket};
 
     // ownable component by openzeppelin
@@ -106,6 +105,7 @@ mod Lottery {
     const STRK_PLAY_CONTRACT_ADDRESS: felt252 =
         0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d;
 
+    // TODO: Update the address of the vault contract once the vault is deployed
     const STRK_PLAY_VAULT_CONTRACT_ADDRESS: felt252 =
         0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d;
 
@@ -194,6 +194,8 @@ mod Lottery {
         // ownable component by openzeppelin
         #[substorage(v0)]
         ownable: OwnableComponent::Storage,
+        // Reentrancy guard
+        reentrancy_guard: bool,
     }
     //=======================================================================================
     //constructor
@@ -207,6 +209,7 @@ mod Lottery {
         self.fixedPrize2Matches.write(2000000000000000000);
         self.currentDrawId.write(0);
         self.currentTicketId.write(0);
+        self.reentrancy_guard.write(false);
     }
     //=======================================================================================
     //impl
@@ -225,43 +228,50 @@ mod Lottery {
         //=======================================================================================
         //OK
         fn BuyTicket(ref self: ContractState, drawId: u64, numbers: Array<u16>) {
+            // Reentrancy guard at the very beginning
+            assert(!self.reentrancy_guard.read(), 'ReentrancyGuard: reentrant call');
+            self.reentrancy_guard.write(true);
+
+            // Input validation
             assert(self.ValidateNumbers(@numbers), 'Invalid numbers');
+            assert(numbers.len() == 5, 'Invalid numbers length');
+
             let draw = self.draws.entry(drawId).read();
             assert(draw.isActive, 'Draw is not active');
+
             let current_timestamp = get_block_timestamp();
 
             // Process the payment
-            let strk_play_token_dispatcher = IERC20Dispatcher {
-                contract_address: contract_address_const::<STRK_PLAY_CONTRACT_ADDRESS>(),
+            let token_dispatcher = IERC20Dispatcher {
+                contract_address: STRK_PLAY_CONTRACT_ADDRESS.try_into().unwrap(),
             };
 
-            let buyer = get_caller_address();
-            let strk_play_token_vault_address: ContractAddress = contract_address_const::<
-                STRK_PLAY_VAULT_CONTRACT_ADDRESS,
-            >();
-            let payment_amount = self.ticketPrice.read();
+            // --- Balance validation and deduction logic ---
+            // 1. Get ticket price and user/vault addresses
+            let ticket_price = self.ticketPrice.read();
+            let user = get_caller_address();
+            let vault_address: ContractAddress = STRK_PLAY_VAULT_CONTRACT_ADDRESS
+                .try_into()
+                .unwrap();
 
-            assert(
-                strk_play_token_dispatcher.balance_of(buyer) >= payment_amount,
-                'Insufficient funds',
-            );
+            // 2. Validate user has sufficient token balance
+            let user_balance = token_dispatcher.balance_of(user);
+            assert(user_balance > 0, 'No token balance');
+            assert(user_balance >= ticket_price, 'Insufficient balance');
 
-            assert(
-                strk_play_token_dispatcher
-                    .allowance(buyer, strk_play_token_vault_address) >= payment_amount,
-                'Insufficient allowance',
-            );
+            // 3. Validate user has approved lottery contract for token transfer
+            let allowance = token_dispatcher.allowance(user, get_contract_address());
+            assert(allowance >= ticket_price, 'Insufficient allowance');
 
-            let transfer = strk_play_token_dispatcher
-                .transfer_from(buyer, strk_play_token_vault_address, payment_amount);
-
-            assert(transfer, 'Payment failed');
+            // 4. Execute token transfer from user to vault
+            let transfer_success = token_dispatcher
+                .transfer_from(user, vault_address, ticket_price);
+            assert(transfer_success, 'Transfer failed');
+            // --- End balance validation and deduction logic ---
 
             // TODO: Mint the NFT here, for now it is simulated
             let minted = true;
             assert(minted, 'NFT minting failed');
-
-            assert(numbers.len() == 5, 'Invalid numbers length');
 
             // Debug del array antes de crear el ticket
             let n1 = *numbers.at(0);
@@ -304,6 +314,9 @@ mod Lottery {
                         timestamp: current_timestamp,
                     },
                 );
+
+            // Release reentrancy guard
+            self.reentrancy_guard.write(false);
         }
         //=======================================================================================
         fn GetUserTicketsCount(self: @ContractState, drawId: u64, player: ContractAddress) -> u32 {
@@ -396,7 +409,6 @@ mod Lottery {
             let mut matches: u8 = 0;
 
             // Para cada número del ticket
-            let mut _i: usize = 0;
             if number1 == winningNumber1 {
                 matches += 1;
             }
@@ -440,7 +452,7 @@ mod Lottery {
         //OK
         fn CreateNewDraw(ref self: ContractState, accumulatedPrize: u256) {
             // Validate that the accumulated prize is not negative
-            assert(accumulatedPrize >= 0, 'Accumulated prize is negative');
+            assert(accumulatedPrize >= 0, 'Invalid accumulated prize');
 
             let drawId = self.currentDrawId.read() + 1;
             let previousAmount = self.accumulatedPrize.read();
@@ -484,7 +496,7 @@ mod Lottery {
             let count = self.userTicketCount.entry((player, drawId)).read();
 
             let mut i: u32 = 1;
-            while i != count {
+            while i <= count {
                 let ticketId = self.userTicketIds.entry((player, drawId, i)).read();
                 userTicket_ids.append(ticketId);
                 i += 1;

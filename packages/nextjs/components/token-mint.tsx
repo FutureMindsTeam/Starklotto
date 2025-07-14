@@ -7,8 +7,8 @@ import Image from "next/image";
 import { Tooltip } from "./ui/tooltip";
 import { Toast } from "./ui/toast";
 import { StarkInput } from "./scaffold-stark/Input/StarkInput";
-import useScaffoldStrkBalance from '~~/hooks/scaffold-stark/useScaffoldStrkBalance';
-import { useAccount } from '~~/hooks/useAccount';
+import useScaffoldStrkBalance from "~~/hooks/scaffold-stark/useScaffoldStrkBalance";
+import { useAccount } from "~~/hooks/useAccount";
 
 interface TokenMintProps {
   onSuccess?: (amount: number, mintedAmount: number, message: string) => void;
@@ -33,7 +33,9 @@ export default function TokenMint({
 
   // Balance STRK del usuario
   const { address } = useAccount();
-  const { value, formatted } = useScaffoldStrkBalance({ address: address || "" });
+  const { value, formatted } = useScaffoldStrkBalance({
+    address: address || "",
+  });
   const strkBalance = Number(formatted) || 0;
 
   // Parámetros de minteo
@@ -46,7 +48,8 @@ export default function TokenMint({
   const mintedAmount = numericAmount * mintRate - feeAmount;
 
   // Validación de input
-  const isValidInput = numericAmount > 0 && !isNaN(numericAmount) && numericAmount <= strkBalance;
+  const isValidInput =
+    numericAmount > 0 && !isNaN(numericAmount) && numericAmount <= strkBalance;
 
   // Manejar cambio de input desde StarkInput
   const handleStarkInputChange = (newValue: string) => {
@@ -195,7 +198,9 @@ export default function TokenMint({
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center p-0.5">
                   <div className="w-full h-full rounded-full bg-gray-900 flex items-center justify-center">
-                    <span className="text-purple-400 text-xs font-bold">$P</span>
+                    <span className="text-purple-400 text-xs font-bold">
+                      $P
+                    </span>
                   </div>
                 </div>
                 <span className="font-semibold">$tarkPlay</span>
@@ -267,4 +272,4 @@ export default function TokenMint({
       </div>
     </div>
   );
-} 
+}

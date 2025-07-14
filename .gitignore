@@ -1,4 +1,4 @@
- target
+target
 .snfoundry_cache/
 .env
 .vscode/**
@@ -16,3 +16,7 @@ package-lock.json
 .eslintcache
 .DS_Store
 .vercel
+
+# Scarb build tools
+scarb*.zip
+scarb-v*/
