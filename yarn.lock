@@ -3952,7 +3952,7 @@ __metadata:
     eslint: ^8
     eslint-config-next: 15.2.3
     ethers: ^6.12.0
-    framer-motion: ^12.5.0
+    framer-motion: ^12.23.5
     get-starknet-core: ^4.0.0
     i18next: ^25.3.0
     i18next-browser-languagedetector: ^8.2.0
@@ -8902,12 +8902,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"framer-motion@npm:^12.5.0":
-  version: 12.23.0
-  resolution: "framer-motion@npm:12.23.0"
+"framer-motion@npm:^12.23.5":
+  version: 12.23.5
+  resolution: "framer-motion@npm:12.23.5"
   dependencies:
-    motion-dom: ^12.22.0
-    motion-utils: ^12.19.0
+    motion-dom: ^12.23.5
+    motion-utils: ^12.23.2
     tslib: ^2.4.0
   peerDependencies:
     "@emotion/is-prop-valid": "*"
@@ -8920,7 +8920,7 @@ __metadata:
       optional: true
     react-dom:
       optional: true
-  checksum: 0f5f18bc66b11f6d9b7b294cf7723479f0a313d1afcbab54786ed25e40da49734f53b960a4abe95d08b138736f84c11cacd007113adf755217b6a6200d49ad78
+  checksum: f55d5c1145a6e8096f2b0871082f5e20da99ca0becbaeb74de350786d31e3e0acc49a3f494cc9b8b3dbe0d1947f8d27907747299f2970ea5f64fea3ebb755ec3
   languageName: node
   linkType: hard
 
@@ -10855,19 +10855,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"motion-dom@npm:^12.22.0":
-  version: 12.22.0
-  resolution: "motion-dom@npm:12.22.0"
+"motion-dom@npm:^12.23.5":
+  version: 12.23.5
+  resolution: "motion-dom@npm:12.23.5"
   dependencies:
-    motion-utils: ^12.19.0
-  checksum: c632fe2a1d75d57ac261a6d36c84c1bb7fd3ae34241256f9a84ee148420d60bd7919e1ec15fe7828ff7718400aa0b2be96a2bc230a621eb6777b2d28d74090be
+    motion-utils: ^12.23.2
+  checksum: 3d844b9f945b5b1891e5caaafcc5566cfc8928c582ee2bf6dea3ed6aa478a42ed5e0f7bca9bd0e82b5f358901937615c3dd90625d3041e2ebc9cd35bb9acb5b8
   languageName: node
   linkType: hard
 
-"motion-utils@npm:^12.19.0":
-  version: 12.19.0
-  resolution: "motion-utils@npm:12.19.0"
-  checksum: f0e6a10b0fbc65db10d537c91dd2dd2928fadedd9c45f69c24f2be9d5123e200e109467580d248fb6b4d983877377e0cec8aa8cc167a4c0416679ea6648f4db5
+"motion-utils@npm:^12.23.2":
+  version: 12.23.2
+  resolution: "motion-utils@npm:12.23.2"
+  checksum: 3667e667f159ed6a7dc14d659c1269028d4ca3ead3d39811048dfe61992394aa1b2c3e10ab690d9d3b0b1aedb8dba1415958a9b53cda62bad509f286c7800117
   languageName: node
   linkType: hard
 
@@ -13114,7 +13114,7 @@ __metadata:
     "@next/swc-linux-x64-gnu": ^15.3.1
     "@next/swc-linux-x64-musl": ^15.3.1
     daisyui: ^4.7.3
-    framer-motion: ^12.5.0
+    framer-motion: ^12.23.5
     husky: ^9.0.11
     i18next: ^25.3.0
     i18next-browser-languagedetector: ^8.2.0
