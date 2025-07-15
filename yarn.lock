@@ -2402,7 +2402,7 @@ __metadata:
     daisyui: ^4.7.3
     eslint: ^8
     eslint-config-next: 14.1.3
-    ethers: ^6.12.0
+    ethers: ^6.15.0
     framer-motion: ^12.5.0
     get-starknet-core: ^4.0.0
     jsdom: ^25.0.1
@@ -5783,9 +5783,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ethers@npm:^6.12.0":
-  version: 6.13.5
-  resolution: "ethers@npm:6.13.5"
+"ethers@npm:^6.15.0":
+  version: 6.15.0
+  resolution: "ethers@npm:6.15.0"
   dependencies:
     "@adraffy/ens-normalize": 1.10.1
     "@noble/curves": 1.2.0
@@ -5794,7 +5794,7 @@ __metadata:
     aes-js: 4.0.0-beta.5
     tslib: 2.7.0
     ws: 8.17.1
-  checksum: 25700f75c3854fb5043b72748c7a4198efd15d50b4e66d575e6287aab707e855d9aa5ba342fe3d4a4c7943c84a46bcf3702b0f1da1307a82c40e1d08e86078ba
+  checksum: 3e8fb73b5cf2bef564433442adb68fe89a6da0d664c1ebe6e226fe5e7160da7010800334c3ecc53eef51ff8c10a3255fa99160e8d424f1241440043f6faa2ea1
   languageName: node
   linkType: hard
 
