@@ -273,20 +273,6 @@ tr:last-child td {
   -webkit-text-fill-color: transparent;
 }
 
-@keyframes modalFadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95) translateY(0);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-.animate-modalFadeIn {
-  animation: modalFadeIn 0.2s ease-out forwards;
-}
-
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -297,69 +283,42 @@ tr:last-child td {
   justify-content: center;
   z-index: 50;
 }
+
 .modal-content {
   position: relative;
   margin: 1.75rem auto;
   pointer-events: auto;
   border-radius: 8px;
 }
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(0);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-modalFadeIn {
+  animation: modalFadeIn 0.2s ease-out forwards;
+}
+
 .modal-backdrop {
   background-color: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(4px);
   opacity: 0;
   transition: opacity 0.2s ease-in-out;
 }
+
 .modal-backdrop-enter {
   opacity: 1;
 }
 
+/* Asegurarse que el modal siempre esté por encima de todo */
 #__next {
   position: relative;
   z-index: 1;
-}
-
-@keyframes float {
-  0% {
-    transform: translateY(0);
-    opacity: 0.3;
-  }
-  50% {
-    transform: translateY(-20px);
-    opacity: 0.6;
-  }
-  100% {
-    transform: translateY(0);
-    opacity: 0.3;
-  }
-}
-.particle {
-  position: absolute;
-  border-radius: 9999px;
-  background-color: rgba(255, 255, 255, 0.07);
-  pointer-events: none;
-  filter: blur(1px);
-}
-#particle-container {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.dot-glow {
-  @apply bg-gradient-to-br from-[#F2075D] to-[#8A26A6];
-  box-shadow:
-    0 0 6px rgba(242, 7, 93, 0.8),
-    0 0 12px rgba(138, 38, 166, 0.6);
-  animation: pulse 4s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.35);
-  }
 }

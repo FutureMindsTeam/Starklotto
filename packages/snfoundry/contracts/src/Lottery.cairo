@@ -765,7 +765,7 @@ pub mod Lottery {
         let mut usedNumbers: Felt252Dict<bool> = Default::default();
 
         while count != 5 {
-            let number = (blockTimestamp + count) % (MaxNumber.into() - MinNumber.into() + 1) + MinNumber.into();
+            let number = (blockTimestamp + count) % (MaxNumber.into() + 1);
             let number_u16: u16 = number.try_into().unwrap();
 
             if usedNumbers.get(number.into()) != true {

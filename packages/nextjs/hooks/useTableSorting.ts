@@ -8,8 +8,7 @@ type SortField =
   | "startingPot"
   | "endingPot"
   | "change"
-  | "winner"
-  | "actions";
+  | "winner";
 type SortDirection = "asc" | "desc";
 
 interface DrawData {
@@ -31,13 +30,8 @@ export function useTableSorting(data: DrawData[], itemsPerPage = 10) {
 
   const sortedData = useMemo(() => {
     const sorted = [...data].sort((a, b) => {
-      // Skip sorting for actions field
-      if (sortField === "actions") {
-        return 0;
-      }
-
-      let aValue = a[sortField as keyof DrawData];
-      let bValue = b[sortField as keyof DrawData];
+      let aValue = a[sortField];
+      let bValue = b[sortField];
 
       if (typeof aValue === "string") {
         aValue = aValue.toLowerCase();

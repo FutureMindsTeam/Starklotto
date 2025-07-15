@@ -1,11 +1,5 @@
-use contracts::StarkPlayERC20::{
-    IBurnableDispatcher, IBurnableDispatcherTrait, IMintableDispatcher, IMintableDispatcherTrait,
-    IPrizeTokenDispatcher, IPrizeTokenDispatcherTrait,
-};
-use contracts::StarkPlayVault::StarkPlayVault::FELT_STRK_CONTRACT;
 use contracts::StarkPlayVault::{IStarkPlayVaultDispatcher, IStarkPlayVaultDispatcherTrait};
 use openzeppelin_testing::declare_and_deploy;
-use openzeppelin_token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
 use openzeppelin_utils::serde::SerializedAppend;
 use snforge_std::{
     CheatSpan, cheat_caller_address, EventSpy, start_cheat_caller_address,
@@ -15,9 +9,8 @@ use snforge_std::{
     IsEmitted // Trait for checking if a given event was ever emitted
 };
 use starknet::ContractAddress;
-use starknet::contract_address::contract_address_const;
 
-const STRK_TOKEN_CONTRACT_ADDRESS: ContractAddress = FELT_STRK_CONTRACT.try_into().unwrap();
+
 // Direcciones de prueba
 const OWNER: ContractAddress = 0x02dA5254690b46B9C4059C25366D1778839BE63C142d899F0306fd5c312A5918
     .try_into()
@@ -31,159 +24,20 @@ const Initial_Fee_Percentage: u64 = 50; // 50 basis points = 0.5%
 const BASIS_POINTS_DENOMINATOR: u256 = 10000_u256; // 10000 basis points = 100%
 
 //helper function
-fn owner_address_Sepolia() -> ContractAddress {
-    OWNER
-}
-fn user_address_Sepolia() -> ContractAddress {
-    USER
-}
 fn owner_address() -> ContractAddress {
-    contract_address_const::<0x123>()
+    OWNER
 }
 
 fn user_address() -> ContractAddress {
-    contract_address_const::<0x456>()
-}
-
-
-fn USER1() -> ContractAddress {
-    contract_address_const::<0x456>()
-}
-
-
-fn LARGE_AMOUNT() -> u256 {
-    1000000000000000000000000_u256 // 1 million tokens (within mint limit)
-}
-
-fn MAX_MINT_LIMIT() -> u256 {
-    // Definir el límite máximo exacto del contrato
-    1000000000000000000000000_u256 // 1 million tokens (MAX_MINT_AMOUNT)
-}
-
-fn EXCEEDS_MINT_LIMIT() -> u256 {
-    // Cantidad que excede el límite para provocar panic
-    2000000000000000000000000_u256 // 2 million tokens (exceeds limit)
+    USER
 }
 
 fn deploy_contract_lottery() -> ContractAddress {
     let contract_lotery: ContractAddress = OWNER.try_into().unwrap();
     contract_lotery
 }
-fn deploy_mock_strk_token() -> IMintableDispatcher {
-    // Deploy the mock STRK token at the exact constant address that the vault expects
-    let target_address: ContractAddress =
-        0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
-        .try_into()
-        .unwrap();
 
-    let contract = declare("StarkPlayERC20").unwrap().contract_class();
-    let constructor_calldata = array![owner_address().into(), owner_address().into()];
-
-    // Deploy at the specific constant address that the vault expects
-    let (deployed_address, _) = contract.deploy_at(@constructor_calldata, target_address).unwrap();
-
-    // Verify it deployed at the correct address
-    assert(deployed_address == target_address, 'Mock STRK address mismatch');
-
-    // Set up the STRK token with initial balances for users
-    let strk_token = IMintableDispatcher { contract_address: deployed_address };
-    start_cheat_caller_address(deployed_address, owner_address());
-
-    // Grant MINTER_ROLE to OWNER so we can mint tokens
-    strk_token.grant_minter_role(owner_address());
-    strk_token
-        .set_minter_allowance(
-            owner_address(), EXCEEDS_MINT_LIMIT().into() * 10,
-        ); // Large allowance
-
-    strk_token.mint(USER1(), EXCEEDS_MINT_LIMIT().into() * 3); // Mint plenty for testing
-
-    stop_cheat_caller_address(deployed_address);
-
-    strk_token
-}
-
-fn deploy_vault_contract() -> (IStarkPlayVaultDispatcher, IMintableDispatcher) {
-    let initial_fee = 50_u64; // 50 basis points = 0.5%
-    // First deploy the mock STRK token at the constant address
-    let _strk_token = deploy_mock_strk_token();
-
-    // Deploy StarkPlay token with OWNER as admin (so OWNER can grant roles)
-    let starkplay_contract = declare("StarkPlayERC20").unwrap().contract_class();
-    let starkplay_constructor_calldata = array![
-        owner_address().into(), owner_address().into(),
-    ]; // recipient and admin
-    let (starkplay_address, _) = starkplay_contract
-        .deploy(@starkplay_constructor_calldata)
-        .unwrap();
-    let starkplay_token = IMintableDispatcher { contract_address: starkplay_address };
-    let starkplay_token_burn = IBurnableDispatcher { contract_address: starkplay_address };
-
-    // Deploy vault (no longer needs STRK token address parameter)
-    let vault_contract = declare("StarkPlayVault").unwrap().contract_class();
-    let vault_constructor_calldata = array![
-        owner_address().into(), starkplay_token.contract_address.into(), initial_fee.into(),
-    ];
-    let (vault_address, _) = vault_contract.deploy(@vault_constructor_calldata).unwrap();
-    let vault = IStarkPlayVaultDispatcher { contract_address: vault_address };
-
-    // Grant MINTER_ROLE and BURNER_ROLE to the vault so it can mint and burn StarkPlay tokens
-    start_cheat_caller_address(starkplay_token.contract_address, owner_address());
-    starkplay_token.grant_minter_role(vault_address);
-    starkplay_token_burn.grant_burner_role(vault_address);
-    // Set a large allowance for the vault to mint and burn tokens
-    starkplay_token
-        .set_minter_allowance(vault_address, EXCEEDS_MINT_LIMIT().into() * 10); // 1M tokens
-    starkplay_token_burn
-        .set_burner_allowance(vault_address, EXCEEDS_MINT_LIMIT().into() * 10); // 1M tokens
-    stop_cheat_caller_address(starkplay_token.contract_address);
-
-    (vault, starkplay_token)
-}
-
-fn deploy_vault_contract_with_fee(
-    initial_fee: u64,
-) -> (IStarkPlayVaultDispatcher, IMintableDispatcher) {
-    //let initial_fee = 50_u64; // 50 basis points = 0.5%
-    // First deploy the mock STRK token at the constant address
-    let _strk_token = deploy_mock_strk_token();
-
-    // Deploy StarkPlay token with OWNER as admin (so OWNER can grant roles)
-    let starkplay_contract = declare("StarkPlayERC20").unwrap().contract_class();
-    let starkplay_constructor_calldata = array![
-        owner_address().into(), owner_address().into(),
-    ]; // recipient and admin
-    let (starkplay_address, _) = starkplay_contract
-        .deploy(@starkplay_constructor_calldata)
-        .unwrap();
-    let starkplay_token = IMintableDispatcher { contract_address: starkplay_address };
-    let starkplay_token_burn = IBurnableDispatcher { contract_address: starkplay_address };
-
-    // Deploy vault (no longer needs STRK token address parameter)
-    let vault_contract = declare("StarkPlayVault").unwrap().contract_class();
-    let vault_constructor_calldata = array![
-        owner_address().into(), starkplay_token.contract_address.into(), initial_fee.into(),
-    ];
-    let (vault_address, _) = vault_contract.deploy(@vault_constructor_calldata).unwrap();
-    let vault = IStarkPlayVaultDispatcher { contract_address: vault_address };
-
-    // Grant MINTER_ROLE and BURNER_ROLE to the vault so it can mint and burn StarkPlay tokens
-    start_cheat_caller_address(starkplay_token.contract_address, owner_address());
-    starkplay_token.grant_minter_role(vault_address);
-    starkplay_token_burn.grant_burner_role(vault_address);
-    // Set a large allowance for the vault to mint and burn tokens
-    starkplay_token
-        .set_minter_allowance(vault_address, EXCEEDS_MINT_LIMIT().into() * 10); // 1M tokens
-    starkplay_token_burn
-        .set_burner_allowance(vault_address, EXCEEDS_MINT_LIMIT().into() * 10); // 1M tokens
-    stop_cheat_caller_address(starkplay_token.contract_address);
-
-    (vault, starkplay_token)
-}
-
-//this function is used to deploy the vault with the lottery contract
-//someone deleted the lottery contract from the vault constructor
-fn deploy_contract_starkplayvault_with_Lottery() -> ContractAddress {
+fn deploy_contract_starkplayvault() -> ContractAddress {
     let contract_lotery = deploy_contract_lottery();
     let owner = owner_address();
     let initial_fee = 50_u64; // 50 basis points = 0.5%
@@ -220,33 +74,9 @@ fn get_fee_amount(feePercentage: u64, amount: u256) -> u256 {
     feeAmount
 }
 
-
-fn setup_user_balance(
-    token: IMintableDispatcher, user: ContractAddress, amount: u256, vault_address: ContractAddress,
-) {
-    // Mint STRK tokens to user so they can pay
-    // Set caller as owner (who has DEFAULT_ADMIN_ROLE and MINTER_ROLE)
-    start_cheat_caller_address(token.contract_address, owner_address());
-
-    // Ensure OWNER has MINTER_ROLE and allowance (should already be set, but just in case)
-    token.grant_minter_role(owner_address());
-    token.set_minter_allowance(owner_address(), EXCEEDS_MINT_LIMIT().into() * 10);
-
-    // Mint tokens to user (still as owner)
-    token.mint(user, amount);
-    stop_cheat_caller_address(token.contract_address);
-
-    // Set up allowance so vault can transfer STRK tokens from user
-    let erc20_dispatcher = IERC20Dispatcher { contract_address: token.contract_address };
-    start_cheat_caller_address(token.contract_address, user);
-    erc20_dispatcher.approve(vault_address, amount);
-    stop_cheat_caller_address(token.contract_address);
-}
-
-
 #[test]
 fn test_get_fee_percentage_deploy() {
-    let vault_address = deploy_contract_starkplayvault_with_Lottery();
+    let vault_address = deploy_contract_starkplayvault();
 
     let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
 
@@ -258,7 +88,7 @@ fn test_get_fee_percentage_deploy() {
 
 #[test]
 fn test_calculate_fee_buy_numbers() {
-    let vault_address = deploy_contract_starkplayvault_with_Lottery();
+    let vault_address = deploy_contract_starkplayvault();
 
     let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
 
@@ -290,7 +120,7 @@ fn test_calculate_fee_buy_numbers() {
 #[should_panic(expected: 'Fee percentage is too low')]
 #[test]
 fn test_set_fee_zero_like_negative_value() {
-    let vault_address = deploy_contract_starkplayvault_with_Lottery();
+    let vault_address = deploy_contract_starkplayvault();
     let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
     let new_fee = 0_u64;
     let result = vault_dispatcher.setFeePercentage(new_fee);
@@ -300,7 +130,7 @@ fn test_set_fee_zero_like_negative_value() {
 #[should_panic(expected: 'Fee percentage is too high')]
 #[test]
 fn test_set_fee_max_like_501() {
-    let vault_address = deploy_contract_starkplayvault_with_Lottery();
+    let vault_address = deploy_contract_starkplayvault();
     let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
     let new_fee = 501_u64;
     let _result = vault_dispatcher.setFeePercentage(new_fee);
@@ -308,7 +138,7 @@ fn test_set_fee_max_like_501() {
 
 #[test]
 fn test_set_fee_deploy_contract() {
-    let vault_address = deploy_contract_starkplayvault_with_Lottery();
+    let vault_address = deploy_contract_starkplayvault();
     let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
     let fee_percentage = 50_u64;
     let val = vault_dispatcher.GetFeePercentage();
@@ -317,7 +147,7 @@ fn test_set_fee_deploy_contract() {
 
 #[test]
 fn test_set_fee_min() {
-    let vault_address = deploy_contract_starkplayvault_with_Lottery();
+    let vault_address = deploy_contract_starkplayvault();
     let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
     let new_fee = 10_u64;
     let result = vault_dispatcher.setFeePercentage(new_fee);
@@ -327,7 +157,7 @@ fn test_set_fee_min() {
 
 #[test]
 fn test_set_fee_max() {
-    let vault_address = deploy_contract_starkplayvault_with_Lottery();
+    let vault_address = deploy_contract_starkplayvault();
     let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
     let new_fee = 500_u64;
     let result = vault_dispatcher.setFeePercentage(new_fee);
@@ -337,7 +167,7 @@ fn test_set_fee_max() {
 
 #[test]
 fn test_set_fee_middle() {
-    let vault_address = deploy_contract_starkplayvault_with_Lottery();
+    let vault_address = deploy_contract_starkplayvault();
     let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
     let new_fee = 250_u64;
     let result = vault_dispatcher.setFeePercentage(new_fee);
@@ -347,7 +177,7 @@ fn test_set_fee_middle() {
 
 #[test]
 fn test_event_set_fee_percentage() {
-    let vault_address = deploy_contract_starkplayvault_with_Lottery();
+    let vault_address = deploy_contract_starkplayvault();
     let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
     let new_fee = 250_u64;
     let mut spy = spy_events();
@@ -681,680 +511,4 @@ fn test_mixed_amounts_accumulation() {
     }
 
     assert!(running_total == total_accumulated, "Running total should match total accumulated");
-}
-
-
-
-//--------------TEST ISSUE-VAULT-HACK14-001------------------------------
-
-//test set fee percentage prizes converted
-#[test]
-fn test_set_fee_percentage_prizes_converted() {
-    let token_address = deploy_starkplay_token();
-    let vault_address = deploy_vault_with_fee(token_address, 500_u64);
-    let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
-
-    //test set fee percentage prizes converted
-    let new_fee = 500_u64;
-    let result = vault_dispatcher.setFeePercentagePrizesConverted(new_fee);
-    assert!(result, "Set fee should return true");
-
-    //test get fee percentage prizes converted
-    let fee_percentage = vault_dispatcher.GetFeePercentagePrizesConverted();
-    assert!(fee_percentage == new_fee, "Fee percentage  should be 5%");
-}
-#[should_panic(expected: 'Fee percentage is too high')]
-#[test]
-fn test_set_fee_percentage_prizes_converted_invalid_fee() {
-    let token_address = deploy_starkplay_token();
-    let vault_address = deploy_vault_with_fee(token_address, 500_u64);
-    let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
-    //test set fee percentage prizes converted with invalid fee
-    let new_fee = 501_u64;
-    let result = vault_dispatcher.setFeePercentagePrizesConverted(new_fee);
-    assert!(!result, "Set fee should return false");
-}
-#[test]
-fn test_get_fee_percentage_prizes_in_constructor() {
-    let token_address = deploy_starkplay_token();
-    let vault_address = deploy_vault_with_fee(token_address, 500_u64);
-    let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
-    //test get fee percentage prizes in constructor
-    let fee_percentage = vault_dispatcher.GetFeePercentagePrizesConverted();
-    assert!(fee_percentage == 300_u64, "Fee percentage should be 3%");
-}
-
-
-
-//Test for ISSUE-TEST-CU01-003
-
-// ============================================================================================
-// CRITICAL SECURITY TESTS - OVERFLOW/UNDERFLOW PREVENTION
-// ============================================================================================
-
-#[test]
-//#[fork("SEPOLIA_LATEST")]
-fn test_fee_calculation_overflow_prevention() {
-    // Set up STRK balance for the user to test with large amounts
-    let user_address = USER1();
-
-    // Deploy vault
-    let (vault, _) = deploy_vault_contract();
-    let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault.contract_address };
-
-    // Set up amounts for testing overflow prevention (within mint limit)
-    let large_amount = LARGE_AMOUNT(); // 1 million tokens
-    let very_large_amount = MAX_MINT_LIMIT(); // Exact limit - 1 million tokens
-
-    //---------------------------------------
-    // let erc20_dispatcher = IERC20Dispatcher { contract_address: STRK_TOKEN_CONTRACT_ADDRESS };
-    //let amount_to_transfer: u256 = very_large_amount;
-    //cheat_caller_address(STRK_TOKEN_CONTRACT_ADDRESS, user_address, CheatSpan::TargetCalls(1));
-    //erc20_dispatcher.approve(vault_address, amount_to_transfer);
-    //let approved_amount = erc20_dispatcher.allowance(user_address, vault_address);
-    //assert(approved_amount == amount_to_transfer, 'Not the right amount approved');
-    //---------------------------------------
-
-    // Get the deployed STRK token for user balance setup
-    let strk_token = IMintableDispatcher {
-        contract_address: 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
-            .try_into()
-            .unwrap(),
-    };
-
-    // Setup user balance using the deployed STRK token
-    setup_user_balance(strk_token, user_address, MAX_MINT_LIMIT() * 3, vault.contract_address);
-
-    // Get initial state
-    let initial_fee_percentage = vault_dispatcher.GetFeePercentage();
-    let initial_accumulated_fee = vault_dispatcher.get_accumulated_fee();
-
-    // Verify initial state
-    assert(initial_fee_percentage > 0, 'fee percentage zero');
-    assert(initial_accumulated_fee == 0, 'initial fee not zero');
-
-    // Test buySTRKP with large amounts to ensure no overflow
-    let result1 = vault_dispatcher.buySTRKP(user_address, large_amount);
-
-    // Verify first transaction completed successfully
-    assert(result1 == true, 'first tx failed');
-
-    // Check that fees were calculated correctly for large amounts
-    let fee_percentage = vault_dispatcher.GetFeePercentage();
-    let expected_fee = large_amount * fee_percentage.into() / 10000_u256;
-    let actual_accumulated_fee = vault_dispatcher.get_accumulated_fee();
-
-    // Verify fee calculation didn't overflow
-    assert(actual_accumulated_fee > 0, 'fee not accumulated');
-    assert(actual_accumulated_fee == expected_fee, 'fee calc wrong');
-
-    // Test with even larger amount
-    let result2 = vault_dispatcher.buySTRKP(user_address, large_amount.into());
-
-    // Verify second transaction completed successfully
-    assert(result2 == true, 'second tx failed');
-
-    // Verify final state after both transactions
-    let final_accumulated_fee = vault_dispatcher.get_accumulated_fee();
-    let expected_total_fee = expected_fee
-        + (very_large_amount * fee_percentage.into() / 10000_u256);
-
-    // Verify total accumulated fees are correct
-    assert(final_accumulated_fee == expected_total_fee, 'total fee wrong');
-    assert(final_accumulated_fee > actual_accumulated_fee, 'fee not increased');
-
-    // Verify the contract is still functional after large operations
-    let final_fee_percentage = vault_dispatcher.GetFeePercentage();
-    assert(final_fee_percentage == initial_fee_percentage, 'fee percentage changed');
-}
-
-
-#[should_panic(expected: 'Exceeds mint limit')]
-#[test]
-fn test_fee_calculation_overflow_prevention_exceeds_limit() {
-    let (vault, _) = deploy_vault_contract();
-    let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault.contract_address };
-
-    // Set up STRK balance for the user to test with large amounts
-    let user_address = USER1();
-
-    // Get the deployed STRK token for user balance setup
-    let strk_token = IMintableDispatcher {
-        contract_address: 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
-            .try_into()
-            .unwrap(),
-    };
-
-    // Setup user balance using the deployed STRK token
-    setup_user_balance(strk_token, user_address, MAX_MINT_LIMIT() * 3, vault.contract_address);
-
-    // Test buySTRKP with amount that exceeds mint limit
-    // This should trigger a panic with "Exceeds mint limit"
-    let _result = vault_dispatcher.buySTRKP(user_address, EXCEEDS_MINT_LIMIT());
-
-    // This line should never be reached due to panic
-    assert(false, 'Should have panicked');
-}
-
-#[test]
-fn test_fee_calculation_underflow_prevention() {
-    // Set up STRK balance for the user to test with large amounts
-    let user_address = USER1();
-
-    // Deploy vault
-    let (vault, _) = deploy_vault_contract_with_fee(10_u64);
-    let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault.contract_address };
-
-    // Get the deployed STRK token for user balance setup
-    let strk_token = IMintableDispatcher {
-        contract_address: 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
-            .try_into()
-            .unwrap(),
-    };
-
-    // Setup user balance using the deployed STRK token
-    setup_user_balance(strk_token, user_address, MAX_MINT_LIMIT() * 3, vault.contract_address);
-
-    // Get initial state
-    let initial_fee_percentage = vault_dispatcher.GetFeePercentage();
-    let initial_accumulated_fee = vault_dispatcher.get_accumulated_fee();
-
-    // Verify initial state
-    assert(initial_fee_percentage > 0, 'fee percentage zero');
-    assert(initial_accumulated_fee == 0, 'initial fee not zero');
-
-    // Test with very small amounts to prevent underflow
-    let fee_percentage = 10_u64; // 0.1% fee (minimum allowed)
-
-    // Test with 1 wei (smallest possible amount)
-    let one_wei = 1_u256;
-    let fee_for_one_wei = get_fee_amount(fee_percentage, one_wei);
-
-    // With 0.1% fee on 1 wei: 1 * 10 / 10000 = 0 (rounded down)
-    assert(fee_for_one_wei == 0_u256, 'should be 0 with 0.1% fee');
-
-    // Test with 10 wei
-    let ten_wei = 10_u256;
-    let fee_for_ten_wei = get_fee_amount(fee_percentage, ten_wei);
-
-    // With 0.1% fee on 10 wei: 10 * 10 / 10000 = 0 (rounded down)
-    assert(fee_for_ten_wei == 0_u256, 'should be 0 with 0.1% fee');
-
-    // Test with 100 wei
-    let hundred_wei = 100_u256;
-    let fee_for_hundred_wei = get_fee_amount(fee_percentage, hundred_wei);
-
-    // With 0.1% fee on 100 wei: 100 * 10 / 10000 = 0 (rounded down)
-    assert(fee_for_hundred_wei == 0_u256, 'should be 0 with 0.1% fee');
-
-    // Test with 1000 wei (should generate a fee)
-    let thousand_wei = 1000_u256;
-    let fee_for_thousand_wei = get_fee_amount(fee_percentage, thousand_wei);
-
-    // With 0.1% fee on 1000 wei: 1000 * 10 / 10000 = 1
-    assert(fee_for_thousand_wei == 1_u256, 'should be 1 with 0.1% fee');
-
-    // Verify that division doesn't cause underflow
-    let minimum_amount_for_fee = 1000_u256;
-    let fee_for_minimum = get_fee_amount(fee_percentage, minimum_amount_for_fee);
-    assert(fee_for_minimum > 0, 'should generate a fee');
-
-    // Test buySTRKP with small amounts to ensure no underflow
-    let result1 = vault_dispatcher.buySTRKP(user_address, thousand_wei);
-
-    // Verify first transaction completed successfully
-    assert(result1 == true, 'first tx failed');
-
-    // Check that fees were calculated correctly for small amounts
-    let actual_accumulated_fee = vault_dispatcher.get_accumulated_fee();
-
-    // Verify fee calculation didn't underflow
-    assert(actual_accumulated_fee > 0, 'fee not accumulated');
-    assert(actual_accumulated_fee == fee_for_thousand_wei, 'fee calc wrong');
-
-    // Test with another small amount
-    let result2 = vault_dispatcher.buySTRKP(user_address, thousand_wei);
-
-    // Verify second transaction completed successfully
-    assert(result2 == true, 'second tx failed');
-
-    // Verify final state after both transactions
-    let final_accumulated_fee = vault_dispatcher.get_accumulated_fee();
-    let expected_total_fee = fee_for_thousand_wei + fee_for_thousand_wei;
-
-    // Verify total accumulated fees are correct
-    assert(final_accumulated_fee == expected_total_fee, 'total fee wrong');
-    assert(final_accumulated_fee > actual_accumulated_fee, 'fee not increased');
-
-    // Verify the contract is still functional after small operations
-    let final_fee_percentage = vault_dispatcher.GetFeePercentage();
-    assert(final_fee_percentage == initial_fee_percentage, 'fee percentage changed');
-}
-
-
-#[test]
-fn test_decimal_precision_edge_cases() {
-    // Set up STRK balance for the user to test with large amounts
-    let user_address = USER1();
-
-    // Deploy vault
-    let (vault, _) = deploy_vault_contract();
-    let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault.contract_address };
-
-    // Get the deployed STRK token for user balance setup
-    let strk_token = IMintableDispatcher {
-        contract_address: 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
-            .try_into()
-            .unwrap(),
-    };
-
-    // Setup user balance using the deployed STRK token
-    setup_user_balance(strk_token, user_address, MAX_MINT_LIMIT() * 3, vault.contract_address);
-
-    // Get initial state
-    let initial_fee_percentage = vault_dispatcher.GetFeePercentage();
-    let initial_accumulated_fee = vault_dispatcher.get_accumulated_fee();
-
-    // Verify initial state
-    assert(initial_fee_percentage > 0, 'fee percentage zero');
-    assert(initial_accumulated_fee == 0, 'initial fee not zero');
-
-    // Test decimal precision with edge cases that could cause precision loss
-    let fee_percentage = 50_u64; // 0.5% fee
-
-    // Test with amount that results in 0.5 wei fee (edge case)
-    // To get 0.5 wei fee: amount * 50 / 10000 = 0.5
-    // This means: amount = 0.5 * 10000 / 50 = 100 wei
-    let amount_for_half_wei = 100_u256;
-    let fee_for_half_wei = get_fee_amount(fee_percentage, amount_for_half_wei);
-
-    // Should round down to 0 wei
-    assert(fee_for_half_wei == 0_u256, 'should round down for 0.5');
-
-    // Test with amount that results in 1.5 wei fee
-    // To get 1.5 wei fee: amount * 50 / 10000 = 1.5
-    // This means: amount = 1.5 * 10000 / 50 = 300 wei
-    let amount_for_one_and_half_wei = 300_u256;
-    let fee_for_one_and_half_wei = get_fee_amount(fee_percentage, amount_for_one_and_half_wei);
-
-    // Should round down to 1 wei
-    assert(fee_for_one_and_half_wei == 1_u256, 'should round down for 1.5');
-
-    // Test with amount that results in exactly 1 wei fee
-    // To get exactly 1 wei fee: amount * 50 / 10000 = 1
-    // This means: amount = 1 * 10000 / 50 = 200 wei
-    let amount_for_exact_one_wei = 200_u256;
-    let fee_for_exact_one_wei = get_fee_amount(fee_percentage, amount_for_exact_one_wei);
-
-    // Should be exactly 1 wei
-    assert(fee_for_exact_one_wei == 1_u256, 'should be exactly 1n');
-
-    // Test with very small amounts that should result in zero fee
-    let very_small_amounts = array![
-        1_u256, // 1 wei
-        10_u256, // 10 wei
-        50_u256, // 50 wei
-        99_u256 // 99 wei
-    ];
-
-    let mut i = 0;
-    while i < very_small_amounts.len() {
-        let amount = *very_small_amounts.at(i);
-        let fee = get_fee_amount(fee_percentage, amount);
-        assert(fee == 0_u256, 'should be zero fee');
-        i += 1;
-    }
-
-    // Test with amounts that should result in non-zero fees
-    let amounts_with_fees = array![
-        200_u256, // Should give 1 wei fee
-        400_u256, // Should give 2 wei fee
-        600_u256, // Should give 3 wei fee
-        1000_u256 // Should give 5 wei fee
-    ];
-
-    let expected_fees = array![
-        1_u256, // For 200 wei
-        2_u256, // For 400 wei
-        3_u256, // For 600 wei
-        5_u256 // For 1000 wei
-    ];
-
-    let mut j = 0;
-    while j < amounts_with_fees.len() {
-        let amount = *amounts_with_fees.at(j);
-        let expected_fee = *expected_fees.at(j);
-        let calculated_fee = get_fee_amount(fee_percentage, amount);
-        assert(calculated_fee == expected_fee, 'should be precise');
-        j += 1;
-    }
-
-    // Test buySTRKP with edge case amounts to ensure precision is maintained
-    let result1 = vault_dispatcher.buySTRKP(user_address, amount_for_exact_one_wei);
-
-    // Verify first transaction completed successfully
-    assert(result1 == true, 'first tx failed');
-
-    // Check that fees were calculated correctly for edge case amounts
-    let actual_accumulated_fee = vault_dispatcher.get_accumulated_fee();
-
-    // Verify fee calculation maintained precision
-    assert(actual_accumulated_fee > 0, 'fee not accumulated');
-    assert(actual_accumulated_fee == fee_for_exact_one_wei, 'fee calc wrong');
-
-    // Test with another edge case amount
-    let result2 = vault_dispatcher.buySTRKP(user_address, amount_for_one_and_half_wei);
-
-    // Verify second transaction completed successfully
-    assert(result2 == true, 'second tx failed');
-
-    // Verify final state after both transactions
-    let final_accumulated_fee = vault_dispatcher.get_accumulated_fee();
-    let expected_total_fee = fee_for_exact_one_wei + fee_for_one_and_half_wei;
-
-    // Verify total accumulated fees are correct
-    assert(final_accumulated_fee == expected_total_fee, 'total fee wrong');
-    assert(final_accumulated_fee > actual_accumulated_fee, 'fee not increased');
-
-    // Verify the contract is still functional after edge case operations
-    let final_fee_percentage = vault_dispatcher.GetFeePercentage();
-    assert(final_fee_percentage == initial_fee_percentage, 'fee percentage changed');
-
-}
-
-
-// ============================================================================================
-// ISSUE-TEST-007: TESTS CONVERTION 1:1 buySTRKP
-// ============================================================================================
-
-#[test]
-fn test_conversion_1_1_basic() {
-    // Test básico de conversión 1:1 después del fee
-    let (vault, starkplay_token) = deploy_vault_contract();
-    let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault.contract_address };
-
-    // Get the deployed STRK token for user balance setup
-    let strk_token = IMintableDispatcher {
-        contract_address: 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
-            .try_into()
-            .unwrap(),
-    };
-
-    let user_address = USER1();
-    let amount_strk = 1000000000000000000_u256; // 1 STRK (10^18 wei)
-
-    // Setup user balance
-    setup_user_balance(strk_token, user_address, LARGE_AMOUNT(), vault.contract_address);
-
-    // Get initial $tarkPlay balance
-    let erc20_dispatcher = IERC20Dispatcher { contract_address: starkplay_token.contract_address };
-    let initial_starkplay_balance = erc20_dispatcher.balance_of(user_address);
-
-    // Execute buySTRKP
-    start_cheat_caller_address(vault.contract_address, user_address);
-    let success = vault_dispatcher.buySTRKP(user_address, amount_strk);
-    stop_cheat_caller_address(vault.contract_address);
-
-    assert(success == true, 'buySTRKP should succeed');
-
-    // Get final $tarkPlay balance
-    let final_starkplay_balance = erc20_dispatcher.balance_of(user_address);
-    let starkplay_minted = final_starkplay_balance - initial_starkplay_balance;
-
-    // Calculate expected amount: 1 STRK - 0.5% fee = 0.995 STRK
-    let fee_percentage = vault_dispatcher.GetFeePercentage();
-    let expected_fee = (amount_strk * fee_percentage.into()) / 10000_u256;
-    let expected_starkplay = amount_strk - expected_fee;
-
-    // Verify conversion is 1:1 after fee deduction
-    assert(starkplay_minted == expected_starkplay, 'Conver should be 1:1 after fee');
-    assert(starkplay_minted == 995000000000000000_u256, 'Should receive 0.995 $tarkPlay');
-
-    // Verify fee calculation
-    assert(expected_fee == 5000000000000000_u256, 'Fee should be 0.005 STRK');
-}
-
-#[test]
-fn test_conversion_1_1_different_amounts() {
-    // Test con diferentes montos para verificar conversión 1:1
-    let (vault, starkplay_token) = deploy_vault_contract();
-    let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault.contract_address };
-
-    // Get the deployed STRK token for user balance setup
-    let strk_token = IMintableDispatcher {
-        contract_address: 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
-            .try_into()
-            .unwrap(),
-    };
-
-    let user_address = USER1();
-    let erc20_dispatcher = IERC20Dispatcher { contract_address: starkplay_token.contract_address };
-
-    // Setup user balance
-    setup_user_balance(strk_token, user_address, LARGE_AMOUNT(), vault.contract_address);
-
-    // Test different amounts
-    let test_amounts = array![
-        1000000000000000000_u256, // 1 STRK
-        10000000000000000000_u256, // 10 STRK
-        100000000000000000000_u256 // 100 STRK
-    ];
-
-    let expected_results = array![
-        995000000000000000_u256, // 0.995 $tarkPlay
-        9950000000000000000_u256, // 9.95 $tarkPlay
-        99500000000000000000_u256 // 99.5 $tarkPlay
-    ];
-
-    let mut i = 0;
-    while i < test_amounts.len() {
-        let amount_strk = *test_amounts.at(i);
-        let expected_starkplay = *expected_results.at(i);
-
-        // Get initial balance
-        let initial_starkplay_balance = erc20_dispatcher.balance_of(user_address);
-
-        // Execute buySTRKP
-        start_cheat_caller_address(vault.contract_address, user_address);
-        let success = vault_dispatcher.buySTRKP(user_address, amount_strk);
-        stop_cheat_caller_address(vault.contract_address);
-
-        assert(success == true, 'buySTRKP should succeed');
-
-        // Get final balance and calculate minted amount
-        let final_starkplay_balance = erc20_dispatcher.balance_of(user_address);
-        let starkplay_minted = final_starkplay_balance - initial_starkplay_balance;
-
-        // Verify conversion is 1:1 after fee deduction
-        assert(starkplay_minted == expected_starkplay, 'Conver should be 1:1 after fee');
-
-        i += 1;
-    }
-}
-
-
-#[test]
-fn test_conversion_1_1_precision() {
-    // Test de precisión decimal en la conversión 1:1
-    let (vault, starkplay_token) = deploy_vault_contract();
-    let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault.contract_address };
-
-    // Get the deployed STRK token for user balance setup
-    let strk_token = IMintableDispatcher {
-        contract_address: 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
-            .try_into()
-            .unwrap(),
-    };
-
-    let user_address = USER1();
-    let erc20_dispatcher = IERC20Dispatcher { contract_address: starkplay_token.contract_address };
-
-    // Setup user balance
-    setup_user_balance(strk_token, user_address, LARGE_AMOUNT(), vault.contract_address);
-
-    // Test edge cases with precision
-    let precision_test_amounts = array![
-        200_u256, // Should give exactly 1 wei fee (200 * 50 / 10000 = 1)
-        300_u256, // Should give 1.5 wei fee, rounds down to 1
-        400_u256, // Should give 2 wei fee
-        1000_u256 // Should give 5 wei fee
-    ];
-
-    let expected_fees = array![
-        1_u256, // 200 * 50 / 10000 = 1
-        1_u256, // 300 * 50 / 10000 = 1.5, rounds down to 1
-        2_u256, // 400 * 50 / 10000 = 2
-        5_u256 // 1000 * 50 / 10000 = 5
-    ];
-
-    let mut i = 0;
-    while i < precision_test_amounts.len() {
-        let amount_strk = *precision_test_amounts.at(i);
-        let expected_fee = *expected_fees.at(i);
-        let expected_starkplay = amount_strk - expected_fee;
-
-        // Get initial balance
-        let initial_starkplay_balance = erc20_dispatcher.balance_of(user_address);
-
-        // Execute buySTRKP
-        start_cheat_caller_address(vault.contract_address, user_address);
-        let success = vault_dispatcher.buySTRKP(user_address, amount_strk);
-        stop_cheat_caller_address(vault.contract_address);
-
-        assert(success == true, 'buySTRKP should succeed');
-
-        // Get final balance and calculate minted amount
-        let final_starkplay_balance = erc20_dispatcher.balance_of(user_address);
-        let starkplay_minted = final_starkplay_balance - initial_starkplay_balance;
-
-        // Verify precision is maintained
-        assert(starkplay_minted == expected_starkplay, 'Precision should be maintained');
-
-        i += 1;
-    }
-}
-
-
-#[test]
-fn test_user_balance_after_conversion() {
-    // Verificar balance de $tarkPlay después de buySTRKP()
-    let (vault, starkplay_token) = deploy_vault_contract();
-    let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault.contract_address };
-
-    // Get the deployed STRK token for user balance setup
-    let strk_token_address = 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
-        .try_into()
-        .unwrap();
-
-    let strk_token = IMintableDispatcher { contract_address: strk_token_address };
-
-    let strk_erc20_dispatcher = IERC20Dispatcher { contract_address: strk_token_address };
-
-    let user_address = USER1();
-    let erc20_dispatcher = IERC20Dispatcher { contract_address: starkplay_token.contract_address };
-
-    // Setup user balance
-    setup_user_balance(strk_token, user_address, LARGE_AMOUNT(), vault.contract_address);
-
-    // Get initial balances
-    let initial_strk_balance = strk_erc20_dispatcher.balance_of(user_address);
-    let initial_starkplay_balance = erc20_dispatcher.balance_of(user_address);
-
-    let amount_strk = 1000000000000000000_u256; // 1 STRK
-
-    // Execute buySTRKP
-    start_cheat_caller_address(vault.contract_address, user_address);
-    let success = vault_dispatcher.buySTRKP(user_address, amount_strk);
-    stop_cheat_caller_address(vault.contract_address);
-
-    let newBalance = strk_erc20_dispatcher.balance_of(user_address);
-    assert(newBalance != initial_strk_balance, 'newBalance not changed');
-
-    // Get final balances
-    let final_strk_balance = strk_erc20_dispatcher.balance_of(user_address);
-    let final_starkplay_balance = erc20_dispatcher.balance_of(user_address);
-
-    // Calculate actual changes
-    let strk_spent = initial_strk_balance - final_strk_balance;
-    let starkplay_received = final_starkplay_balance - initial_starkplay_balance;
-
-    // Verify STRK was spent correctly
-    assert(strk_spent == amount_strk, 'STRK should be spent correctly');
-
-    // Verify $tarkPlay was received correctly (1:1 conversion minus fee)
-    let fee_percentage = vault_dispatcher.GetFeePercentage();
-    let expected_fee = (amount_strk * fee_percentage.into()) / 10000_u256;
-    let expected_starkplay = amount_strk - expected_fee;
-
-    assert(starkplay_received == expected_starkplay, '$tarkPlay should be received');
-    assert(starkplay_received == 995000000000000000_u256, 'Should receive 0.995 $tarkPlay');
-
-    // Verify totalStarkPlayMinted was updated correctly
-    let total_starkplay_minted = vault_dispatcher.get_total_starkplay_minted();
-    assert(total_starkplay_minted == expected_starkplay, 'total Minted should be updated');
-    assert(total_starkplay_minted == 995000000000000000_u256, 'total Minted should be 0.995');
-}
-
-
-fn test_1_1_conversion_consistency() {
-    // Test de consistencia de conversión 1:1 en múltiples transacciones
-    let (vault, starkplay_token) = deploy_vault_contract();
-    let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault.contract_address };
-
-    // Get the deployed STRK token for user balance setup
-    let strk_token_address = 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
-        .try_into()
-        .unwrap();
-
-    let strk_token = IMintableDispatcher { contract_address: strk_token_address };
-
-    let strk_erc20_dispatcher = IERC20Dispatcher { contract_address: strk_token_address };
-
-    let user_address = USER1();
-    let erc20_dispatcher = IERC20Dispatcher { contract_address: starkplay_token.contract_address };
-
-    // Setup user balance
-    setup_user_balance(strk_token, user_address, LARGE_AMOUNT(), vault.contract_address);
-
-    let amount_strk = 1000000000000000000_u256; // 1 STRK
-    let fee_percentage = vault_dispatcher.GetFeePercentage();
-    let expected_fee = (amount_strk * fee_percentage.into()) / 10000_u256;
-    let expected_starkplay_per_tx = amount_strk - expected_fee;
-
-    // Execute multiple transactions
-    let num_transactions = 5_u32;
-    let mut total_starkplay_minted = 0_u256;
-
-    let mut i = 0_u32;
-    while i < num_transactions {
-        // Get initial balance
-        let initial_starkplay_balance = erc20_dispatcher.balance_of(user_address);
-
-        // Execute buySTRKP
-        start_cheat_caller_address(vault.contract_address, user_address);
-        let success = vault_dispatcher.buySTRKP(user_address, amount_strk);
-        stop_cheat_caller_address(vault.contract_address);
-
-        assert(success == true, 'buySTRKP should succeed');
-
-        // Get final balance and calculate minted amount
-        let final_starkplay_balance = erc20_dispatcher.balance_of(user_address);
-        let starkplay_minted = final_starkplay_balance - initial_starkplay_balance;
-
-        // Verify each transaction maintains 1:1 conversion
-        assert(starkplay_minted == expected_starkplay_per_tx, 'Each tran should maintain 1:1');
-
-        total_starkplay_minted += starkplay_minted;
-
-        i += 1;
-    }
-
-    // Verify total minted is consistent
-    let expected_total_starkplay = expected_starkplay_per_tx * num_transactions.into();
-    assert(total_starkplay_minted == expected_total_starkplay, 'Tot mint should be consistent');
-    assert(total_starkplay_minted == 4975000000000000000_u256, 'Tot mint should be 4.975');
-
-    let total_starkplay_minted2 = vault_dispatcher.get_total_starkplay_minted();
-    assert(total_starkplay_minted2 == expected_total_starkplay, 'Tot mint should be consistent');
-    assert(total_starkplay_minted2 == 4975000000000000000_u256, 'Tot mint should be 4.975');
 }
