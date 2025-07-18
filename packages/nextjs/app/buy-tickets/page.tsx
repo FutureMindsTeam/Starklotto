@@ -342,7 +342,7 @@ export default function BuyTicketsPage() {
                     glowColor="rgba(139, 92, 246, 0.5)"
                     disabled={isLoading}
                   >
-                    {isLoading ? "Processing..." : {t("buyPage.buyButton")}}
+                    {isLoading ? "Processing..." : t("buyPage.buyButton")}
                   </GlowingButton>
                   {txError && <p className="text-red-500 mt-2">{txError}</p>}
                   {txSuccess && (
