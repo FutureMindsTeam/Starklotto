@@ -1,32 +1,25 @@
-"use client";
-import { motion } from "framer-motion";
-import Link from "next/link";
-import { SiTelegram, SiGithub, SiX } from "react-icons/si";
+'use client'
+
+import { motion } from 'framer-motion'
+import Link from 'next/link'
+import { SiTelegram, SiGithub, SiX } from 'react-icons/si'
 
 const navLinks = [
-  { label: "Home", id: "hero" },
-  { label: "About", id: "about" },
-  { label: "Roadmap", id: "roadmap" },
-  { label: "Team", id: "team" },
-  { label: "Community", id: "community" },
-];
+  { label: 'Home', id: 'hero' },
+  { label: 'About', id: 'about' },
+  { label: 'Roadmap', id: 'roadmap' },
+  { label: 'Team', id: 'team' },
+  { label: 'Community', id: 'community' },
+]
 
 const socials = [
-  { Icon: SiX, url: "https://x.com/starklottoio", color: "#ffffff" },
-  {
-    Icon: SiTelegram,
-    url: "https://t.me/StarklottoContributors",
-    color: "#28A9E0",
-  },
-  {
-    Icon: SiGithub,
-    url: "https://github.com/FutureMindsTeam/starklotto",
-    color: "#ffffff",
-  },
-];
+  { Icon: SiX,       url: 'https://x.com/starklottoio',            colorClass: 'text-white' },
+  { Icon: SiTelegram,url: 'https://t.me/StarklottoContributors',  colorClass: 'text-cyan-500' },
+  { Icon: SiGithub,  url: 'https://github.com/FutureMindsTeam/starklotto', colorClass: 'text-white' },
+]
 
 const scrollTo = (id: string) =>
-  document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
 
 export default function Footer() {
   return (
@@ -39,47 +32,42 @@ export default function Footer() {
         <path d="M0,20 C240,80 480,-40 720,20 C960,80 1200,-40 1440,20 L1440,60 L0,60 Z" />
       </svg>
 
-      {/* ----- subtle background halo ----- */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#F2075D]/10 via-transparent to-transparent blur-[180px]" />
+      {/* subtle background halo */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-starkMagenta/10 via-transparent to-transparent blur-[180px]" />
 
       <div className="relative z-10 mx-auto flex max-w-6xl flex-col items-center gap-14 px-6">
-        {/* ---------------- logo ---------------- */}
+        {/* logo */}
         <Link href="/" className="text-3xl font-extrabold tracking-tight">
-          <span className="text-[#F2075D]">Stark</span>Lotto
+          <span className="text-starkMagenta">Stark</span>Lotto
         </Link>
 
-        {/* --------------- navigation --------------- */}
+        {/* navigation */}
         <nav className="flex flex-wrap justify-center gap-6 text-sm md:text-base">
           {navLinks.map(({ label, id }) => (
             <button
               key={id}
               onClick={() => scrollTo(id)}
-              className="group relative py-1 outline-none transition-colors duration-200 hover:text-white"
+              className="group relative py-1 transition-colors duration-200 hover:text-white"
             >
               {label}
-              {/* underline animation */}
-              <span
-                className="absolute left-0 -bottom-0.5 h-[2px] w-full origin-left scale-x-0
-                           bg-[#F2075D] transition-transform duration-300 group-hover:scale-x-100"
-              />
+              <span className="absolute left-0 -bottom-0.5 h-[2px] w-full origin-left scale-x-0 bg-starkMagenta transition-transform duration-300 group-hover:scale-x-100" />
             </button>
           ))}
         </nav>
 
-        {/* -------------- social icons -------------- */}
+        {/* social icons */}
         <div className="flex gap-6">
-          {socials.map(({ Icon, url, color }) => (
+          {socials.map(({ Icon, url, colorClass }) => (
             <motion.a
               key={url}
               href={url}
               target="_blank"
               rel="noreferrer"
               whileHover={{ scale: 1.15, rotate: 6 }}
-              transition={{ type: "spring", stiffness: 260, damping: 18 }}
-              className="grid place-items-center rounded-full border border-white/10 bg-white/5
-                         p-3 backdrop-blur-md"
+              transition={{ type: 'spring', stiffness: 260, damping: 18 }}
+              className="grid place-items-center rounded-full border border-white/10 bg-white/5 p-3 backdrop-blur-md shadow-md hover:shadow-xl transition-shadow duration-300"
             >
-              <Icon className="h-5 w-5" style={{ color }} />
+              <Icon className={`h-5 w-5 ${colorClass}`} />
             </motion.a>
           ))}
         </div>
@@ -89,9 +77,9 @@ export default function Footer() {
         <p className="text-center text-xs text-neutral-400">
           © 2025&nbsp;StarkLotto&nbsp;•&nbsp;Building the next generation of
           decentralized lotteries on&nbsp;
-          <span className="font-medium text-[#8A26A6]">StarkNet</span>.
+          <span className="font-medium text-starkPurple">StarkNet</span>.
         </p>
       </div>
     </footer>
-  );
+  )
 }

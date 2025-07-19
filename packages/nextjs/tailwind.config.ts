@@ -1,4 +1,4 @@
-// tailwind.config.ts
+
 import type { Config } from "tailwindcss";
 import daisyui from "daisyui";
 
@@ -44,7 +44,7 @@ const config: Config = {
       },
       colors: {
         menu: {
-          default: "#64748B",
+          DEFAULT: "#64748B",
           hover: "#8B45FC",
           active: "#794BFC",
         },
@@ -52,6 +52,20 @@ const config: Config = {
           DEFAULT: "#000000",
           light: "#1A1A1A",
         },
+        // StarkLotto Palette
+        starkMagenta: {
+          DEFAULT: "#9B00FF",
+          light: "#B34BFF",
+        },
+        starkPurple: "#8A26A6",
+        // New neon yellow for Hero & particles
+        starkYellow: {
+          DEFAULT: "#FFE600",
+          light: "#FFF366",
+        },
+        // Hero Section Backgrounds
+        heroDark: "#101326",
+        heroDarker: "#181240",
       },
       transitionProperty: {
         colors: "color, background-color, fill, stroke",

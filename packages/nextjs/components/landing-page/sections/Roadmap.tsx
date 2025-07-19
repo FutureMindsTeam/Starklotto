@@ -1,5 +1,6 @@
-"use client";
-import { motion } from "framer-motion";
+'use client'
+
+import { motion } from 'framer-motion'
 
 /* ------------------------------- DATA ----------------------------------- */
 const phases = [
@@ -43,25 +44,26 @@ const phases = [
       "Treasury green-trading",
     ],
   },
-];
+]
 
 /* ------------------------------ SECTION --------------------------------- */
 export default function Roadmap() {
   return (
     <section
       id="roadmap"
-      className="relative overflow-hidden py-16 sm:py-20 md:py-28 lg:py-36"
+      className="relative overflow-hidden py-16 sm:py-20 md:py-28 lg:py-36 text-white"
     >
-      <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#181b2f] to-[#0b0d1c]" />
+      {/* Background matching About section */}
+      <div className="absolute inset-0 -z-30 bg-gradient-to-b from-heroDarker via-heroDark to-heroDark" />
       <div
-        className="absolute inset-0 z-0 opacity-[0.04] mix-blend-overlay"
+        className="absolute inset-0 -z-20 opacity-[0.04] mix-blend-overlay"
         style={{
           backgroundImage:
-            "repeating-linear-gradient(135deg,transparent 0 2px,#202241 2px 4px)",
+            'repeating-linear-gradient(135deg, transparent 0 2px, #202241 2px 4px)',
         }}
       />
 
-      <div className="relative z-30 container mx-auto px-4 sm:px-6 text-white">
+      <div className="relative z-30 container mx-auto px-4 sm:px-6">
         <motion.h2
           initial={{ y: 40, opacity: 0 }}
           whileInView={{ y: 0, opacity: 1 }}
@@ -72,8 +74,11 @@ export default function Roadmap() {
           Roadmap
         </motion.h2>
 
-        <div className="hidden lg:block absolute left-1/2 -translate-x-1/2 top-32 h-[calc(100%-8rem)] w-[3px] bg-gradient-to-b from-[#F2075D] via-[#8A26A6] to-[#2740ff]/30 z-20" />
-        <div className="lg:hidden absolute left-4 top-32 h-[calc(100%-8rem)] w-[2px] bg-gradient-to-b from-[#F2075D] via-[#8A26A6] to-[#2740ff]/30 z-20" />
+        {/* Timeline line */}
+        <div className="hidden lg:block absolute left-1/2 -translate-x-1/2 top-32 h-[calc(100%-8rem)] w-[3px]
+                        bg-gradient-to-b from-starkMagenta via-starkMagenta-light to-starkMagenta-light/30 z-20" />
+        <div className="lg:hidden absolute left-4 top-32 h-[calc(100%-8rem)] w-[2px]
+                        bg-gradient-to-b from-starkMagenta via-starkMagenta-light to-starkMagenta-light/30 z-20" />
 
         <div className="flex flex-col lg:flex-row lg:flex-wrap lg:justify-center gap-8 sm:gap-12 md:gap-16">
           {phases.map((p, i) => (
@@ -82,7 +87,7 @@ export default function Roadmap() {
         </div>
       </div>
     </section>
-  );
+  )
 }
 
 /* ----------------------------- CARD ------------------------------------- */
@@ -90,10 +95,10 @@ function PhaseCard({
   phase,
   index,
 }: {
-  phase: (typeof phases)[number];
-  index: number;
+  phase: (typeof phases)[number]
+  index: number
 }) {
-  const align = index % 2 === 0 ? "lg:pr-14" : "lg:pl-14";
+  const align = index % 2 === 0 ? "lg:pr-14" : "lg:pl-14"
 
   return (
     <motion.div
@@ -103,13 +108,16 @@ function PhaseCard({
       transition={{ duration: 0.55, delay: index * 0.12 }}
       className={`relative lg:w-1/2 ${align}`}
     >
+      {/* Dot on timeline */}
       <span
         className={`
           absolute lg:static
           left-[11px] sm:left-[13px] lg:left-auto
           top-0 lg:top-auto
           flex h-3 w-3 sm:h-4 sm:w-4 rounded-full lg:mx-auto
-          ${phase.current ? "dot-glow" : "bg-white/25"}
+          ${phase.current
+            ? 'bg-starkMagenta shadow-[0_0_8px_rgba(255,234,0,0.8)]'
+            : 'bg-white/25'}
         `}
       />
 
@@ -123,10 +131,10 @@ function PhaseCard({
         <h3 className="font-semibold text-base sm:text-lg mb-1 sm:mb-2">
           {phase.title}
         </h3>
-        <p className="text-xs sm:text-sm text-[#F2075D]/80 mb-2 sm:mb-3">
+        <p className="text-xs sm:text-sm text-starkMagenta/80 mb-2 sm:mb-3">
           {phase.range}
         </p>
-        <ul className="list-disc ml-4 sm:ml-5 marker:text-[#F2075D]/90 space-y-1 text-xs sm:text-sm text-neutral-200">
+        <ul className="list-disc ml-4 sm:ml-5 marker:text-starkMagenta/90 space-y-1 text-xs sm:text-sm text-neutral-200">
           {phase.bullets.map((b) => (
             <li key={b} className="leading-relaxed">
               {b}
@@ -135,5 +143,5 @@ function PhaseCard({
         </ul>
       </motion.div>
     </motion.div>
-  );
+  )
 }

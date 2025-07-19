@@ -1,29 +1,34 @@
-"use client";
-import { useState } from "react";
-import { motion } from "framer-motion";
+'use client'
+
+import { useState } from 'react'
+import { motion } from 'framer-motion'
 
 export default function FinalCTA() {
-  const [email, setEmail] = useState("");
-  const [sent, setSent] = useState(false);
+  const [email, setEmail] = useState('')
+  const [sent, setSent] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+    e.preventDefault()
     // TODO: POST to your backend / API route
-    setSent(true);
+    setSent(true)
   }
 
   return (
     <section
       id="launch"
-      className="relative overflow-hidden py-28
-                 bg-gradient-to-b from-[#0b0d1c] via-[#0e1020] to-[#181b2f]
-                 text-white"
+      className="
+        relative overflow-hidden py-28
+        bg-gradient-to-b from-heroDark via-heroDarker to-heroDark
+        text-white
+      "
     >
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div
-          className="absolute -top-44 left-1/2 -translate-x-1/2
-                     w-[720px] h-[720px] rounded-full
-                     bg-[#F2075D]/15 blur-[160px]"
+          className="
+            absolute -top-44 left-1/2 -translate-x-1/2
+            w-[720px] h-[720px] rounded-full
+            bg-starkMagenta/15 blur-[160px]
+          "
         />
       </div>
 
@@ -36,7 +41,7 @@ export default function FinalCTA() {
           className="mb-6 text-3xl font-bold md:text-4xl"
         >
           Join our&nbsp;
-          <span className="text-[#F2075D]">launch list</span>
+          <span className="text-starkMagenta">launch list</span>
         </motion.h2>
 
         <motion.p
@@ -47,11 +52,11 @@ export default function FinalCTA() {
           className="mb-12 text-base leading-relaxed text-neutral-300 md:text-lg"
         >
           We’re building the&nbsp;
-          <span className="font-medium text-[#8A26A6]">
+          <span className="font-medium text-starkPurple">
             most transparent lottery on StarkNet
           </span>
           . From every&nbsp;
-          <span className="font-medium text-[#F2075D]">NFT ticket</span> to each
+          <span className="font-medium text-starkMagenta">NFT ticket</span> to each
           on-chain donation, StarkLotto is designed for real-world impact. Leave
           your email and be the first to try it.
         </motion.p>
@@ -81,14 +86,14 @@ export default function FinalCTA() {
               onChange={(e) => setEmail(e.target.value)}
               className="
                 flex-1 rounded-lg bg-white/10 px-4 py-3 text-sm outline-none
-                focus:ring-2 focus:ring-[#F2075D] md:text-base
+                focus:ring-2 focus:ring-starkMagenta md:text-base
               "
             />
             <button
               type="submit"
               className="
-                rounded-lg bg-[#F2075D] px-6 py-3 text-sm font-medium
-                transition-colors hover:bg-[#FF4D88] md:text-base
+                rounded-lg bg-starkMagenta px-6 py-3 text-sm font-medium
+                transition-colors hover:bg-starkMagenta-light md:text-base
               "
             >
               Notify&nbsp;me
@@ -97,5 +102,5 @@ export default function FinalCTA() {
         )}
       </div>
     </section>
-  );
+  )
 }

@@ -1,5 +1,4 @@
-/* src/lib/particlePresets.ts
-   Centraliza presets de tsParticles (v3.x)                    */
+
 
 import type { ISourceOptions } from "@tsparticles/engine";
 import { loadCurvesPath } from "@tsparticles/path-curves";
@@ -12,6 +11,7 @@ export const starfield: ISourceOptions = {
   background: { color: "transparent" },
   particles: {
     number: { value: 120, density: { enable: true, width: 900 } },
+    // partículas en tonos morados + blanco
     color: { value: ["#F2075D", "#8A26A6", "#ffffff"] },
     links: { enable: false },
     move: { enable: true, speed: 0.3 },
@@ -29,7 +29,8 @@ export const network: ISourceOptions = {
     links: {
       enable: true,
       distance: 130,
-      color: "#ffffff",
+      // enlaces morados
+      color: "#F2075D",
       opacity: 0.25,
       width: 1,
     },
@@ -70,7 +71,8 @@ export const hexGrid: ISourceOptions = {
     links: {
       enable: true,
       distance: 65,
-      color: "#ffffff",
+      // enlaces morados
+      color: "#F2075D",
       opacity: 0.15,
       width: 1,
     },
@@ -79,12 +81,13 @@ export const hexGrid: ISourceOptions = {
   interactivity: { events: { resize: { enable: true } } },
 };
 
-/* ─────────── Hex Grid inspirado en StarkLotto ─────────── */
+/* ─────────── 5. Hex Grid Stark (por defecto en Hero) ─────────── */
 export const hexGridStark: ISourceOptions = {
   ...starfield,
   particles: {
     ...starfield.particles,
     number: { value: 100, density: { enable: true, width: 900 } },
+    // tonos morados
     color: { value: ["#F2075D", "#8A26A6", "#ffffff"] },
     size: { value: { min: 2, max: 3 } },
     opacity: {
@@ -94,7 +97,7 @@ export const hexGridStark: ISourceOptions = {
     links: {
       enable: true,
       distance: 70,
-      color: "#F2075D",
+      color: "#F2075D", // enlace morado
       opacity: 0.25,
       width: 1.2,
     },
@@ -108,13 +111,13 @@ export const hexGridStark: ISourceOptions = {
     modes: {
       grab: {
         distance: 120,
-        links: { opacity: 0.4, color: "#FF4D88" },
+        links: { opacity: 0.4, color: "#FF4D88" }, // color de grab morado claro
       },
     },
   },
 };
 
-/* ─────────── 5. Firefly ─────────── */
+/* ─────────── 6. Firefly ─────────── */
 export const firefly: ISourceOptions = {
   ...starfield,
   particles: {
@@ -136,6 +139,7 @@ export const firefly: ISourceOptions = {
   interactivity: { events: { resize: { enable: true } } },
 };
 
+/* ─────────── 7. Orbit ─────────── */
 export const orbit: ISourceOptions = {
   ...starfield,
   particles: {
@@ -151,7 +155,7 @@ export const orbit: ISourceOptions = {
 };
 
 export async function loadOrbitPlugin(
-  engine: import("@tsparticles/engine").Engine,
+  engine: import("@tsparticles/engine").Engine
 ) {
   await loadCurvesPath(engine);
 }
