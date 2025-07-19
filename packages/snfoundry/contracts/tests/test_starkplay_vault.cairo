@@ -1,9 +1,9 @@
-use contracts::StarkPlayERC20::{IMintableDispatcher, IMintableDispatcherTrait};
+use contracts::StarkPlayERC20::{IBurnableDispatcher, IBurnableDispatcherTrait, IMintableDispatcher, IMintableDispatcherTrait, IPrizeTokenDispatcher,IPrizeTokenDispatcherTrait};
 use contracts::StarkPlayVault::{IStarkPlayVaultDispatcher, IStarkPlayVaultDispatcherTrait};
 use openzeppelin_token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
 use snforge_std::{
     ContractClassTrait, DeclareResultTrait, declare, start_cheat_caller_address,
-    stop_cheat_caller_address,
+    stop_cheat_caller_address,store, load,map_entry_address,
 };
 #[feature("deprecated-starknet-consts")]
 use starknet::{ContractAddress, contract_address_const};
@@ -90,6 +90,7 @@ fn deploy_vault_contract() -> (IStarkPlayVaultDispatcher, IMintableDispatcher) {
         .deploy(@starkplay_constructor_calldata)
         .unwrap();
     let starkplay_token = IMintableDispatcher { contract_address: starkplay_address };
+    let starkplay_token_burn = IBurnableDispatcher {contract_address: starkplay_address};
 
     // Deploy vault (no longer needs STRK token address parameter)
     let vault_contract = declare("StarkPlayVault").unwrap().contract_class();
@@ -99,12 +100,15 @@ fn deploy_vault_contract() -> (IStarkPlayVaultDispatcher, IMintableDispatcher) {
     let (vault_address, _) = vault_contract.deploy(@vault_constructor_calldata).unwrap();
     let vault = IStarkPlayVaultDispatcher { contract_address: vault_address };
 
-    // Grant MINTER_ROLE to the vault so it can mint StarkPlay tokens
+    // Grant MINTER_ROLE and BURNER_ROLE to the vault so it can mint and burn StarkPlay tokens
     start_cheat_caller_address(starkplay_token.contract_address, OWNER());
     starkplay_token.grant_minter_role(vault_address);
-    // Set a large allowance for the vault to mint tokens
+    starkplay_token_burn.grant_burner_role(vault_address);
+    // Set a large allowance for the vault to mint and burn tokens
     starkplay_token
         .set_minter_allowance(vault_address, 1000000000000000000000000_u256); // 1M tokens
+    starkplay_token_burn
+        .set_burner_allowance(vault_address, 1000000000000000000000000_u256); // 1M tokens
     stop_cheat_caller_address(starkplay_token.contract_address);
 
     (vault, starkplay_token)
@@ -527,4 +531,242 @@ fn test_complete_flow_integration() {
 
     // Verify fee percentage remains consistent
     assert(vault.GetFeePercentage() == INITIAL_FEE_PERCENTAGE(), 'percentage changed');
+}
+
+// ============================================================================================
+// WITHDRAWAL TESTS FOR ADMINISTRATOR FEE FUNCTIONS
+// ============================================================================================
+
+#[test]
+fn test_withdraw_general_fees_success() {
+    let (vault, _) = deploy_vault_contract();
+    let strk_token = IMintableDispatcher {
+        contract_address: 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d.try_into().unwrap(),
+    };
+    setup_user_balance(strk_token, USER1(), LARGE_AMOUNT(), vault.contract_address);
+    let purchase_amount = PURCHASE_AMOUNT();
+    let expected_fee = (purchase_amount * INITIAL_FEE_PERCENTAGE().into()) / 10000;
+    // User buys STRKP, fee is accumulated
+    start_cheat_caller_address(vault.contract_address, USER1());
+    vault.buySTRKP(USER1(), purchase_amount);
+    stop_cheat_caller_address(vault.contract_address);
+    assert(vault.get_accumulated_fee() == expected_fee, 'Fee not accumulated');
+    // Owner withdraws fee
+    let owner = vault.get_owner();
+    let recipient = USER2();
+    let erc20 = IERC20Dispatcher { contract_address: strk_token.contract_address };
+let initial_recipient_balance = erc20.balance_of(recipient);
+
+    start_cheat_caller_address(vault.contract_address, owner);
+    let success = vault.withdrawGeneralFees(recipient, expected_fee);
+    stop_cheat_caller_address(vault.contract_address);
+    assert(success, 'Withdraw should succeed');
+    assert(vault.get_accumulated_fee() == 0, 'Fee not decremented');
+    let new_recipient_balance = erc20.balance_of(recipient);
+    assert(new_recipient_balance - initial_recipient_balance == expected_fee, 'STRK not transferred');
+}
+
+#[should_panic(expected: 'Caller is not the owner')]
+#[test]
+fn test_withdraw_general_fees_not_owner() {
+    let (vault, starkplay) = deploy_vault_contract();
+    let strk_token = IMintableDispatcher {
+        contract_address: 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d.try_into().unwrap(),
+    };
+    setup_user_balance(strk_token, USER1(), LARGE_AMOUNT(), vault.contract_address);
+    setup_user_balance(starkplay, USER1(), LARGE_AMOUNT(), vault.contract_address);
+
+    let purchase_amount = PURCHASE_AMOUNT();
+    let expected_fee = (purchase_amount * INITIAL_FEE_PERCENTAGE().into()) / 10000;
+    start_cheat_caller_address(vault.contract_address, USER1());
+    vault.buySTRKP(USER1(), purchase_amount);
+    stop_cheat_caller_address(vault.contract_address);
+    // Not owner tries to withdraw
+    start_cheat_caller_address(vault.contract_address, USER1());
+    vault.withdrawGeneralFees(USER2(), expected_fee);
+    stop_cheat_caller_address(vault.contract_address);
+}
+
+#[should_panic(expected: 'Withdraw amount exceeds fees')]
+#[test]
+fn test_withdraw_general_fees_exceeds_accumulated() {
+    let (vault, _) = deploy_vault_contract();
+    let strk_token = IMintableDispatcher {
+        contract_address: 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d.try_into().unwrap(),
+    };
+    setup_user_balance(strk_token, USER1(), LARGE_AMOUNT(), vault.contract_address);
+    let purchase_amount = PURCHASE_AMOUNT();
+    let expected_fee = (purchase_amount * INITIAL_FEE_PERCENTAGE().into()) / 10000;
+    start_cheat_caller_address(vault.contract_address, USER1());
+    vault.buySTRKP(USER1(), purchase_amount);
+    stop_cheat_caller_address(vault.contract_address);
+    // Owner tries to withdraw more than accumulated
+    let owner = vault.get_owner();
+    start_cheat_caller_address(vault.contract_address, owner);
+    vault.withdrawGeneralFees(USER2(), expected_fee + 1_u256);
+    stop_cheat_caller_address(vault.contract_address);
+}
+
+#[should_panic(expected: 'Amount must be > 0')]
+#[test]
+fn test_withdraw_general_fees_zero_amount() {
+    let (vault, _) = deploy_vault_contract();
+    let owner = vault.get_owner();
+    start_cheat_caller_address(vault.contract_address, owner);
+    vault.withdrawGeneralFees(USER2(), 0_u256);
+    stop_cheat_caller_address(vault.contract_address);
+}
+
+#[should_panic(expected: 'Insufficient STRK in vault')]
+#[test]
+fn test_withdraw_general_fees_insufficient_vault_balance() {
+    let (vault, _) = deploy_vault_contract();
+    let owner = vault.get_owner();
+
+    // Manually increment accumulatedFee without STRK in vault
+
+    start_cheat_caller_address(vault.contract_address, owner);
+
+
+// load existing value from storage
+    let loaded = load(
+        vault.contract_address, // an existing contract which owns the storage
+        selector!("accumulatedFee"), // field marking the start of the memory chunk being read from
+        1 // length of the memory chunk (seen as an array of felts) to read
+    );
+
+    assert_eq!(loaded, array![0_felt252], "Initial accumulatedFee should be 0");
+
+
+    // Simulate fee accumulation without STRK
+
+    store(
+        vault.contract_address, // storage owner
+        selector!("accumulatedFee"), // field marking the start of the memory chunk being written to
+        array![5000].span() // array of felts to write
+    );
+
+    // load again and check if it changed
+    let loaded = load(vault.contract_address, selector!("accumulatedFee"), 1);
+
+    assert_eq!(loaded, array![5000]);
+
+    vault.withdrawGeneralFees(USER2(), 100_u256);
+
+    stop_cheat_caller_address(vault.contract_address);
+}
+
+// // Repeat similar tests for PrizeConversionFees
+
+#[test]
+fn test_withdraw_prize_conversion_fees_success() {
+    let (vault, starkplay_token) = deploy_vault_contract();
+    let strk_token = IMintableDispatcher {
+        contract_address: 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d.try_into().unwrap(),
+    };
+
+    setup_user_balance(strk_token, USER1(), LARGE_AMOUNT(), vault.contract_address);
+    let convert_amount = PURCHASE_AMOUNT();
+    let prizeFeeAmount = (convert_amount * INITIAL_FEE_PERCENTAGE().into()) / 10000;
+
+    // Manually increment accumulatedPrizeConversionFees to simulate conversion
+    let owner = vault.get_owner();
+    start_cheat_caller_address(vault.contract_address, owner);
+    
+    // Use storage manipulation to set accumulated prize conversion fees
+    store(
+        vault.contract_address,
+        selector!("accumulatedPrizeConversionFees"),
+        array![prizeFeeAmount.low.into(), prizeFeeAmount.high.into()].span()
+    );
+    
+    // Mint STRK tokens to vault so it can pay withdrawal
+    start_cheat_caller_address(strk_token.contract_address, OWNER());
+    strk_token.mint(vault.contract_address, LARGE_AMOUNT());
+    stop_cheat_caller_address(strk_token.contract_address);
+    
+    // Verify fee was set
+    assert(vault.GetAccumulatedPrizeConversionFees() == prizeFeeAmount, 'Fee not set');
+    
+    // Test withdrawal
+    let recipient = USER2();
+    let erc20 = IERC20Dispatcher { contract_address: strk_token.contract_address };
+    let initial_recipient_balance = erc20.balance_of(recipient);
+
+    start_cheat_caller_address(vault.contract_address, owner);
+    let success = vault.withdrawPrizeConversionFees(recipient, prizeFeeAmount);
+    stop_cheat_caller_address(vault.contract_address);
+    
+    assert(success, 'Withdraw should succeed');
+    assert(vault.GetAccumulatedPrizeConversionFees() == 0, 'Prize fee not decremented');
+    let new_recipient_balance = erc20.balance_of(recipient);
+    assert(new_recipient_balance - initial_recipient_balance == prizeFeeAmount, 'STRK not transferred');
+}
+
+#[should_panic(expected: 'Caller is not the owner')]
+#[test]
+fn test_withdraw_prize_conversion_fees_not_owner() {
+    let (vault, _) = deploy_vault_contract();
+    
+    // Use storage manipulation to set accumulated prize conversion fees
+    let fee_amount = 100_u256;
+    store(
+        vault.contract_address,
+        selector!("accumulatedPrizeConversionFees"),
+        array![fee_amount.low.into(), fee_amount.high.into()].span()
+    );
+    
+    // Not owner tries to withdraw
+    start_cheat_caller_address(vault.contract_address, USER1());
+    vault.withdrawPrizeConversionFees(USER2(), fee_amount);
+    stop_cheat_caller_address(vault.contract_address);
+}
+
+#[should_panic(expected: 'Withdraw amount exceeds fees')]
+#[test]
+fn test_withdraw_prize_conversion_fees_exceeds_accumulated() {
+    let (vault, _) = deploy_vault_contract();
+    let owner = vault.get_owner();
+    
+    // Use storage manipulation to set accumulated prize conversion fees
+    let fee_amount = 50_u256;
+    store(
+        vault.contract_address,
+        selector!("accumulatedPrizeConversionFees"),
+        array![fee_amount.low.into(), fee_amount.high.into()].span()
+    );
+    
+    start_cheat_caller_address(vault.contract_address, owner);
+    vault.withdrawPrizeConversionFees(USER2(), 51_u256);
+    stop_cheat_caller_address(vault.contract_address);
+}
+
+#[should_panic(expected: 'Amount must be > 0')]
+#[test]
+fn test_withdraw_prize_conversion_fees_zero_amount() {
+    let (vault, _) = deploy_vault_contract();
+    let owner = vault.get_owner();
+    start_cheat_caller_address(vault.contract_address, owner);
+    vault.withdrawPrizeConversionFees(USER2(), 0_u256);
+    stop_cheat_caller_address(vault.contract_address);
+}
+
+#[should_panic(expected: 'Insufficient STRK in vault')]
+#[test]
+fn test_withdraw_prize_conversion_fees_insufficient_vault_balance() {
+    let (vault, _) = deploy_vault_contract();
+    let owner = vault.get_owner();
+    
+    // Use storage manipulation to set accumulated prize conversion fees
+    let fee_amount = 100_u256;
+    store(
+        vault.contract_address,
+        selector!("accumulatedPrizeConversionFees"),
+        array![fee_amount.low.into(), fee_amount.high.into()].span()
+    );
+    
+    start_cheat_caller_address(vault.contract_address, owner);
+    // No STRK in vault - this should fail
+    vault.withdrawPrizeConversionFees(USER2(), fee_amount);
+    stop_cheat_caller_address(vault.contract_address);
 }
