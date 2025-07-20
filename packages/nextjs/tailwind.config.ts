@@ -51,22 +51,22 @@ const config: Config = {
           DEFAULT: "#000000",
           light: "#1A1A1A",
         },
-        // StarkLotto Palette
+        
         starkMagenta: {
-          DEFAULT: "#B34BFF",   // magenta base
-          light:   "#D49CFF",   // versión más clara para hover
+          DEFAULT: "#B34BFF", 
+          light: "#D49CFF", 
         },
         starkPurple: "#8A26A6",
         starkYellow: {
-          DEFAULT: "#FFD600",   // amarillo dorado
-          light:   "#FFF451",   // para hover y fondos suaves
+          DEFAULT: "#FFD600", 
+          light: "#FFF451", 
         },
-        // Hero Section Backgrounds
-        heroDark:   "#101326",
+        
+        heroDark: "#101326",
         heroDarker: "#181240",
       },
       transitionProperty: {
-        colors:    "color, background-color, fill, stroke",
+        colors: "color, background-color, fill, stroke",
         transform: "transform",
       },
       backdropBlur: {
@@ -95,7 +95,6 @@ const config: Config = {
           success: "#34EEB6",
           warning: "#FFCF72",
           error: "#FF8863",
-          // custom utilities
           ".bg-gradient-modal": {
             "background-image":
               "linear-gradient(270deg, #A7ECFF -17.42%, #E8B6FF 109.05%)",

@@ -1,29 +1,38 @@
-'use client'
+"use client";
 
-import { motion } from 'framer-motion'
+import { motion } from "framer-motion";
 
 /* ───────────────────────────────── DATA ───────────────────────────────── */
 const members = [
-  { name: 'David Meléndez',     role: 'Full-Stack / Smart Contracts', gh: 'davidmelendez' },
-  { name: 'Kimberly Cascante',  role: 'Full-Stack Developer',           gh: 'kimcascante' },
-  { name: 'Jefferson Calderón', role: 'Frontend (UI/UX)',              gh: 'xJeffx23' },
-  { name: 'Joseph Poveda',      role: 'Backend Engineer',               gh: 'josephpdf' },
-  { name: 'Andrés Villanueva',  role: 'Frontend Developer',            gh: 'drakkomaximo' },
-]
+  {
+    name: "David Meléndez",
+    role: "Full-Stack / Smart Contracts",
+    gh: "davidmelendez",
+  },
+  {
+    name: "Kimberly Cascante",
+    role: "Full-Stack Developer",
+    gh: "kimcascante",
+  },
+  { name: "Jefferson Calderón", role: "Frontend (UI/UX)", gh: "xJeffx23" },
+  { name: "Joseph Poveda", role: "Backend Engineer", gh: "josephpdf" },
+  { name: "Andrés Villanueva", role: "Frontend Developer", gh: "drakkomaximo" },
+];
 
 /* ────────────────────── SECTION: Our Team ────────────────────── */
 export default function TeamSection() {
   return (
-    <section id="team" className="relative overflow-hidden py-28 md:py-36 text-white">
-      {/* Mestizo exacto del fondo de CommunitySection */}
+    <section
+      id="team"
+      className="relative overflow-hidden py-28 md:py-36  text-white">
       <div className="absolute inset-0 -z-30 bg-gradient-to-b from-heroDarker via-heroDark to-heroDark" />
       <div
         className="absolute inset-0 -z-20 opacity-[0.04] mix-blend-overlay"
         style={{
           backgroundImage:
-            'repeating-linear-gradient(135deg, transparent 0 2px, #202241 2px 4px)',
-        }} />
-
+            "repeating-linear-gradient(135deg, transparent 0 2px, #202241 2px 4px)",
+        }}
+      />
 
       <div className="relative z-10 container mx-auto px-6 text-center max-w-6xl">
         <motion.h2
@@ -40,7 +49,10 @@ export default function TeamSection() {
           initial="hidden"
           whileInView="show"
           viewport={{ once: true }}
-          variants={{ hidden: {}, show: { transition: { staggerChildren: 0.15 } } }}
+          variants={{
+            hidden: {},
+            show: { transition: { staggerChildren: 0.15 } },
+          }}
           className="grid gap-10 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 place-items-center"
         >
           {members.map((m) => (
@@ -49,18 +61,26 @@ export default function TeamSection() {
         </motion.div>
       </div>
     </section>
-  )
+  );
 }
 
 /* ──────────────────────── CARD: Team Member ─────────────────────── */
-function MemberCard({ name, role, gh }: { name: string; role: string; gh: string }) {
-  const avatar = `https://avatars.githubusercontent.com/${gh}?size=200`
+function MemberCard({
+  name,
+  role,
+  gh,
+}: {
+  name: string;
+  role: string;
+  gh: string;
+}) {
+  const avatar = `https://avatars.githubusercontent.com/${gh}?size=200`;
 
   return (
     <motion.div
       variants={{
         hidden: { opacity: 0, y: 60 },
-        show:   { opacity: 1, y: 0 },
+        show: { opacity: 1, y: 0 },
       }}
       whileHover={{
         y: -8,
@@ -69,7 +89,7 @@ function MemberCard({ name, role, gh }: { name: string; role: string; gh: string
         scale: 1.03,
       }}
       transition={{
-        type: 'spring',
+        type: "spring",
         stiffness: 220,
         damping: 24,
       }}
@@ -93,10 +113,16 @@ function MemberCard({ name, role, gh }: { name: string; role: string; gh: string
         href={`https://github.com/${gh}`}
         target="_blank"
         rel="noreferrer"
-        className="relative z-10 inline-block text-xs text-starkMagenta/90 underline decoration-starkMagenta/40 hover:text-starkMagenta-light transition-colors duration-300"
+        className="
+          relative z-10 inline-block
+          text-xs text-starkYellow/90
+          underline decoration-starkYellow/40
+          hover:text-starkYellow-light
+          transition-colors duration-300
+        "
       >
         github.com/{gh}
       </a>
     </motion.div>
-  )
+  );
 }

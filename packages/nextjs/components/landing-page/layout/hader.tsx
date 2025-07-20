@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 
-/* ------------------------------- LINKS --------------------------------- */
 const navLinks = [
   { href: "#hero", label: "Home" },
   { href: "#about", label: "About" },
@@ -14,24 +13,16 @@ const navLinks = [
   { href: "#launch", label: "Launch" },
 ];
 
-/* ------------------------------ HEADER --------------------------------- */
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
-  /* sombreado cuando se hace scroll */
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
     onScroll();
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
-
-  const linkVariants = {
-    rest: { scale: 1, color: "#ffffff" },
-    hover: { scale: 1.08, color: "#F2075D" },
-    tap: { scale: 0.95 },
-  };
 
   const goTo = (hash: string) => {
     setOpen(false);
@@ -40,72 +31,75 @@ export default function Header() {
 
   return (
     <>
-      {/* ---------- top bar ---------- */}
       <header
-        className={`fixed inset-x-0 top-0 z-50 transition-all ${
-          scrolled
-            ? "backdrop-blur bg-[#0b0d1c]/70 border-b border-white/10"
-            : "bg-transparent"
-        }`}
+        className={`
+          fixed inset-x-0 top-0 z-50
+          transition-colors backdrop-blur-sm
+          ${scrolled ? "bg-[#0b0d1c]/80 border-b border-white/10" : "bg-transparent"}
+        `}
       >
-        <div className="relative container mx-auto flex h-16 items-center px-6">
-          {/* logo */}
+        <div className="container mx-auto relative flex h-20 items-center justify-center px-6 lg:px-8">
+          
           <button
             onClick={() => goTo("#hero")}
-            className="z-50 flex items-center ml-12"
+            className="absolute left-6 flex items-center"
           >
             <img
               src="/Logo_Sin_Texto_Transparente.png"
               alt="StarkLotto Logo"
-              className="h-16 w-auto"
+              className="h-14 w-auto lg:h-16"
             />
           </button>
 
-          {/* -------- desktop nav (solo >= lg) -------- */}
-          <nav className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 lg:block">
-            <ul className="flex items-center gap-10">
-              {navLinks.map(({ href, label }) => (
-                <motion.li
-                  key={href}
-                  variants={linkVariants}
-                  initial="rest"
-                  whileHover="hover"
-                  whileTap="tap"
-                  className="cursor-pointer select-none"
-                  onClick={() => goTo(href)}
-                >
-                  {label}
-                </motion.li>
-              ))}
-            </ul>
+          <nav className="hidden lg:flex lg:space-x-10">
+            {navLinks.map(({ href, label }) => (
+              <button
+                key={href}
+                onClick={() => goTo(href)}
+                className="relative px-2 py-1 text-sm font-medium text-white hover:text-starkYellow transition-colors duration-200 " >
+                {label}
+                <span
+                  className="
+                  absolute left-0 bottom-0 h-0.5 w-full
+                  bg-starkYellow scale-x-0 origin-left
+                  transition-transform duration-300
+                  hover:scale-x-100
+                "
+                />
+              </button>
+            ))}
           </nav>
 
-          {/* -------- hamburguesa (móvil + tablet) -------- */}
+          {/* Mobile Toggle absolute right */}
           <button
             onClick={() => setOpen(!open)}
-            className="ml-auto rounded-lg p-2 transition hover:bg-white/10 lg:hidden"
+            className="absolute right-6 p-2 rounded-md hover:bg-white/10 transition lg:hidden"
           >
-            {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            {open ? (
+              <X className="h-6 w-6 text-white" />
+            ) : (
+              <Menu className="h-6 w-6 text-white" />
+            )}
           </button>
         </div>
       </header>
 
-      {/* ---------------- mobile / tablet drawer ---------------- */}
+      {/* Mobile Menu */}
       <AnimatePresence>
         {open && (
           <motion.nav
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.25 }}
-            className="fixed inset-x-0 top-16 z-40 bg-[#0b0d1c]/95 backdrop-blur lg:hidden"
+            className="fixed inset-x-0 top-20 z-40 bg-[#0b0d1c]/95 backdrop-blur-sm lg:hidden"
           >
-            <ul className="flex flex-col gap-4 px-6 py-4 text-lg">
+            <ul className="flex flex-col px-6 py-4 space-y-4">
               {navLinks.map(({ href, label }) => (
                 <li key={href}>
                   <button
                     onClick={() => goTo(href)}
-                    className="block w-full py-2 text-left transition-colors hover:text-[#F2075D]"
+                    className="w-full text-left text-base font-medium text-white hover:text-starkYellow transition-colors duration-200"
                   >
                     {label}
                   </button>

@@ -1,7 +1,5 @@
-// components/Roadmap.tsx
-'use client'
-
-import { motion } from 'framer-motion'
+"use client";
+import { motion } from "framer-motion";
 
 /* ------------------------------- DATA ----------------------------------- */
 const phases = [
@@ -45,7 +43,7 @@ const phases = [
       "Treasury green-trading",
     ],
   },
-]
+];
 
 /* ------------------------------ SECTION --------------------------------- */
 export default function Roadmap() {
@@ -60,7 +58,7 @@ export default function Roadmap() {
         className="absolute inset-0 -z-20 opacity-[0.04] mix-blend-overlay"
         style={{
           backgroundImage:
-            'repeating-linear-gradient(135deg, transparent 0 2px, #202241 2px 4px)',
+            "repeating-linear-gradient(135deg, transparent 0 2px, #202241 2px 4px)",
         }}
       />
 
@@ -76,22 +74,8 @@ export default function Roadmap() {
         </motion.h2>
 
         {/* Timeline line: todo amarillo */}
-        <div
-          className="
-            hidden lg:block absolute left-1/2 -translate-x-1/2 top-32
-            h-[calc(100%-8rem)] w-[3px]
-            bg-starkYellow
-            z-20
-          "
-        />
-        <div
-          className="
-            lg:hidden absolute left-4 top-32
-            h-[calc(100%-8rem)] w-[2px]
-            bg-starkYellow
-            z-20
-          "
-        />
+        <div className="hidden lg:block absolute left-1/2 -translate-x-1/2 top-32 h-[calc(100%-8rem)] w-[3px] bg-starkYellow z-20" />
+        <div className=" lg:hidden absolute left-4 top-32 h-[calc(100%-8rem)] w-[2px] bg-starkYellow z-20 " />
 
         <div className="flex flex-col lg:flex-row lg:flex-wrap lg:justify-center gap-8 sm:gap-12 md:gap-16">
           {phases.map((p, i) => (
@@ -100,7 +84,7 @@ export default function Roadmap() {
         </div>
       </div>
     </section>
-  )
+  );
 }
 
 /* ----------------------------- CARD ------------------------------------- */
@@ -108,10 +92,10 @@ function PhaseCard({
   phase,
   index,
 }: {
-  phase: (typeof phases)[number]
-  index: number
+  phase: (typeof phases)[number];
+  index: number;
 }) {
-  const align = index % 2 === 0 ? "lg:pr-14" : "lg:pl-14"
+  const align = index % 2 === 0 ? "lg:pr-14" : "lg:pl-14";
 
   return (
     <motion.div
@@ -136,15 +120,7 @@ function PhaseCard({
       <motion.div
         whileHover={{ scale: 1.03 }}
         transition={{ type: "spring", stiffness: 150, damping: 18 }}
-        className="
-          mt-4 sm:mt-6 lg:mt-10
-          ml-8 sm:ml-10 lg:ml-0
-          rounded-xl bg-white/5 backdrop-blur-md
-          p-4 sm:p-5 md:p-6
-          border border-white/10 shadow-lg
-          hover:shadow-xl transition-shadow duration-300
-        "
-      >
+        className=" mt-4 sm:mt-6 lg:mt-10 ml-8 sm:ml-10 lg:ml-0 rounded-xl bg-white/5 backdrop-blur-md p-4 sm:p-5 md:p-6 border border-white/10 shadow-lg hover:shadow-xl transition-shadow duration-300 " >
         <h3 className="font-semibold text-base sm:text-lg mb-1 sm:mb-2">
           {phase.title}
         </h3>
@@ -160,5 +136,5 @@ function PhaseCard({
         </ul>
       </motion.div>
     </motion.div>
-  )
+  );
 }
