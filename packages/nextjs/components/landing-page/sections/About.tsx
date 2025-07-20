@@ -1,6 +1,6 @@
-'use client';
+'use client'
 
-import { motion } from 'framer-motion';
+import { motion } from 'framer-motion'
 
 /* ──────────────────────── mini card ──────────────────────── */
 function InfoCard({ title, text }: { title: string; text: string }) {
@@ -15,12 +15,12 @@ function InfoCard({ title, text }: { title: string; text: string }) {
         bg-white/5 p-6 backdrop-blur-md shadow-lg
       "
     >
-      {/* Glow overlay on hover (25 % opacity) */}
+      {/* Glow overlay on hover (25% opacity) */}
       <span
         className="
           absolute inset-0 rounded-xl opacity-0
           group-hover:opacity-100 transition duration-500
-          bg-gradient-to-r from-starkMagenta/25 via-starkPurple/25 to-transparent
+          bg-gradient-to-r from-starkYellow/25 via-starkYellow-light/25 to-transparent
           blur-sm
         "
       />
@@ -31,7 +31,7 @@ function InfoCard({ title, text }: { title: string; text: string }) {
         {text}
       </p>
     </motion.div>
-  );
+  )
 }
 
 /* ──────────────────────── section ───────────────────────── */
@@ -39,12 +39,10 @@ export default function About() {
   return (
     <section
       id="about"
-      className="
-        relative overflow-hidden py-28 md:py-36 text-white
-      "
+      className="relative overflow-hidden py-28 md:py-36 text-white"
     >
       {/* Fondo degradado vertical */}
-      <div className="absolute inset-0 -z-30 bg-gradient-to-b from-heroDarker via-heroMid to-heroDark" />
+      <div className="absolute inset-0 -z-30 bg-gradient-to-b from-heroDarker via-heroDark to-heroDark" />
 
       <div className="relative mx-auto max-w-6xl px-4 sm:px-6 text-center">
         {/* Título */}
@@ -59,7 +57,7 @@ export default function About() {
           "
         >
           What&nbsp;is&nbsp;
-          <span className="bg-gradient-to-r from-starkMagenta via-starkMagenta-light to-starkPurple bg-clip-text text-transparent">
+          <span className="bg-gradient-to-r from-starkYellow via-starkYellow-light to-white bg-clip-text text-transparent">
             StarkLotto?
           </span>
         </motion.h2>
@@ -80,11 +78,11 @@ export default function About() {
         <div className="grid gap-8 sm:gap-6 grid-cols-1 xl:grid-cols-3">
           <InfoCard
             title="On-chain Lottery"
-            text="NFT tickets, verifiable randomness, and 100 % provable jackpots on StarkNet."
+            text="NFT tickets, verifiable randomness, and 100% provable jackpots on StarkNet."
           />
           <InfoCard
             title="Social & Environmental Impact"
-            text="15 % of every bet funds donations and carbon-credit purchases."
+            text="15% of every bet funds donations and carbon-credit purchases."
           />
           <InfoCard
             title="Transparency & Governance"
@@ -93,5 +91,5 @@ export default function About() {
         </div>
       </div>
     </section>
-  );
+  )
 }

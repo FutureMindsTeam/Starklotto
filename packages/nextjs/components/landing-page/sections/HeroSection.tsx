@@ -8,10 +8,7 @@ import type { Engine } from '@tsparticles/engine'
 import { Button } from '../../ui/button'
 import { ChevronRight } from 'lucide-react'
 
-import {
-  particlePresets,
-  loadOrbitPlugin,
-} from '../../../lib/particlePresets'
+import { particlePresets, loadOrbitPlugin } from '../../../lib/particlePresets'
 
 type PresetName = keyof typeof particlePresets
 interface HeroProps {
@@ -21,7 +18,6 @@ interface HeroProps {
 export default function Hero({ variant = 'hexGridStark' }: HeroProps) {
   const [ready, setReady] = useState(false)
 
-  /* Init tsParticles (and orbit plug-in when selected) */
   useEffect(() => {
     initParticlesEngine(async (engine: Engine) => {
       if (variant === 'orbit') await loadOrbitPlugin(engine)
@@ -42,7 +38,7 @@ export default function Hero({ variant = 'hexGridStark' }: HeroProps) {
         className="absolute inset-0 -z-10 opacity-25"
         style={{
           background:
-            'radial-gradient(circle at 50% 30%, rgba(242,7,93,0.25), transparent 60%)',
+            'radial-gradient(circle at 50% 30%, rgba(255,214,0,0.25), transparent 60%)',
         }}
       />
 
@@ -71,7 +67,7 @@ export default function Hero({ variant = 'hexGridStark' }: HeroProps) {
           <span
             className="
               bg-clip-text text-transparent
-              bg-gradient-to-r from-starkMagenta via-starkMagenta-light to-white
+              bg-gradient-to-r from-starkYellow via-starkYellow-light to-white
               bg-[length:400%_100%] animate-slower-shimmer
             "
           >
@@ -90,7 +86,8 @@ export default function Hero({ variant = 'hexGridStark' }: HeroProps) {
             text-neutral-300 text-center
           "
         >
-          Play transparent on-chain lotteries, win prizes, and support social&nbsp;and environmental causes with every play.
+          Play transparent on-chain lotteries, win prizes, and support social&nbsp;and
+          environmental causes with every play.
         </motion.p>
 
         <motion.div
@@ -106,7 +103,7 @@ export default function Hero({ variant = 'hexGridStark' }: HeroProps) {
         >
           <Button
             size="lg"
-            className="flex-1 px-8 py-6 text-lg bg-starkMagenta hover:bg-starkMagenta-light text-white"
+            className="flex-1 px-8 py-6 text-lg bg-starkYellow hover:bg-starkYellow-light text-black"
             onClick={() =>
               document.getElementById('games')?.scrollIntoView({ behavior: 'smooth' })
             }
@@ -119,10 +116,10 @@ export default function Hero({ variant = 'hexGridStark' }: HeroProps) {
             size="lg"
             className="
               flex-1 px-8 py-6 text-lg
-              border border-starkMagenta text-neutral-300 bg-transparent
+              border border-starkYellow text-starkYellow-light bg-transparent
               hover:bg-transparent focus-visible:bg-transparent
-              hover:shadow-[0_0_8px_0_rgba(242,7,93,0.6)]
-              focus-visible:shadow-[0_0_8px_0_rgba(242,7,93,0.8)]
+              hover:shadow-[0_0_8px_0_rgba(255,214,0,0.6)]
+              focus-visible:shadow-[0_0_8px_0_rgba(255,214,0,0.8)]
               animate-pulse-border
             "
             onClick={() => window.open('https://t.me/StarklottoContributors', '_blank')}

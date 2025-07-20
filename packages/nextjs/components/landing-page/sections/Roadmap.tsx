@@ -1,3 +1,4 @@
+// components/Roadmap.tsx
 'use client'
 
 import { motion } from 'framer-motion'
@@ -74,11 +75,23 @@ export default function Roadmap() {
           Roadmap
         </motion.h2>
 
-        {/* Timeline line */}
-        <div className="hidden lg:block absolute left-1/2 -translate-x-1/2 top-32 h-[calc(100%-8rem)] w-[3px]
-                        bg-gradient-to-b from-starkMagenta via-starkMagenta-light to-starkMagenta-light/30 z-20" />
-        <div className="lg:hidden absolute left-4 top-32 h-[calc(100%-8rem)] w-[2px]
-                        bg-gradient-to-b from-starkMagenta via-starkMagenta-light to-starkMagenta-light/30 z-20" />
+        {/* Timeline line: todo amarillo */}
+        <div
+          className="
+            hidden lg:block absolute left-1/2 -translate-x-1/2 top-32
+            h-[calc(100%-8rem)] w-[3px]
+            bg-starkYellow
+            z-20
+          "
+        />
+        <div
+          className="
+            lg:hidden absolute left-4 top-32
+            h-[calc(100%-8rem)] w-[2px]
+            bg-starkYellow
+            z-20
+          "
+        />
 
         <div className="flex flex-col lg:flex-row lg:flex-wrap lg:justify-center gap-8 sm:gap-12 md:gap-16">
           {phases.map((p, i) => (
@@ -108,33 +121,37 @@ function PhaseCard({
       transition={{ duration: 0.55, delay: index * 0.12 }}
       className={`relative lg:w-1/2 ${align}`}
     >
-      {/* Dot on timeline */}
+      {/* Dot on timeline: siempre amarillo con sombra */}
       <span
         className={`
           absolute lg:static
           left-[11px] sm:left-[13px] lg:left-auto
           top-0 lg:top-auto
           flex h-3 w-3 sm:h-4 sm:w-4 rounded-full lg:mx-auto
-          ${phase.current
-            ? 'bg-starkMagenta shadow-[0_0_8px_rgba(255,234,0,0.8)]'
-            : 'bg-white/25'}
+          bg-starkYellow
+          shadow-[0_0_8px_rgba(255,214,0,0.8)]
         `}
       />
 
       <motion.div
         whileHover={{ scale: 1.03 }}
         transition={{ type: "spring", stiffness: 150, damping: 18 }}
-        className="mt-4 sm:mt-6 lg:mt-10 ml-8 sm:ml-10 lg:ml-0
-                   rounded-xl bg-white/5 backdrop-blur-md p-4 sm:p-5 md:p-6
-                   border border-white/10 shadow-lg hover:shadow-xl transition-shadow duration-300"
+        className="
+          mt-4 sm:mt-6 lg:mt-10
+          ml-8 sm:ml-10 lg:ml-0
+          rounded-xl bg-white/5 backdrop-blur-md
+          p-4 sm:p-5 md:p-6
+          border border-white/10 shadow-lg
+          hover:shadow-xl transition-shadow duration-300
+        "
       >
         <h3 className="font-semibold text-base sm:text-lg mb-1 sm:mb-2">
           {phase.title}
         </h3>
-        <p className="text-xs sm:text-sm text-starkMagenta/80 mb-2 sm:mb-3">
+        <p className="text-xs sm:text-sm text-starkYellow/80 mb-2 sm:mb-3">
           {phase.range}
         </p>
-        <ul className="list-disc ml-4 sm:ml-5 marker:text-starkMagenta/90 space-y-1 text-xs sm:text-sm text-neutral-200">
+        <ul className="list-disc ml-4 sm:ml-5 marker:text-starkYellow/90 space-y-1 text-xs sm:text-sm text-neutral-200">
           {phase.bullets.map((b) => (
             <li key={b} className="leading-relaxed">
               {b}

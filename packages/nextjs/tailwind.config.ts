@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 import daisyui from "daisyui";
 
@@ -54,21 +53,20 @@ const config: Config = {
         },
         // StarkLotto Palette
         starkMagenta: {
-          DEFAULT: "#9B00FF",
-          light: "#B34BFF",
+          DEFAULT: "#B34BFF",   // magenta base
+          light:   "#D49CFF",   // versión más clara para hover
         },
         starkPurple: "#8A26A6",
-        // New neon yellow for Hero & particles
         starkYellow: {
-          DEFAULT: "#FFE600",
-          light: "#FFF366",
+          DEFAULT: "#FFD600",   // amarillo dorado
+          light:   "#FFF451",   // para hover y fondos suaves
         },
         // Hero Section Backgrounds
-        heroDark: "#101326",
+        heroDark:   "#101326",
         heroDarker: "#181240",
       },
       transitionProperty: {
-        colors: "color, background-color, fill, stroke",
+        colors:    "color, background-color, fill, stroke",
         transform: "transform",
       },
       backdropBlur: {

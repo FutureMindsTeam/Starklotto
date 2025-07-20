@@ -52,9 +52,13 @@ export default function Header() {
           {/* logo */}
           <button
             onClick={() => goTo("#hero")}
-            className="z-50 text-xl font-extrabold tracking-tight lg:text-2xl"
+            className="z-50 flex items-center ml-12"
           >
-            <span className="text-[#F2075D]">Stark</span>Lotto
+            <img
+              src="/Logo_Sin_Texto_Transparente.png"
+              alt="StarkLotto Logo"
+              className="h-16 w-auto"
+            />
           </button>
 
           {/* -------- desktop nav (solo >= lg) -------- */}
