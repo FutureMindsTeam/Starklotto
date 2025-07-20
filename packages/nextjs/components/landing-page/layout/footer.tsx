@@ -42,7 +42,6 @@ export default function Footer() {
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-starkYellow/10 via-transparent to-transparent blur-[180px]" />
 
       <div className="relative z-10 mx-auto flex max-w-6xl flex-col items-center gap-14 px-6">
-        
         <Link href="/" className="text-3xl font-extrabold tracking-tight">
           <span className="text-starkYellow">Stark</span>Lotto
         </Link>

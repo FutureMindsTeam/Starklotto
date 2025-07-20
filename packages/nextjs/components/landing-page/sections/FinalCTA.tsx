@@ -17,7 +17,7 @@ export default function FinalCTA() {
       className="relative overflow-hidden py-28 bg-gradient-to-b text-white"
     >
       <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className=" absolute -top-44 left-1/2 -translate-x-1/2 w-[720px] h-[720px] rounded-full bg-starkYellow/15 blur-[160px]"/>
+        <div className=" absolute -top-44 left-1/2 -translate-x-1/2 w-[720px] h-[720px] rounded-full bg-starkYellow/15 blur-[160px]" />
       </div>
 
       <div className="container mx-auto max-w-2xl px-6 text-center">

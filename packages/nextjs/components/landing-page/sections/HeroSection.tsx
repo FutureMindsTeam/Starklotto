@@ -29,7 +29,6 @@ export default function Hero({ variant = "hexGridStark" }: HeroProps) {
       id="hero"
       className="relative flex items-center justify-center min-h-[100svh] overflow-hidden py-16 sm:py-24"
     >
-
       <div className="absolute inset-0 -z-20 bg-gradient-to-b from-heroDarker to-heroDark" />
       <div
         className="absolute inset-0 -z-10 opacity-25"

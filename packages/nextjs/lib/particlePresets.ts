@@ -32,7 +32,7 @@ export const hexGridStark: ISourceOptions = {
     links: {
       enable: true,
       distance: 70,
-      color: "#FFD600", 
+      color: "#FFD600",
       opacity: 0.25,
       width: 1.2,
     },
@@ -46,7 +46,7 @@ export const hexGridStark: ISourceOptions = {
     modes: {
       grab: {
         distance: 120,
-        links: { opacity: 0.4, color: "#FFF451" }, 
+        links: { opacity: 0.4, color: "#FFF451" },
       },
     },
   },

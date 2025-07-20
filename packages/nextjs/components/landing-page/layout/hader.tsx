@@ -39,7 +39,6 @@ export default function Header() {
         `}
       >
         <div className="container mx-auto relative flex h-20 items-center justify-center px-6 lg:px-8">
-          
           <button
             onClick={() => goTo("#hero")}
             className="absolute left-6 flex items-center"
@@ -56,7 +55,8 @@ export default function Header() {
               <button
                 key={href}
                 onClick={() => goTo(href)}
-                className="relative px-2 py-1 text-sm font-medium text-white hover:text-starkYellow transition-colors duration-200 " >
+                className="relative px-2 py-1 text-sm font-medium text-white hover:text-starkYellow transition-colors duration-200 "
+              >
                 {label}
                 <span
                   className="

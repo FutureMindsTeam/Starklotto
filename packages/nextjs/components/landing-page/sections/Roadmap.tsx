@@ -120,7 +120,8 @@ function PhaseCard({
       <motion.div
         whileHover={{ scale: 1.03 }}
         transition={{ type: "spring", stiffness: 150, damping: 18 }}
-        className=" mt-4 sm:mt-6 lg:mt-10 ml-8 sm:ml-10 lg:ml-0 rounded-xl bg-white/5 backdrop-blur-md p-4 sm:p-5 md:p-6 border border-white/10 shadow-lg hover:shadow-xl transition-shadow duration-300 " >
+        className=" mt-4 sm:mt-6 lg:mt-10 ml-8 sm:ml-10 lg:ml-0 rounded-xl bg-white/5 backdrop-blur-md p-4 sm:p-5 md:p-6 border border-white/10 shadow-lg hover:shadow-xl transition-shadow duration-300 "
+      >
         <h3 className="font-semibold text-base sm:text-lg mb-1 sm:mb-2">
           {phase.title}
         </h3>

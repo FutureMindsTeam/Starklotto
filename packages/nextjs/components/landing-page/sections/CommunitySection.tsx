@@ -108,7 +108,6 @@ function SocialCard({
         transition-transform duration-300
       "
     >
-      
       <div
         className={`
           relative z-10 mb-4 grid place-items-center rounded-full p-3 border border-white/10

@@ -24,7 +24,8 @@ export default function TeamSection() {
   return (
     <section
       id="team"
-      className="relative overflow-hidden py-28 md:py-36  text-white">
+      className="relative overflow-hidden py-28 md:py-36  text-white"
+    >
       <div className="absolute inset-0 -z-30 bg-gradient-to-b from-heroDarker via-heroDark to-heroDark" />
       <div
         className="absolute inset-0 -z-20 opacity-[0.04] mix-blend-overlay"

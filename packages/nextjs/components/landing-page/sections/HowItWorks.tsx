@@ -41,8 +41,8 @@ function StepCard({
         boxShadow: "0 0 20px rgba(255,214,0,0.8), 0 0 40px rgba(255,214,0,0.4)",
       }}
       transition={{ type: "spring", stiffness: 200, damping: 20 }}
-      className="group relative rounded-xl p-8 bg-white/5 backdrop-blur-lg border border-white/10 transform-gpu transition-all duration-300">
-      
+      className="group relative rounded-xl p-8 bg-white/5 backdrop-blur-lg border border-white/10 transform-gpu transition-all duration-300"
+    >
       <div className="pointer-events-none absolute inset-0 rounded-xl border-2 border-transparent group-hover:border-starkYellow transition-colors duration-300" />
       <div className="relative z-10 mb-5 flex justify-center">
         <Icon className="h-10 w-10 text-starkYellow" />

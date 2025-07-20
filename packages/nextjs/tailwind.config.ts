@@ -51,17 +51,17 @@ const config: Config = {
           DEFAULT: "#000000",
           light: "#1A1A1A",
         },
-        
+
         starkMagenta: {
-          DEFAULT: "#B34BFF", 
-          light: "#D49CFF", 
+          DEFAULT: "#B34BFF",
+          light: "#D49CFF",
         },
         starkPurple: "#8A26A6",
         starkYellow: {
-          DEFAULT: "#FFD600", 
-          light: "#FFF451", 
+          DEFAULT: "#FFD600",
+          light: "#FFF451",
         },
-        
+
         heroDark: "#101326",
         heroDarker: "#181240",
       },
