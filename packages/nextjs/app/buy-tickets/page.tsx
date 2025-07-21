@@ -13,7 +13,6 @@ import deployedContracts from "~~/contracts/deployedContracts";
 import { LOTT_CONTRACT_NAME } from "~~/utils/Constants";
 import { useTranslation } from "react-i18next";
 
-
 export default function BuyTicketsPage() {
   const { t } = useTranslation();
   const router = useRouter();
@@ -105,14 +104,13 @@ export default function BuyTicketsPage() {
   const contractInfo = deployedContracts.devnet[LOTT_CONTRACT_NAME];
   const abi = contractInfo.abi as Abi;
   const contractAddress = contractInfo.address;
-  
+
   const { contract: contractInstance } = useContract({
     abi,
     address: contractAddress,
   });
 
   const writeTxn = useTransactor();
-
 
   const totalCost = ticketCount * ticketPrice;
 
@@ -337,17 +335,17 @@ export default function BuyTicketsPage() {
                 </div>
 
                 <GlowingButton
-                    onClick={handlePurchase}
-                    className="w-full"
-                    glowColor="rgba(139, 92, 246, 0.5)"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? "Processing..." : t("buyPage.buyButton")}
-                  </GlowingButton>
-                  {txError && <p className="text-red-500 mt-2">{txError}</p>}
-                  {txSuccess && (
-                    <p className="text-green-500 mt-2">{txSuccess}</p>
-                  )}
+                  onClick={handlePurchase}
+                  className="w-full"
+                  glowColor="rgba(139, 92, 246, 0.5)"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Processing..." : t("buyPage.buyButton")}
+                </GlowingButton>
+                {txError && <p className="text-red-500 mt-2">{txError}</p>}
+                {txSuccess && (
+                  <p className="text-green-500 mt-2">{txSuccess}</p>
+                )}
               </motion.div>
             </div>
 
