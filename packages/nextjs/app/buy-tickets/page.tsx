@@ -121,7 +121,7 @@ export default function BuyTicketsPage() {
     setIsLoading(true);
     try {
       const txs = Object.values(selectedNumbers).map((nums) =>
-        contractInstance.populate("BuyTicket", [drawId, nums])
+        contractInstance.populate("BuyTicket", [drawId, nums]),
       );
       await writeTxn.writeTransaction(txs);
       setTxSuccess("Tickets purchased successfully!");
