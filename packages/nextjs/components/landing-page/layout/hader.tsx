@@ -39,18 +39,16 @@ export default function Header() {
         `}
       >
         <div className="container mx-auto relative flex h-20 items-center justify-center px-6 lg:px-8">
-         
           <button
             onClick={() => goTo("#hero")}
             className="absolute left-6 flex items-center space-x-2"
           >
-           
             <img
               src="/Logo-sin-texto.png"
               alt="Icono StarkLotto"
               className="h-14 w-auto lg:h-16"
             />
-            
+
             <img
               src="/Logo_Sin_Texto_Transparente.png"
               alt="StarkLotto Logo"

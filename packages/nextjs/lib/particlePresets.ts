@@ -17,7 +17,6 @@ export const starfield: ISourceOptions = {
   },
 };
 
-
 export const casinoGlitz: ISourceOptions = {
   ...starfield,
   particles: {
@@ -45,9 +44,9 @@ export const casinoGlitz: ISourceOptions = {
       opacity: 0.2,
       width: 1,
     },
- 
+
     move: {
-      enable: false
+      enable: false,
     },
     rotate: { value: 0, animation: { enable: true, speed: 8, sync: false } },
     wobble: { enable: true, distance: 5, speed: 1 },
