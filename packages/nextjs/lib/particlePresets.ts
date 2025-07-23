@@ -1,7 +1,7 @@
 import type { ISourceOptions } from "@tsparticles/engine";
 import { loadCurvesPath } from "@tsparticles/path-curves";
 
-/* ─────────── 1. Starfield  ─────────── */
+/* ─────────── 1. Starfield ─────────── */
 export const starfield: ISourceOptions = {
   fullScreen: { enable: false },
   fpsLimit: 60,
@@ -17,45 +17,66 @@ export const starfield: ISourceOptions = {
   },
 };
 
-/* ─────────── 5. Hex Grid Stark  ─────────── */
-export const hexGridStark: ISourceOptions = {
+
+export const casinoGlitz: ISourceOptions = {
   ...starfield,
   particles: {
     ...starfield.particles,
-    number: { value: 100, density: { enable: true, width: 900 } },
-    color: { value: ["#FFD600", "#FFF451"] },
-    size: { value: { min: 2, max: 3 } },
-    opacity: {
-      value: { min: 0.15, max: 0.5 },
-      animation: { enable: true, speed: 0.5, sync: false },
+    number: { value: 80, density: { enable: true, width: 900 } },
+    shape: {
+      type: ["circle", "star"],
+      options: { star: { sides: 5 } },
     },
+    color: { value: ["#FFD600", "#FF004C", "#FFFFFF"] },
+
+    size: {
+      value: { min: 3, max: 5 },
+      animation: { enable: true, speed: 2, startValue: "min", sync: false },
+    },
+    opacity: {
+      value: { min: 0.3, max: 0.8 },
+      animation: { enable: true, speed: 1.2, sync: false },
+    },
+    stroke: { width: 1, color: "#FFD600" },
     links: {
       enable: true,
       distance: 70,
       color: "#FFD600",
-      opacity: 0.25,
-      width: 1.2,
+      opacity: 0.2,
+      width: 1,
     },
-    move: { enable: true, speed: 0.12, straight: true },
+ 
+    move: {
+      enable: false
+    },
+    rotate: { value: 0, animation: { enable: true, speed: 8, sync: false } },
+    wobble: { enable: true, distance: 5, speed: 1 },
+    twinkle: {
+      particles: { enable: true, frequency: 0.015, opacity: 1 },
+      lines: { enable: true, frequency: 0.007, opacity: 1 },
+    },
   },
   interactivity: {
+    detectsOn: "canvas",
     events: {
       onHover: { enable: true, mode: "grab" },
+      onClick: { enable: true, mode: "push" },
       resize: { enable: true },
     },
     modes: {
       grab: {
-        distance: 120,
-        links: { opacity: 0.4, color: "#FFF451" },
+        distance: 100,
+        links: { color: "#FF004C", opacity: 0.6 },
       },
+      push: { quantity: 3 },
     },
   },
 };
 
-/* ───────────  Export agrupado ─────────── */
+/* ───────────  Export ─────────── */
 export const particlePresets = {
   starfield,
-  hexGridStark,
+  casinoGlitz,
 } as const;
 
 /* ───────────  Plugin Orbit ─────────── */

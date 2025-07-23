@@ -13,7 +13,7 @@ interface HeroProps {
   variant?: PresetName;
 }
 
-export default function Hero({ variant = "hexGridStark" }: HeroProps) {
+export default function Hero({ variant = "casinoGlitz" }: HeroProps) {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {

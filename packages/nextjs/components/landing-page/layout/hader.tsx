@@ -39,10 +39,18 @@ export default function Header() {
         `}
       >
         <div className="container mx-auto relative flex h-20 items-center justify-center px-6 lg:px-8">
+         
           <button
             onClick={() => goTo("#hero")}
-            className="absolute left-6 flex items-center"
+            className="absolute left-6 flex items-center space-x-2"
           >
+           
+            <img
+              src="/Logo-sin-texto.png"
+              alt="Icono StarkLotto"
+              className="h-14 w-auto lg:h-16"
+            />
+            
             <img
               src="/Logo_Sin_Texto_Transparente.png"
               alt="StarkLotto Logo"
@@ -55,22 +63,22 @@ export default function Header() {
               <button
                 key={href}
                 onClick={() => goTo(href)}
-                className="relative px-2 py-1 text-sm font-medium text-white hover:text-starkYellow transition-colors duration-200 "
+                className="relative px-2 py-1 text-sm font-medium text-white hover:text-starkYellow transition-colors duration-200"
               >
                 {label}
                 <span
                   className="
-                  absolute left-0 bottom-0 h-0.5 w-full
-                  bg-starkYellow scale-x-0 origin-left
-                  transition-transform duration-300
-                  hover:scale-x-100
-                "
+                    absolute left-0 bottom-0 h-0.5 w-full
+                    bg-starkYellow scale-x-0 origin-left
+                    transition-transform duration-300
+                    hover:scale-x-100
+                  "
                 />
               </button>
             ))}
           </nav>
 
-          {/* Mobile Toggle absolute right */}
+          {/* Mobile Toggle */}
           <button
             onClick={() => setOpen(!open)}
             className="absolute right-6 p-2 rounded-md hover:bg-white/10 transition lg:hidden"
