@@ -35,7 +35,6 @@ fn test_set_greetings() {
 }
 
 #[test]
-#[fork("SEPOLIA_LATEST")]
 fn test_transfer() {
     let user = OWNER;
     let your_contract_address = deploy_contract("YourContract");

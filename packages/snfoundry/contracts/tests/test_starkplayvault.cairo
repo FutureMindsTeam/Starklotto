@@ -20,21 +20,23 @@ fn init_vault() -> StarkPlayVault::ContractState {
         ref state,
         contract_address_const::<5>(), // owner
         contract_address_const::<'token'>(), // starkplay_token
+        contract_address_const::<'treasury'>(), // treasury_address
         10000 // fee percentage
     );
     state
 }
 
-// Helper function to deploy the contract and return dispatcher and address
 fn deploy_vault() -> IStarkPlayVaultDispatcher {
     let contract = declare("StarkPlayVault").unwrap().contract_class();
-    let owner = contract_address_const::<5>(); // 
-    let token = contract_address_const::<'token'>(); //
+    let owner = contract_address_const::<5>(); 
+    let token = contract_address_const::<'token'>(); 
+    let treasury = contract_address_const::<'treasury'>(); 
     let fee_percentage: u128 = 10000;
 
     let mut constructor_calldata = array![];
     owner.serialize(ref constructor_calldata);
     token.serialize(ref constructor_calldata);
+    treasury.serialize(ref constructor_calldata); 
     fee_percentage.serialize(ref constructor_calldata);
 
     let (contract_address, _) = contract.deploy(@constructor_calldata).unwrap();
@@ -143,11 +145,7 @@ fn test_set_mint_limit_emit_event() {
     // Check event emission
     let events = spy.get_events();
     assert(events.events.len() == 1, 'Event not emitted');
-    // let expected_event = StarkPlayVault::Event::MintLimitUpdated(
-//     StarkPlayVault::MintLimitUpdated { new_mint_limit: new_limit },
-// );
-// let expected_events = array![(contract_address, expected_event)];
-// spy.assert_emitted(@expected_events);
+
 }
 
 #[test]
@@ -171,11 +169,7 @@ fn test_set_burn_limit_emit_event() {
     // Check event emission
     let events = spy.get_events();
     assert(events.events.len() == 1, 'Event not emitted');
-    // let expected_event = StarkPlayVault::Event::BurnLimitUpdated(
-//     StarkPlayVault::BurnLimitUpdated { new_burn_limit: new_limit },
-// );
-// let expected_events = array![(contract_address, expected_event)];
-// spy.assert_emitted(@expected_events);
+   
 }
 
 #[should_panic(expected: 'Invalid Mint limit')]
