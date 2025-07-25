@@ -11,11 +11,6 @@ fn setup_lottery() -> ContractAddress {
 }
 
 #[test]
-fn verify_basic_math() {
-    assert(1 + 1 == 2, 'Basic math validation');
-}
-
-#[test]
 fn should_declare_contract() {
     let lottery = declare("Lottery").unwrap().contract_class();
     assert(true, 'Contract declaration successful');

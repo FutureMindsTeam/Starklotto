@@ -67,8 +67,6 @@ pub trait ILottery<TContractState> {
         number5: u16,
     ) -> u8;
     fn CreateNewDraw(ref self: TContractState, accumulatedPrize: u256);
-    fn SetTicketPrice(ref self: TContractState, price: u256);
-    fn GetTicketPrice(self: @TContractState) -> u256;
     //=======================================================================================
     //get functions
     fn GetAccumulatedPrize(self: @TContractState) -> u256;
@@ -582,17 +580,6 @@ pub mod Lottery {
             numbers.append(draw.winningNumber4);
             numbers.append(draw.winningNumber5);
             numbers
-        }
-
-        // Set the ticket price (admin only)
-        fn SetTicketPrice(ref self: ContractState, price: u256) {
-            self.ownable.assert_only_owner();
-            self.ticketPrice.write(price);
-        }
-
-        // Get the ticket price (public view)
-        fn GetTicketPrice(self: @ContractState) -> u256 {
-            self.ticketPrice.read()
         }
 
         //=======================================================================================
