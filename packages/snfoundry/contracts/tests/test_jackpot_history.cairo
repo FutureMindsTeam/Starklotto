@@ -1,4 +1,6 @@
 use contracts::Lottery::{ILotteryDispatcher, ILotteryDispatcherTrait};
+use contracts::StarkPlayERC20::{IMintableDispatcher, IMintableDispatcherTrait};
+use contracts::StarkPlayVault::{IStarkPlayVaultDispatcher};
 use core::array::{Array, ArrayTrait};
 use snforge_std::{
     ContractClassTrait, DeclareResultTrait, declare, start_cheat_caller_address,
@@ -15,9 +17,39 @@ pub fn USER() -> ContractAddress {
     'USER'.try_into().unwrap()
 }
 
+
+
+// Helper function to deploy StarkPlay token
+fn deploy_starkplay_token() -> IMintableDispatcher {
+    let contract = declare("StarkPlayERC20").unwrap().contract_class();
+    let mut constructor_calldata = ArrayTrait::new();
+    constructor_calldata.append(OWNER().into());
+    constructor_calldata.append(OWNER().into());
+    let (contract_address, _) = contract.deploy(@constructor_calldata).unwrap();
+    IMintableDispatcher { contract_address }
+}
+
+// Helper function to deploy vault contract
+fn deploy_vault_contract(starkplay_token: ContractAddress) -> IStarkPlayVaultDispatcher {
+    let vault_contract = declare("StarkPlayVault").unwrap().contract_class();
+    let mut vault_constructor_calldata = ArrayTrait::new();
+    vault_constructor_calldata.append(OWNER().into());
+    vault_constructor_calldata.append(starkplay_token.into());
+    vault_constructor_calldata.append(50_u64.into()); // 50 basis points = 0.5%
+    let (vault_address, _) = vault_contract.deploy(@vault_constructor_calldata).unwrap();
+    IStarkPlayVaultDispatcher { contract_address: vault_address }
+}
+
 fn deploy_lottery() -> ContractAddress {
-    let mut constructor_calldata = array![];
-    OWNER().serialize(ref constructor_calldata);
+    // Deploy required contracts first
+    let starkplay_token = deploy_starkplay_token();
+    let vault = deploy_vault_contract(starkplay_token.contract_address);
+    
+    // Deploy lottery with dynamic addresses
+    let mut constructor_calldata = ArrayTrait::new();
+    constructor_calldata.append(OWNER().into());
+    constructor_calldata.append(starkplay_token.contract_address.into());
+    constructor_calldata.append(vault.contract_address.into());
 
     let lottery_class = declare("Lottery").unwrap().contract_class();
     let (lottery_addr, _) = lottery_class.deploy(@constructor_calldata).unwrap();

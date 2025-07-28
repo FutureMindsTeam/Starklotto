@@ -69,6 +69,8 @@ pub trait ILottery<TContractState> {
     fn CreateNewDraw(ref self: TContractState, accumulatedPrize: u256);
     //=======================================================================================
     //get functions
+    fn GetStrkPlayContractAddress(self: @TContractState) -> ContractAddress;
+    fn GetStrkPlayVaultContractAddress(self: @TContractState) -> ContractAddress;
     fn GetAccumulatedPrize(self: @TContractState) -> u256;
     fn GetFixedPrize(self: @TContractState, matches: u8) -> u256;
     fn GetDrawStatus(self: @TContractState, drawId: u64) -> bool;
@@ -129,14 +131,6 @@ pub mod Lottery {
     #[abi(embed_v0)]
     impl OwnableImpl = OwnableComponent::OwnableImpl<ContractState>;
     impl OwnableInternalImpl = OwnableComponent::InternalImpl<ContractState>;
-
-    // TODO: Update the address of the token contract once the token is deployed
-    const STRK_PLAY_CONTRACT_ADDRESS: felt252 =
-        0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d;
-
-    // TODO: Update the address of the vault contract once the vault is deployed
-    const STRK_PLAY_VAULT_CONTRACT_ADDRESS: felt252 =
-        0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d;
 
     //=======================================================================================
     //events
@@ -205,6 +199,8 @@ pub mod Lottery {
     //=======================================================================================
     #[storage]
     struct Storage {
+        strkPlayContractAddress: ContractAddress,
+        strkPlayVaultContractAddress: ContractAddress,
         ticketPrice: u256,
         currentDrawId: u64,
         currentTicketId: u64,
@@ -231,7 +227,15 @@ pub mod Lottery {
     //=======================================================================================
 
     #[constructor]
-    fn constructor(ref self: ContractState, owner: ContractAddress) {
+    fn constructor(ref self: ContractState, owner: ContractAddress, strkPlayContractAddress: ContractAddress, strkPlayVaultContractAddress: ContractAddress) {
+        let zero: ContractAddress = 0.try_into().unwrap();
+        assert(strkPlayContractAddress != zero, 'Invalid Play Address');
+        assert(strkPlayVaultContractAddress != zero, 'Invalid Vault Address');
+        assert(owner != zero, 'Invalid Owner Address');
+
+        self.strkPlayContractAddress.write(strkPlayContractAddress);
+        self.strkPlayVaultContractAddress.write(strkPlayVaultContractAddress);
+
         self.ownable.initializer(owner);
         self.fixedPrize4Matches.write(4000000000000000000);
         self.fixedPrize3Matches.write(3000000000000000000);
@@ -239,6 +243,7 @@ pub mod Lottery {
         self.currentDrawId.write(0);
         self.currentTicketId.write(0);
         self.reentrancy_guard.write(false);
+
     }
     //=======================================================================================
     //impl
@@ -272,16 +277,14 @@ pub mod Lottery {
 
             // Process the payment
             let token_dispatcher = IERC20Dispatcher {
-                contract_address: STRK_PLAY_CONTRACT_ADDRESS.try_into().unwrap(),
+                contract_address: self.strkPlayContractAddress.read(),
             };
 
             // --- Balance validation and deduction logic ---
             // 1. Get ticket price and user/vault addresses
             let ticket_price = self.ticketPrice.read();
             let user = get_caller_address();
-            let vault_address: ContractAddress = STRK_PLAY_VAULT_CONTRACT_ADDRESS
-                .try_into()
-                .unwrap();
+            let vault_address: ContractAddress = self.strkPlayVaultContractAddress.read();
 
             // 2. Validate user has sufficient token balance
             let user_balance = token_dispatcher.balance_of(user);
@@ -457,6 +460,14 @@ pub mod Lottery {
             matches
         }
 
+        //=======================================================================================
+        // Addresses getters
+        fn GetStrkPlayContractAddress(self: @ContractState) -> ContractAddress {
+            self.strkPlayContractAddress.read()
+        }
+        fn GetStrkPlayVaultContractAddress(self: @ContractState) -> ContractAddress {
+            self.strkPlayVaultContractAddress.read()
+        }
         //=======================================================================================
         //OK
         fn GetAccumulatedPrize(self: @ContractState) -> u256 {
