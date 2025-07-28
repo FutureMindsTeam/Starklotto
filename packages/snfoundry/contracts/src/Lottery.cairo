@@ -17,7 +17,7 @@ struct Ticket {
     timestamp: u64,
 }
 
-#[derive(Drop, Serde, starknet::Store)]
+#[derive(Drop, Copy, Serde, starknet::Store)]
 //serde for serialization and deserialization
 struct Draw {
     drawId: u64,
@@ -35,11 +35,22 @@ struct Draw {
     endTime: u64,
 }
 
+#[derive(Drop, Copy, Serde, starknet::Store)]
+//serde for serialization and deserialization
+struct JackpotEntry {
+    drawId: u64,
+    jackpotAmount: u256,
+    startTime: u64,
+    endTime: u64,
+    isActive: bool,
+    isCompleted: bool,
+}
+
 //=======================================================================================
 //interface
 //=======================================================================================
 #[starknet::interface]
-trait ILottery<TContractState> {
+pub trait ILottery<TContractState> {
     //=======================================================================================
     //set functions
     fn Initialize(ref self: TContractState, ticketPrice: u256, accumulatedPrize: u256);
@@ -73,6 +84,21 @@ trait ILottery<TContractState> {
     ) -> Ticket;
     fn GetTicketCurrentId(self: @TContractState) -> u64;
     fn GetWinningNumbers(self: @TContractState, drawId: u64) -> Array<u16>;
+    fn get_jackpot_history(self: @TContractState) -> Array<JackpotEntry>;
+
+    // Getter functions for private structures
+    fn GetTicketPlayer(self: @TContractState, drawId: u64, ticketId: felt252) -> ContractAddress;
+    fn GetTicketNumbers(self: @TContractState, drawId: u64, ticketId: felt252) -> Array<u16>;
+    fn GetTicketClaimed(self: @TContractState, drawId: u64, ticketId: felt252) -> bool;
+    fn GetTicketDrawId(self: @TContractState, drawId: u64, ticketId: felt252) -> u64;
+    fn GetTicketTimestamp(self: @TContractState, drawId: u64, ticketId: felt252) -> u64;
+
+    fn GetJackpotEntryDrawId(self: @TContractState, drawId: u64) -> u64;
+    fn GetJackpotEntryAmount(self: @TContractState, drawId: u64) -> u256;
+    fn GetJackpotEntryStartTime(self: @TContractState, drawId: u64) -> u64;
+    fn GetJackpotEntryEndTime(self: @TContractState, drawId: u64) -> u64;
+    fn GetJackpotEntryIsActive(self: @TContractState, drawId: u64) -> bool;
+    fn GetJackpotEntryIsCompleted(self: @TContractState, drawId: u64) -> bool;
     //=======================================================================================
 
 }
@@ -81,7 +107,7 @@ trait ILottery<TContractState> {
 //contract
 //=======================================================================================
 #[starknet::contract]
-mod Lottery {
+pub mod Lottery {
     use core::array::{Array, ArrayTrait};
     use core::dict::{Felt252Dict, Felt252DictTrait};
     use core::traits::TryInto;
@@ -90,8 +116,11 @@ mod Lottery {
     use starknet::storage::{
         Map, StoragePathEntry, StoragePointerReadAccess, StoragePointerWriteAccess,
     };
-    use starknet::{ContractAddress, get_block_timestamp, get_caller_address, get_contract_address};
-    use super::{Draw, ILottery, Ticket};
+    use starknet::{
+        ContractAddress, contract_address_const, get_block_timestamp, get_caller_address,
+        get_contract_address,
+    };
+    use super::{Draw, ILottery, JackpotEntry, Ticket};
 
     // ownable component by openzeppelin
     component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
@@ -222,7 +251,7 @@ mod Lottery {
             self.ownable.assert_only_owner();
             self.ticketPrice.write(ticketPrice);
             self.accumulatedPrize.write(accumulatedPrize);
-            self.CreateNewDraw(0);
+            self.CreateNewDraw(accumulatedPrize);
         }
 
         //=======================================================================================
@@ -551,6 +580,118 @@ mod Lottery {
             numbers.append(draw.winningNumber4);
             numbers.append(draw.winningNumber5);
             numbers
+        }
+
+        //=======================================================================================
+        /// Returns the complete history of all jackpot draws
+        ///
+        /// This function iterates through all draws from drawId 1 to currentDrawId
+        /// and returns an array of JackpotEntry structs containing:
+        /// - drawId: Unique identifier for the draw
+        /// - jackpotAmount: The accumulated prize amount for this draw
+        /// - startTime: When the draw started (unix timestamp)
+        /// - endTime: When the draw ended (unix timestamp)
+        /// - isActive: Whether the draw is currently active (true) or completed (false)
+        /// - isCompleted: Whether the draw has been completed (true) or is still active (false)
+        ///   Note: isCompleted is the logical inverse of isActive for clarity
+        fn get_jackpot_history(self: @ContractState) -> Array<JackpotEntry> {
+            let mut jackpotHistory = ArrayTrait::new();
+            let currentDrawId = self.currentDrawId.read();
+
+            // Iterate through all draws from 1 to currentDrawId
+            let mut drawId: u64 = 1;
+            loop {
+                if drawId > currentDrawId {
+                    break;
+                }
+
+                let draw = self.draws.entry(drawId).read();
+                let jackpotEntry = JackpotEntry {
+                    drawId: draw.drawId,
+                    jackpotAmount: draw.accumulatedPrize,
+                    startTime: draw.startTime,
+                    endTime: draw.endTime,
+                    isActive: draw.isActive,
+                    // isCompleted is the logical inverse of isActive for explicit clarity
+                    // When isActive is true, the draw is ongoing (not completed)
+                    // When isActive is false, the draw has been completed
+                    isCompleted: !draw.isActive,
+                };
+
+                jackpotHistory.append(jackpotEntry);
+                drawId += 1;
+            }
+
+            jackpotHistory
+        }
+
+        //=======================================================================================
+        // Getter functions for Ticket structure
+        //=======================================================================================
+        fn GetTicketPlayer(
+            self: @ContractState, drawId: u64, ticketId: felt252,
+        ) -> ContractAddress {
+            let ticket = self.tickets.entry((drawId, ticketId)).read();
+            ticket.player
+        }
+
+        fn GetTicketNumbers(self: @ContractState, drawId: u64, ticketId: felt252) -> Array<u16> {
+            let ticket = self.tickets.entry((drawId, ticketId)).read();
+            let mut numbers = ArrayTrait::new();
+            numbers.append(ticket.number1);
+            numbers.append(ticket.number2);
+            numbers.append(ticket.number3);
+            numbers.append(ticket.number4);
+            numbers.append(ticket.number5);
+            numbers
+        }
+
+        fn GetTicketClaimed(self: @ContractState, drawId: u64, ticketId: felt252) -> bool {
+            let ticket = self.tickets.entry((drawId, ticketId)).read();
+            ticket.claimed
+        }
+
+        fn GetTicketDrawId(self: @ContractState, drawId: u64, ticketId: felt252) -> u64 {
+            let ticket = self.tickets.entry((drawId, ticketId)).read();
+            ticket.drawId
+        }
+
+        fn GetTicketTimestamp(self: @ContractState, drawId: u64, ticketId: felt252) -> u64 {
+            let ticket = self.tickets.entry((drawId, ticketId)).read();
+            ticket.timestamp
+        }
+
+        //=======================================================================================
+        // Getter functions for JackpotEntry structure
+        //=======================================================================================
+        fn GetJackpotEntryDrawId(self: @ContractState, drawId: u64) -> u64 {
+            let draw = self.draws.entry(drawId).read();
+            draw.drawId
+        }
+
+        fn GetJackpotEntryAmount(self: @ContractState, drawId: u64) -> u256 {
+            let draw = self.draws.entry(drawId).read();
+            draw.accumulatedPrize
+        }
+
+        fn GetJackpotEntryStartTime(self: @ContractState, drawId: u64) -> u64 {
+            let draw = self.draws.entry(drawId).read();
+            draw.startTime
+        }
+
+        fn GetJackpotEntryEndTime(self: @ContractState, drawId: u64) -> u64 {
+            let draw = self.draws.entry(drawId).read();
+            draw.endTime
+        }
+
+        fn GetJackpotEntryIsActive(self: @ContractState, drawId: u64) -> bool {
+            let draw = self.draws.entry(drawId).read();
+            draw.isActive
+        }
+
+        fn GetJackpotEntryIsCompleted(self: @ContractState, drawId: u64) -> bool {
+            let draw = self.draws.entry(drawId).read();
+            !draw.isActive
         }
     }
 
