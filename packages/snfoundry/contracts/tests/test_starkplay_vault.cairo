@@ -994,10 +994,6 @@ fn test_mint_limit_updated_event_large_values() {
     assert(vault.get_mint_limit() == large_limit, 'Large limit should be set');
 }
 
-// Note: Advanced event validation with spy.assert_emitted() requires the event structs
-// to be publicly visible, which they are not in this contract.
-// The simple event count validation approach works well for our testing needs.
-
 // Simple working event test - let's start with this one
 #[test]
 fn test_basic_event_emission() {
