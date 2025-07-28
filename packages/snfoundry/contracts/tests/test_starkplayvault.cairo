@@ -352,52 +352,36 @@ fn test_set_fee_multiple_times() {
     let fee2 = 5000_u64; // 50%
     let fee3 = 100_u64; // 1%
 
-    // First update
     let result1 = dispatcher.set_fee(fee1);
-    assert(result1 == true, 'First fee should return true');
+    assert(result1, 'First fee should return true');
     assert(dispatcher.GetFeePercentage() == fee1, 'First fee not updated');
 
-    // Second update
     let result2 = dispatcher.set_fee(fee2);
-    assert(result2 == true, 'Second fee should return true');
+    assert(result2, 'Second fee should return true');
     assert(dispatcher.GetFeePercentage() == fee2, 'Second fee not updated');
 
-    // Third update
     let result3 = dispatcher.set_fee(fee3);
-    assert(result3 == true, 'Thirdfee should return true');
+    assert(result3, 'Thirdfee should return true');
     assert(dispatcher.GetFeePercentage() == fee3, 'Third fee not updated');
 }
 
 #[test]
 fn test_fee_queries_reflect_changes() {
-    // Setup
     let dispatcher = deploy_vault();
     let owner = contract_address_const::<5>();
     let contract_address = dispatcher.contract_address;
 
-    // Set caller as owner
     start_cheat_caller_address(contract_address, owner);
 
-    // Test multiple fee changes and verify queries
-    let fee_sequence = array![100_u64, 250_u64, 500_u64, 0_u64, 1000_u64]; // 1%, 2.5%, 5%, 0%, 10%
+    let fee_sequence = array![100_u64, 250_u64, 500_u64, 0_u64, 1000_u64]; 
 
-    let mut i = 0;
-    while i < fee_sequence.len() {
-        let new_fee = *fee_sequence.at(i);
-
-        // Set new fee
+    for new_fee in fee_sequence {
         let result = dispatcher.set_fee(new_fee);
-        assert(result == true, 'set_fee should return true');
-
-        // Query and verify immediately
+        assert(result, 'set_fee should return true');
         let queried_fee = dispatcher.GetFeePercentage();
         assert(queried_fee == new_fee, 'Immediate query should match');
-
-        // Query again after some operations (to ensure persistence)
         let queried_fee_again = dispatcher.GetFeePercentage();
         assert(queried_fee_again == new_fee, 'Persistent query should match');
-
-        i += 1;
     }
 
     stop_cheat_caller_address(contract_address);
