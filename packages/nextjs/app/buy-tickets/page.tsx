@@ -22,6 +22,9 @@ export default function BuyTicketsPage() {
   >({
     1: [],
   });
+  const [animatingNumbers, setAnimatingNumbers] = useState<
+    Record<string, "selected" | "deselected" | "limitReached" | "revealing" | "questionMark" | "deselecting" | null>
+  >({});
   const drawId = 1;
   const [isLoading, setIsLoading] = useState(false);
   const [txError, setTxError] = useState<string | null>(null);
@@ -59,23 +62,61 @@ export default function BuyTicketsPage() {
   };
 
   const selectNumber = (ticketId: number, num: number) => {
-    setSelectedNumbers((current) => {
-      const currentSelected = current[ticketId] || [];
+    const animationKey = `${ticketId}-${num}`;
+    const currentSelected = selectedNumbers[ticketId] || [];
+    const isCurrentlySelected = currentSelected.includes(num);
 
-      if (currentSelected.includes(num)) {
+    if (isCurrentlySelected) {
+      // Deselecting - show question mark animation
+      setAnimatingNumbers(prev => ({ ...prev, [animationKey]: "deselected" }));
+      
+      // Find the index of the number to remove for lottery animation
+      const numberIndex = currentSelected.indexOf(num);
+      if (numberIndex !== -1) {
+        const deselectKey = `${ticketId}-deselect-${numberIndex}`;
+        setAnimatingNumbers(prev => ({ ...prev, [deselectKey]: "deselecting" }));
+        
+        setTimeout(() => {
+          setAnimatingNumbers(prev => ({ ...prev, [deselectKey]: null }));
+        }, 400);
+      }
+      
+      setSelectedNumbers((current) => {
+        const currentSelected = current[ticketId] || [];
         return {
           ...current,
           [ticketId]: currentSelected.filter((n) => n !== num),
         };
-      }
+      });
+    } else if (currentSelected.length >= 5) {
+      // Limit reached
+      setAnimatingNumbers(prev => ({ ...prev, [animationKey]: "limitReached" }));
+    } else {
+      // Selecting - trigger lottery effect
+      setAnimatingNumbers(prev => ({ ...prev, [animationKey]: "selected" }));
+      
+      // Trigger lottery reveal animation
+      const revealKey = `${ticketId}-reveal-${currentSelected.length}`;
+      setAnimatingNumbers(prev => ({ ...prev, [revealKey]: "revealing" }));
+      
+      // Clear reveal animation after lottery effect
+      setTimeout(() => {
+        setAnimatingNumbers(prev => ({ ...prev, [revealKey]: null }));
+      }, 800);
 
-      if (currentSelected.length >= 5) return current;
+      setSelectedNumbers((current) => {
+        const currentSelected = current[ticketId] || [];
+        return {
+          ...current,
+          [ticketId]: [...currentSelected, num],
+        };
+      });
+    }
 
-      return {
-        ...current,
-        [ticketId]: [...currentSelected, num],
-      };
-    });
+    // Clear selection animation after delay
+    setTimeout(() => {
+      setAnimatingNumbers(prev => ({ ...prev, [animationKey]: null }));
+    }, 400);
   };
 
   const generateRandom = (ticketId: number) => {
@@ -83,21 +124,58 @@ export default function BuyTicketsPage() {
     while (numbers.size < 5) {
       numbers.add(Math.floor(Math.random() * 41));
     }
+    
+    const newNumbers = Array.from(numbers);
+    
+    // Animate each number with staggered delay
+    newNumbers.forEach((num, index) => {
+      const animationKey = `${ticketId}-${num}`;
+      const revealKey = `${ticketId}-reveal-${index}`;
+      
+      setTimeout(() => {
+        setAnimatingNumbers(prev => ({ ...prev, [animationKey]: "selected" }));
+        setAnimatingNumbers(prev => ({ ...prev, [revealKey]: "revealing" }));
+        
+        setTimeout(() => {
+          setAnimatingNumbers(prev => ({ ...prev, [animationKey]: null }));
+          setAnimatingNumbers(prev => ({ ...prev, [revealKey]: null }));
+        }, 800);
+      }, index * 150);
+    });
+
     setSelectedNumbers((current) => ({
       ...current,
-      [ticketId]: Array.from(numbers),
+      [ticketId]: newNumbers,
     }));
   };
 
   const generateRandomForAll = () => {
     const newSelections: Record<number, number[]> = {};
+    
     for (let i = 1; i <= ticketCount; i++) {
       const numbers = new Set<number>();
       while (numbers.size < 5) {
         numbers.add(Math.floor(Math.random() * 41));
       }
       newSelections[i] = Array.from(numbers);
+      
+      // Animate each number for this ticket
+      Array.from(numbers).forEach((num, index) => {
+        const animationKey = `${i}-${num}`;
+        const revealKey = `${i}-reveal-${index}`;
+        
+        setTimeout(() => {
+          setAnimatingNumbers(prev => ({ ...prev, [animationKey]: "selected" }));
+          setAnimatingNumbers(prev => ({ ...prev, [revealKey]: "revealing" }));
+          
+          setTimeout(() => {
+            setAnimatingNumbers(prev => ({ ...prev, [animationKey]: null }));
+            setAnimatingNumbers(prev => ({ ...prev, [revealKey]: null }));
+          }, 800);
+        }, (i - 1) * 500 + index * 150);
+      });
     }
+    
     setSelectedNumbers(newSelections);
   };
 
@@ -132,7 +210,7 @@ export default function BuyTicketsPage() {
     }
   };
 
-  // Animation variants
+  // Animation variants for number selection
   const gridItemVariants = {
     hidden: { opacity: 0, scale: 0.8 },
     visible: (i: number) => ({
@@ -144,6 +222,65 @@ export default function BuyTicketsPage() {
       },
     }),
   };
+
+  // Animation for number selection states
+  const numberAnimationVariants = {
+    initial: { scale: 1 },
+    selected: { 
+      scale: [1, 1.3, 1.1],
+      transition: {
+        duration: 0.4,
+        ease: "easeInOut" as const
+      }
+    },
+    deselected: {
+      scale: [1.1, 0.8, 1],
+      transition: {
+        duration: 0.3,
+        ease: "easeInOut" as const
+      }
+    },
+    limitReached: {
+      scale: [1, 1.2, 1],
+      backgroundColor: "#EF4444",
+      transition: {
+        duration: 0.3,
+        ease: "easeInOut" as const
+      }
+    }
+  };
+
+  // Animation for lottery reveal effect
+  const lotteryRevealVariants = {
+    hidden: { scale: 0, rotate: -180, opacity: 0 },
+    revealing: { 
+      scale: [0, 1.2, 1],
+      rotate: [0, 360, 0],
+      opacity: [0, 1, 1],
+      transition: {
+        duration: 0.8,
+        ease: "easeOut" as const
+      }
+    },
+    deselecting: {
+      scale: [1, 0.8, 0],
+      rotate: [0, -180, -360],
+      opacity: [1, 0.5, 0],
+      transition: {
+        duration: 0.4,
+        ease: "easeIn" as const
+      }
+    },
+    questionMark: {
+      scale: [1, 1.1, 1],
+      transition: {
+        duration: 0.3,
+        ease: "easeInOut" as const
+      }
+    }
+  };
+
+
 
   const countdownItemVariants = {
     hidden: { opacity: 0, y: 10 },
@@ -305,19 +442,97 @@ export default function BuyTicketsPage() {
                               <motion.button
                                 key={num}
                                 custom={numIdx}
-                                variants={gridItemVariants}
                                 initial="hidden"
-                                animate="visible"
+                                whileHover={selectedNumbers[ticketId]?.length >= 5 && !isSelected ? {} : { scale: 1.1 }}
+                                whileTap={selectedNumbers[ticketId]?.length >= 5 && !isSelected ? {} : { scale: 0.9 }}
                                 onClick={() => selectNumber(ticketId, num)}
-                                className={`w-10 h-10 rounded-full flex items-center justify-center text-sm
-                                  ${isSelected ? "bg-purple-600 text-white" : "bg-gray-800 text-gray-300 hover:bg-gray-700"}`}
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
+                                data-ticket={ticketId}
+                                data-number={num}
+                                disabled={selectedNumbers[ticketId]?.length >= 5 && !isSelected}
+                                animate={
+                                  animatingNumbers[`${ticketId}-${num}`] === "selected" ? "selected" :
+                                  animatingNumbers[`${ticketId}-${num}`] === "deselected" ? "deselected" :
+                                  animatingNumbers[`${ticketId}-${num}`] === "limitReached" ? "limitReached" :
+                                  "initial"
+                                }
+                                variants={numberAnimationVariants}
+                                className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-colors duration-200
+                                  ${isSelected 
+                                    ? "bg-purple-600 text-white shadow-lg" 
+                                    : selectedNumbers[ticketId]?.length >= 5 && !isSelected
+                                    ? "bg-gray-600 text-gray-500 cursor-not-allowed opacity-50"
+                                    : "bg-gray-800 text-gray-300 hover:bg-gray-700 cursor-pointer"
+                                  }`}
                               >
                                 {num < 10 ? `0${num}` : num}
                               </motion.button>
                             );
                           })}
+                        </div>
+
+                        {/* Lottery Selection Display */}
+                        <div className="mt-4">
+                          <p className="text-gray-400 text-sm mb-2">Selected Numbers:</p>
+                          <div className="flex gap-2 justify-center">
+                            {Array.from({ length: 5 }).map((_, index) => {
+                              const selectedNumber = selectedNumbers[ticketId]?.[index];
+                              const isRevealing = animatingNumbers[`${ticketId}-reveal-${index}`] === "revealing";
+                              const isDeselecting = animatingNumbers[`${ticketId}-deselect-${index}`] === "deselecting";
+                              
+                              return (
+                                <motion.div
+                                  key={index}
+                                  className={`w-12 h-12 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-white font-bold text-lg shadow-lg border-2 border-yellow-300 cursor-pointer ${
+                                    selectedNumber !== undefined ? 'hover:scale-110' : ''
+                                  }`}
+                                  initial={{ scale: 0.8 }}
+                                  animate={{ scale: 1 }}
+                                  whileHover={selectedNumber !== undefined ? { scale: 1.1 } : {}}
+                                  onClick={() => {
+                                    if (selectedNumber !== undefined) {
+                                      selectNumber(ticketId, selectedNumber);
+                                    }
+                                  }}
+                                >
+                                  {isRevealing ? (
+                                    <motion.div
+                                      variants={lotteryRevealVariants}
+                                      initial="hidden"
+                                      animate="revealing"
+                                      className="text-white font-bold"
+                                    >
+                                      {selectedNumber !== undefined ? (selectedNumber < 10 ? `0${selectedNumber}` : selectedNumber) : "?"}
+                                    </motion.div>
+                                  ) : isDeselecting ? (
+                                    <motion.div
+                                      variants={lotteryRevealVariants}
+                                      initial="hidden"
+                                      animate="deselecting"
+                                      className="text-white font-bold"
+                                    >
+                                      {selectedNumber !== undefined ? (selectedNumber < 10 ? `0${selectedNumber}` : selectedNumber) : "?"}
+                                    </motion.div>
+                                  ) : selectedNumber !== undefined ? (
+                                    <motion.span 
+                                      className="text-white font-bold"
+                                      variants={lotteryRevealVariants}
+                                      animate="questionMark"
+                                    >
+                                      {selectedNumber < 10 ? `0${selectedNumber}` : selectedNumber}
+                                    </motion.span>
+                                  ) : (
+                                    <motion.span 
+                                      className="text-white font-bold text-xl"
+                                      variants={lotteryRevealVariants}
+                                      animate="questionMark"
+                                    >
+                                      ?
+                                    </motion.span>
+                                  )}
+                                </motion.div>
+                              );
+                            })}
+                          </div>
                         </div>
                       </motion.div>
                     );
