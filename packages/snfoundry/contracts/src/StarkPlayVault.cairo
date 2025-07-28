@@ -235,31 +235,6 @@ pub mod StarkPlayVault {
     }
 
     #[derive(Drop, starknet::Event)]
-    struct MintLimitUpdated {
-        new_mint_limit: u256,
-    }
-
-    #[derive(Drop, starknet::Event)]
-    struct BurnLimitUpdated {
-        new_burn_limit: u256,
-    }
-
-    #[derive(Drop, starknet::Event)]
-    struct SetFeePercentage {
-        #[key]
-        owner: ContractAddress,
-        old_fee: u64,
-        new_fee: u64,
-    }
-    #[derive(Drop, starknet::Event)]
-    pub struct FeeUpdated {
-        #[key]
-        pub admin: ContractAddress,
-        pub old_fee: u64,
-        pub new_fee: u64,
-    }
-
-    #[derive(Drop, starknet::Event)]
     struct GeneralFeesWithdrawn {
         #[key]
         recipient: ContractAddress,
