@@ -3938,7 +3938,7 @@ __metadata:
     "@types/next-pwa": ^5.6.0
     "@types/node": ^20
     "@types/nprogress": ^0
-    "@types/react": 19.0.12
+    "@types/react": 19.1.8
     "@types/react-copy-to-clipboard": ^5.0.4
     "@types/react-dom": latest
     "@vitejs/plugin-react": ^4.3.4
@@ -3966,7 +3966,7 @@ __metadata:
     prettier: ^3.4.2
     prettier-standalone: ^1.3.1-0
     qrcode.react: ^3.1.0
-    react: ^18.0.0 || ^19.0.0
+    react: ^19.1.1
     react-copy-to-clipboard: ^5.1.0
     react-dom: ^18.0.0 || ^19.0.0
     react-hook-form: ^7.54.2
@@ -3990,7 +3990,7 @@ __metadata:
   peerDependencies:
     "@babel/core": ^7.0.0
     postcss: ^8.0.0
-    react: ^18.0.0 || ^19.0.0
+    react: ^19.1.1
     react-dom: ^18.0.0 || ^19.0.0
     webpack: ^5.0.0
   languageName: unknown
@@ -4977,12 +4977,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:*, @types/react@npm:19.0.12":
+"@types/react@npm:*":
   version: 19.0.12
   resolution: "@types/react@npm:19.0.12"
   dependencies:
     csstype: ^3.0.2
   checksum: 795f27287e44ef5f81ef9e8439ede54c16d692eb7aadcfc314a2e2de6160033e32d3ee9ce7027e05417e9d80f57a4eb22a6a9cbc40a0a12346c71a1fce939956
+  languageName: node
+  linkType: hard
+
+"@types/react@npm:19.1.8":
+  version: 19.1.8
+  resolution: "@types/react@npm:19.1.8"
+  dependencies:
+    csstype: ^3.0.2
+  checksum: 17e0c74d9c01214938fa805aaa8b97925bf3c5514e88fdf94bec42c0a6d4abbc63d4e30255db176f46fd7f0aa89f8085b9b2b2fa5abaffbbf7e5009386ada892
   languageName: node
   linkType: hard
 
@@ -12145,12 +12154,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react@npm:^18.0.0 || ^19.0.0":
-  version: 18.3.1
-  resolution: "react@npm:18.3.1"
-  dependencies:
-    loose-envify: ^1.1.0
-  checksum: a27bcfa8ff7c15a1e50244ad0d0c1cb2ad4375eeffefd266a64889beea6f6b64c4966c9b37d14ee32d6c9fcd5aa6ba183b6988167ab4d127d13e7cb5b386a376
+"react@npm:^19.1.1":
+  version: 19.1.1
+  resolution: "react@npm:19.1.1"
+  checksum: f2f18fea5deac87b1167365bd5160bcba64d383c26a37afa905b714ca424f423ef97d8daf53f041ab9ac25a06357fafcf0b5d3b6b84c9d1eace0e621bfeae629
   languageName: node
   linkType: hard
 
