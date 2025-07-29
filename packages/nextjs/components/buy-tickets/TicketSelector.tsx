@@ -38,9 +38,7 @@ export default function TicketSelector({
       custom={idx}
     >
       <div className="flex justify-between items-center mb-4">
-        <p className="text-white font-medium">
-          Ticket #{ticketId}
-        </p>
+        <p className="text-white font-medium">Ticket #{ticketId}</p>
         <motion.button
           onClick={() => onGenerateRandom(ticketId)}
           className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded-lg flex items-center gap-1"
@@ -69,4 +67,4 @@ export default function TicketSelector({
       />
     </motion.div>
   );
-} 
+}

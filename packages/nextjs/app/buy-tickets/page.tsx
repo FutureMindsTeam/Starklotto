@@ -25,7 +25,16 @@ export default function BuyTicketsPage() {
     1: [],
   });
   const [animatingNumbers, setAnimatingNumbers] = useState<
-    Record<string, "selected" | "deselected" | "limitReached" | "revealing" | "questionMark" | "deselecting" | null>
+    Record<
+      string,
+      | "selected"
+      | "deselected"
+      | "limitReached"
+      | "revealing"
+      | "questionMark"
+      | "deselecting"
+      | null
+    >
   >({});
   const drawId = 1;
   const [isLoading, setIsLoading] = useState(false);
@@ -75,19 +84,25 @@ export default function BuyTicketsPage() {
 
     if (isCurrentlySelected) {
       // Deselecting - show question mark animation
-      setAnimatingNumbers(prev => ({ ...prev, [animationKey]: "deselected" }));
-      
+      setAnimatingNumbers((prev) => ({
+        ...prev,
+        [animationKey]: "deselected",
+      }));
+
       // Find the index of the number to remove for lottery animation
       const numberIndex = currentSelected.indexOf(num);
       if (numberIndex !== -1) {
         const deselectKey = `${ticketId}-deselect-${numberIndex}`;
-        setAnimatingNumbers(prev => ({ ...prev, [deselectKey]: "deselecting" }));
-        
+        setAnimatingNumbers((prev) => ({
+          ...prev,
+          [deselectKey]: "deselecting",
+        }));
+
         setTimeout(() => {
-          setAnimatingNumbers(prev => ({ ...prev, [deselectKey]: null }));
+          setAnimatingNumbers((prev) => ({ ...prev, [deselectKey]: null }));
         }, 400);
       }
-      
+
       setSelectedNumbers((current) => {
         const currentSelected = current[ticketId] || [];
         return {
@@ -97,18 +112,21 @@ export default function BuyTicketsPage() {
       });
     } else if (currentSelected.length >= 5) {
       // Limit reached
-      setAnimatingNumbers(prev => ({ ...prev, [animationKey]: "limitReached" }));
+      setAnimatingNumbers((prev) => ({
+        ...prev,
+        [animationKey]: "limitReached",
+      }));
     } else {
       // Selecting - trigger lottery effect
-      setAnimatingNumbers(prev => ({ ...prev, [animationKey]: "selected" }));
-      
+      setAnimatingNumbers((prev) => ({ ...prev, [animationKey]: "selected" }));
+
       // Trigger lottery reveal animation
       const revealKey = `${ticketId}-reveal-${currentSelected.length}`;
-      setAnimatingNumbers(prev => ({ ...prev, [revealKey]: "revealing" }));
-      
+      setAnimatingNumbers((prev) => ({ ...prev, [revealKey]: "revealing" }));
+
       // Clear reveal animation after lottery effect
       setTimeout(() => {
-        setAnimatingNumbers(prev => ({ ...prev, [revealKey]: null }));
+        setAnimatingNumbers((prev) => ({ ...prev, [revealKey]: null }));
       }, 800);
 
       setSelectedNumbers((current) => {
@@ -122,7 +140,7 @@ export default function BuyTicketsPage() {
 
     // Clear selection animation after delay
     setTimeout(() => {
-      setAnimatingNumbers(prev => ({ ...prev, [animationKey]: null }));
+      setAnimatingNumbers((prev) => ({ ...prev, [animationKey]: null }));
     }, 400);
   };
 
@@ -132,21 +150,24 @@ export default function BuyTicketsPage() {
       const randomNum = Math.floor(Math.random() * 40) + 1;
       numbers.add(randomNum);
     }
-    
+
     const newNumbers = Array.from(numbers);
-    
+
     // Animate each number with staggered delay
     newNumbers.forEach((num, index) => {
       const animationKey = `${ticketId}-${num}`;
       const revealKey = `${ticketId}-reveal-${index}`;
-      
+
       setTimeout(() => {
-        setAnimatingNumbers(prev => ({ ...prev, [animationKey]: "selected" }));
-        setAnimatingNumbers(prev => ({ ...prev, [revealKey]: "revealing" }));
-        
+        setAnimatingNumbers((prev) => ({
+          ...prev,
+          [animationKey]: "selected",
+        }));
+        setAnimatingNumbers((prev) => ({ ...prev, [revealKey]: "revealing" }));
+
         setTimeout(() => {
-          setAnimatingNumbers(prev => ({ ...prev, [animationKey]: null }));
-          setAnimatingNumbers(prev => ({ ...prev, [revealKey]: null }));
+          setAnimatingNumbers((prev) => ({ ...prev, [animationKey]: null }));
+          setAnimatingNumbers((prev) => ({ ...prev, [revealKey]: null }));
         }, 800);
       }, index * 150);
     });
@@ -159,7 +180,7 @@ export default function BuyTicketsPage() {
 
   const generateRandomForAll = () => {
     const newSelections: Record<number, number[]> = {};
-    
+
     for (let i = 1; i <= ticketCount; i++) {
       const numbers = new Set<number>();
       while (numbers.size < 5) {
@@ -167,24 +188,36 @@ export default function BuyTicketsPage() {
         numbers.add(randomNum);
       }
       newSelections[i] = Array.from(numbers);
-      
+
       // Animate each number for this ticket
       Array.from(numbers).forEach((num, index) => {
         const animationKey = `${i}-${num}`;
         const revealKey = `${i}-reveal-${index}`;
-        
-        setTimeout(() => {
-          setAnimatingNumbers(prev => ({ ...prev, [animationKey]: "selected" }));
-          setAnimatingNumbers(prev => ({ ...prev, [revealKey]: "revealing" }));
-          
-          setTimeout(() => {
-            setAnimatingNumbers(prev => ({ ...prev, [animationKey]: null }));
-            setAnimatingNumbers(prev => ({ ...prev, [revealKey]: null }));
-          }, 800);
-        }, (i - 1) * 500 + index * 150);
+
+        setTimeout(
+          () => {
+            setAnimatingNumbers((prev) => ({
+              ...prev,
+              [animationKey]: "selected",
+            }));
+            setAnimatingNumbers((prev) => ({
+              ...prev,
+              [revealKey]: "revealing",
+            }));
+
+            setTimeout(() => {
+              setAnimatingNumbers((prev) => ({
+                ...prev,
+                [animationKey]: null,
+              }));
+              setAnimatingNumbers((prev) => ({ ...prev, [revealKey]: null }));
+            }, 800);
+          },
+          (i - 1) * 500 + index * 150,
+        );
       });
     }
-    
+
     setSelectedNumbers(newSelections);
   };
 
@@ -235,41 +268,41 @@ export default function BuyTicketsPage() {
   // Animation for number selection states
   const numberAnimationVariants = {
     initial: { scale: 1 },
-    selected: { 
+    selected: {
       scale: [1, 1.3, 1.1],
       transition: {
         duration: 0.4,
-        ease: "easeInOut" as const
-      }
+        ease: "easeInOut" as const,
+      },
     },
     deselected: {
       scale: [1.1, 0.8, 1],
       transition: {
         duration: 0.3,
-        ease: "easeInOut" as const
-      }
+        ease: "easeInOut" as const,
+      },
     },
     limitReached: {
       scale: [1, 1.2, 1],
       backgroundColor: "#EF4444",
       transition: {
         duration: 0.3,
-        ease: "easeInOut" as const
-      }
-    }
+        ease: "easeInOut" as const,
+      },
+    },
   };
 
   // Animation for lottery reveal effect
   const lotteryRevealVariants = {
     hidden: { scale: 0, rotate: -180, opacity: 0 },
-    revealing: { 
+    revealing: {
       scale: [0, 1.2, 1],
       rotate: [0, 360, 0],
       opacity: [0, 1, 1],
       transition: {
         duration: 0.8,
-        ease: "easeOut" as const
-      }
+        ease: "easeOut" as const,
+      },
     },
     deselecting: {
       scale: [1, 0.8, 0],
@@ -277,19 +310,17 @@ export default function BuyTicketsPage() {
       opacity: [1, 0.5, 0],
       transition: {
         duration: 0.4,
-        ease: "easeIn" as const
-      }
+        ease: "easeIn" as const,
+      },
     },
     questionMark: {
       scale: [1, 1.1, 1],
       transition: {
         duration: 0.3,
-        ease: "easeInOut" as const
-      }
-    }
+        ease: "easeInOut" as const,
+      },
+    },
   };
-
-
 
   const countdownItemVariants = {
     hidden: { opacity: 0, y: 10 },
@@ -337,13 +368,15 @@ export default function BuyTicketsPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
               >
-                                  <h1 className="text-3xl font-bold text-purple-400 mb-6">
-                    {t("buyTickets.title")}
-                  </h1>
+                <h1 className="text-3xl font-bold text-purple-400 mb-6">
+                  {t("buyTickets.title")}
+                </h1>
 
                 {/* Next Draw */}
                 <div className="mb-6">
-                                      <p className="text-gray-300 mb-1">{t("buyTickets.nextDraw")}</p>
+                  <p className="text-gray-300 mb-1">
+                    {t("buyTickets.nextDraw")}
+                  </p>
                   <motion.p
                     className="text-[#4ade80] text-4xl font-bold"
                     initial={{ scale: 0.9 }}
@@ -366,51 +399,51 @@ export default function BuyTicketsPage() {
                         <p className="text-purple-400 text-2xl font-bold">
                           {value}
                         </p>
-                                                  <p className="text-gray-400 text-sm capitalize">
-                            {t(`buyTickets.countdown.${key}`)}
-                          </p>
+                        <p className="text-gray-400 text-sm capitalize">
+                          {t(`buyTickets.countdown.${key}`)}
+                        </p>
                       </motion.div>
                     ))}
                   </div>
                 </div>
 
-                                 {/* Ticket Controls */}
-                 <TicketControls
-                   ticketCount={ticketCount}
-                   onIncreaseTickets={increaseTickets}
-                   onDecreaseTickets={decreaseTickets}
-                   onGenerateRandomForAll={generateRandomForAll}
-                 />
+                {/* Ticket Controls */}
+                <TicketControls
+                  ticketCount={ticketCount}
+                  onIncreaseTickets={increaseTickets}
+                  onDecreaseTickets={decreaseTickets}
+                  onGenerateRandomForAll={generateRandomForAll}
+                />
 
-                                 {/* Ticket Selection */}
-                 <div className="space-y-4">
-                   {Array.from({ length: ticketCount }).map((_, idx) => {
-                     const ticketId = idx + 1;
-                     return (
-                       <TicketSelector
-                         key={ticketId}
-                         ticketId={ticketId}
-                         selectedNumbers={selectedNumbers[ticketId] || []}
-                         animatingNumbers={animatingNumbers}
-                         onNumberSelect={selectNumber}
-                         onGenerateRandom={generateRandom}
-                         numberAnimationVariants={numberAnimationVariants}
-                         lotteryRevealVariants={lotteryRevealVariants}
-                         ticketVariants={ticketVariants}
-                         idx={idx}
-                       />
-                     );
-                   })}
-                 </div>
+                {/* Ticket Selection */}
+                <div className="space-y-4">
+                  {Array.from({ length: ticketCount }).map((_, idx) => {
+                    const ticketId = idx + 1;
+                    return (
+                      <TicketSelector
+                        key={ticketId}
+                        ticketId={ticketId}
+                        selectedNumbers={selectedNumbers[ticketId] || []}
+                        animatingNumbers={animatingNumbers}
+                        onNumberSelect={selectNumber}
+                        onGenerateRandom={generateRandom}
+                        numberAnimationVariants={numberAnimationVariants}
+                        lotteryRevealVariants={lotteryRevealVariants}
+                        ticketVariants={ticketVariants}
+                        idx={idx}
+                      />
+                    );
+                  })}
+                </div>
 
-                                 {/* Purchase Summary */}
-                 <PurchaseSummary
-                   totalCost={totalCost}
-                   isLoading={isLoading}
-                   txError={txError}
-                   txSuccess={txSuccess}
-                   onPurchase={handlePurchase}
-                 />
+                {/* Purchase Summary */}
+                <PurchaseSummary
+                  totalCost={totalCost}
+                  isLoading={isLoading}
+                  txError={txError}
+                  txSuccess={txSuccess}
+                  onPurchase={handlePurchase}
+                />
               </motion.div>
             </div>
 

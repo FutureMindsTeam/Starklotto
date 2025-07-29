@@ -21,15 +21,19 @@ export default function LotteryDisplay({
       <div className="flex gap-2 justify-center">
         {Array.from({ length: 5 }).map((_, index) => {
           const selectedNumber = selectedNumbers?.[index];
-          const isRevealing = animatingNumbers[`${ticketId}-reveal-${index}`] === "revealing";
-          const isDeselecting = animatingNumbers[`${ticketId}-deselect-${index}`] === "deselecting";
+          const isRevealing =
+            animatingNumbers[`${ticketId}-reveal-${index}`] === "revealing";
+          const isDeselecting =
+            animatingNumbers[`${ticketId}-deselect-${index}`] === "deselecting";
           const hasNumber = selectedNumber !== undefined;
-          
+
           return (
             <motion.div
               key={index}
               className={`w-12 h-12 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-white font-bold text-lg shadow-lg border-2 border-yellow-300 ${
-                hasNumber ? 'cursor-pointer hover:scale-110' : 'cursor-not-allowed'
+                hasNumber
+                  ? "cursor-pointer hover:scale-110"
+                  : "cursor-not-allowed"
               }`}
               initial={{ scale: 0.8 }}
               animate={{ scale: 1 }}
@@ -47,7 +51,11 @@ export default function LotteryDisplay({
                   animate="revealing"
                   className="text-white font-bold"
                 >
-                  {selectedNumber !== undefined ? (selectedNumber < 10 ? `0${selectedNumber}` : selectedNumber) : "?"}
+                  {selectedNumber !== undefined
+                    ? selectedNumber < 10
+                      ? `0${selectedNumber}`
+                      : selectedNumber
+                    : "?"}
                 </motion.div>
               ) : isDeselecting ? (
                 <motion.div
@@ -56,10 +64,14 @@ export default function LotteryDisplay({
                   animate="deselecting"
                   className="text-white font-bold"
                 >
-                  {selectedNumber !== undefined ? (selectedNumber < 10 ? `0${selectedNumber}` : selectedNumber) : "?"}
+                  {selectedNumber !== undefined
+                    ? selectedNumber < 10
+                      ? `0${selectedNumber}`
+                      : selectedNumber
+                    : "?"}
                 </motion.div>
               ) : selectedNumber !== undefined ? (
-                <motion.span 
+                <motion.span
                   className="text-white font-bold"
                   variants={lotteryRevealVariants}
                   animate="questionMark"
@@ -67,7 +79,7 @@ export default function LotteryDisplay({
                   {selectedNumber < 10 ? `0${selectedNumber}` : selectedNumber}
                 </motion.span>
               ) : (
-                <motion.span 
+                <motion.span
                   className="text-white font-bold text-xl"
                   variants={lotteryRevealVariants}
                   animate="questionMark"
@@ -81,4 +93,4 @@ export default function LotteryDisplay({
       </div>
     </div>
   );
-} 
+}
