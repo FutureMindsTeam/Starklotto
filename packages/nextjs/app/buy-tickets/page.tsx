@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Shuffle, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
-import { GlowingButton } from "~~/components/glowing-button";
 import { Navbar } from "~~/components/Navbar";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -12,6 +11,9 @@ import { useTransactor } from "~~/hooks/scaffold-stark/useTransactor";
 import deployedContracts from "~~/contracts/deployedContracts";
 import { LOTT_CONTRACT_NAME } from "~~/utils/Constants";
 import { useTranslation } from "react-i18next";
+import TicketControls from "~~/components/buy-tickets/TicketControls";
+import TicketSelector from "~~/components/buy-tickets/TicketSelector";
+import PurchaseSummary from "~~/components/buy-tickets/PurchaseSummary";
 
 export default function BuyTicketsPage() {
   const { t } = useTranslation();
@@ -65,6 +67,11 @@ export default function BuyTicketsPage() {
     const animationKey = `${ticketId}-${num}`;
     const currentSelected = selectedNumbers[ticketId] || [];
     const isCurrentlySelected = currentSelected.includes(num);
+    const isLuckElement = num === 0;
+
+    if (isLuckElement) {
+      return;
+    }
 
     if (isCurrentlySelected) {
       // Deselecting - show question mark animation
@@ -122,7 +129,8 @@ export default function BuyTicketsPage() {
   const generateRandom = (ticketId: number) => {
     const numbers = new Set<number>();
     while (numbers.size < 5) {
-      numbers.add(Math.floor(Math.random() * 41));
+      const randomNum = Math.floor(Math.random() * 40) + 1;
+      numbers.add(randomNum);
     }
     
     const newNumbers = Array.from(numbers);
@@ -155,7 +163,8 @@ export default function BuyTicketsPage() {
     for (let i = 1; i <= ticketCount; i++) {
       const numbers = new Set<number>();
       while (numbers.size < 5) {
-        numbers.add(Math.floor(Math.random() * 41));
+        const randomNum = Math.floor(Math.random() * 40) + 1;
+        numbers.add(randomNum);
       }
       newSelections[i] = Array.from(numbers);
       
@@ -328,13 +337,13 @@ export default function BuyTicketsPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
               >
-                <h1 className="text-3xl font-bold text-purple-400 mb-6">
-                  {t("buyPage.title")}
-                </h1>
+                                  <h1 className="text-3xl font-bold text-purple-400 mb-6">
+                    {t("buyTickets.title")}
+                  </h1>
 
                 {/* Next Draw */}
                 <div className="mb-6">
-                  <p className="text-gray-300 mb-1">{t("buyPage.nextDraw")}</p>
+                                      <p className="text-gray-300 mb-1">{t("buyTickets.nextDraw")}</p>
                   <motion.p
                     className="text-[#4ade80] text-4xl font-bold"
                     initial={{ scale: 0.9 }}
@@ -357,210 +366,51 @@ export default function BuyTicketsPage() {
                         <p className="text-purple-400 text-2xl font-bold">
                           {value}
                         </p>
-                        <p className="text-gray-400 text-sm capitalize">
-                          {t(`buyPage.countdown.${key}`)}
-                        </p>
+                                                  <p className="text-gray-400 text-sm capitalize">
+                            {t(`buyTickets.countdown.${key}`)}
+                          </p>
                       </motion.div>
                     ))}
                   </div>
                 </div>
 
-                {/* Ticket Quantity */}
-                <div className="flex justify-between items-center mb-6">
-                  <div className="flex items-center gap-2">
-                    <motion.button
-                      onClick={decreaseTickets}
-                      className="bg-purple-600 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      -
-                    </motion.button>
-                    <p className="text-white">
-                      {t("buyPage.ticketCount", {
-                        count: ticketCount,
-                        s: ticketCount > 1 ? "s" : "",
-                      })}
-                    </p>
-                    <motion.button
-                      onClick={increaseTickets}
-                      className="bg-purple-600 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      +
-                    </motion.button>
-                  </div>
-                  <motion.button
-                    onClick={generateRandomForAll}
-                    className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <Shuffle size={16} />
-                    {t("buyPage.randomForAll")}
-                  </motion.button>
-                </div>
+                                 {/* Ticket Controls */}
+                 <TicketControls
+                   ticketCount={ticketCount}
+                   onIncreaseTickets={increaseTickets}
+                   onDecreaseTickets={decreaseTickets}
+                   onGenerateRandomForAll={generateRandomForAll}
+                 />
 
-                {/* Ticket Selection */}
-                <div className="space-y-0">
-                  {Array.from({ length: ticketCount }).map((_, idx) => {
-                    const ticketId = idx + 1;
-                    return (
-                      <motion.div
-                        key={ticketId}
-                        className="bg-[#232b3b] rounded-lg p-4 mb-4"
-                        variants={ticketVariants}
-                        initial="hidden"
-                        animate="visible"
-                        custom={idx}
-                      >
-                        <div className="flex justify-between items-center mb-4">
-                          <p className="text-white font-medium">
-                            Ticket #{ticketId}
-                          </p>
-                          <motion.button
-                            onClick={() => generateRandom(ticketId)}
-                            className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded-lg flex items-center gap-1"
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                          >
-                            <Shuffle size={14} />
-                            {t("buyPage.random")}
-                          </motion.button>
-                        </div>
+                                 {/* Ticket Selection */}
+                 <div className="space-y-4">
+                   {Array.from({ length: ticketCount }).map((_, idx) => {
+                     const ticketId = idx + 1;
+                     return (
+                       <TicketSelector
+                         key={ticketId}
+                         ticketId={ticketId}
+                         selectedNumbers={selectedNumbers[ticketId] || []}
+                         animatingNumbers={animatingNumbers}
+                         onNumberSelect={selectNumber}
+                         onGenerateRandom={generateRandom}
+                         numberAnimationVariants={numberAnimationVariants}
+                         lotteryRevealVariants={lotteryRevealVariants}
+                         ticketVariants={ticketVariants}
+                         idx={idx}
+                       />
+                     );
+                   })}
+                 </div>
 
-                        <div className="grid grid-cols-7 gap-2">
-                          {Array.from({ length: 41 }).map((_, numIdx) => {
-                            const num = numIdx;
-                            const isSelected =
-                              selectedNumbers[ticketId]?.includes(num);
-                            return (
-                              <motion.button
-                                key={num}
-                                custom={numIdx}
-                                initial="hidden"
-                                whileHover={selectedNumbers[ticketId]?.length >= 5 && !isSelected ? {} : { scale: 1.1 }}
-                                whileTap={selectedNumbers[ticketId]?.length >= 5 && !isSelected ? {} : { scale: 0.9 }}
-                                onClick={() => selectNumber(ticketId, num)}
-                                data-ticket={ticketId}
-                                data-number={num}
-                                disabled={selectedNumbers[ticketId]?.length >= 5 && !isSelected}
-                                animate={
-                                  animatingNumbers[`${ticketId}-${num}`] === "selected" ? "selected" :
-                                  animatingNumbers[`${ticketId}-${num}`] === "deselected" ? "deselected" :
-                                  animatingNumbers[`${ticketId}-${num}`] === "limitReached" ? "limitReached" :
-                                  "initial"
-                                }
-                                variants={numberAnimationVariants}
-                                className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-colors duration-200
-                                  ${isSelected 
-                                    ? "bg-purple-600 text-white shadow-lg" 
-                                    : selectedNumbers[ticketId]?.length >= 5 && !isSelected
-                                    ? "bg-gray-600 text-gray-500 cursor-not-allowed opacity-50"
-                                    : "bg-gray-800 text-gray-300 hover:bg-gray-700 cursor-pointer"
-                                  }`}
-                              >
-                                {num < 10 ? `0${num}` : num}
-                              </motion.button>
-                            );
-                          })}
-                        </div>
-
-                        {/* Lottery Selection Display */}
-                        <div className="mt-4">
-                          <p className="text-gray-400 text-sm mb-2">Selected Numbers:</p>
-                          <div className="flex gap-2 justify-center">
-                            {Array.from({ length: 5 }).map((_, index) => {
-                              const selectedNumber = selectedNumbers[ticketId]?.[index];
-                              const isRevealing = animatingNumbers[`${ticketId}-reveal-${index}`] === "revealing";
-                              const isDeselecting = animatingNumbers[`${ticketId}-deselect-${index}`] === "deselecting";
-                              
-                              return (
-                                <motion.div
-                                  key={index}
-                                  className={`w-12 h-12 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-white font-bold text-lg shadow-lg border-2 border-yellow-300 cursor-pointer ${
-                                    selectedNumber !== undefined ? 'hover:scale-110' : ''
-                                  }`}
-                                  initial={{ scale: 0.8 }}
-                                  animate={{ scale: 1 }}
-                                  whileHover={selectedNumber !== undefined ? { scale: 1.1 } : {}}
-                                  onClick={() => {
-                                    if (selectedNumber !== undefined) {
-                                      selectNumber(ticketId, selectedNumber);
-                                    }
-                                  }}
-                                >
-                                  {isRevealing ? (
-                                    <motion.div
-                                      variants={lotteryRevealVariants}
-                                      initial="hidden"
-                                      animate="revealing"
-                                      className="text-white font-bold"
-                                    >
-                                      {selectedNumber !== undefined ? (selectedNumber < 10 ? `0${selectedNumber}` : selectedNumber) : "?"}
-                                    </motion.div>
-                                  ) : isDeselecting ? (
-                                    <motion.div
-                                      variants={lotteryRevealVariants}
-                                      initial="hidden"
-                                      animate="deselecting"
-                                      className="text-white font-bold"
-                                    >
-                                      {selectedNumber !== undefined ? (selectedNumber < 10 ? `0${selectedNumber}` : selectedNumber) : "?"}
-                                    </motion.div>
-                                  ) : selectedNumber !== undefined ? (
-                                    <motion.span 
-                                      className="text-white font-bold"
-                                      variants={lotteryRevealVariants}
-                                      animate="questionMark"
-                                    >
-                                      {selectedNumber < 10 ? `0${selectedNumber}` : selectedNumber}
-                                    </motion.span>
-                                  ) : (
-                                    <motion.span 
-                                      className="text-white font-bold text-xl"
-                                      variants={lotteryRevealVariants}
-                                      animate="questionMark"
-                                    >
-                                      ?
-                                    </motion.span>
-                                  )}
-                                </motion.div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-
-                {/* Total Cost */}
-                <div className="bg-[#232b3b] rounded-lg p-4 flex justify-between items-center mt-6">
-                  <p className="text-white font-medium">
-                    {t("buyPage.totalCost")}
-                  </p>
-                  <p className="text-[#4ade80] font-medium">
-                    ${totalCost} $tarkPlay
-                  </p>
-                </div>
-
-                <GlowingButton
-                  onClick={handlePurchase}
-                  className="w-full"
-                  glowColor="rgba(139, 92, 246, 0.5)"
-                  disabled={isLoading}
-                >
-                  {isLoading ? "Processing..." : t("buyPage.buyButton")}
-                </GlowingButton>
-                {txError && <p className="text-red-500 mt-2">{txError}</p>}
-                {txSuccess && (
-                  <p className="text-green-500 mt-2">{txSuccess}</p>
-                )}
+                                 {/* Purchase Summary */}
+                 <PurchaseSummary
+                   totalCost={totalCost}
+                   isLoading={isLoading}
+                   txError={txError}
+                   txSuccess={txSuccess}
+                   onPurchase={handlePurchase}
+                 />
               </motion.div>
             </div>
 
