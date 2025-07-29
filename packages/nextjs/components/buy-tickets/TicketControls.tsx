@@ -57,4 +57,4 @@ export default function TicketControls({
       </motion.button>
     </div>
   );
-} 
+}

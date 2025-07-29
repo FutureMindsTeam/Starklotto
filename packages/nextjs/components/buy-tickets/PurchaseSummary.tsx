@@ -21,12 +21,8 @@ export default function PurchaseSummary({
   return (
     <>
       <div className="bg-[#232b3b] rounded-lg p-4 flex justify-between items-center mt-6">
-        <p className="text-white font-medium">
-          {t("buyTickets.totalCost")}
-        </p>
-        <p className="text-[#4ade80] font-medium">
-          ${totalCost} $tarkPlay
-        </p>
+        <p className="text-white font-medium">{t("buyTickets.totalCost")}</p>
+        <p className="text-[#4ade80] font-medium">${totalCost} $tarkPlay</p>
       </div>
 
       <GlowingButton
@@ -37,11 +33,9 @@ export default function PurchaseSummary({
       >
         {isLoading ? "Processing..." : t("buyTickets.buyButton")}
       </GlowingButton>
-      
+
       {txError && <p className="text-red-500 mt-2">{txError}</p>}
-      {txSuccess && (
-        <p className="text-green-500 mt-2">{txSuccess}</p>
-      )}
+      {txSuccess && <p className="text-green-500 mt-2">{txSuccess}</p>}
     </>
   );
-} 
+}
