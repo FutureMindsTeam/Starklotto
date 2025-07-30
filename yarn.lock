@@ -3954,7 +3954,7 @@ __metadata:
     ethers: ^6.12.0
     framer-motion: ^12.5.0
     get-starknet-core: ^4.0.0
-    i18next: ^25.3.0
+    i18next: ^25.3.2
     i18next-browser-languagedetector: ^8.2.0
     jsdom: ^26.0.0
     lucide-react: ^0.483.0
@@ -9451,9 +9451,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"i18next@npm:^25.3.0":
-  version: 25.3.0
-  resolution: "i18next@npm:25.3.0"
+"i18next@npm:^25.3.2":
+  version: 25.3.2
+  resolution: "i18next@npm:25.3.2"
   dependencies:
     "@babel/runtime": ^7.27.6
   peerDependencies:
@@ -9461,7 +9461,7 @@ __metadata:
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: 402f66202bb21d3312174686922a1cccca95b88e3085bda3dfff338b6ea1971f95d987e58a08e07c1522d523b2b9a07a8e7ba9a647c2497f2adb07278cdb5ec1
+  checksum: e0ee33b6d7f1e8ce3aa2a6a139e673686a5651903fdfeec47d10b32737342045be6607da73020f94b07edcee9173d940fe4e8062d1e2183bbf482141624bda3e
   languageName: node
   linkType: hard
 
@@ -13116,7 +13116,7 @@ __metadata:
     daisyui: ^4.7.3
     framer-motion: ^12.5.0
     husky: ^9.0.11
-    i18next: ^25.3.0
+    i18next: ^25.3.2
     i18next-browser-languagedetector: ^8.2.0
     pinst: ^3.0.0
     postcss: ^8.4.38
