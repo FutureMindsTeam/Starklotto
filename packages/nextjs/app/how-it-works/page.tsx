@@ -1,6 +1,7 @@
 import HowItWorks from "./_components/HowItWorks";
 import UpcomingDraws from "./_components/UpcomingDraws";
 import CurrentJackpot from "./_components/CurrentJackpot";
+import PrizeDistribution from "~~/components/PrizeDistribution";
 
 const HowItWorksPage = () => {
   return (
@@ -12,6 +13,7 @@ const HowItWorksPage = () => {
         </div>
         <div className="flex flex-col">
           <CurrentJackpot />
+          <PrizeDistribution className="mt-6" />
         </div>
       </div>
     </div>
