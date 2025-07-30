@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { AlertCircle, ChevronRight, Trophy } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useRouter } from "next/navigation";
 
 // Types for our draw data
 interface DrawResult {
@@ -51,6 +52,7 @@ function formatDrawDate(date: Date): string {
 
 export function LastDrawResults() {
   const { t } = useTranslation();
+  const router = useRouter();
   const [drawResult, setDrawResult] = useState<DrawResult | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -167,7 +169,10 @@ export function LastDrawResults() {
 
         {/* Footer */}
         <div className="flex justify-between border-t border-gray-200 bg-gray-50/30 px-6 py-4 dark:border-gray-800 dark:bg-gray-900/30">
-          <button className="inline-flex items-center text-sm font-medium text-indigo-600 transition-colors hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300">
+          <button
+            onClick={() => router.push("/results")}
+            className="inline-flex items-center text-sm font-medium text-indigo-600 transition-colors hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+          >
             {t("lastDraw.viewPrevious")}
             <ChevronRight className="ml-1 h-4 w-4" />
           </button>
