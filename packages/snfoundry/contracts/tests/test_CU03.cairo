@@ -1,5 +1,6 @@
 //Test for ISSUE-TEST-CU01-003
 
+use contracts::Lottery::{ILotteryDispatcher, ILotteryDispatcherTrait};
 use snforge_std::{ContractClassTrait, DeclareResultTrait, declare};
 use snforge_std::{start_cheat_caller_address, stop_cheat_caller_address};
 use starknet::{ContractAddress, contract_address_const};
@@ -54,7 +55,8 @@ fn validate_ticket_numbers() {
     
     let mut i = 0;
     while i < 5 {
-        assert(*ticket.at(i) <= 40_u16, 'Number within range');
+        assert(*ticket.at(i) >= 1_u16, 'Number >= minimum');
+        assert(*ticket.at(i) <= 40_u16, 'Number <= maximum');
         i += 1;
     }
     
@@ -83,12 +85,12 @@ fn test_multiple_tickets() {
     assert(ticket2.len() == 5, 'Second ticket valid');
     assert(ticket3.len() == 5, 'Third ticket valid');
     
-    let min_values = array![0_u16, 1_u16, 2_u16, 3_u16, 4_u16];
+    let min_values = array![1_u16, 2_u16, 3_u16, 4_u16, 5_u16];
     let max_values = array![36_u16, 37_u16, 38_u16, 39_u16, 40_u16];
     
     assert(min_values.len() == 5, 'Minimum values');
     assert(max_values.len() == 5, 'Maximum values');
-    assert(*min_values.at(0) == 0_u16, 'Minimum boundary');
+    assert(*min_values.at(0) == 1_u16, 'Minimum boundary');
     assert(*max_values.at(4) == 40_u16, 'Maximum boundary');
 }
 
@@ -113,8 +115,10 @@ fn test_invalid_inputs() {
     }
     assert(found_duplicate, 'Finds duplicate numbers');
     
-    let invalid_range = array![5_u16, 10_u16, 15_u16, 20_u16, 45_u16];
-    assert(*invalid_range.at(4) > 40_u16, 'Identifies out of range');
+    let invalid_range_high = array![5_u16, 10_u16, 15_u16, 20_u16, 45_u16];
+    let invalid_range_low = array![0_u16, 10_u16, 15_u16, 20_u16, 25_u16];
+    assert(*invalid_range_high.at(4) > 40_u16, 'Identifies out of range (high)');
+    assert(*invalid_range_low.at(0) < 1_u16, 'Identifies out of range (low)');
     
     let short_array = array![1_u16, 2_u16, 3_u16, 4_u16];
     let long_array = array![1_u16, 2_u16, 3_u16, 4_u16, 5_u16, 6_u16];
@@ -195,4 +199,42 @@ fn test_payment_handling() {
     let ticket_quantity = 3_u32;
     let expected_total = 3000000000000000000_u256;
     assert(price_per_ticket * ticket_quantity.into() == expected_total, 'Total cost calculation');
+}
+
+#[should_panic(expected: 'Invalid numbers')]
+#[test]
+fn test_buy_ticket_valid_numbers() {
+    let lottery_address = setup_lottery();
+    let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_address };
+    
+    let invalid_numbers = array![0_u16, 20_u16, 40_u16, 15_u16, 30_u16];
+    assert(invalid_numbers.len() == 5, 'Valid length');
+    assert(*invalid_numbers.at(0) == 0_u16, 'First number is 0 (invalid)');
+    assert(*invalid_numbers.at(2) <= 40_u16, 'Third number <= 40');
+
+    lottery_dispatcher.BuyTicket(1_u64, invalid_numbers);
+}
+
+#[should_panic(expected: 'Invalid numbers')]
+#[test]
+fn test_buy_ticket_number_zero() {
+    let lottery_address = setup_lottery();
+    let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_address };
+    
+    let invalid_numbers = array![0_u16, 10_u16, 20_u16, 30_u16, 40_u16];
+    
+    // This should panic because 0 is below the minimum (1)
+    lottery_dispatcher.BuyTicket(1_u64, invalid_numbers);
+}
+
+#[should_panic(expected: 'Invalid numbers')]
+#[test]
+fn test_buy_ticket_number_above_max() {
+    let lottery_address = setup_lottery();
+    let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_address };
+    
+    let invalid_numbers = array![1_u16, 10_u16, 20_u16, 30_u16, 41_u16];
+    
+    // This should panic because 41 is above the maximum (40)
+    lottery_dispatcher.BuyTicket(1_u64, invalid_numbers);
 }

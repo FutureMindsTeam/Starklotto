@@ -32,4 +32,4 @@ export interface PrizeBreakdownProps {
   prizeBreakdown: PrizeTier[];
   totalPrizePool: number;
   rolloverAmount?: number;
-} 
+}

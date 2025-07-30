@@ -4,10 +4,10 @@ import { motion } from "framer-motion";
 import { Trophy, Users, DollarSign, Percent } from "lucide-react";
 import { PrizeBreakdownProps } from "~~/types/results";
 
-export default function PrizeBreakdown({ 
-  prizeBreakdown, 
-  totalPrizePool, 
-  rolloverAmount 
+export default function PrizeBreakdown({
+  prizeBreakdown,
+  totalPrizePool,
+  rolloverAmount,
 }: PrizeBreakdownProps) {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -48,8 +48,14 @@ export default function PrizeBreakdown({
     }
   };
 
-  const totalWinners = prizeBreakdown.reduce((sum, tier) => sum + tier.winners, 0);
-  const totalDistributed = prizeBreakdown.reduce((sum, tier) => sum + tier.totalPrize, 0);
+  const totalWinners = prizeBreakdown.reduce(
+    (sum, tier) => sum + tier.winners,
+    0,
+  );
+  const totalDistributed = prizeBreakdown.reduce(
+    (sum, tier) => sum + tier.totalPrize,
+    0,
+  );
   const totalRollover = rolloverAmount || 0;
 
   return (
@@ -83,17 +89,21 @@ export default function PrizeBreakdown({
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${getTierColor(tier.tier)} flex items-center justify-center text-white font-bold text-lg`}>
+                  <div
+                    className={`w-12 h-12 rounded-full bg-gradient-to-br ${getTierColor(tier.tier)} flex items-center justify-center text-white font-bold text-lg`}
+                  >
                     {getTierIcon(tier.tier)}
                   </div>
                   <div>
-                    <h3 className="text-white font-semibold">{tier.description}</h3>
+                    <h3 className="text-white font-semibold">
+                      {tier.description}
+                    </h3>
                     <p className="text-gray-400 text-sm">
                       Match {tier.matches} number{tier.matches !== 1 ? "s" : ""}
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="text-right">
                   <div className="flex items-center gap-2 mb-1">
                     <Users className="w-4 h-4 text-gray-400" />
@@ -132,7 +142,9 @@ export default function PrizeBreakdown({
                 </div>
                 <div className="bg-gray-700/30 rounded p-3">
                   <div className="text-gray-400">Status</div>
-                  <div className={`font-semibold ${tier.winners > 0 ? "text-green-400" : "text-gray-400"}`}>
+                  <div
+                    className={`font-semibold ${tier.winners > 0 ? "text-green-400" : "text-gray-400"}`}
+                  >
                     {tier.winners > 0 ? "Claimed" : "No Winners"}
                   </div>
                 </div>
@@ -143,7 +155,9 @@ export default function PrizeBreakdown({
 
         {/* Summary */}
         <div className="mt-6 p-4 bg-gray-800/50 rounded-lg border border-gray-600">
-          <h3 className="text-lg font-semibold text-white mb-4">Distribution Summary</h3>
+          <h3 className="text-lg font-semibold text-white mb-4">
+            Distribution Summary
+          </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="text-center">
               <div className="text-gray-400 text-sm">Total Distributed</div>
@@ -172,17 +186,17 @@ export default function PrizeBreakdown({
               <span>Rollover</span>
             </div>
             <div className="w-full bg-gray-700 rounded-full h-2">
-              <div 
+              <div
                 className="bg-green-500 h-2 rounded-full transition-all duration-500"
-                style={{ 
-                  width: `${(totalDistributed / totalPrizePool) * 100}%` 
+                style={{
+                  width: `${(totalDistributed / totalPrizePool) * 100}%`,
                 }}
               />
-              <div 
+              <div
                 className="bg-yellow-500 h-2 rounded-full transition-all duration-500 -mt-2"
-                style={{ 
+                style={{
                   width: `${(totalRollover / totalPrizePool) * 100}%`,
-                  marginLeft: `${(totalDistributed / totalPrizePool) * 100}%`
+                  marginLeft: `${(totalDistributed / totalPrizePool) * 100}%`,
                 }}
               />
             </div>
@@ -193,9 +207,12 @@ export default function PrizeBreakdown({
         {totalWinners === 0 && (
           <div className="mt-4 p-4 bg-gray-800/30 border border-gray-600 rounded-lg">
             <div className="text-center">
-              <div className="text-gray-300 font-semibold mb-2">No Winners in This Draw</div>
+              <div className="text-gray-300 font-semibold mb-2">
+                No Winners in This Draw
+              </div>
               <div className="text-gray-400 text-sm">
-                The entire prize pool of {formatCurrency(totalPrizePool)} will be rolled over to the next draw.
+                The entire prize pool of {formatCurrency(totalPrizePool)} will
+                be rolled over to the next draw.
               </div>
             </div>
           </div>
@@ -203,4 +220,4 @@ export default function PrizeBreakdown({
       </div>
     </div>
   );
-} 
+}

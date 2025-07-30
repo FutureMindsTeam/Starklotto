@@ -27,7 +27,7 @@ export default function DrawResultsPage() {
   const params = useParams();
   const router = useRouter();
   const drawId = params.drawId as string;
-  
+
   const [drawData, setDrawData] = useState<DetailedDrawData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -40,7 +40,9 @@ export default function DrawResultsPage() {
         const data = await fetchDrawDetails(drawId);
         setDrawData(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load draw data");
+        setError(
+          err instanceof Error ? err.message : "Failed to load draw data",
+        );
       } finally {
         setIsLoading(false);
       }
@@ -83,17 +85,18 @@ export default function DrawResultsPage() {
               Back to Results
             </button>
           </div>
-          
+
           <div className="bg-red-900/20 border border-red-500/30 rounded-xl p-6">
             <div className="flex items-center gap-3 mb-4">
               <AlertCircle className="w-6 h-6 text-red-400" />
-              <h1 className="text-xl font-semibold text-red-200">Draw Not Found</h1>
+              <h1 className="text-xl font-semibold text-red-200">
+                Draw Not Found
+              </h1>
             </div>
             <p className="text-red-300">
-              {error === "Draw not found" 
+              {error === "Draw not found"
                 ? `No data available for draw ${drawId}. This draw may not exist or may not have been completed yet.`
-                : error
-              }
+                : error}
             </p>
             <button
               onClick={handleBackNavigation}
@@ -131,8 +134,8 @@ export default function DrawResultsPage() {
           className="space-y-8"
         >
           <DrawDetails drawData={drawData} />
-          
-          <PrizeBreakdown 
+
+          <PrizeBreakdown
             prizeBreakdown={drawData.prizeBreakdown}
             totalPrizePool={drawData.totalPrizePool}
             rolloverAmount={drawData.rolloverAmount}
@@ -141,4 +144,4 @@ export default function DrawResultsPage() {
       </div>
     </div>
   );
-} 
+}

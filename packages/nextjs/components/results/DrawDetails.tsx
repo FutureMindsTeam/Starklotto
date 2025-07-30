@@ -39,7 +39,11 @@ export default function DrawDetails({ drawData }: DrawDetailsProps) {
               </div>
               <div className="flex items-center gap-2">
                 <Trophy className="w-4 h-4" />
-                <span className={drawData.isCompleted ? "text-green-400" : "text-yellow-400"}>
+                <span
+                  className={
+                    drawData.isCompleted ? "text-green-400" : "text-yellow-400"
+                  }
+                >
                   {drawData.isCompleted ? "Completed" : "Active"}
                 </span>
               </div>
@@ -47,25 +51,29 @@ export default function DrawDetails({ drawData }: DrawDetailsProps) {
           </div>
           <div className="text-right">
             <div className="text-sm text-gray-400">Total Winners</div>
-            <div className="text-2xl font-bold text-white">{drawData.totalWinners}</div>
+            <div className="text-2xl font-bold text-white">
+              {drawData.totalWinners}
+            </div>
           </div>
         </div>
       </div>
 
       {/* Winning Numbers */}
       <div className="p-6 border-b border-gray-700">
-        <h2 className="text-lg font-semibold text-white mb-4">Winning Numbers</h2>
+        <h2 className="text-lg font-semibold text-white mb-4">
+          Winning Numbers
+        </h2>
         <div className="flex justify-center gap-3 mb-6">
           {drawData.winningNumbers.map((number, index) => (
             <motion.div
               key={index}
               initial={{ scale: 0, rotate: -180 }}
               animate={{ scale: 1, rotate: 0 }}
-              transition={{ 
-                delay: index * 0.1, 
-                type: "spring", 
-                stiffness: 200, 
-                damping: 20 
+              transition={{
+                delay: index * 0.1,
+                type: "spring",
+                stiffness: 200,
+                damping: 20,
               }}
               className="relative"
             >
@@ -85,7 +93,9 @@ export default function DrawDetails({ drawData }: DrawDetailsProps) {
 
       {/* Prize Pool Information */}
       <div className="p-6">
-        <h2 className="text-lg font-semibold text-white mb-4">Prize Pool Breakdown</h2>
+        <h2 className="text-lg font-semibold text-white mb-4">
+          Prize Pool Breakdown
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-gray-800/30 rounded-lg p-4">
             <div className="flex items-center gap-3 mb-2">
@@ -103,8 +113,13 @@ export default function DrawDetails({ drawData }: DrawDetailsProps) {
               <span className="text-gray-400 text-sm">Growth</span>
             </div>
             <div className="text-2xl font-bold text-white">
-              <span className={drawData.change >= 0 ? "text-green-400" : "text-red-400"}>
-                {drawData.change >= 0 ? "+" : ""}{drawData.change.toFixed(1)}%
+              <span
+                className={
+                  drawData.change >= 0 ? "text-green-400" : "text-red-400"
+                }
+              >
+                {drawData.change >= 0 ? "+" : ""}
+                {drawData.change.toFixed(1)}%
               </span>
             </div>
           </div>
@@ -126,12 +141,14 @@ export default function DrawDetails({ drawData }: DrawDetailsProps) {
             <div className="flex items-center gap-3">
               <Trophy className="w-5 h-5 text-yellow-400" />
               <div>
-                <div className="text-yellow-200 font-semibold">Rollover Amount</div>
+                <div className="text-yellow-200 font-semibold">
+                  Rollover Amount
+                </div>
                 <div className="text-yellow-400 text-lg font-bold">
                   {formatCurrency(drawData.rolloverAmount)}
                 </div>
                 <div className="text-yellow-300 text-sm">
-                  This amount will be added to the next draw's prize pool
+                  This amount will be added to the next draw&apos;s prize pool
                 </div>
               </div>
             </div>
@@ -144,7 +161,8 @@ export default function DrawDetails({ drawData }: DrawDetailsProps) {
             <div className="text-center">
               <div className="text-gray-300 font-semibold mb-2">No Winners</div>
               <div className="text-gray-400 text-sm">
-                This draw had no winners. The prize pool will be rolled over to the next draw.
+                This draw had no winners. The prize pool will be rolled over to
+                the next draw.
               </div>
             </div>
           </div>
@@ -152,4 +170,4 @@ export default function DrawDetails({ drawData }: DrawDetailsProps) {
       </div>
     </div>
   );
-} 
+}

@@ -169,7 +169,7 @@ export function LastDrawResults() {
 
         {/* Footer */}
         <div className="flex justify-between border-t border-gray-200 bg-gray-50/30 px-6 py-4 dark:border-gray-800 dark:bg-gray-900/30">
-          <button 
+          <button
             onClick={() => router.push("/results")}
             className="inline-flex items-center text-sm font-medium text-indigo-600 transition-colors hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
           >

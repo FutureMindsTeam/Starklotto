@@ -698,6 +698,7 @@ pub mod Lottery {
     //=======================================================================================
     //constants
     //=======================================================================================
+    const MinNumber: u16 = 1; // min number
     const MaxNumber: u16 = 40; // max number
     const RequiredNumbers: usize = 5; // amount of numbers per ticket
 
@@ -725,8 +726,8 @@ pub mod Lottery {
 
                 let number = *numbers.at(i);
 
-                // Verify range (0-99)
-                if number > MaxNumber {
+                // Verify range (1-40)
+                if number < MinNumber || number > MaxNumber {
                     valid = false;
                     break;
                 }
@@ -764,7 +765,7 @@ pub mod Lottery {
         let mut usedNumbers: Felt252Dict<bool> = Default::default();
 
         while count != 5 {
-            let number = (blockTimestamp + count) % (MaxNumber.into() + 1);
+            let number = (blockTimestamp + count) % (MaxNumber.into() - MinNumber.into() + 1) + MinNumber.into();
             let number_u16: u16 = number.try_into().unwrap();
 
             if usedNumbers.get(number.into()) != true {

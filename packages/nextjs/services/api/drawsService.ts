@@ -5,7 +5,7 @@ const API_DELAY = 1000;
 const ERROR_RATE = 0.01;
 
 const mockDrawsData: Record<string, DetailedDrawData> = {
-  "D100": {
+  D100: {
     drawId: "D100",
     drawNumber: "D100",
     date: "May 28, 2025",
@@ -57,7 +57,7 @@ const mockDrawsData: Record<string, DetailedDrawData> = {
       },
     ],
   },
-  "D119": {
+  D119: {
     drawId: "D119",
     drawNumber: "D119",
     date: "May 27, 2025",
@@ -109,7 +109,7 @@ const mockDrawsData: Record<string, DetailedDrawData> = {
       },
     ],
   },
-  "D118": {
+  D118: {
     drawId: "D118",
     drawNumber: "D118",
     date: "May 26, 2025",
@@ -161,7 +161,7 @@ const mockDrawsData: Record<string, DetailedDrawData> = {
       },
     ],
   },
-  "D117": {
+  D117: {
     drawId: "D117",
     drawNumber: "D117",
     date: "May 25, 2025",
@@ -213,7 +213,7 @@ const mockDrawsData: Record<string, DetailedDrawData> = {
       },
     ],
   },
-  "D116": {
+  D116: {
     drawId: "D116",
     drawNumber: "D116",
     date: "May 24, 2025",
@@ -265,7 +265,7 @@ const mockDrawsData: Record<string, DetailedDrawData> = {
       },
     ],
   },
-  "D115": {
+  D115: {
     drawId: "D115",
     drawNumber: "D115",
     date: "May 23, 2025",
@@ -317,7 +317,7 @@ const mockDrawsData: Record<string, DetailedDrawData> = {
       },
     ],
   },
-  "D114": {
+  D114: {
     drawId: "D114",
     drawNumber: "D114",
     date: "May 22, 2025",
@@ -369,7 +369,7 @@ const mockDrawsData: Record<string, DetailedDrawData> = {
       },
     ],
   },
-  "D113": {
+  D113: {
     drawId: "D113",
     drawNumber: "D113",
     date: "May 21, 2025",
@@ -421,7 +421,7 @@ const mockDrawsData: Record<string, DetailedDrawData> = {
       },
     ],
   },
-  "D112": {
+  D112: {
     drawId: "D112",
     drawNumber: "D112",
     date: "May 20, 2025",
@@ -473,7 +473,7 @@ const mockDrawsData: Record<string, DetailedDrawData> = {
       },
     ],
   },
-  "D111": {
+  D111: {
     drawId: "D111",
     drawNumber: "D111",
     date: "May 19, 2025",
@@ -534,13 +534,16 @@ interface ApiResponse<T> {
 }
 
 class ApiError extends Error {
-  constructor(message: string, public statusCode: number = 500) {
+  constructor(
+    message: string,
+    public statusCode: number = 500,
+  ) {
     super(message);
     this.name = "ApiError";
   }
 }
 
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const shouldThrowError = () => Math.random() < ERROR_RATE;
 
@@ -556,7 +559,7 @@ export class DrawsApiService {
       await delay(API_DELAY);
 
       const drawData = mockDrawsData[drawId];
-      
+
       if (!drawData) {
         throw new ApiError(`Draw with ID ${drawId} not found`, 404);
       }
@@ -592,8 +595,14 @@ export class DrawsApiService {
       await delay(API_DELAY);
 
       const draws = Object.values(mockDrawsData);
-      const totalPrizePool = draws.reduce((sum, draw) => sum + draw.totalPrizePool, 0);
-      const totalWinners = draws.reduce((sum, draw) => sum + draw.totalWinners, 0);
+      const totalPrizePool = draws.reduce(
+        (sum, draw) => sum + draw.totalPrizePool,
+        0,
+      );
+      const totalWinners = draws.reduce(
+        (sum, draw) => sum + draw.totalWinners,
+        0,
+      );
 
       return {
         totalDraws: draws.length,
@@ -612,4 +621,4 @@ export class DrawsApiService {
 export const drawsApiService = new DrawsApiService();
 
 export type { ApiResponse };
-export { ApiError }; 
+export { ApiError };

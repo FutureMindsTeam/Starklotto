@@ -94,9 +94,13 @@ export default function DrawHistoryTable({
                 <th
                   key={column.key}
                   className={`px-6 py-4 text-left text-sm font-medium text-gray-300 bg-[#090712] ${
-                    column.sortable !== false ? "cursor-pointer hover:text-white transition-colors" : ""
+                    column.sortable !== false
+                      ? "cursor-pointer hover:text-white transition-colors"
+                      : ""
                   }`}
-                  onClick={() => column.sortable !== false && onSort(column.key)}
+                  onClick={() =>
+                    column.sortable !== false && onSort(column.key)
+                  }
                 >
                   <div className="flex items-center gap-2">
                     {column.label}
@@ -130,7 +134,9 @@ export default function DrawHistoryTable({
                 className={`border-b border-gray-700 hover:bg-gray-700/30 transition-colors ${
                   row.winner.includes("Jackpot Winner")
                     ? "bg-gradient-to-r from-yellow-900/20 to-orange-900/20 border-l-4 border-yellow-400"
-                    : index % 2 === 0 ? "bg-gray-800/30" : "bg-gray-800/10"
+                    : index % 2 === 0
+                      ? "bg-gray-800/30"
+                      : "bg-gray-800/10"
                 }`}
               >
                 <td className="px-6 py-4 text-sm font-medium text-white">
@@ -154,11 +160,13 @@ export default function DrawHistoryTable({
                   </span>
                 </td>
                 <td className="px-6 py-4 text-sm">
-                  <span className={`${
-                    row.winner.includes("Jackpot Winner") 
-                      ? "bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-bold px-2 py-1 rounded-full text-xs flex items-center gap-1"
-                      : "text-gray-400"
-                  }`}>
+                  <span
+                    className={`${
+                      row.winner.includes("Jackpot Winner")
+                        ? "bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-bold px-2 py-1 rounded-full text-xs flex items-center gap-1"
+                        : "text-gray-400"
+                    }`}
+                  >
                     {row.winner.includes("Jackpot Winner") && (
                       <Crown className="w-3 h-3" />
                     )}

@@ -50,7 +50,8 @@ export default function ResultsPage() {
             </button>
           </div>
           <p className="text-gray-400 text-lg">
-            Explore detailed results from all completed draws. Click on any draw number to view comprehensive breakdown.
+            Explore detailed results from all completed draws. Click on any draw
+            number to view comprehensive breakdown.
           </p>
         </motion.div>
 
@@ -65,7 +66,9 @@ export default function ResultsPage() {
               <Calendar className="w-6 h-6 text-blue-400" />
               <span className="text-gray-400">Total Draws</span>
             </div>
-            <div className="text-3xl font-bold text-white">{drawHistoryData.length}</div>
+            <div className="text-3xl font-bold text-white">
+              {drawHistoryData.length}
+            </div>
           </div>
 
           <div className="bg-[#0c0818] backdrop-blur-sm rounded-xl border border-slate-700/50 p-6">
@@ -73,7 +76,9 @@ export default function ResultsPage() {
               <Trophy className="w-6 h-6 text-yellow-400" />
               <span className="text-gray-400">Latest Draw</span>
             </div>
-            <div className="text-3xl font-bold text-white">{drawHistoryData[0]?.drawNumber || "N/A"}</div>
+            <div className="text-3xl font-bold text-white">
+              {drawHistoryData[0]?.drawNumber || "N/A"}
+            </div>
           </div>
 
           <div className="bg-[#0c0818] backdrop-blur-sm rounded-xl border border-slate-700/50 p-6">
@@ -82,10 +87,9 @@ export default function ResultsPage() {
               <span className="text-gray-400">Avg. Growth</span>
             </div>
             <div className="text-3xl font-bold text-white">
-              {drawHistoryData.length > 0 
+              {drawHistoryData.length > 0
                 ? `${(drawHistoryData.reduce((sum, draw) => sum + draw.change, 0) / drawHistoryData.length).toFixed(1)}%`
-                : "N/A"
-              }
+                : "N/A"}
             </div>
           </div>
         </motion.div>
@@ -119,11 +123,15 @@ export default function ResultsPage() {
               i
             </div>
             <div>
-              <h3 className="text-blue-200 font-semibold mb-2">How to View Detailed Results</h3>
+              <h3 className="text-blue-200 font-semibold mb-2">
+                How to View Detailed Results
+              </h3>
               <p className="text-blue-300 text-sm">
-                Click on any draw number in the table above to view comprehensive details including winning numbers, 
-                prize distribution, winner statistics, and rollover information. Each detailed view provides complete 
-                transparency on how prizes were allocated.
+                Click on any draw number in the table above to view
+                comprehensive details including winning numbers, prize
+                distribution, winner statistics, and rollover information. Each
+                detailed view provides complete transparency on how prizes were
+                allocated.
               </p>
             </div>
           </div>
@@ -131,4 +139,4 @@ export default function ResultsPage() {
       </div>
     </div>
   );
-} 
+}
