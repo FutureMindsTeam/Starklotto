@@ -13,14 +13,15 @@ pub trait IStarkPlayVault<TContractState> {
     fn get_accumulated_fee(self: @TContractState) -> u256;
     fn get_owner(self: @TContractState) -> ContractAddress;
     fn get_total_starkplay_minted(self: @TContractState) -> u256;
-
     //=======================================================================================
     //set functions
     fn set_fee(ref self: TContractState, new_fee: u64) -> bool;
     fn setMintLimit(ref self: TContractState, new_limit: u256);
     fn setBurnLimit(ref self: TContractState, new_limit: u256);
     fn setFeePercentage(ref self: TContractState, new_fee: u64) -> bool;
+    fn setTransferOwnership(ref self: TContractState, new_owner: ContractAddress);
     fn setFeePercentagePrizesConverted(ref self: TContractState, new_fee: u64) -> bool;
+    fn set_administrator(ref self: TContractState, new_admin: ContractAddress);
     fn convert_to_strk(ref self: TContractState, amount: u256);
     //=======================================================================================
     //mint functions
@@ -108,6 +109,7 @@ pub mod StarkPlayVault {
         //------------------------------------------------
         //owner of the vault
         owner: ContractAddress,
+        administrator: ContractAddress,
         paused: bool,
         mintLimit: u256,
         burnLimit: u256,
@@ -145,7 +147,7 @@ pub mod StarkPlayVault {
         self.feePercentage.write(feePercentage);
         self.feePercentageMin.write(10); //0.1%
         self.feePercentageMax.write(500); //5%
-        self.feePercentagePrizesConverted.write(300); //3%
+        self.feePercentagePrizesConverted.write(FEE_PERCENTAGE_CONVERSION); //3%
         self.feePercentagePrizesConvertedMin.write(10); //0.1%
         self.feePercentagePrizesConvertedMax.write(500); //5%
     }
@@ -253,23 +255,6 @@ pub mod StarkPlayVault {
         amount: u256,
     }
 
-    #[derive(Drop, starknet::Event)]
-    struct MintLimitUpdated {
-        new_mint_limit: u256,
-    }
-
-    #[derive(Drop, starknet::Event)]
-    struct BurnLimitUpdated {
-        new_burn_limit: u256,
-    }
-
-    #[derive(Drop, starknet::Event)]
-    struct SetFeePercentage {
-        #[key]
-        owner: ContractAddress,
-        old_fee: u64,
-        new_fee: u64,
-    }
 
     #[derive(Drop, starknet::Event)]
     struct SetFeePercentagePrizesConverted {
@@ -277,13 +262,6 @@ pub mod StarkPlayVault {
         owner: ContractAddress,
         old_fee: u64,
         new_fee: u64,
-    }
-    #[derive(Drop, starknet::Event)]
-    pub struct FeeUpdated {
-        #[key]
-        pub admin: ContractAddress,
-        pub old_fee: u64,
-        pub new_fee: u64,
     }
 
     #[derive(Drop, starknet::Event)]
@@ -338,6 +316,15 @@ pub mod StarkPlayVault {
         assert(get_caller_address() == self.owner.read(), 'Caller is not the owner');
     }
 
+    fn assert_only_admin(self: @ContractState) {
+        let caller = get_caller_address();
+        let admin = self.administrator.read();
+        assert(
+            caller == self.owner.read() || 
+            (admin != contract_address_const::<0>() && caller == admin),
+            'Caller is not authorized'
+        );
+    }
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //public functions
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -507,21 +494,9 @@ pub mod StarkPlayVault {
 
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    //fn setFee(ref self: ContractState, new_fee: u64) -> bool {
-//    self.assert_only_owner();
-//   assert(new_fee <= 10000, 'Fee too high'); // Máximo 100%
-//   self.feePercentage.write(new_fee);
-//    true
-//}
-
     
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    //fn setFee(u64): bool{
-
-    //}
-
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     //fn  getVaultBalance(): u64{
 
@@ -609,6 +584,11 @@ pub mod StarkPlayVault {
             self.owner.read()
         }
 
+        fn set_administrator(ref self: ContractState, new_admin: ContractAddress)  {
+            assert_only_owner(@self);
+            self.administrator.write(new_admin);
+        }
+
         fn is_paused(self: @ContractState) -> bool {
             self.paused.read()
         }
@@ -632,6 +612,8 @@ pub mod StarkPlayVault {
         //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         fn set_fee(ref self: ContractState, new_fee: u64) -> bool {
             self.ownable.assert_only_owner();
+            assert_only_admin(@self);
+            assert(new_fee >= self.feePercentageMin.read(), 'Fee too low');
             assert(new_fee <= MAX_FEE_PERCENTAGE, 'Fee too high');
 
             let old_fee = self.feePercentage.read();
@@ -640,6 +622,11 @@ pub mod StarkPlayVault {
             self.emit(FeeUpdated { admin: get_caller_address(), old_fee, new_fee });
             true
         }
+
+        fn setTransferOwnership(ref self: ContractState, new_owner: ContractAddress) {
+            assert_only_owner(@self); 
+        }
+        
         fn withdrawGeneralFees(
             ref self: ContractState, recipient: ContractAddress, amount: u256,
         ) -> bool {
