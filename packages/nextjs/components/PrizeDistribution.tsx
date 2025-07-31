@@ -2,23 +2,26 @@
 
 import { motion } from "framer-motion";
 import { Trophy, Percent, DollarSign, Info } from "lucide-react";
-import { 
-  defaultPrizeTiers, 
-  prizeRules, 
-  totalPrizePool, 
-  getTierColor, 
-  getTierIcon, 
-  formatCurrency 
+import {
+  defaultPrizeTiers,
+  prizeRules,
+  totalPrizePool,
+  getTierColor,
+  getTierIcon,
+  formatCurrency,
 } from "~~/data/prizeDistribution";
 
 interface PrizeDistributionProps {
   className?: string;
 }
 
-export default function PrizeDistribution({ className = "" }: PrizeDistributionProps) {
-
+export default function PrizeDistribution({
+  className = "",
+}: PrizeDistributionProps) {
   return (
-    <div className={`bg-[#0c0818] backdrop-blur-sm rounded-xl border border-slate-700/50 overflow-hidden ${className}`}>
+    <div
+      className={`bg-[#0c0818] backdrop-blur-sm rounded-xl border border-slate-700/50 overflow-hidden ${className}`}
+    >
       {/* Header */}
       <div className="p-6 border-b border-gray-700">
         <div className="flex items-center justify-between">
@@ -28,7 +31,9 @@ export default function PrizeDistribution({ className = "" }: PrizeDistributionP
           </h2>
           <div className="text-right">
             <div className="text-sm text-gray-400">Total Pool</div>
-            <div className="text-lg font-bold text-white">{formatCurrency(totalPrizePool)}</div>
+            <div className="text-lg font-bold text-white">
+              {formatCurrency(totalPrizePool)}
+            </div>
           </div>
         </div>
       </div>
@@ -46,17 +51,21 @@ export default function PrizeDistribution({ className = "" }: PrizeDistributionP
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${getTierColor(tier.tier)} flex items-center justify-center text-white font-bold text-lg`}>
+                  <div
+                    className={`w-12 h-12 rounded-full bg-gradient-to-br ${getTierColor(tier.tier)} flex items-center justify-center text-white font-bold text-lg`}
+                  >
                     {getTierIcon(tier.tier)}
                   </div>
                   <div>
-                    <h3 className="text-white font-semibold">{tier.description}</h3>
+                    <h3 className="text-white font-semibold">
+                      {tier.description}
+                    </h3>
                     <p className="text-gray-400 text-sm">
                       Match {tier.matches} number{tier.matches !== 1 ? "s" : ""}
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="text-right">
                   <div className="flex items-center gap-2 mb-1">
                     <Percent className="w-4 h-4 text-blue-400" />
@@ -84,9 +93,7 @@ export default function PrizeDistribution({ className = "" }: PrizeDistributionP
           <div className="flex items-start gap-3">
             <Info className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
             <div>
-              <h4 className="text-white font-semibold mb-2">
-                Prize Rules
-              </h4>
+              <h4 className="text-white font-semibold mb-2">Prize Rules</h4>
               <ul className="text-gray-300 text-sm space-y-1">
                 {prizeRules.map((rule, index) => (
                   <li key={index}>• {rule}</li>
@@ -124,4 +131,4 @@ export default function PrizeDistribution({ className = "" }: PrizeDistributionP
       </div>
     </div>
   );
-} 
+}

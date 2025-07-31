@@ -7,7 +7,9 @@ interface PrizeDistributionSectionProps {
   prizeDistributionY?: any;
 }
 
-export function PrizeDistributionSection({ prizeDistributionY }: PrizeDistributionSectionProps) {
+export function PrizeDistributionSection({
+  prizeDistributionY,
+}: PrizeDistributionSectionProps) {
   return (
     <section className="py-16 relative">
       <motion.div
@@ -29,7 +31,8 @@ export function PrizeDistributionSection({ prizeDistributionY }: PrizeDistributi
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-lg text-gray-300 max-w-2xl mx-auto"
           >
-            Understand how prizes are distributed across different winning tiers. Transparency is key to our platform.
+            Understand how prizes are distributed across different winning
+            tiers. Transparency is key to our platform.
           </motion.p>
         </div>
 
@@ -49,10 +52,11 @@ export function PrizeDistributionSection({ prizeDistributionY }: PrizeDistributi
           className="text-center mt-8"
         >
           <p className="text-gray-400 text-sm">
-            Prize amounts are estimates based on current pool size. Actual prizes may vary.
+            Prize amounts are estimates based on current pool size. Actual
+            prizes may vary.
           </p>
         </motion.div>
       </motion.div>
     </section>
   );
-} 
+}
