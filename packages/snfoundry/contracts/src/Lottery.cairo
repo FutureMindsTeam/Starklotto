@@ -43,7 +43,7 @@ trait ILottery<TContractState> {
     //=======================================================================================
     //set functions
     fn Initialize(ref self: TContractState, ticketPrice: u256, accumulatedPrize: u256);
-    fn BuyTicket(ref self: TContractState, drawId: u64, numbers: Array<u16>);
+    fn BuyTicket(ref self: TContractState, drawId: u64, numbers: Array<u16>, quantity:u8);
     fn DrawNumbers(ref self: TContractState, drawId: u64);
     fn ClaimPrize(ref self: TContractState, drawId: u64, ticketId: felt252);
     fn CheckMatches(
@@ -224,7 +224,8 @@ mod Lottery {
 
         //=======================================================================================
         //OK
-        fn BuyTicket(ref self: ContractState, drawId: u64, numbers: Array<u16>) {
+        fn BuyTicket(ref self: ContractState, drawId: u64, numbers: Array<u16>,quantity:u8) {
+            assert(quntity <= 10, 'can only buy 10');
             assert(self.ValidateNumbers(@numbers), 'Invalid numbers');
             let draw = self.draws.entry(drawId).read();
             assert(draw.isActive, 'Draw is not active');
@@ -440,7 +441,7 @@ mod Lottery {
         //OK
         fn CreateNewDraw(ref self: ContractState, accumulatedPrize: u256) {
             // Validate that the accumulated prize is not negative
-            assert(accumulatedPrize >= 0, 'Invalid accumulated prize: cannot be negative');
+            // assert(accumulatedPrize >= 0, 'Invalid accumulated prize: cannot be negative');
             
             let drawId = self.currentDrawId.read() + 1;
             let previousAmount = self.accumulatedPrize.read();
