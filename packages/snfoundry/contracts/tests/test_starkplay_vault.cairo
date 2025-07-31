@@ -857,7 +857,22 @@ fn test_event_parameters_validation() {
     let events = spy.get_events();
 
     // Verify that events are emitted
-    assert(events.events.len() >= 2, 'Should emit at least 2 events');
+    assert(events.events.len() >= 5, 'Should emit at least 5 events');
+
+    // Validate FeeCollected event at index 2
+    let (_, first_event) = events.events.at(2);
+
+    // Verify FeeCollected event has the expected structure
+    // The event should have keys for user and amount, and data for accumulatedFee
+    assert(first_event.keys.len() >= 2, 'FeeCollected keys');
+    assert(first_event.data.len() >= 1, 'FeeCollected data');
+
+    // Validate StarkPlayMinted event at index 5
+    let (_, second_event) = events.events.at(5);
+
+    // Verify StarkPlayMinted event has the expected structure
+    // The event should have keys for user and amount
+    assert(second_event.keys.len() >= 2, 'StarkPlayMinted keys');
 
     // Verify that the transaction was successful and state changed
     assert(vault.get_accumulated_fee() > 0, 'Fee should be accumulated');
@@ -885,8 +900,23 @@ fn test_event_emission_order() {
     let events = spy.get_events();
 
     // Verify that events are emitted in the correct order
-    // The buySTRKP function should emit FeeCollected first, then StarkPlayMinted
-    assert(events.events.len() >= 2, 'Should emit 2 events in order');
+    // The buySTRKP function should emit events in this order:
+    // 1. ERC20 Transfer events (from user to vault)
+    // 2. FeeCollected event (index 2)
+    // 3. StarkPlayMinted event (index 5)
+    assert(events.events.len() >= 5, 'Should emit 5 events');
+
+    // Verify FeeCollected event comes before StarkPlayMinted
+    let (_, fee_collected_event) = events.events.at(2);
+    let (_, starkplay_minted_event) = events.events.at(5);
+
+    // Verify events have the expected structure for their types
+    // FeeCollected should have keys for user and amount, and data for accumulatedFee
+    assert(fee_collected_event.keys.len() >= 2, 'FeeCollected keys');
+    assert(fee_collected_event.data.len() >= 1, 'FeeCollected data');
+
+    // StarkPlayMinted should have keys for user and amount
+    assert(starkplay_minted_event.keys.len() >= 2, 'StarkPlayMinted keys');
 
     // Verify that the transaction was successful
     assert(vault.get_accumulated_fee() > 0, 'Fee should be accumulated');
@@ -918,8 +948,14 @@ fn test_multiple_events_successive_transactions() {
 
     let events = spy.get_events();
 
-    // Verify that at least 6 events are emitted (3 transactions * 2 events each)
-    assert(events.events.len() >= 6, 'Should emit at least 6 events');
+    // Each buySTRKP transaction emits 5 events:
+    // 1. ERC20 Transfer (from user to vault)
+    // 2. ERC20 Transfer (from vault to user - if any)
+    // 3. FeeCollected event
+    // 4. ERC20 Mint event (for StarkPlay token)
+    // 5. StarkPlayMinted event
+    // Total: 3 transactions * 5 events = 15 events minimum
+    assert(events.events.len() >= 15, 'Should emit at least 15 events');
 
     // Verify that the accumulated fee matches expectations
     let expected_fee_per_tx = get_expected_fee_amount(PURCHASE_AMOUNT(), INITIAL_FEE_PERCENTAGE());
