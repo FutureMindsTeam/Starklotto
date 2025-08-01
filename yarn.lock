@@ -3942,7 +3942,7 @@ __metadata:
     "@types/react-copy-to-clipboard": ^5.0.4
     "@types/react-dom": latest
     "@vitejs/plugin-react": ^4.3.4
-    "@vitest/coverage-istanbul": ^2.1.1
+    "@vitest/coverage-istanbul": ^3.2.4
     "@vitest/coverage-v8": ^2.1.1
     abi-wan-kanabi: ^2.2.2
     autoprefixer: ^10.0.1
@@ -5645,12 +5645,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vitest/coverage-istanbul@npm:^2.1.1":
-  version: 2.1.9
-  resolution: "@vitest/coverage-istanbul@npm:2.1.9"
+"@vitest/coverage-istanbul@npm:^3.2.4":
+  version: 3.2.4
+  resolution: "@vitest/coverage-istanbul@npm:3.2.4"
   dependencies:
     "@istanbuljs/schema": ^0.1.3
-    debug: ^4.3.7
+    debug: ^4.4.1
     istanbul-lib-coverage: ^3.2.2
     istanbul-lib-instrument: ^6.0.3
     istanbul-lib-report: ^3.0.1
@@ -5658,10 +5658,10 @@ __metadata:
     istanbul-reports: ^3.1.7
     magicast: ^0.3.5
     test-exclude: ^7.0.1
-    tinyrainbow: ^1.2.0
+    tinyrainbow: ^2.0.0
   peerDependencies:
-    vitest: 2.1.9
-  checksum: b41a0b7f9eb9a6cd285e09b53df0aaf46d7a13e7268fac99157ff2f45dab4a5560313893361e502a01b8d983b56e5b79255583688b53a28afe46f5952c54255d
+    vitest: 3.2.4
+  checksum: 29c4d0d159b3c5cbd1a8647a1caa160b99f76c467a3cc595e871451a2e33de95eceb3d27e2baeb0d02647aeffc290dfb02522bb4cb108eca7187d3e41832597d
   languageName: node
   linkType: hard
 
