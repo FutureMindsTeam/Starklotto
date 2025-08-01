@@ -57,7 +57,7 @@
     "react-hot-toast": "^2.4.1",
     "react-i18next": "^15.5.3",
     "recharts": "^2.15.3",
-    "starknet": "^7.1.0",
+    "starknet": "^7.6.4",
     "tailwind-merge": "^3.0.2",
     "type-fest": "^4.6.0",
     "usehooks-ts": "^2.13.0",

@@ -3974,7 +3974,7 @@ __metadata:
     react-i18next: ^15.5.3
     recharts: ^2.15.3
     shx: ^0.4.0
-    starknet: ^7.1.0
+    starknet: ^7.6.4
     tailwind-merge: ^3.0.2
     tailwindcss: ^3.3.0
     type-fest: ^4.6.0
@@ -4008,7 +4008,7 @@ __metadata:
     globals: ^15.8.0
     prettier: ^2.8.8
     shx: ^0.4.0
-    starknet: ^7.1.0
+    starknet: ^7.6.4
     toml: ^3.0.0
     ts-node: ^10.9.2
     tslib: ^2.6.2
@@ -13150,9 +13150,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"starknet@npm:^7.1.0":
-  version: 7.6.2
-  resolution: "starknet@npm:7.6.2"
+"starknet@npm:^7.6.4":
+  version: 7.6.4
+  resolution: "starknet@npm:7.6.4"
   dependencies:
     "@noble/curves": 1.7.0
     "@noble/hashes": 1.6.0
@@ -13164,7 +13164,7 @@ __metadata:
     lossless-json: ^4.0.1
     pako: ^2.0.4
     ts-mixer: ^6.0.3
-  checksum: f2d194dc0c68976df3efa1155dc60b3aabbc6bae4af5d7cbd215cf285315b2e1eab698a90249fa978619071dab11f58074dfd5ae1aaa49dbee94e4c7971f9a5e
+  checksum: a7c6de5ee93d77a4cc6bc7c7a7f882193ddce4279c4e94b0d7861403fedded243ff1c147685e0fea03e52b77198fa45cc950ce504149dd9e141a56cc19cdbca2
   languageName: node
   linkType: hard
 
