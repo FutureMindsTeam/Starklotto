@@ -651,7 +651,9 @@ fn test_withdraw_general_fees_insufficient_vault_balance() {
 
     store(
         vault.contract_address, // storage owner
-        selector!("accumulatedFee"), // field marking the start of the memory chunk being written to
+        selector!(
+            "accumulatedFee",
+        ), // field marking the start of the memory chunk being written to
         array![5000].span() // array of felts to write
     );
 
@@ -792,22 +794,23 @@ fn test_total_starkplay_minted_updates() {
             .try_into()
             .unwrap(),
     };
-    
-    setup_user_balance(strk_token, USER1(), LARGE_AMOUNT() + 200000000000000000000_u256, vault.contract_address);
-    
+
+    setup_user_balance(
+        strk_token, USER1(), LARGE_AMOUNT() + 200000000000000000000_u256, vault.contract_address,
+    );
+
     assert(vault.get_total_starkplay_minted() == 0, 'Initial minted should be 0');
-    
 
     let amount1 = LARGE_AMOUNT();
     let expected_minted1 = amount1 - (amount1 * INITIAL_FEE_PERCENTAGE().into()) / 10000;
-    
+
     vault.buySTRKP(USER1(), amount1);
     assert(vault.get_total_starkplay_minted() == expected_minted1, 'First minting incorrect');
-    
-    let amount2 = 200000000000000000000_u256; 
+
+    let amount2 = 200000000000000000000_u256;
     let expected_minted2 = amount2 - (amount2 * INITIAL_FEE_PERCENTAGE().into()) / 10000;
     let expected_total = expected_minted1 + expected_minted2;
-    
+
     vault.buySTRKP(USER1(), amount2);
     assert(vault.get_total_starkplay_minted() == expected_total, 'Total minted incorrect');
 }
@@ -820,19 +823,20 @@ fn test_total_strk_stored_updates() {
             .try_into()
             .unwrap(),
     };
-    
-    setup_user_balance(strk_token, USER1(), LARGE_AMOUNT() + 500000000000000000000_u256, vault.contract_address);
-    
+
+    setup_user_balance(
+        strk_token, USER1(), LARGE_AMOUNT() + 500000000000000000000_u256, vault.contract_address,
+    );
+
     assert(vault.get_total_strk_stored() == 0, 'Initial stored should be 0');
-    
+
     let amount1 = 100000000000000000000_u256;
     vault.buySTRKP(USER1(), amount1);
     assert(vault.get_total_strk_stored() == amount1, 'First storage incorrect');
-    
 
     let amount2 = 200000000000000000000_u256;
     let expected_total = amount1 + amount2;
-    
+
     vault.buySTRKP(USER1(), amount2);
     assert(vault.get_total_strk_stored() == expected_total, 'Total stored incorrect');
 }
@@ -845,24 +849,24 @@ fn test_counter_consistency() {
             .try_into()
             .unwrap(),
     };
-    
-   setup_user_balance(strk_token, USER1(), LARGE_AMOUNT() + 500000000000000000000_u256, vault.contract_address);
-    
+
+    setup_user_balance(
+        strk_token, USER1(), LARGE_AMOUNT() + 500000000000000000000_u256, vault.contract_address,
+    );
+
     let amounts = array![
-        100000000000000000000_u256,
-        250000000000000000000_u256,  
-        75000000000000000000_u256  
+        100000000000000000000_u256, 250000000000000000000_u256, 75000000000000000000_u256,
     ];
-    
+
     let mut i = 0;
     while i != amounts.len() {
         let amount = *amounts.at(i);
         vault.buySTRKP(USER1(), amount);
-        
+
         let total_stored = vault.get_total_strk_stored();
-        let total_minted = vault.get_total_starkplay_minted(); 
+        let total_minted = vault.get_total_starkplay_minted();
         let accumulated_fee = vault.get_accumulated_fee();
-        
+
         assert(total_stored == total_minted + accumulated_fee, 'Counter consistency failed');
         i += 1;
     }
@@ -876,32 +880,41 @@ fn test_counters_multiple_users() {
             .try_into()
             .unwrap(),
     };
-    
-    setup_user_balance(strk_token, USER1(), LARGE_AMOUNT() + 500000000000000000000_u256, vault.contract_address);
-    setup_user_balance(strk_token, USER2(), LARGE_AMOUNT() + 500000000000000000000_u256, vault.contract_address);
-    setup_user_balance(strk_token, USER3(), LARGE_AMOUNT() + 500000000000000000000_u256, vault.contract_address);
+
+    setup_user_balance(
+        strk_token, USER1(), LARGE_AMOUNT() + 500000000000000000000_u256, vault.contract_address,
+    );
+    setup_user_balance(
+        strk_token, USER2(), LARGE_AMOUNT() + 500000000000000000000_u256, vault.contract_address,
+    );
+    setup_user_balance(
+        strk_token, USER3(), LARGE_AMOUNT() + 500000000000000000000_u256, vault.contract_address,
+    );
 
     let users = array![USER1(), USER2(), USER3()];
     let purchase_amount = PURCHASE_AMOUNT();
-    
+
     let mut expected_total_stored = 0;
     let mut expected_total_minted = 0;
     let mut expected_total_fee = 0;
-    
+
     let mut i = 0;
     while i != users.len() {
         let user = *users.at(i);
-        
+
         vault.buySTRKP(user, purchase_amount);
-        
+
         expected_total_stored += purchase_amount;
-        expected_total_minted += purchase_amount - (purchase_amount * INITIAL_FEE_PERCENTAGE().into()) / 10000;
+        expected_total_minted += purchase_amount
+            - (purchase_amount * INITIAL_FEE_PERCENTAGE().into()) / 10000;
         expected_total_fee += (purchase_amount * INITIAL_FEE_PERCENTAGE().into()) / 10000;
 
         assert(vault.get_total_strk_stored() == expected_total_stored, 'Global stored incorrect');
-        assert(vault.get_total_starkplay_minted() == expected_total_minted, 'Global minted incorrect');
+        assert(
+            vault.get_total_starkplay_minted() == expected_total_minted, 'Global minted incorrect',
+        );
         assert(vault.get_accumulated_fee() == expected_total_fee, 'Global fee incorrect');
-        
+
         i += 1;
     }
 }

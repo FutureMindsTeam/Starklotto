@@ -549,11 +549,21 @@ pub mod StarkPlayVault {
 
         fn setFeePercentagePrizesConverted(ref self: ContractState, new_fee: u64) -> bool {
             assert_only_owner(@self);
-            assert(new_fee >= self.feePercentagePrizesConvertedMin.read(), 'Fee percentage is too low');
-            assert(new_fee <= self.feePercentagePrizesConvertedMax.read(), 'Fee percentage is too high');
+            assert(
+                new_fee >= self.feePercentagePrizesConvertedMin.read(), 'Fee percentage is too low',
+            );
+            assert(
+                new_fee <= self.feePercentagePrizesConvertedMax.read(),
+                'Fee percentage is too high',
+            );
             let old_fee = self.feePercentagePrizesConverted.read();
             self.feePercentagePrizesConverted.write(new_fee);
-            self.emit(SetFeePercentagePrizesConverted { owner: get_caller_address(), old_fee, new_fee });
+            self
+                .emit(
+                    SetFeePercentagePrizesConverted {
+                        owner: get_caller_address(), old_fee, new_fee,
+                    },
+                );
             true
         }
         fn get_mint_limit(self: @ContractState) -> u256 {
