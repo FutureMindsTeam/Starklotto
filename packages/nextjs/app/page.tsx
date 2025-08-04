@@ -27,6 +27,7 @@ export default function Home() {
   const heroY = useTransform(scrollY, [0, 500], [0, -100]);
   const featuresY = useTransform(scrollY, [0, 1000], [0, -50]);
   const howItWorksY = useTransform(scrollY, [0, 1500], [0, -50]);
+  const faqY = useTransform(scrollY, [0, 2000], [0, -50]);
   const prizeDistributionY = useTransform(scrollY, [0, 2000], [0, -50]);
   const faqY = useTransform(scrollY, [0, 2500], [0, -50]);
 

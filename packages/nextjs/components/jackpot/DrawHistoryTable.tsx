@@ -1,5 +1,6 @@
 "use client";
 
+import { ChevronUp, ChevronDown, Trophy } from "lucide-react";
 import { ChevronUp, ChevronDown, Trophy, Eye, Crown } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -25,8 +26,10 @@ type SortField =
   | "startingPot"
   | "endingPot"
   | "change"
+  | "winner";
   | "winner"
   | "actions";
+
 type SortDirection = "asc" | "desc";
 
 interface DrawHistoryTableProps {
@@ -52,6 +55,7 @@ export default function DrawHistoryTable({
   itemsPerPage,
   totalItems,
 }: DrawHistoryTableProps) {
+
   const router = useRouter();
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -62,6 +66,13 @@ export default function DrawHistoryTable({
     }).format(amount);
   };
 
+  const columns = [
+    { key: "drawNumber" as SortField, label: "Draw #" },
+    { key: "date" as SortField, label: "Date" },
+    { key: "startingPot" as SortField, label: "Starting Pot" },
+    { key: "endingPot" as SortField, label: "Ending Pot" },
+    { key: "change" as SortField, label: "% Change" },
+    { key: "winner" as SortField, label: "Winner" },
   const columns: Column[] = [
     { key: "drawNumber", label: "Draw #" },
     { key: "date", label: "Date" },
@@ -93,6 +104,27 @@ export default function DrawHistoryTable({
               {columns.map((column) => (
                 <th
                   key={column.key}
+                  className="px-6 py-4 text-left text-sm font-medium text-gray-300 cursor-pointer hover:text-white transition-colors bg-[#090712]"
+                  onClick={() => onSort(column.key)}
+                >
+                  <div className="flex items-center gap-2">
+                    {column.label}
+                    <div className="flex flex-col">
+                      <ChevronUp
+                        className={`w-3 h-3 ${
+                          sortField === column.key && sortDirection === "asc"
+                            ? "text-blue-400"
+                            : "text-gray-500"
+                        }`}
+                      />
+                      <ChevronDown
+                        className={`w-3 h-3 -mt-1 ${
+                          sortField === column.key && sortDirection === "desc"
+                            ? "text-blue-400"
+                            : "text-gray-500"
+                        }`}
+                      />
+                    </div>
                   className={`px-6 py-4 text-left text-sm font-medium text-gray-300 bg-[#090712] ${
                     column.sortable !== false
                       ? "cursor-pointer hover:text-white transition-colors"
@@ -132,6 +164,7 @@ export default function DrawHistoryTable({
               <tr
                 key={row.drawNumber}
                 className={`border-b border-gray-700 hover:bg-gray-700/30 transition-colors ${
+                  index % 2 === 0 ? "bg-gray-800/30" : "bg-gray-800/10"
                   row.winner.includes("Jackpot Winner")
                     ? "bg-gradient-to-r from-yellow-900/20 to-orange-900/20 border-l-4 border-yellow-400"
                     : index % 2 === 0
@@ -159,6 +192,8 @@ export default function DrawHistoryTable({
                     {row.change.toFixed(1)}%
                   </span>
                 </td>
+                <td className="px-6 py-4 text-sm text-gray-400">
+                  {row.winner}
                 <td className="px-6 py-4 text-sm">
                   <span
                     className={`${

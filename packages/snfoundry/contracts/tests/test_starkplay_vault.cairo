@@ -1,3 +1,9 @@
+use contracts::StarkPlayERC20::{IMintableDispatcher, IMintableDispatcherTrait};
+use contracts::StarkPlayVault::{IStarkPlayVaultDispatcher, IStarkPlayVaultDispatcherTrait};
+use openzeppelin_token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
+use snforge_std::{
+    ContractClassTrait, DeclareResultTrait, declare, start_cheat_caller_address,
+    stop_cheat_caller_address,
 use contracts::StarkPlayERC20::{
     IBurnableDispatcher, IBurnableDispatcherTrait, IMintableDispatcher, IMintableDispatcherTrait,
     IPrizeTokenDispatcher, IPrizeTokenDispatcherTrait,
@@ -103,6 +109,13 @@ fn deploy_vault_contract() -> (IStarkPlayVaultDispatcher, IMintableDispatcher) {
     let (vault_address, _) = vault_contract.deploy(@vault_constructor_calldata).unwrap();
     let vault = IStarkPlayVaultDispatcher { contract_address: vault_address };
 
+    // Grant MINTER_ROLE to the vault so it can mint StarkPlay tokens
+    start_cheat_caller_address(starkplay_token.contract_address, OWNER());
+    starkplay_token.grant_minter_role(vault_address);
+    // Set a large allowance for the vault to mint tokens
+    starkplay_token
+        .set_minter_allowance(vault_address, 1000000000000000000000000_u256); // 1M tokens
+
     // Grant MINTER_ROLE and BURNER_ROLE to the vault so it can mint and burn StarkPlay tokens
     start_cheat_caller_address(starkplay_token.contract_address, OWNER());
     starkplay_token.grant_minter_role(vault_address);
@@ -112,6 +125,7 @@ fn deploy_vault_contract() -> (IStarkPlayVaultDispatcher, IMintableDispatcher) {
         .set_minter_allowance(vault_address, 1000000000000000000000000_u256); // 1M tokens
     starkplay_token_burn
         .set_burner_allowance(vault_address, 1000000000000000000000000_u256); // 1M tokens
+
     stop_cheat_caller_address(starkplay_token.contract_address);
 
     (vault, starkplay_token)
@@ -133,6 +147,7 @@ fn setup_user_balance(
     // Set up allowance so vault can transfer STRK tokens from user
     let erc20_dispatcher = IERC20Dispatcher { contract_address: token.contract_address };
     start_cheat_caller_address(token.contract_address, user);
+    erc20_dispatcher.approve(vault_address, amount);
     erc20_dispatcher.approve(vault_address, amount * 10); // Approve 10x the amount to be safe
     stop_cheat_caller_address(token.contract_address);
 }
@@ -535,6 +550,7 @@ fn test_complete_flow_integration() {
     // Verify fee percentage remains consistent
     assert(vault.GetFeePercentage() == INITIAL_FEE_PERCENTAGE(), 'percentage changed');
 }
+
 
 // ============================================================================================
 // WITHDRAWAL TESTS FOR ADMINISTRATOR FEE FUNCTIONS

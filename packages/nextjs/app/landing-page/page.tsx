@@ -1,4 +1,9 @@
 "use client";
+
+import StarkLottoLanding from "~~/components/landing-page/Layout";
+
+export default function Page() {
+  return <StarkLottoLanding />;
 import { useEffect } from "react";
 import Header from "~~/components/landing-page/layout/hader";
 import HeroSection from "~~/components/landing-page/sections/HeroSection";

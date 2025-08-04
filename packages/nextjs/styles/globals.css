@@ -297,21 +297,40 @@ tr:last-child td {
   justify-content: center;
   z-index: 50;
 }
+
 .modal-content {
   position: relative;
   margin: 1.75rem auto;
   pointer-events: auto;
   border-radius: 8px;
 }
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(0);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-modalFadeIn {
+  animation: modalFadeIn 0.2s ease-out forwards;
+}
+
 .modal-backdrop {
   background-color: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(4px);
   opacity: 0;
   transition: opacity 0.2s ease-in-out;
 }
+
 .modal-backdrop-enter {
   opacity: 1;
 }
+
 
 #__next {
   position: relative;

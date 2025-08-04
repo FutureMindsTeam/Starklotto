@@ -1,3 +1,5 @@
+use contracts::StarkPlayVault::{IStarkPlayVaultDispatcher, IStarkPlayVaultDispatcherTrait};
+use openzeppelin_testing::declare_and_deploy;
 use contracts::StarkPlayERC20::{
     IBurnableDispatcher, IBurnableDispatcherTrait, IMintableDispatcher, IMintableDispatcherTrait,
     IPrizeTokenDispatcher, IPrizeTokenDispatcherTrait,
@@ -31,6 +33,12 @@ const Initial_Fee_Percentage: u64 = 50; // 50 basis points = 0.5%
 const BASIS_POINTS_DENOMINATOR: u256 = 10000_u256; // 10000 basis points = 100%
 
 //helper function
+fn owner_address() -> ContractAddress {
+    OWNER
+}
+
+fn user_address() -> ContractAddress {
+    USER
 fn owner_address_Sepolia() -> ContractAddress {
     OWNER
 }
@@ -69,6 +77,8 @@ fn deploy_contract_lottery() -> ContractAddress {
     let contract_lotery: ContractAddress = OWNER.try_into().unwrap();
     contract_lotery
 }
+
+fn deploy_contract_starkplayvault() -> ContractAddress {
 fn deploy_mock_strk_token() -> IMintableDispatcher {
     // Deploy the mock STRK token at the exact constant address that the vault expects
     let target_address: ContractAddress =
@@ -220,6 +230,9 @@ fn get_fee_amount(feePercentage: u64, amount: u256) -> u256 {
     feeAmount
 }
 
+#[test]
+fn test_get_fee_percentage_deploy() {
+    let vault_address = deploy_contract_starkplayvault();
 
 fn setup_user_balance(
     token: IMintableDispatcher, user: ContractAddress, amount: u256, vault_address: ContractAddress,
@@ -258,6 +271,7 @@ fn test_get_fee_percentage_deploy() {
 
 #[test]
 fn test_calculate_fee_buy_numbers() {
+    let vault_address = deploy_contract_starkplayvault();
     let vault_address = deploy_contract_starkplayvault_with_Lottery();
 
     let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
@@ -290,6 +304,7 @@ fn test_calculate_fee_buy_numbers() {
 #[should_panic(expected: 'Fee percentage is too low')]
 #[test]
 fn test_set_fee_zero_like_negative_value() {
+    let vault_address = deploy_contract_starkplayvault();
     let vault_address = deploy_contract_starkplayvault_with_Lottery();
     let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
     let new_fee = 0_u64;
@@ -300,6 +315,7 @@ fn test_set_fee_zero_like_negative_value() {
 #[should_panic(expected: 'Fee percentage is too high')]
 #[test]
 fn test_set_fee_max_like_501() {
+    let vault_address = deploy_contract_starkplayvault();
     let vault_address = deploy_contract_starkplayvault_with_Lottery();
     let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
     let new_fee = 501_u64;
@@ -308,6 +324,7 @@ fn test_set_fee_max_like_501() {
 
 #[test]
 fn test_set_fee_deploy_contract() {
+    let vault_address = deploy_contract_starkplayvault();
     let vault_address = deploy_contract_starkplayvault_with_Lottery();
     let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
     let fee_percentage = 50_u64;
@@ -317,6 +334,7 @@ fn test_set_fee_deploy_contract() {
 
 #[test]
 fn test_set_fee_min() {
+    let vault_address = deploy_contract_starkplayvault();
     let vault_address = deploy_contract_starkplayvault_with_Lottery();
     let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
     let new_fee = 10_u64;
@@ -327,6 +345,7 @@ fn test_set_fee_min() {
 
 #[test]
 fn test_set_fee_max() {
+    let vault_address = deploy_contract_starkplayvault();
     let vault_address = deploy_contract_starkplayvault_with_Lottery();
     let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
     let new_fee = 500_u64;
@@ -337,6 +356,7 @@ fn test_set_fee_max() {
 
 #[test]
 fn test_set_fee_middle() {
+    let vault_address = deploy_contract_starkplayvault();
     let vault_address = deploy_contract_starkplayvault_with_Lottery();
     let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
     let new_fee = 250_u64;
@@ -347,6 +367,7 @@ fn test_set_fee_middle() {
 
 #[test]
 fn test_event_set_fee_percentage() {
+    let vault_address = deploy_contract_starkplayvault();
     let vault_address = deploy_contract_starkplayvault_with_Lottery();
     let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
     let new_fee = 250_u64;
@@ -682,7 +703,6 @@ fn test_mixed_amounts_accumulation() {
 
     assert!(running_total == total_accumulated, "Running total should match total accumulated");
 }
-
 
 
 //--------------TEST ISSUE-VAULT-HACK14-001------------------------------
@@ -1358,3 +1378,4 @@ fn test_1_1_conversion_consistency() {
     assert(total_starkplay_minted2 == expected_total_starkplay, 'Tot mint should be consistent');
     assert(total_starkplay_minted2 == 4975000000000000000_u256, 'Tot mint should be 4.975');
 }
+
