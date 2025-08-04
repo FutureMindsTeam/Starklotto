@@ -15,7 +15,7 @@ pub fn USER() -> ContractAddress {
     'USER'.try_into().unwrap()
 }
 
-fn deploy_lottery() -> ContractAddress {
+pub fn deploy_lottery() -> ContractAddress {
     let mut constructor_calldata = array![];
     OWNER().serialize(ref constructor_calldata);
 
