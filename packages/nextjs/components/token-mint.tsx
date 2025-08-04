@@ -9,6 +9,7 @@ import { Toast } from "./ui/toast";
 import { StarkInput } from "./scaffold-stark/Input/StarkInput";
 import useScaffoldStrkBalance from "~~/hooks/scaffold-stark/useScaffoldStrkBalance";
 import { useAccount } from "~~/hooks/useAccount";
+import { useStarkPlayFee } from "~~/hooks/useStarkPlayFee";
 
 interface TokenMintProps {
   onSuccess?: (amount: number, mintedAmount: number, message: string) => void;
@@ -38,14 +39,18 @@ export default function TokenMint({
   });
   const strkBalance = Number(formatted) || 0;
 
+  const { feePercent, isLoading: feeLoading, error: feeError } = useStarkPlayFee();
+
+
   // Parámetros de minteo
   const mintRate = 1; // 1:1 mint rate
-  const feePercentage = 0.5; // 0.5% fee
+  /* const feePercentage = 0.5; */ // 0.5% fee
 
   // Valores calculados
   const numericAmount = Number.parseFloat(inputAmount) || 0;
-  const feeAmount = numericAmount * (feePercentage / 100);
+  const feeAmount = feePercent ? numericAmount * (feePercent / 100) : 0;
   const mintedAmount = numericAmount * mintRate - feeAmount;
+
 
   // Validación de input
   const isValidInput =
@@ -235,8 +240,12 @@ export default function TokenMint({
 
             <div className="flex items-center justify-between text-sm">
               <div className="flex items-center gap-1">
-                <span>Mint Fee (0.5%)</span>
-                <Tooltip content="A 0.5% fee is applied to all mint operations">
+                <span>Mint Fee ({feePercent ?? "--"}%)</span>
+
+                <Tooltip content={`A ${feePercent ?? "--"}% fee is applied to all mint operations`}>
+                  {feeLoading && <p className="text-xs text-gray-500">Loading commission...</p>}
+                  {feeError && <p className="text-xs text-red-500">Error obtaining commission</p>}
+
                   <Info size={20} className="text-purple-400" />
                 </Tooltip>
               </div>
@@ -258,11 +267,10 @@ export default function TokenMint({
 
         <div className="p-4">
           <button
-            className={`w-full py-6 text-lg font-medium rounded-lg transition-colors ${
-              isValidInput
-                ? "bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800"
-                : "bg-gray-700 text-gray-400 cursor-not-allowed"
-            }`}
+            className={`w-full py-6 text-lg font-medium rounded-lg transition-colors ${isValidInput
+              ? "bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800"
+              : "bg-gray-700 text-gray-400 cursor-not-allowed"
+              }`}
             disabled={!isValidInput || isProcessing}
             onClick={handleMint}
           >
