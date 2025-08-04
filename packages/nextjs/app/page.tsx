@@ -12,6 +12,7 @@ import {
   HowItWorksSection,
   FAQSection,
   CTASection,
+  PrizeDistributionSection,
 } from "~~/components/sections";
 import { useAccount } from "@starknet-react/core";
 import { useRouter } from "next/navigation";
@@ -27,6 +28,8 @@ export default function Home() {
   const featuresY = useTransform(scrollY, [0, 1000], [0, -50]);
   const howItWorksY = useTransform(scrollY, [0, 1500], [0, -50]);
   const faqY = useTransform(scrollY, [0, 2000], [0, -50]);
+  const prizeDistributionY = useTransform(scrollY, [0, 2000], [0, -50]);
+  const faqY = useTransform(scrollY, [0, 2500], [0, -50]);
 
   const [showSecurityInfo, setShowSecurityInfo] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -88,6 +91,7 @@ export default function Home() {
 
         <FeaturesSection featuresY={featuresY} />
         <HowItWorksSection howItWorksY={howItWorksY} />
+        <PrizeDistributionSection prizeDistributionY={prizeDistributionY} />
         <FAQSection faqY={faqY} />
         <CTASection onBuyTicket={handleBuyTicket} />
       </main>

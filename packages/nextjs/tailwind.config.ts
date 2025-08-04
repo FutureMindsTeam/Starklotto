@@ -45,7 +45,13 @@ const config: Config = {
 export default config;
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+import daisyui from "daisyui";
+
+const config: Config = {
   content: [
+    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx}",
     "./components/**/*.{js,ts,jsx,tsx}",
     "./utils/**/*.{js,ts,jsx,tsx}",
@@ -217,38 +223,40 @@ module.exports = {
       },
     ],
   },
+  darkMode: "class",
   theme: {
     extend: {
+      fontFamily: {
+        display: ["'Clash Display'", "sans-serif"],
+        body: ["Inter", "sans-serif"],
+      },
+      backgroundImage: {
+        "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
+        "gradient-conic":
+          "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
+      },
       boxShadow: {
-        center: "0 0 12px -2px rgb(0 0 0 / 0.05)",
+        center: "0 0 12px -2px rgb(0 0 0 / 5%)",
         glow: "0 0 15px rgba(123,97,255,0.2)",
       },
       animation: {
         "pulse-fast": "pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite",
         float: "float 3s ease-in-out infinite",
+        shimmer: "shimmer 2s linear infinite",
       },
       keyframes: {
         float: {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-10px)" },
         },
-      },
-      backgroundImage: {
-        "gradient-light":
-          "linear-gradient(270deg, #A7ECFF -17.42%, #E8B6FF 109.05%)",
-        "gradient-dark":
-          "var(--gradient, linear-gradient(90deg, #42D2F1 0%, #B248DD 100%))",
-        "gradient-vertical":
-          "linear-gradient(180deg, #3457D1 0%, #8A45FC 100%)",
-        "gradient-icon":
-          "var(--gradient, linear-gradient(90deg, #42D2F1 0%, #B248DD 100%))",
-        "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
-        "gradient-conic":
-          "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
+        shimmer: {
+          "0%": { backgroundPosition: "200% 0" },
+          "100%": { backgroundPosition: "-200% 0" },
+        },
       },
       colors: {
         menu: {
-          default: "#64748B",
+          DEFAULT: "#64748B",
           hover: "#8B45FC",
           active: "#794BFC",
         },
@@ -256,6 +264,19 @@ module.exports = {
           DEFAULT: "#000000",
           light: "#1A1A1A",
         },
+
+        starkMagenta: {
+          DEFAULT: "#B34BFF",
+          light: "#D49CFF",
+        },
+        starkPurple: "#8A26A6",
+        starkYellow: {
+          DEFAULT: "#FFD600",
+          light: "#FFF451",
+        },
+
+        heroDark: "#101326",
+        heroDarker: "#181240",
       },
       transitionProperty: {
         colors: "color, background-color, fill, stroke",
@@ -266,4 +287,84 @@ module.exports = {
       },
     },
   },
+  plugins: [daisyui],
+  daisyui: {
+    themes: [
+      {
+        light: {
+          primary: "#794BFC",
+          "primary-content": "#2A3655",
+          secondary: "#F4F1FD",
+          "secondary-content": "#7800FF",
+          accent: "#1FB2A6",
+          "accent-content": "#212638",
+          neutral: "#191D24",
+          "neutral-content": "#ffffff",
+          "base-100": "#ffffff",
+          "base-200": "#f4f8ff",
+          "base-300": "#ffffff",
+          "base-content": "#212638",
+          info: "#93BBFB",
+          success: "#34EEB6",
+          warning: "#FFCF72",
+          error: "#FF8863",
+          ".bg-gradient-modal": {
+            "background-image":
+              "linear-gradient(270deg, #A7ECFF -17.42%, #E8B6FF 109.05%)",
+          },
+          ".bg-modal": {
+            background:
+              "linear-gradient(270deg, #ece9fb -17.42%, #e3f4fd 109.05%)",
+          },
+          ".modal-border": {
+            border: "1px solid #5c4fe5",
+          },
+          ".bg-gradient-nav": {
+            background: "#000000",
+          },
+          ".bg-main": {
+            background: "#FFFFFF",
+          },
+        },
+      },
+      {
+        dark: {
+          primary: "#212638",
+          "primary-content": "#DAE8FF",
+          secondary: "#8b45fd",
+          "secondary-content": "#0FF",
+          accent: "#4969A6",
+          "accent-content": "#F9FBFF",
+          neutral: "#F9FBFF",
+          "neutral-content": "#385183",
+          "base-100": "#1C223B",
+          "base-200": "#2A3655",
+          "base-300": "#141a30",
+          "base-content": "#F9FBFF",
+          info: "#385183",
+          success: "#34EEB6",
+          warning: "#FFCF72",
+          error: "#FF8863",
+          ".bg-gradient-modal": {
+            background: "#385183",
+          },
+          ".bg-modal": {
+            background: "linear-gradient(90deg, #2B2243 0%, #253751 100%)",
+          },
+          ".modal-border": {
+            border: "1px solid #4f4ab7",
+          },
+          ".bg-gradient-nav": {
+            "background-image":
+              "var(--gradient, linear-gradient(90deg, #42D2F1 0%, #B248DD 100%))",
+          },
+          ".bg-main": {
+            background: "#141A31",
+          },
+        },
+      },
+    ],
+  },
 };
+
+export default config;

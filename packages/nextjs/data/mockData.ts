@@ -78,6 +78,7 @@ export const drawHistoryData = [
     endingPot: 371864,
     change: 15.8,
     winner: "No winner",
+    winner: "1 Jackpot Winner",
     fullDate: "2025-05-28",
   },
   {
@@ -96,6 +97,7 @@ export const drawHistoryData = [
     endingPot: 134370,
     change: 14.3,
     winner: "No winner",
+    winner: "8 Winners",
     fullDate: "2025-05-26",
   },
   {
@@ -105,6 +107,7 @@ export const drawHistoryData = [
     endingPot: 317521,
     change: 6.8,
     winner: "No winner",
+    winner: "1 Jackpot Winner",
     fullDate: "2025-05-25",
   },
   {
@@ -114,6 +117,7 @@ export const drawHistoryData = [
     endingPot: 220540,
     change: 15.3,
     winner: "No winner",
+    winner: "6 Winners",
     fullDate: "2025-05-24",
   },
   {
@@ -132,6 +136,7 @@ export const drawHistoryData = [
     endingPot: 274751,
     change: 7.0,
     winner: "No winner",
+    winner: "9 Winners",
     fullDate: "2025-05-22",
   },
   {
@@ -141,6 +146,7 @@ export const drawHistoryData = [
     endingPot: 257367,
     change: 11.1,
     winner: "No winner",
+    winner: "11 Winners",
     fullDate: "2025-05-21",
   },
   {
@@ -150,6 +156,7 @@ export const drawHistoryData = [
     endingPot: 231762,
     change: 8.5,
     winner: "No winner",
+    winner: "7 Winners",
     fullDate: "2025-05-20",
   },
   {
@@ -159,6 +166,7 @@ export const drawHistoryData = [
     endingPot: 213468,
     change: 6.7,
     winner: "No winner",
+    winner: "5 Winners",
     fullDate: "2025-05-19",
   },
 ];

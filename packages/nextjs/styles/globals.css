@@ -1,14 +1,56 @@
+/* -------------  Tailwind base / components / utilities ------------- */
 @import "tailwindcss/base";
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
+/* ------------------------  Font imports  ------------------------ */
+/* Titulares: Clash Display */
+@import url("https://api.fontshare.com/v2/css?f[]=Clash_Display@400,600,700&display=swap");
+/* Cuerpo: Inter */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+/* ------------------------  Estilos globales  ------------------------ */
 :root,
 [data-theme] {
   background: oklch(var(--b2));
 }
 
+@media (max-width: 640px) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.65;
+  }
+  50% {
+    transform: scale(1.25);
+    opacity: 0.9;
+  }
+}
+
 body {
   min-height: 100vh;
+  background-color: #121218;
+  background-image:
+    radial-gradient(
+      circle at 50% 0%,
+      rgba(242, 7, 93, 0.05) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 80% 20%,
+      rgba(138, 38, 166, 0.08) 0%,
+      transparent 40%
+    ),
+    linear-gradient(to bottom, transparent, #101326 100%);
+  background-attachment: fixed;
+  @apply overflow-y-auto overflow-x-hidden;
+  font-family: Inter, sans-serif;
 }
 
 h1,
@@ -17,6 +59,7 @@ h3,
 h4 {
   margin-bottom: 0.5rem;
   line-height: 1;
+  font-family: "Clash Display", sans-serif;
 }
 
 p {
@@ -29,12 +72,8 @@ p {
 
 html {
   @apply overflow-y-scroll overflow-x-hidden;
-  -ms-overflow-style: none; /* para IE y Edge */
-  scrollbar-width: none; /* para Firefox */
-}
-
-body {
-  @apply overflow-y-auto overflow-x-hidden;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 .modal {
@@ -72,6 +111,24 @@ body {
   right: 0;
 }
 
+.circle-gradient-dark {
+  position: absolute;
+  top: 0;
+  left: 60px;
+  border-radius: 630px;
+  background: #7353d2;
+  filter: blur(229px);
+}
+
+.circle-gradient-blue-dark {
+  border-radius: 630px;
+  background: #0ea9ff;
+  filter: blur(250px);
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
 .border-gradient {
   border: 1px solid #5c4fe5;
 }
@@ -83,6 +140,7 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
+/* -------------------  Component utilities (Tailwind @layer)  ------------------- */
 .custom::after {
   position: absolute !important;
   display: block !important;
@@ -115,32 +173,11 @@ body {
     clip-path: polygon(100% 0, 0 0, 100% 100%);
     z-index: 10;
   }
-}
 
-.circle-gradient-dark {
-  position: absolute;
-  top: 0;
-  left: 60px;
-  border-radius: 630px;
-  background: #7353d2;
-  filter: blur(229px);
-}
-
-.circle-gradient-blue-dark {
-  border-radius: 630px;
-  background: #0ea9ff;
-  filter: blur(250px);
-  position: absolute;
-  top: 0;
-  right: 0;
-}
-
-@layer utilities {
   .trapeze {
     width: 84px;
     height: 6px;
     clip-path: polygon(10% 100%, 90% 100%, 100% 0, 0 0);
-    position: relative;
     background-color: #5c4fe5;
     position: absolute;
     top: -1px;
@@ -157,7 +194,6 @@ body {
   }
 }
 
-/* Play Page */
 @keyframes fade-in {
   0% {
     opacity: 0;
@@ -168,7 +204,6 @@ body {
     transform: translateY(0);
   }
 }
-
 .animate-fade-in {
   animation: fade-in 1.5s ease-out forwards;
 }
@@ -181,12 +216,10 @@ body {
     transform: translateX(-50%);
   }
 }
-
 .animate-carousel {
   animation: carousel 30s linear infinite;
   animation-play-state: running;
 }
-
 .animate-carousel:hover {
   animation-play-state: paused;
 }
@@ -194,7 +227,6 @@ body {
 ::-webkit-scrollbar {
   display: none;
 }
-/*  Prizes Page */
 
 table {
   width: 100%;
@@ -205,13 +237,11 @@ table {
   overflow: hidden;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
 }
-
 th,
 td {
   padding: 1rem;
   text-align: center;
 }
-
 th {
   background-color: rgba(255, 255, 255, 0.1);
   color: #fff;
@@ -220,22 +250,18 @@ th {
   letter-spacing: 0.05em;
   border-bottom: 2px solid rgba(255, 255, 255, 0.2);
 }
-
 tr:nth-child(even) {
   background-color: rgba(255, 255, 255, 0.05);
 }
-
 tr:hover {
   background-color: rgba(255, 255, 255, 0.15);
   transform: scale(1.01);
   transition: all 0.2s ease-in-out;
 }
-
 td {
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   color: #e0e0e0;
 }
-
 tr:last-child td {
   border-bottom: none;
 }
@@ -245,6 +271,20 @@ tr:last-child td {
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(0);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+.animate-modalFadeIn {
+  animation: modalFadeIn 0.2s ease-out forwards;
 }
 
 .modal-overlay {
@@ -291,8 +331,54 @@ tr:last-child td {
   opacity: 1;
 }
 
-/* Asegurarse que el modal siempre esté por encima de todo */
+
 #__next {
   position: relative;
   z-index: 1;
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translateY(-20px);
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 0.3;
+  }
+}
+.particle {
+  position: absolute;
+  border-radius: 9999px;
+  background-color: rgba(255, 255, 255, 0.07);
+  pointer-events: none;
+  filter: blur(1px);
+}
+#particle-container {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.dot-glow {
+  @apply bg-gradient-to-br from-[#F2075D] to-[#8A26A6];
+  box-shadow:
+    0 0 6px rgba(242, 7, 93, 0.8),
+    0 0 12px rgba(138, 38, 166, 0.6);
+  animation: pulse 4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.35);
+  }
 }
