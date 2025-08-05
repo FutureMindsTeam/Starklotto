@@ -3,6 +3,7 @@ use openzeppelin_token::erc20::interface::{
     IERC20Dispatcher, IERC20DispatcherTrait, IERC20MetadataDispatcher,
     IERC20MetadataDispatcherTrait,
 };
+use snforge_std::cheatcodes::test_address;
 use snforge_std::{
     CheatSpan, ContractClassTrait, DeclareResultTrait, EventSpyTrait, cheat_caller_address, declare,
     spy_events,
@@ -21,8 +22,20 @@ fn mint(target: ContractAddress, amount: u256) {
     assert(new_balance - previous_balance == amount, 'MINTING FAILED');
 }
 
+const STRK_PLAY_CONTRACT_ADDRESS: felt252 =
+    0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d;
+
 #[test]
-#[ignore]
+#[fork("SEPOLIA_LATEST")]
+fn test_address_should_mint() {
+    let token = IERC20Dispatcher {
+        contract_address: STRK_PLAY_CONTRACT_ADDRESS.try_into().unwrap(),
+    };
+    let test_user = 'test user'.try_into().unwrap();
+}
+
+#[test]
+#[fork("SEPOLIA_LATEST")]
 fn test_buy_ticket_flow_success() {
     let lottery = deploy_lottery();
     let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery };

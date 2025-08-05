@@ -92,9 +92,7 @@ fn deploy_mock_strk_token() -> IMintableDispatcher {
     // Grant MINTER_ROLE to OWNER so we can mint tokens
     strk_token.grant_minter_role(owner_address());
     strk_token
-        .set_minter_allowance(
-            owner_address(), EXCEEDS_MINT_LIMIT().into() * 10,
-        ); // Large allowance
+        .set_minter_allowance(owner_address(), EXCEEDS_MINT_LIMIT().into() * 10); // Large allowance
 
     strk_token.mint(USER1(), EXCEEDS_MINT_LIMIT().into() * 3); // Mint plenty for testing
 
@@ -684,7 +682,6 @@ fn test_mixed_amounts_accumulation() {
 }
 
 
-
 //--------------TEST ISSUE-VAULT-HACK14-001------------------------------
 
 //test set fee percentage prizes converted
@@ -723,7 +720,6 @@ fn test_get_fee_percentage_prizes_in_constructor() {
     let fee_percentage = vault_dispatcher.GetFeePercentagePrizesConverted();
     assert!(fee_percentage == 300_u64, "Fee percentage should be 3%");
 }
-
 
 
 //Test for ISSUE-TEST-CU01-003
@@ -1059,7 +1055,6 @@ fn test_decimal_precision_edge_cases() {
     // Verify the contract is still functional after edge case operations
     let final_fee_percentage = vault_dispatcher.GetFeePercentage();
     assert(final_fee_percentage == initial_fee_percentage, 'fee percentage changed');
-
 }
 
 

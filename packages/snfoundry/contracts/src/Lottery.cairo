@@ -225,13 +225,20 @@ pub mod Lottery {
         ownable: OwnableComponent::Storage,
         // Reentrancy guard
         reentrancy_guard: bool,
+        stark_play_token: ContractAddress,
+        vault: ContractAddress,
     }
     //=======================================================================================
     //constructor
     //=======================================================================================
 
     #[constructor]
-    fn constructor(ref self: ContractState, owner: ContractAddress) {
+    fn constructor(
+        ref self: ContractState,
+        owner: ContractAddress,
+        stark_play_token: ContractAddress,
+        vault: ContractAddress,
+    ) {
         self.ownable.initializer(owner);
         self.fixedPrize4Matches.write(4000000000000000000);
         self.fixedPrize3Matches.write(3000000000000000000);
@@ -239,6 +246,8 @@ pub mod Lottery {
         self.currentDrawId.write(0);
         self.currentTicketId.write(0);
         self.reentrancy_guard.write(false);
+        self.stark_play_token.write(stark_play_token);
+        self.vault.write(vault);
     }
     //=======================================================================================
     //impl
@@ -272,17 +281,14 @@ pub mod Lottery {
 
             // Process the payment
             let token_dispatcher = IERC20Dispatcher {
-                contract_address: STRK_PLAY_CONTRACT_ADDRESS.try_into().unwrap(),
+                contract_address: self.stark_play_token.read(),
             };
 
             // --- Balance validation and deduction logic ---
             // 1. Get ticket price and user/vault addresses
             let ticket_price = self.ticketPrice.read();
             let user = get_caller_address();
-            let vault_address: ContractAddress = STRK_PLAY_VAULT_CONTRACT_ADDRESS
-                .try_into()
-                .unwrap();
-
+            let vault_address = self.vault.read();
             // 2. Validate user has sufficient token balance
             let user_balance = token_dispatcher.balance_of(user);
             assert(user_balance > 0, 'No token balance');
@@ -765,7 +771,8 @@ pub mod Lottery {
         let mut usedNumbers: Felt252Dict<bool> = Default::default();
 
         while count != 5 {
-            let number = (blockTimestamp + count) % (MaxNumber.into() - MinNumber.into() + 1) + MinNumber.into();
+            let number = (blockTimestamp + count) % (MaxNumber.into() - MinNumber.into() + 1)
+                + MinNumber.into();
             let number_u16: u16 = number.try_into().unwrap();
 
             if usedNumbers.get(number.into()) != true {
