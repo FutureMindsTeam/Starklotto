@@ -2044,7 +2044,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@keplr-wallet/unit@npm:0.12.250, @keplr-wallet/unit@npm:^0.12.175":
+"@keplr-wallet/types@npm:0.12.259":
+  version: 0.12.259
+  resolution: "@keplr-wallet/types@npm:0.12.259"
+  dependencies:
+    long: ^4.0.0
+  peerDependencies:
+    starknet: ^7
+  checksum: 3aa5ec859d9a60f28ba956c64b6925794f5f745ad6a3fdbd76d2ada7d7210f843522d93aff993899a33375feb11d60471382bd3cc8182a7ec36b428513524748
+  languageName: node
+  linkType: hard
+
+"@keplr-wallet/unit@npm:0.12.250":
   version: 0.12.250
   resolution: "@keplr-wallet/unit@npm:0.12.250"
   dependencies:
@@ -2052,6 +2063,17 @@ __metadata:
     big-integer: ^1.6.48
     utility-types: ^3.10.0
   checksum: 41086cf26ecba59d603f4372675723838a98e587c1ac62c6f7b114b85e8f03f52ef12325f0cd4502a157b3a2fce3285805ec1f37d2e9ebea286cb703c91bb7ea
+  languageName: node
+  linkType: hard
+
+"@keplr-wallet/unit@npm:^0.12.259":
+  version: 0.12.259
+  resolution: "@keplr-wallet/unit@npm:0.12.259"
+  dependencies:
+    "@keplr-wallet/types": 0.12.259
+    big-integer: ^1.6.48
+    utility-types: ^3.10.0
+  checksum: e3f306a1368272527782087b865b7e757d84628b34b9f598e9b90750911d8ea7450a0dcffb1a61d6c928d5591ef8283d04cb41e96c723fc2d41ef25da9b818e4
   languageName: node
   linkType: hard
 
@@ -3924,7 +3946,7 @@ __metadata:
     "@keplr-wallet/cosmos": ^0.12.175
     "@keplr-wallet/provider-extension": ^0.12.175
     "@keplr-wallet/types": ^0.12.175
-    "@keplr-wallet/unit": ^0.12.175
+    "@keplr-wallet/unit": ^0.12.259
     "@radix-ui/react-icons": 1.3.0
     "@radix-ui/themes": 2.0.3
     "@scaffold-stark/stark-burner": ^0.1.9
