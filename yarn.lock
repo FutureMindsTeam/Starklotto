@@ -2013,16 +2013,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@keplr-wallet/provider-extension@npm:^0.12.175":
-  version: 0.12.250
-  resolution: "@keplr-wallet/provider-extension@npm:0.12.250"
+"@keplr-wallet/provider-extension@npm:^0.12.262":
+  version: 0.12.262
+  resolution: "@keplr-wallet/provider-extension@npm:0.12.262"
   dependencies:
-    "@keplr-wallet/types": 0.12.250
+    "@keplr-wallet/types": 0.12.262
     deepmerge: ^4.2.2
     long: ^4.0.0
+    uuid: ^11.1.0
   peerDependencies:
     starknet: ^7
-  checksum: a5fdaeebf5dc923c3bffd4a13f8dc9c3ad573f5af13df4a96609f691002662567b4ecdf048a95993b439bd5eb3db8c654090549d42f8aae5821d3f4c44839fec
+  checksum: 7405c3e6349ed7426d3aaccc50a787c76b5c89db2dd9b28109bd5912a5ad159bb0e1e7f53abeb9bc25b22f21d391d21f51e6b962711349509dea30db462a3cfa
   languageName: node
   linkType: hard
 
@@ -2041,6 +2042,17 @@ __metadata:
   peerDependencies:
     starknet: ^7
   checksum: 80f4710fbe8d7988aba8c9f24a18104b59fe4969af9ffb4ebdb2fde084df5818d486bc55ae2ec509975e7231376ec3aa8cd8931bef7c4b817f6579bf728e7b32
+  languageName: node
+  linkType: hard
+
+"@keplr-wallet/types@npm:0.12.262":
+  version: 0.12.262
+  resolution: "@keplr-wallet/types@npm:0.12.262"
+  dependencies:
+    long: ^4.0.0
+  peerDependencies:
+    starknet: ^7
+  checksum: 6f4ba29f808333b42554b30bc1d6f4a757991470dc8a2fdd4e7dcd8b007a47a8c7c10fc854823482e84e460b7c740ce9477e705924c21d773821c29a5570dc66
   languageName: node
   linkType: hard
 
@@ -3922,7 +3934,7 @@ __metadata:
     "@jridgewell/gen-mapping": ^0.3.12
     "@keplr-wallet/common": ^0.12.175
     "@keplr-wallet/cosmos": ^0.12.175
-    "@keplr-wallet/provider-extension": ^0.12.175
+    "@keplr-wallet/provider-extension": ^0.12.262
     "@keplr-wallet/types": ^0.12.175
     "@keplr-wallet/unit": ^0.12.175
     "@radix-ui/react-icons": 1.3.0
@@ -14465,6 +14477,15 @@ __metadata:
   version: 3.11.0
   resolution: "utility-types@npm:3.11.0"
   checksum: 35a4866927bbea5d037726744028d05c6e37772ded2aabaca21480ce9380185436aef586ead525e327c7f3c640b1a3287769a12ef269c7b165a2ddd50ea6ad61
+  languageName: node
+  linkType: hard
+
+"uuid@npm:^11.1.0":
+  version: 11.1.0
+  resolution: "uuid@npm:11.1.0"
+  bin:
+    uuid: dist/esm/bin/uuid
+  checksum: 840f19758543c4631e58a29439e51b5b669d5f34b4dd2700b6a1d15c5708c7a6e0c3e2c8c4a2eae761a3a7caa7e9884d00c86c02622ba91137bd3deade6b4b4a
   languageName: node
   linkType: hard
 
