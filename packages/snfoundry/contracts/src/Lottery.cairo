@@ -100,11 +100,6 @@ pub trait ILottery<TContractState> {
     fn GetJackpotEntryIsActive(self: @TContractState, drawId: u64) -> bool;
     fn GetJackpotEntryIsCompleted(self: @TContractState, drawId: u64) -> bool;
     //=======================================================================================
-
-    // owner
-    fn update_vault_and_token(
-        ref self: TContractState, token: Option<ContractAddress>, vault: Option<ContractAddress>,
-    );
 }
 
 //=======================================================================================
@@ -229,8 +224,6 @@ pub mod Lottery {
         ownable: OwnableComponent::Storage,
         // Reentrancy guard
         reentrancy_guard: bool,
-        stark_play_token: ContractAddress,
-        vault: ContractAddress,
     }
     //=======================================================================================
     //constructor
@@ -697,18 +690,6 @@ pub mod Lottery {
         fn GetJackpotEntryIsCompleted(self: @ContractState, drawId: u64) -> bool {
             let draw = self.draws.entry(drawId).read();
             !draw.isActive
-        }
-
-        fn update_vault_and_token(
-            ref self: ContractState, token: Option<ContractAddress>, vault: Option<ContractAddress>,
-        ) {
-            self.ownable.assert_only_owner();
-            if let Option::Some(val) = token {
-                self.stark_play_token.write(val);
-            }
-            if let Option::Some(val) = vault {
-                self.vault.write(val);
-            }
         }
     }
 
