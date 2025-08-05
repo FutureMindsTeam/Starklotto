@@ -101,6 +101,8 @@ pub trait ILottery<TContractState> {
     fn GetJackpotEntryIsCompleted(self: @TContractState, drawId: u64) -> bool;
     //=======================================================================================
 
+    // owner
+    fn setup_vault_and_token(self: )
 }
 
 //=======================================================================================
@@ -236,8 +238,6 @@ pub mod Lottery {
     fn constructor(
         ref self: ContractState,
         owner: ContractAddress,
-        stark_play_token: ContractAddress,
-        vault: ContractAddress,
     ) {
         self.ownable.initializer(owner);
         self.fixedPrize4Matches.write(4000000000000000000);
@@ -246,8 +246,6 @@ pub mod Lottery {
         self.currentDrawId.write(0);
         self.currentTicketId.write(0);
         self.reentrancy_guard.write(false);
-        self.stark_play_token.write(stark_play_token);
-        self.vault.write(vault);
     }
     //=======================================================================================
     //impl
