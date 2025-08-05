@@ -15,7 +15,7 @@
     "verify": "ts-node scripts-ts/verify-contracts.ts"
   },
   "devDependencies": {
-    "@types/node": "^20",
+    "@types/node": "^24",
     "@types/prettier": "^2",
     "@types/yargs": "^17.0.32",
     "globals": "^15.8.0",
