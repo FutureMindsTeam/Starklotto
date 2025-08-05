@@ -4004,7 +4004,7 @@ __metadata:
     "@types/prettier": ^2
     "@types/yargs": ^17.0.32
     dotenv: ^16.3.1
-    envfile: ^6.18.0
+    envfile: ^7.1.0
     globals: ^15.8.0
     prettier: ^2.8.8
     shx: ^0.4.0
@@ -7782,12 +7782,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"envfile@npm:^6.18.0":
-  version: 6.22.0
-  resolution: "envfile@npm:6.22.0"
+"envfile@npm:^7.1.0":
+  version: 7.1.0
+  resolution: "envfile@npm:7.1.0"
   bin:
     envfile: bin.cjs
-  checksum: 95e29f82be5f1365bf3dc3b324576c5df69fbc9b28238cf876cff08124307693e49cf0d9df6ba8735d42b35b6f59ec01fda28435b839319652e9618a1430aa6b
+  checksum: 63c6e49c19763dafbac6c3665907aed04215f617a4679c12bf006d2de7f3b93431fe46764c52288ca783e01c77ea31de44c563ca16a1d783bd668a9bb31f034e
   languageName: node
   linkType: hard
 
