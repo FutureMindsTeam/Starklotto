@@ -143,7 +143,7 @@ pub mod Lottery {
 
     #[event]
     #[derive(Drop, starknet::Event)]
-    enum Event {
+    pub enum Event {
         #[flat]
         OwnableEvent: OwnableComponent::Event,
         TicketPurchased: TicketPurchased,
@@ -154,15 +154,15 @@ pub mod Lottery {
     }
 
     #[derive(Drop, starknet::Event)]
-    struct TicketPurchased {
+    pub struct TicketPurchased {
         #[key]
-        drawId: u64,
+        pub drawId: u64,
         #[key]
-        player: ContractAddress,
-        ticketId: felt252,
-        numbers: Array<u16>,
-        ticketCount: u32,
-        timestamp: u64,
+        pub player: ContractAddress,
+        pub ticketId: felt252,
+        pub numbers: Array<u16>,
+        pub ticketCount: u32,
+        pub timestamp: u64,
     }
 
     #[derive(Drop, starknet::Event)]
