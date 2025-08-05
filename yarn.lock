@@ -2198,10 +2198,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@next/swc-linux-x64-musl@npm:^15.3.1":
-  version: 15.3.4
-  resolution: "@next/swc-linux-x64-musl@npm:15.3.4"
-  checksum: 25f1e5d6ae7cf83d0249512ea728ef83918c52726ff54a95ac7d659c9bfc975ee3cea18f1bd1398edd947e6fcf830528617413bbb50486f8b29852f315359d65
+"@next/swc-linux-x64-musl@npm:^15.4.5":
+  version: 15.4.5
+  resolution: "@next/swc-linux-x64-musl@npm:15.4.5"
+  checksum: 777deea5c6cc56ea9cf044f1f4cfd9b64c2f084446d04fb147962319a71b9d415fb8ddd226240cd6598a04ee0e3d99e044464eecc5938005d37a33ce9b8ba9fc
   conditions: os=linux & cpu=x64 & libc=musl
   languageName: node
   linkType: hard
@@ -13112,7 +13112,7 @@ __metadata:
   dependencies:
     "@heroicons/react": ^2.2.0
     "@next/swc-linux-x64-gnu": ^15.3.1
-    "@next/swc-linux-x64-musl": ^15.3.1
+    "@next/swc-linux-x64-musl": ^15.4.5
     daisyui: ^4.7.3
     framer-motion: ^12.5.0
     husky: ^9.0.11
