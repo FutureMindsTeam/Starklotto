@@ -89,8 +89,8 @@ fn test_buy_ticket_should_panic_on_draw_not_active() {
     let some_player = test_address();
     feign_buy_ticket(lottery, USER());
     mint(some_player, DEFAULT_PRICE, lottery.contract_address, erc);
-    feign_buy_ticket(lottery, some_player);
-
     cheat_caller_address(lottery.contract_address, OWNER(), CheatSpan::TargetCalls(1));
     lottery.DrawNumbers(DEFAULT_ID);
+
+    feign_buy_ticket(lottery, some_player);
 }
