@@ -102,7 +102,9 @@ pub trait ILottery<TContractState> {
     //=======================================================================================
 
     // owner
-    fn setup_vault_and_token(self: )
+    fn update_vault_and_token(
+        ref self: TContractState, token: Option<ContractAddress>, vault: Option<ContractAddress>,
+    );
 }
 
 //=======================================================================================
@@ -235,10 +237,7 @@ pub mod Lottery {
     //=======================================================================================
 
     #[constructor]
-    fn constructor(
-        ref self: ContractState,
-        owner: ContractAddress,
-    ) {
+    fn constructor(ref self: ContractState, owner: ContractAddress) {
         self.ownable.initializer(owner);
         self.fixedPrize4Matches.write(4000000000000000000);
         self.fixedPrize3Matches.write(3000000000000000000);
@@ -279,14 +278,16 @@ pub mod Lottery {
 
             // Process the payment
             let token_dispatcher = IERC20Dispatcher {
-                contract_address: self.stark_play_token.read(),
+                contract_address: STRK_PLAY_CONTRACT_ADDRESS.try_into().unwrap(),
             };
 
             // --- Balance validation and deduction logic ---
             // 1. Get ticket price and user/vault addresses
             let ticket_price = self.ticketPrice.read();
             let user = get_caller_address();
-            let vault_address = self.vault.read();
+            let vault_address: ContractAddress = STRK_PLAY_VAULT_CONTRACT_ADDRESS
+                .try_into()
+                .unwrap();
             // 2. Validate user has sufficient token balance
             let user_balance = token_dispatcher.balance_of(user);
             assert(user_balance > 0, 'No token balance');
@@ -696,6 +697,18 @@ pub mod Lottery {
         fn GetJackpotEntryIsCompleted(self: @ContractState, drawId: u64) -> bool {
             let draw = self.draws.entry(drawId).read();
             !draw.isActive
+        }
+
+        fn update_vault_and_token(
+            ref self: ContractState, token: Option<ContractAddress>, vault: Option<ContractAddress>,
+        ) {
+            self.ownable.assert_only_owner();
+            if let Option::Some(val) = token {
+                self.stark_play_token.write(val);
+            }
+            if let Option::Some(val) = vault {
+                self.vault.write(val);
+            }
         }
     }
 

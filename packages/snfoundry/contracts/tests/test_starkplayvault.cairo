@@ -8,6 +8,7 @@ use snforge_std::{
 };
 use starknet::storage::StorableStoragePointerReadAccess;
 use starknet::{ContractAddress, contract_address_const};
+use crate::test_erc20::{ADMIN, deploy_token};
 
 // setting up the contract state
 fn CONTRACT_STATE() -> StarkPlayVault::ContractState {
@@ -26,7 +27,7 @@ fn init_vault() -> StarkPlayVault::ContractState {
 }
 
 // Helper function to deploy the contract and return dispatcher and address
-fn deploy_vault() -> IStarkPlayVaultDispatcher {
+pub fn deploy_vault() -> IStarkPlayVaultDispatcher {
     let contract = declare("StarkPlayVault").unwrap().contract_class();
     let owner = contract_address_const::<5>(); // 
     let token = contract_address_const::<'token'>(); //
