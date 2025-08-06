@@ -20,7 +20,8 @@ fn init_vault() -> StarkPlayVault::ContractState {
         ref state,
         contract_address_const::<5>(), // owner
         contract_address_const::<'token'>(), // starkplay_token
-        10000 // fee percentage
+        10000, // fee percentage
+        contract_address_const::<10>(),  // treasury address
     );
     state
 }
