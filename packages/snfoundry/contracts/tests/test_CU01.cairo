@@ -1388,19 +1388,6 @@ fn deploy_starkplay_erc20_for_auth_tests() -> (IMintableDispatcher, IBurnableDis
 // ============================================================================================
 
 #[test]
-fn test_owner_has_admin_role() {
-    let (token, _) = deploy_starkplay_erc20_for_auth_tests();
-
-    // Verify that the owner can grant roles (which means they have DEFAULT_ADMIN_ROLE)
-    start_cheat_caller_address(token.contract_address, owner_address());
-
-    // This should not panic if owner has admin role
-    token.grant_minter_role(user_address());
-
-    stop_cheat_caller_address(token.contract_address);
-}
-
-#[test]
 fn test_owner_can_grant_minter_role() {
     let (token, _) = deploy_starkplay_erc20_for_auth_tests();
 
