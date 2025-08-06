@@ -34,7 +34,7 @@
     "@starknet-react/core": "^3.7.2",
     "@starknet-react/typescript-config": "0.0.2",
     "abi-wan-kanabi": "^2.2.2",
-    "blo": "^1.1.1",
+    "blo": "^2.0.0",
     "clsx": "^2.1.1",
     "daisyui": "^4.7.3",
     "ethers": "^6.12.0",

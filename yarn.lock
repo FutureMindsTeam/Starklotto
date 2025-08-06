@@ -3946,7 +3946,7 @@ __metadata:
     "@vitest/coverage-v8": ^2.1.1
     abi-wan-kanabi: ^2.2.2
     autoprefixer: ^10.0.1
-    blo: ^1.1.1
+    blo: ^2.0.0
     clsx: ^2.1.1
     daisyui: ^4.7.3
     eslint: ^8
@@ -6613,10 +6613,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"blo@npm:^1.1.1":
-  version: 1.2.0
-  resolution: "blo@npm:1.2.0"
-  checksum: be7dc5f3047d538c0038b469c309440e5b7de872ee811cc7ca97005b6b534a01dbf461150145f2f09524aeda6923197ea31290fbe9865cb8cb32152b3caf3dc7
+"blo@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "blo@npm:2.0.0"
+  checksum: adf68169bcb5fa408029805a933b28e9fa72f0b276daef335a9ff3a90ba8e1fcd7ab55907c43c64410a1741fc1badc6721bd7609f16f0e52c586dd98db99785f
   languageName: node
   linkType: hard
 
