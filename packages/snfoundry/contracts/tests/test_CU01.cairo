@@ -27,6 +27,10 @@ const USER: ContractAddress = 0x02dA5254690b46B9C4059C25366D1778839BE63C142d899F
     .try_into()
     .unwrap();
 
+const TREASURY: ContractAddress = 0x4661696c656420746f20646573657269616c697a6520706172616d202334
+    .try_into()
+    .unwrap();
+
 const Initial_Fee_Percentage: u64 = 50; // 50 basis points = 0.5%
 const BASIS_POINTS_DENOMINATOR: u256 = 10000_u256; // 10000 basis points = 100%
 
@@ -69,6 +73,12 @@ fn deploy_contract_lottery() -> ContractAddress {
     let contract_lotery: ContractAddress = OWNER.try_into().unwrap();
     contract_lotery
 }
+
+fn treasury_address() -> ContractAddress {
+    let treasury: ContractAddress = TREASURY.try_into().unwrap();
+    treasury
+}
+
 fn deploy_mock_strk_token() -> IMintableDispatcher {
     // Deploy the mock STRK token at the exact constant address that the vault expects
     let target_address: ContractAddress =
@@ -181,18 +191,22 @@ fn deploy_vault_contract_with_fee(
     (vault, starkplay_token)
 }
 
+
+
 //this function is used to deploy the vault with the lottery contract
 //someone deleted the lottery contract from the vault constructor
 fn deploy_contract_starkplayvault_with_Lottery() -> ContractAddress {
     let contract_lotery = deploy_contract_lottery();
     let owner = owner_address();
-    let initial_fee = 50_u64; // 50 basis points = 0.5%
+    let initial_fee = 50_u64; 
+    let treasury_address = treasury_address(); 
+    
     let mut calldata = array![];
-
-    calldata.append_serde(contract_lotery);
-    calldata.append_serde(owner);
-    calldata.append_serde(initial_fee);
-
+    calldata.append_serde(owner);              // param #0: owner
+    calldata.append_serde(contract_lotery);    // param #1: starkPlayToken  
+    calldata.append_serde(initial_fee);        // param #2: feePercentage
+    calldata.append_serde(treasury_address);   // param #3: treasury_address
+    
     declare_and_deploy("StarkPlayVault", calldata)
 }
 
@@ -242,7 +256,6 @@ fn setup_user_balance(
     erc20_dispatcher.approve(vault_address, amount);
     stop_cheat_caller_address(token.contract_address);
 }
-
 
 #[test]
 fn test_get_fee_percentage_deploy() {
