@@ -3985,7 +3985,7 @@ __metadata:
     vitest: ^3.0.9
     webpack: ^5.97.1
     webpack-cli: ^6.0.1
-    zod: ^3.24.1
+    zod: ^4.0.15
     zustand: ^4.1.2
   peerDependencies:
     "@babel/core": ^7.0.0
@@ -15472,10 +15472,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:^3.22.4, zod@npm:^3.24.1":
+"zod@npm:^3.22.4":
   version: 3.25.72
   resolution: "zod@npm:3.25.72"
   checksum: 3c393baa4cb1b5d4b3aa28107ddf387ea55bf3ed9cab6e542b717b1eac19b4b4bafdbe6c182b47a61b53e058cc19df22f8febb27c9a96af1ecc830c53f1abd77
+  languageName: node
+  linkType: hard
+
+"zod@npm:^4.0.15":
+  version: 4.0.15
+  resolution: "zod@npm:4.0.15"
+  checksum: d52dc9df5ed7a066ac7c3193862a2aa2c48ee45476403a88ab1dbab8f701cec1c50d9309cf550e4531722737d0b2fad853c8e9a52a928c13a3cbb9ee3498daba
   languageName: node
   linkType: hard
 
