@@ -544,40 +544,59 @@ fn test_data_integrity_across_operations() {
     lottery_dispatcher.BuyTicket(1, numbers);
     stop_cheat_caller_address(lottery_address);
 
-    // Get initial ticket info
+    // Verify ticket was purchased successfully
+    let ticket_count = lottery_dispatcher.GetUserTicketsCount(1, user1_address());
+    assert(ticket_count == 1, 'Ticket should be purchased');
+
+    // Get ticket IDs and verify they exist
     let ticket_ids = lottery_dispatcher.GetUserTicketIds(1, user1_address());
+    assert(ticket_ids.len() == 1, 'Should have exactly 1 ticket');
+    
+    // Get ticket ID and verify it's valid
     let ticket_id = *ticket_ids.at(0);
+    
+    // Verify ticket data exists and is accessible
     let initial_player = lottery_dispatcher.GetTicketPlayer(1, ticket_id);
     let initial_numbers = lottery_dispatcher.GetTicketNumbers(1, ticket_id);
     let initial_claimed = lottery_dispatcher.GetTicketClaimed(1, ticket_id);
     let initial_draw_id = lottery_dispatcher.GetTicketDrawId(1, ticket_id);
     let initial_timestamp = lottery_dispatcher.GetTicketTimestamp(1, ticket_id);
 
+    // Verify initial data is correct
+    assert(initial_player == user1_address(), 'Player should be user1');
+    assert(initial_numbers.len() == 5, 'Should have 5 numbers');
+    assert(initial_claimed == false, 'Should not be claimed initially');
+    assert(initial_draw_id == 1_u64, 'Should be for draw 1');
+
     // Complete the draw
     start_cheat_caller_address(lottery_address, owner_address());
     lottery_dispatcher.DrawNumbers(1);
     stop_cheat_caller_address(lottery_address);
 
-    // Verify ticket data integrity is maintained
+    // Verify ticket data integrity is maintained after draw
     let player_after_draw = lottery_dispatcher.GetTicketPlayer(1, ticket_id);
     let numbers_after_draw = lottery_dispatcher.GetTicketNumbers(1, ticket_id);
     let claimed_after_draw = lottery_dispatcher.GetTicketClaimed(1, ticket_id);
     let draw_id_after_draw = lottery_dispatcher.GetTicketDrawId(1, ticket_id);
     let timestamp_after_draw = lottery_dispatcher.GetTicketTimestamp(1, ticket_id);
 
-    assert(player_after_draw == initial_player, 'Player should remain the same');
+    // Verify data integrity
+    assert(player_after_draw == initial_player, 'Player same');
+    assert(numbers_after_draw.len() == initial_numbers.len(), 'Numbers len same');
+    assert(draw_id_after_draw == initial_draw_id, 'DrawId same');
+    assert(timestamp_after_draw == initial_timestamp, 'Timestamp same');
+    assert(claimed_after_draw == initial_claimed, 'Claimed same');
+
+    // Verify individual numbers remain the same
     assert(*numbers_after_draw.at(0) == *initial_numbers.at(0), 'Number1 should remain the same');
     assert(*numbers_after_draw.at(1) == *initial_numbers.at(1), 'Number2 should remain the same');
     assert(*numbers_after_draw.at(2) == *initial_numbers.at(2), 'Number3 should remain the same');
     assert(*numbers_after_draw.at(3) == *initial_numbers.at(3), 'Number4 should remain the same');
     assert(*numbers_after_draw.at(4) == *initial_numbers.at(4), 'Number5 should remain the same');
-    assert(draw_id_after_draw == initial_draw_id, 'DrawId should remain the same');
-    assert(timestamp_after_draw == initial_timestamp, 'Timestamp same');
-    assert(claimed_after_draw == initial_claimed, 'Claimed status same');
 
     // Verify user ticket count remains the same
     let ticket_count_after_draw = lottery_dispatcher.GetUserTicketsCount(1, user1_address());
-    assert(ticket_count_after_draw == 1, 'Ticket count remains 1');
+    assert(ticket_count_after_draw == 1, 'Ticket count should remain 1');
 
     // Verify ticket IDs remain the same
     let ticket_ids_after_draw = lottery_dispatcher.GetUserTicketIds(1, user1_address());
