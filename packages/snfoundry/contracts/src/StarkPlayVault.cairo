@@ -36,6 +36,8 @@ pub trait IStarkPlayVault<TContractState> {
     fn withdrawPrizeConversionFees(
         ref self: TContractState, recipient: ContractAddress, amount: u256,
     ) -> bool;
+    //test functions
+    fn update_total_strk_stored(ref self: TContractState, amount: u256);
 }
 
 
@@ -136,6 +138,10 @@ pub mod StarkPlayVault {
         self.paused.write(false);
         self.reentrant_locked.write(false);
         self.accumulatedPrizeConversionFees.write(0);
+        self.totalSTRKStored.write(0); // Initialize totalSTRKStored to 0
+        self.totalStarkPlayMinted.write(0); // Initialize totalStarkPlayMinted to 0
+        self.totalStarkPlayBurned.write(0); // Initialize totalStarkPlayBurned to 0
+        self.accumulatedFee.write(0); // Initialize accumulatedFee to 0
         //set fee percentage
         self.feePercentage.write(feePercentage);
         self.feePercentageMin.write(10); //0.1%
@@ -414,15 +420,22 @@ pub mod StarkPlayVault {
     fn convert_to_strk(ref self: ContractState, amount: u256) {
         _assert_not_paused(@self);
         let user = get_caller_address();
+        
+        // Validate amount is greater than 0
+        assert(amount > 0, 'Amount must be greater than 0');
+        
+        // Validate burnLimit
+        assert(amount <= self.burnLimit.read(), 'Exceeds burn limit per tx');
+        
         let starkPlayContractAddress = self.starkPlayToken.read();
         let prizeDispatcher = IPrizeTokenDispatcher { contract_address: starkPlayContractAddress };
         let prize_balance = prizeDispatcher.get_prize_balance(user);
         assert(prize_balance >= amount, 'Insufficient prize tokens');
 
-        // Calculate conversion fee
-        let prizeFeeAmount = (amount * self.feePercentage.read().into()) / BASIS_POINTS_DENOMINATOR;
+        // Calculate conversion fee using the correct fee percentage 
+        let prizeFeeAmount = (amount * self.feePercentagePrizesConverted.read().into()) / BASIS_POINTS_DENOMINATOR;
         let netAmount = amount - prizeFeeAmount;
-
+       
         // Burn the full amount of prize tokens from user
         let mut burnDispatcher = IBurnableDispatcher { contract_address: starkPlayContractAddress };
         burnDispatcher.burn_from(user, amount);
@@ -451,56 +464,6 @@ pub mod StarkPlayVault {
         self.totalSTRKStored.write(self.totalSTRKStored.read() - netAmount);
         self.emit(ConvertedToSTRK { user, amount: netAmount });
     }
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    //private functions
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    //fn depositSTRK(ref self: ContractState, user: ContractAddress, amount: u256) -> bool {
-    //deposit strk to vault
-    //emit event STRKDeposited
-    //return true
-
-    //in case of error al depositar el STRK
-    //return false
-    //}
-
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    //fn withdrawSTRK(address, u64): bool{
-
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    //fn setFee(ref self: ContractState, new_fee: u64) -> bool {
-    //    self.assert_only_owner();
-    //   assert(new_fee <= BASIS_POINTS_DENOMINATOR, 'Fee too high'); // Máximo 100% (10000 basis
-    //   points)
-    //   self.feePercentage.write(new_fee);
-    //    true
-    //}
-
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    //fn setFee(u64): bool{
-
-    //}
-
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    //fn  getVaultBalance(): u64{
-
-    //}
-
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    //fn  getTotalSTRKStored(): u64{
-
-    //}
-
-    //fn  getTotalStarkPlayBurned(): u64{
-
-    //}
-
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     #[abi(embed_v0)]
     impl StarkPlayVaultImpl of IStarkPlayVault<ContractState> {
@@ -518,6 +481,12 @@ pub mod StarkPlayVault {
 
         fn convert_to_strk(ref self: ContractState, amount: u256) {
             convert_to_strk(ref self, amount)
+        }
+
+        // Function to update totalSTRKStored (for testing purposes)
+        fn update_total_strk_stored(ref self: ContractState, amount: u256) {
+            self.ownable.assert_only_owner();
+            self.totalSTRKStored.write(amount);
         }
 
         fn setMintLimit(ref self: ContractState, new_limit: u256) {
