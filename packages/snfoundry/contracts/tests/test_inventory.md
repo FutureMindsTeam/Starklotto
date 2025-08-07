@@ -2,240 +2,480 @@
 
 ## Test Functions Ordered Alphabetically
 
+### test_1_1_conversion_consistency
+Tests the consistency of 1:1 conversion operations across multiple transactions.
+
 ### test_accumulated_prize_conversion_fees_getter
-Prueba la obtención de las tarifas acumuladas de conversión de premios.
+Tests the retrieval of accumulated prize conversion fees.
+
+### test_basic_balance_increment
+Tests basic balance increment functionality for user accounts.
+
+### test_basic_event_emission
+Tests basic event emission functionality in the contract.
 
 ### test_basis_points_calculation
-Prueba el cálculo de puntos base para tarifas.
+Tests the calculation of basis points for fee calculations.
+
+### test_buy_multiple_tickets_same_user
+Tests buying multiple tickets by the same user in a single transaction.
+
+### test_buy_ticket_balance_overflow_simulation
+Tests balance overflow simulation during ticket purchase operations.
+
+### test_buy_ticket_balance_updates
+Tests balance updates after successful ticket purchases.
+
+### test_buy_ticket_boundary_numbers
+Tests ticket purchase with boundary number values (minimum and maximum valid numbers).
+
+### test_buy_ticket_draw_id_negative_edge
+Tests ticket purchase with negative edge draw ID values.
+
+### test_buy_ticket_draw_id_zero_enhanced
+Tests ticket purchase with zero draw ID (enhanced validation).
+
+### test_buy_ticket_duplicate_numbers
+Tests ticket purchase with duplicate numbers in the selection.
+
+### test_buy_ticket_empty_array_enhanced
+Tests ticket purchase with empty array (enhanced validation).
+
+### test_buy_ticket_empty_numbers_array
+Tests ticket purchase with empty numbers array.
+
+### test_buy_ticket_event_content_validation
+Tests validation of event content during ticket purchase.
+
+### test_buy_ticket_event_data_consistency
+Tests consistency of event data with state changes during ticket purchase.
+
+### test_buy_ticket_event_emission
+Tests event emission during ticket purchase operations.
+
+### test_buy_ticket_event_fields_validation
+Tests validation of event fields during ticket purchase.
+
+### test_buy_ticket_event_ordering_consistency
+Tests consistency of event ordering during multiple ticket purchases.
+
+### test_buy_ticket_event_ticketpurchased_structure
+Tests the structure of TicketPurchased events during ticket purchase.
+
+### test_buy_ticket_exact_balance
+Tests ticket purchase with exact balance amount.
+
+### test_buy_ticket_insufficient_allowance
+Tests ticket purchase with insufficient token allowance.
+
+### test_buy_ticket_insufficient_balance
+Tests ticket purchase with insufficient token balance.
+
+### test_buy_ticket_inactive_draw
+Tests ticket purchase on an inactive draw.
+
+### test_buy_ticket_invalid_draw_id_out_of_range
+Tests ticket purchase with out-of-range draw ID.
+
+### test_buy_ticket_invalid_draw_id_zero
+Tests ticket purchase with zero draw ID.
+
+### test_buy_ticket_invalid_numbers_count_too_few
+Tests ticket purchase with too few numbers in the selection.
+
+### test_buy_ticket_invalid_numbers_count_too_many
+Tests ticket purchase with too many numbers in the selection.
+
+### test_buy_ticket_multiple_events_structure
+Tests structure of multiple events during ticket purchases.
+
+### test_buy_ticket_multiple_events_validation
+Tests validation of multiple events during ticket purchases.
+
+### test_buy_ticket_numbers_out_of_range
+Tests ticket purchase with numbers outside the valid range.
+
+### test_buy_ticket_numbers_with_zero
+Tests ticket purchase with zero values in the number selection.
+
+### test_buy_ticket_overflow_prevention_excessive_tickets
+Tests overflow prevention when buying excessive number of tickets.
+
+### test_buy_ticket_single_element_array
+Tests ticket purchase with single element array.
+
+### test_buy_ticket_state_updates
+Tests state updates after successful ticket purchase.
+
+### test_buy_ticket_stress_test_many_tickets
+Tests stress scenarios with many tickets purchased.
+
+### test_buy_ticket_successful_single_ticket
+Tests successful purchase of a single ticket.
+
+### test_buy_ticket_with_large_balance
+Tests ticket purchase with very large balance amounts.
+
+### test_buy_tickets_different_users
+Tests ticket purchases by different users.
+
+### test_buy_ticket_different_number_combinations
+Tests ticket purchase with different number combinations.
+
+### test_buy_ticket_zero_balance
+Tests ticket purchase with zero token balance.
 
 ### test_burn_limit_zero_value
-Prueba el establecimiento de límite de quema en valor cero.
+Tests setting burn limit to zero value.
 
 ### test_calculate_fee_buy_numbers
-Prueba el cálculo de tarifas al comprar números.
+Tests fee calculation when buying numbers.
 
 ### test_complete_flow_integration
-Prueba el flujo completo de integración del sistema.
+Tests complete integration flow of the system.
 
 ### test_concurrent_transactions_simulation
-Prueba la simulación de transacciones concurrentes.
+Tests simulation of concurrent transactions.
 
 ### test_consecutive_conversion_fee_accumulation
-Prueba la acumulación consecutiva de tarifas de conversión.
+Tests consecutive accumulation of conversion fees.
 
 ### test_contract_deployment
-Prueba el despliegue del contrato.
+Tests contract deployment functionality.
+
+### test_contract_initialization
+Tests contract initialization process.
 
 ### test_convert_1000_tokens_with_5_percent_fee
-Prueba la conversión de 1000 tokens con tarifa del 5%.
+Tests conversion of 1000 tokens with 5% fee.
+
+### test_conversion_1_1_basic
+Tests basic 1:1 conversion functionality.
+
+### test_conversion_1_1_different_amounts
+Tests 1:1 conversion with different amounts.
+
+### test_conversion_1_1_precision
+Tests precision in 1:1 conversion operations.
+
+### test_counter_consistency
+Tests consistency of counter operations.
+
+### test_counters_multiple_users
+Tests counter operations with multiple users.
+
+### test_data_integrity_multiple_users
+Tests data integrity across multiple users.
+
+### test_data_storage
+Tests data storage functionality.
+
+### test_decimal_precision
+Tests decimal precision in calculations.
 
 ### test_decimal_precision_edge_cases
-Prueba casos edge de precisión decimal en el cálculo de tarifas.
+Tests edge cases in decimal precision calculations.
 
 ### test_different_fee_percentages_accumulation
-Prueba la acumulación con diferentes porcentajes de tarifa.
+Tests accumulation with different fee percentages.
+
+### test_draw_state
+Tests draw state management.
+
+### test_event_emission
+Tests event emission functionality.
+
+### test_event_emission_order
+Tests the order of event emissions.
+
+### test_event_parameters_validation
+Tests validation of event parameters.
 
 ### test_event_set_fee_percentage
-Prueba la emisión de eventos al establecer porcentaje de tarifa.
+Tests event emission when setting fee percentage.
+
+### test_events_after_pause_unpause
+Tests events after pause and unpause operations.
+
+### test_events_in_error_cases
+Tests events in error scenarios.
+
+### test_events_with_different_users
+Tests events with different users.
+
+### test_events_with_large_amounts
+Tests events with large amounts.
+
+### test_events_with_zero_amount
+Tests events with zero amounts.
+
+### test_event_state_consistency
+Tests consistency between events and state.
 
 ### test_fee_accumulation_logic
-Prueba la lógica de acumulación de tarifas.
+Tests the logic of fee accumulation.
 
 ### test_fee_accumulation_multiple_users
-Prueba la acumulación de tarifas con múltiples usuarios.
+Tests fee accumulation with multiple users.
 
 ### test_fee_calculation_accuracy
-Prueba la precisión del cálculo de tarifas.
+Tests accuracy of fee calculations.
 
 ### test_fee_calculation_overflow_prevention
-Prueba la prevención de overflow en el cálculo de tarifas con grandes cantidades.
+Tests overflow prevention in fee calculations.
 
 ### test_fee_calculation_overflow_prevention_exceeds_limit
-Prueba la prevención de overflow cuando se excede el límite de acuñación.
+Tests overflow prevention when exceeding limits in fee calculations.
 
 ### test_fee_calculation_underflow_prevention
-Prueba la prevención de underflow en el cálculo de tarifas con cantidades muy pequeñas.
+Tests underflow prevention in fee calculations.
 
 ### test_fee_consistency_after_pause_unpause
-Prueba la consistencia de tarifas después de pausar y reanudar.
+Tests fee consistency after pause and unpause operations.
+
+### test_fee_percentage_management
+Tests management of fee percentages.
+
+### test_fee_percentage_too_high
+Tests fee percentage when set too high.
+
+### test_fee_percentage_too_low
+Tests fee percentage when set too low.
 
 ### test_fee_queries_reflect_changes
-Prueba que las consultas de tarifa reflejen los cambios.
+Tests that fee queries reflect changes correctly.
 
 ### test_get_fee_percentage_deploy
-Prueba la obtención del porcentaje de tarifa en el despliegue.
+Tests getting fee percentage during deployment.
+
+### test_get_fee_percentage_prizes_in_constructor
+Tests getting fee percentage for prizes in constructor.
 
 ### test_get_jackpot_history_basic
-Prueba la obtención básica del historial de jackpot.
+Tests basic jackpot history retrieval.
 
 ### test_get_jackpot_history_completed_draw
-Prueba la obtención del historial de jackpot con sorteo completado.
+Tests jackpot history retrieval for completed draws.
 
 ### test_get_jackpot_history_multiple_draws
-Prueba la obtención del historial de jackpot con múltiples sorteos.
+Tests jackpot history retrieval for multiple draws.
 
 ### test_get_jackpot_history_performance
-Prueba el rendimiento de la obtención del historial de jackpot.
+Tests performance of jackpot history retrieval.
 
 ### test_imintable_dispatcher_integration
-Prueba la integración del dispatcher IMintable.
+Tests integration with IMintable dispatcher.
 
 ### test_initialization
-Prueba la inicialización del contrato.
+Tests contract initialization.
+
+### test_invalid_inputs
+Tests handling of invalid inputs.
 
 ### test_large_amounts_accumulation
-Prueba la acumulación de grandes cantidades.
+Tests accumulation of large amounts.
 
 ### test_maximum_fee_accumulation
-Prueba la acumulación máxima de tarifas.
+Tests maximum fee accumulation scenarios.
 
 ### test_minimum_fee_accumulation
-Prueba la acumulación mínima de tarifas.
+Tests minimum fee accumulation scenarios.
+
+### test_mint_limit_updated_event_emission
+Tests event emission when mint limit is updated.
+
+### test_mint_limit_updated_event_large_values
+Tests mint limit updated events with large values.
+
+### test_mint_limit_updated_event_non_owner
+Tests mint limit updated events by non-owner.
+
+### test_mint_limit_updated_event_parameters
+Tests parameters of mint limit updated events.
+
+### test_mint_limit_updated_event_zero_limit
+Tests mint limit updated events with zero limit.
 
 ### test_mint_limit_zero_value
-Prueba el establecimiento de límite de acuñación en valor cero.
+Tests setting mint limit to zero value.
 
 ### test_minting_event_emission
-Prueba la emisión de eventos de acuñación.
+Tests event emission during minting operations.
 
 ### test_minting_limits
-Prueba los límites de acuñación.
+Tests minting limits functionality.
 
 ### test_minting_limits_exceeded
-Prueba cuando se exceden los límites de acuñación.
+Tests scenarios when minting limits are exceeded.
 
 ### test_mixed_amounts_accumulation
-Prueba la acumulación de cantidades mixtas.
+Tests accumulation of mixed amounts.
+
+### test_multiple_cumulative_purchases
+Tests multiple cumulative purchase operations.
+
+### test_multiple_events_successive_transactions
+Tests multiple events in successive transactions.
+
+### test_multiple_mint_limit_updates
+Tests multiple mint limit updates.
 
 ### test_multiple_minting_operations
-Prueba múltiples operaciones de acuñación.
+Tests multiple minting operations.
 
 ### test_multiple_prize_conversions_accumulate_fees
-Prueba la acumulación de tarifas en múltiples conversiones de premios.
+Tests fee accumulation in multiple prize conversions.
+
+### test_multiple_tickets
+Tests multiple ticket operations.
 
 ### test_multiple_users_fee_consistency
-Prueba la consistencia de tarifas con múltiples usuarios.
+Tests fee consistency with multiple users.
+
+### test_payment_handling
+Tests payment handling functionality.
 
 ### test_sequential_conversions_different_users
-Prueba conversiones secuenciales con diferentes usuarios.
+Tests sequential conversions with different users.
 
 ### test_sequential_fee_consistency
-Prueba la consistencia secuencial de tarifas.
+Tests sequential fee consistency.
 
 ### test_set_burn_limit_by_non_owner
-Prueba el establecimiento de límite de quema por no propietario.
+Tests setting burn limit by non-owner (should fail).
 
 ### test_set_burn_limit_by_owner
-Prueba el establecimiento de límite de quema por propietario.
+Tests setting burn limit by owner.
 
 ### test_set_burn_limit_emit_event
-Prueba la emisión de eventos al establecer límite de quema.
+Tests event emission when setting burn limit.
 
 ### test_set_fee_at_maximum_boundary
-Prueba el establecimiento de tarifa en el límite máximo.
+Tests setting fee at maximum boundary.
 
 ### test_set_fee_by_non_owner
-Prueba el establecimiento de tarifa por no propietario.
+Tests setting fee by non-owner (should fail).
 
 ### test_set_fee_by_owner
-Prueba el establecimiento de tarifa por propietario.
+Tests setting fee by owner.
 
 ### test_set_fee_deploy_contract
-Prueba el establecimiento de tarifa en el despliegue del contrato.
+Tests setting fee during contract deployment.
 
 ### test_set_fee_emit_event
-Prueba la emisión de eventos al establecer tarifa.
+Tests event emission when setting fee.
 
 ### test_set_fee_exceeds_maximum
-Prueba cuando se excede el máximo al establecer tarifa.
+Tests setting fee that exceeds maximum allowed.
 
 ### test_set_fee_max
-Prueba el establecimiento de tarifa máxima.
+Tests setting maximum fee.
 
 ### test_set_fee_max_like_501
-Prueba el establecimiento de tarifa máxima como 501.
+Tests setting fee maximum like 501.
 
 ### test_set_fee_middle
-Prueba el establecimiento de tarifa en el medio.
+Tests setting fee to middle value.
 
 ### test_set_fee_min
-Prueba el establecimiento de tarifa mínima.
+Tests setting minimum fee.
 
 ### test_set_fee_multiple_times
-Prueba el establecimiento de tarifa múltiples veces.
+Tests setting fee multiple times.
+
+### test_set_fee_percentage_prizes_converted
+Tests setting fee percentage for prizes converted.
+
+### test_set_fee_percentage_prizes_converted_invalid_fee
+Tests setting invalid fee percentage for prizes converted.
 
 ### test_set_fee_to_zero
-Prueba el establecimiento de tarifa en cero.
+Tests setting fee to zero.
 
 ### test_set_fee_zero_like_negative_value
-Prueba el establecimiento de tarifa cero como valor negativo.
+Tests setting fee zero like negative value.
 
 ### test_set_greetings
-Prueba el establecimiento de saludos.
+Tests setting greetings functionality.
 
 ### test_set_mint_limit_by_non_owner
-Prueba el establecimiento de límite de acuñación por no propietario.
+Tests setting mint limit by non-owner (should fail).
 
 ### test_set_mint_limit_by_owner
-Prueba el establecimiento de límite de acuñación por propietario.
+Tests setting mint limit by owner.
 
 ### test_set_mint_limit_emit_event
-Prueba la emisión de eventos al establecer límite de acuñación.
+Tests event emission when setting mint limit.
+
+### test_starkplay_minted_event_emission
+Tests event emission for StarkPlay minted operations.
+
+### test_stress_test_many_tickets
+Tests stress scenarios with many tickets.
+
+### test_total_starkplay_minted_updates
+Tests updates to total StarkPlay minted counter.
+
+### test_total_strk_stored_updates
+Tests updates to total STRK stored counter.
 
 ### test_transaction_fails_when_paused
-Prueba que las transacciones fallen cuando está pausado.
+Tests that transactions fail when contract is paused.
 
 ### test_transfer
-Prueba la transferencia.
+Tests transfer functionality.
 
 ### test_unauthorized_minting
-Prueba la acuñación no autorizada.
+Tests unauthorized minting attempts.
+
+### test_user_balance_after_conversion
+Tests user balance after conversion operations.
 
 ### test_withdraw_general_fees_exceeds_accumulated
-Prueba el retiro de tarifas generales que excede lo acumulado.
+Tests withdrawal of general fees that exceeds accumulated amount.
 
 ### test_withdraw_general_fees_insufficient_vault_balance
-Prueba el retiro de tarifas generales con saldo insuficiente del vault.
+Tests withdrawal of general fees with insufficient vault balance.
 
 ### test_withdraw_general_fees_not_owner
-Prueba el retiro de tarifas generales por no propietario.
+Tests withdrawal of general fees by non-owner.
 
 ### test_withdraw_general_fees_success
-Prueba el retiro exitoso de tarifas generales.
+Tests successful withdrawal of general fees.
 
 ### test_withdraw_general_fees_zero_amount
-Prueba el retiro de tarifas generales con cantidad cero.
+Tests withdrawal of general fees with zero amount.
 
 ### test_withdraw_prize_conversion_fees_exceeds_accumulated
-Prueba el retiro de tarifas de conversión de premios que excede lo acumulado.
+Tests withdrawal of prize conversion fees that exceeds accumulated amount.
 
 ### test_withdraw_prize_conversion_fees_insufficient_vault_balance
-Prueba el retiro de tarifas de conversión de premios con saldo insuficiente del vault.
+Tests withdrawal of prize conversion fees with insufficient vault balance.
 
 ### test_withdraw_prize_conversion_fees_not_owner
-Prueba el retiro de tarifas de conversión de premios por no propietario.
+Tests withdrawal of prize conversion fees by non-owner.
 
 ### test_withdraw_prize_conversion_fees_success
-Prueba el retiro exitoso de tarifas de conversión de premios.
+Tests successful withdrawal of prize conversion fees.
 
 ### test_withdraw_prize_conversion_fees_zero_amount
-Prueba el retiro de tarifas de conversión de premios con cantidad cero.
+Tests withdrawal of prize conversion fees with zero amount.
 
 ### test_zero_amount_minting
-Prueba la acuñación con cantidad cero.
+Tests minting with zero amount.
 
 ### test_zero_amount_transaction
-Prueba transacciones con cantidad cero.
+Tests transactions with zero amount.
 
 ---
 
-**Total test functions: 71**
+**Total test functions: 159**
 
 ---
 
 ## Function Groups with the Same Purpose
 
-### **Group 1: Fee setting**
+### **Group 1: Fee setting and management**
 - `test_set_fee_by_owner`
 - `test_set_fee_by_non_owner`
 - `test_set_fee_deploy_contract`
@@ -250,12 +490,25 @@ Prueba transacciones con cantidad cero.
 - `test_set_fee_multiple_times`
 - `test_set_fee_emit_event`
 - `test_event_set_fee_percentage`
+- `test_fee_percentage_management`
+- `test_fee_percentage_too_low`
+- `test_fee_percentage_too_high`
+- `test_set_fee_percentage_prizes_converted`
+- `test_set_fee_percentage_prizes_converted_invalid_fee`
+- `test_get_fee_percentage_deploy`
+- `test_get_fee_percentage_prizes_in_constructor`
 
 ### **Group 2: Minting limits**
 - `test_set_mint_limit_by_owner`
 - `test_set_mint_limit_by_non_owner`
 - `test_set_mint_limit_emit_event`
 - `test_mint_limit_zero_value`
+- `test_mint_limit_updated_event_emission`
+- `test_mint_limit_updated_event_parameters`
+- `test_multiple_mint_limit_updates`
+- `test_mint_limit_updated_event_zero_limit`
+- `test_mint_limit_updated_event_non_owner`
+- `test_mint_limit_updated_event_large_values`
 
 ### **Group 3: Burning limits**
 - `test_set_burn_limit_by_owner`
@@ -277,7 +530,7 @@ Prueba transacciones con cantidad cero.
 - `test_withdraw_prize_conversion_fees_zero_amount`
 - `test_withdraw_prize_conversion_fees_insufficient_vault_balance`
 
-### **Group 6: Fee accumulation**
+### **Group 6: Fee accumulation and calculation**
 - `test_fee_accumulation_logic`
 - `test_fee_accumulation_multiple_users`
 - `test_consecutive_conversion_fee_accumulation`
@@ -287,6 +540,14 @@ Prueba transacciones con cantidad cero.
 - `test_minimum_fee_accumulation`
 - `test_maximum_fee_accumulation`
 - `test_mixed_amounts_accumulation`
+- `test_sequential_conversions_different_users`
+- `test_calculate_fee_buy_numbers`
+- `test_fee_calculation_accuracy`
+- `test_fee_calculation_overflow_prevention`
+- `test_fee_calculation_overflow_prevention_exceeds_limit`
+- `test_fee_calculation_underflow_prevention`
+- `test_decimal_precision_edge_cases`
+- `test_basis_points_calculation`
 
 ### **Group 7: Jackpot history**
 - `test_get_jackpot_history_basic`
@@ -304,13 +565,109 @@ Prueba transacciones con cantidad cero.
 
 ### **Group 9: Fee consistency**
 - `test_sequential_fee_consistency`
-- `test_fee_calculation_accuracy`
 - `test_multiple_users_fee_consistency`
 - `test_fee_consistency_after_pause_unpause`
 - `test_fee_queries_reflect_changes`
 
-### **Group 10: Overflow/underflow prevention and decimal precision**
-- `test_fee_calculation_overflow_prevention`
-- `test_fee_calculation_overflow_prevention_exceeds_limit`
-- `test_fee_calculation_underflow_prevention`
-- `test_decimal_precision_edge_cases` 
+### **Group 10: Ticket purchase operations**
+- `test_buy_ticket_successful_single_ticket`
+- `test_buy_multiple_tickets_same_user`
+- `test_buy_tickets_different_users`
+- `test_buy_ticket_different_number_combinations`
+- `test_buy_ticket_event_emission`
+- `test_buy_ticket_invalid_numbers_count_too_few`
+- `test_buy_ticket_invalid_numbers_count_too_many`
+- `test_buy_ticket_numbers_out_of_range`
+- `test_buy_ticket_duplicate_numbers`
+- `test_buy_ticket_insufficient_balance`
+- `test_buy_ticket_zero_balance`
+- `test_buy_ticket_insufficient_allowance`
+- `test_buy_ticket_inactive_draw`
+- `test_buy_ticket_boundary_numbers`
+- `test_buy_ticket_exact_balance`
+- `test_buy_ticket_balance_updates`
+- `test_buy_ticket_state_updates`
+- `test_buy_ticket_with_large_balance`
+- `test_buy_ticket_invalid_draw_id_zero`
+- `test_buy_ticket_invalid_draw_id_out_of_range`
+- `test_buy_ticket_empty_numbers_array`
+- `test_buy_ticket_numbers_with_zero`
+- `test_buy_ticket_event_content_validation`
+- `test_buy_ticket_multiple_events_validation`
+- `test_buy_ticket_event_data_consistency`
+- `test_buy_ticket_stress_test_many_tickets`
+- `test_buy_ticket_overflow_prevention_excessive_tickets`
+- `test_buy_ticket_balance_overflow_simulation`
+- `test_buy_ticket_draw_id_zero_enhanced`
+- `test_buy_ticket_draw_id_negative_edge`
+- `test_buy_ticket_empty_array_enhanced`
+- `test_buy_ticket_single_element_array`
+- `test_buy_ticket_event_ticketpurchased_structure`
+- `test_buy_ticket_event_fields_validation`
+- `test_buy_ticket_multiple_events_structure`
+- `test_buy_ticket_event_ordering_consistency`
+
+### **Group 11: Event emission and validation**
+- `test_basic_event_emission`
+- `test_event_emission`
+- `test_event_emission_order`
+- `test_event_parameters_validation`
+- `test_events_after_pause_unpause`
+- `test_events_in_error_cases`
+- `test_events_with_different_users`
+- `test_events_with_large_amounts`
+- `test_events_with_zero_amount`
+- `test_event_state_consistency`
+- `test_multiple_events_successive_transactions`
+- `test_starkplay_minted_event_emission`
+
+### **Group 12: Contract initialization and deployment**
+- `test_contract_deployment`
+- `test_contract_initialization`
+- `test_initialization`
+- `test_imintable_dispatcher_integration`
+
+### **Group 13: Data storage and integrity**
+- `test_data_storage`
+- `test_data_integrity_multiple_users`
+- `test_counter_consistency`
+- `test_counters_multiple_users`
+- `test_total_starkplay_minted_updates`
+- `test_total_strk_stored_updates`
+
+### **Group 14: Conversion operations**
+- `test_conversion_1_1_basic`
+- `test_conversion_1_1_different_amounts`
+- `test_conversion_1_1_precision`
+- `test_1_1_conversion_consistency`
+- `test_convert_1000_tokens_with_5_percent_fee`
+- `test_user_balance_after_conversion`
+
+### **Group 15: Balance and precision operations**
+- `test_basic_balance_increment`
+- `test_multiple_cumulative_purchases`
+- `test_decimal_precision`
+
+### **Group 16: Pause and transaction control**
+- `test_transaction_fails_when_paused`
+- `test_zero_amount_transaction`
+
+### **Group 17: Input validation**
+- `test_invalid_inputs`
+- `test_multiple_tickets`
+- `test_draw_state`
+- `test_payment_handling`
+
+### **Group 18: Basic operations**
+- `test_set_greetings`
+- `test_transfer`
+- `test_accumulated_prize_conversion_fees_getter`
+
+### **Group 19: Integration and flow testing**
+- `test_complete_flow_integration`
+- `test_concurrent_transactions_simulation`
+- `test_sequential_fee_consistency`
+- `test_fee_calculation_accuracy`
+- `test_multiple_users_fee_consistency`
+- `test_fee_accumulation_multiple_users`
+- `test_zero_amount_minting` 

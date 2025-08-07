@@ -12,6 +12,8 @@ pub trait IStarkPlayVault<TContractState> {
     fn get_accumulated_fee(self: @TContractState) -> u256;
     fn get_owner(self: @TContractState) -> ContractAddress;
     fn get_total_starkplay_minted(self: @TContractState) -> u256;
+    fn get_total_strk_stored(self: @TContractState) -> u256;
+    fn get_total_starkplay_burned(self: @TContractState) -> u256;
 
     //=======================================================================================
     //set functions
@@ -547,11 +549,21 @@ pub mod StarkPlayVault {
 
         fn setFeePercentagePrizesConverted(ref self: ContractState, new_fee: u64) -> bool {
             assert_only_owner(@self);
-            assert(new_fee >= self.feePercentagePrizesConvertedMin.read(), 'Fee percentage is too low');
-            assert(new_fee <= self.feePercentagePrizesConvertedMax.read(), 'Fee percentage is too high');
+            assert(
+                new_fee >= self.feePercentagePrizesConvertedMin.read(), 'Fee percentage is too low',
+            );
+            assert(
+                new_fee <= self.feePercentagePrizesConvertedMax.read(),
+                'Fee percentage is too high',
+            );
             let old_fee = self.feePercentagePrizesConverted.read();
             self.feePercentagePrizesConverted.write(new_fee);
-            self.emit(SetFeePercentagePrizesConverted { owner: get_caller_address(), old_fee, new_fee });
+            self
+                .emit(
+                    SetFeePercentagePrizesConverted {
+                        owner: get_caller_address(), old_fee, new_fee,
+                    },
+                );
             true
         }
         fn get_mint_limit(self: @ContractState) -> u256 {
@@ -642,6 +654,14 @@ pub mod StarkPlayVault {
 
         fn get_total_starkplay_minted(self: @ContractState) -> u256 {
             self.totalStarkPlayMinted.read()
+        }
+
+        fn get_total_strk_stored(self: @ContractState) -> u256 {
+            self.totalSTRKStored.read()
+        }
+
+        fn get_total_starkplay_burned(self: @ContractState) -> u256 {
+            self.totalStarkPlayBurned.read()
         }
         //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     }
