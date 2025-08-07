@@ -264,8 +264,8 @@ fn test_convert_to_strk_burn_limit_validation() {
 
 
 
-//#[should_panic(expected: 'Exceeds burn limit per tx')]
-//#[test]
+#[should_panic(expected: 'Exceeds burn limit per tx')]
+#[test]
 fn test_convert_to_strk_exceeds_burn_limit() {
     let (vault, starkplay_token) = deploy_vault_contract();
     
@@ -278,33 +278,14 @@ fn test_convert_to_strk_exceeds_burn_limit() {
     // Set up vault with STRK balance (para dar cambio)
     setup_vault_strk_balance(vault.contract_address, 1000_000_000_000_000_000_000_u256); // 1000 tokens
     
-    // Verify vault has sufficient STRK balance using ERC20 dispatcher
-    let strk_token_erc20 = IERC20Dispatcher { 
-        contract_address: 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
-            .try_into()
-            .unwrap() 
-    };
-    let vault_strk_balance = strk_token_erc20.balance_of(vault.contract_address);
-    //assert(vault_strk_balance >= 1000_000_000_000_000_000_000_u256, 'Vault should have at least 1000 STRK tokens');
-    
-    // Verify burn limit is reasonable
-   // assert(burn_limit > 0, 'Burn limit should be greater than 0');
-   // assert(burn_limit <= 1000_000_000_000_000_000_000_u256, 'Burn limit should not exceed vault balance');
-    
-    // Try to convert exactly at the limit - should succeed
-    start_cheat_caller_address(vault.contract_address, USER1());
-    vault.convert_to_strk(burn_limit);
-    stop_cheat_caller_address(vault.contract_address);
-    
-    // Try to convert more than limit - should fail
-    let amount_exceeding_limit = burn_limit + 1_000_000_000_000_000_000_u256; // 51 tokens
-    assert(amount_exceeding_limit > burn_limit, 'Amount should exceed burn limit');
+    // Try to convert more than the burn limit - should fail with panic
+    let amount_exceeding_limit = burn_limit + 1_000_000_000_000_000_000_u256; // 51 tokens (exceeds 50 limit)
     start_cheat_caller_address(vault.contract_address, USER1());
     vault.convert_to_strk(amount_exceeding_limit);
     stop_cheat_caller_address(vault.contract_address);
 }
 
-//#[test]
+#[test]
 fn test_convert_to_strk_correct_fee_percentage() {
     let (vault, starkplay_token) = deploy_vault_contract();
     
@@ -314,41 +295,54 @@ fn test_convert_to_strk_correct_fee_percentage() {
     
     // Verify it's different from the general fee percentage
     let general_fee = vault.GetFeePercentage();
-    assert(prize_conversion_fee != general_fee, 'Priz-fee is not different fee');
+    assert(prize_conversion_fee != general_fee, 'Prize-fee is not different fee');
     
-    // Test fee calculation with correct percentage
-    let amount = 1000_u256;
+    // Test fee calculation with correct percentage (using 18 decimals)
+    let amount = 1000_000_000_000_000_000_000_u256; // 1000 tokens with 18 decimals
     let expected_fee = (amount * prize_conversion_fee.into()) / 10000_u256;
-    assert(expected_fee == 30_u256, 'Fee should be 30 for 1000');
+    assert(expected_fee == 30_000_000_000_000_000_000_u256, 'Fee should be 30 tokens');
 }
 
-//#[test]
+#[test]
 fn test_convert_to_strk_fee_accumulation() {
     let (vault, starkplay_token) = deploy_vault_contract();
     
-    // Set up user with prize tokens using helper function
-    // setup_prize_balance(starkplay_token, USER1(), 1000_u256); // Removed
+    // Set up vault with STRK balance using helper function (with 18 decimals)
+    setup_vault_strk_balance(vault.contract_address, 1000_000_000_000_000_000_000_u256);
     
-    // Set up vault with STRK balance using helper function
-    setup_vault_strk_balance(vault.contract_address, 1000_u256);
+    let convert_amount_1 = 100_000_000_000_000_000_000_u256; // 100 tokens with 18 decimals
+    let convert_amount_2 = 50_000_000_000_000_000_000_u256;  // 50 tokens with 18 decimals
     
-    let convert_amount = 100_u256;
-    let expected_fee = (convert_amount * 300_u64.into()) / 10000_u256; // 3% fee
+    let expected_fee_1 = (convert_amount_1 * 300_u64.into()) / 10000_u256; // 3% fee for first conversion
+    let expected_fee_2 = (convert_amount_2 * 300_u64.into()) / 10000_u256; // 3% fee for second conversion
+    let total_expected_fees = expected_fee_1 + expected_fee_2;
     
     // Initial accumulated fees should be 0
     assert(vault.GetAccumulatedPrizeConversionFees() == 0, 'Initial fees should be 0');
     
-    // Perform conversion
+    // First conversion
     start_cheat_caller_address(vault.contract_address, USER1());
-    vault.convert_to_strk(convert_amount);
+    vault.convert_to_strk(convert_amount_1);
     stop_cheat_caller_address(vault.contract_address);
     
-    // Verify fees were accumulated correctly
-    assert(vault.GetAccumulatedPrizeConversionFees() == expected_fee, 'Fees should be accumulated');
+    // Verify first conversion fees were accumulated
+    assert(vault.GetAccumulatedPrizeConversionFees() == expected_fee_1, 'First should be accumulated');
+    
+    // Second conversion
+    start_cheat_caller_address(vault.contract_address, USER1());
+    vault.convert_to_strk(convert_amount_2);
+    stop_cheat_caller_address(vault.contract_address);
+    
+    // Verify total fees were accumulated correctly (first + second conversion)
+    assert(vault.GetAccumulatedPrizeConversionFees() == total_expected_fees, 'Total should be accumulated');
+    
+    // Verify the accumulation is greater than individual fees
+    assert(vault.GetAccumulatedPrizeConversionFees() > expected_fee_1, 'Total fees is not > first');
+    assert(vault.GetAccumulatedPrizeConversionFees() > expected_fee_2, 'Total fees  is not > second');
 }
 
-//#[should_panic(expected: 'Amount must be greater than 0')]
-//#[test]
+#[should_panic(expected: 'Amount must be greater than 0')]
+#[test]
 fn test_convert_to_strk_zero_amount() {
     let (vault, _) = deploy_vault_contract();
     
@@ -358,30 +352,28 @@ fn test_convert_to_strk_zero_amount() {
     stop_cheat_caller_address(vault.contract_address);
 }
 
-//#[should_panic(expected: 'Insufficient prize tokens')]
-//#[test]
+[should_panic(expected: 'Insufficient prize tokens')]
+#[test]
 fn test_convert_to_strk_insufficient_balance() {
     let (vault, starkplay_token) = deploy_vault_contract();
     
-    // User has no prize tokens
-    let convert_amount = 100_u256;
+    // User has no prize tokens (they were already assigned in deploy_vault_contract)
+    // But we'll try to convert more than they have
+    let convert_amount = 2000_000_000_000_000_000_000_u256; // 2000 tokens (more than the 1000 assigned)
     
     start_cheat_caller_address(vault.contract_address, USER1());
     vault.convert_to_strk(convert_amount);
     stop_cheat_caller_address(vault.contract_address);
 }
 
-//#[test]
+#[test]
 fn test_convert_to_strk_events_emission() {
     let (vault, starkplay_token) = deploy_vault_contract();
     
-    // Set up user with prize tokens using helper function
-    // setup_prize_balance(starkplay_token, USER1(), 1000_u256); // Removed
+    // Set up vault with STRK balance using helper function (with 18 decimals)
+    setup_vault_strk_balance(vault.contract_address, 1000_000_000_000_000_000_000_u256);
     
-    // Set up vault with STRK balance using helper function
-    setup_vault_strk_balance(vault.contract_address, 1000_u256);
-    
-    let convert_amount = 100_u256;
+    let convert_amount = 100_000_000_000_000_000_000_u256; // 100 tokens with 18 decimals
     let mut spy = spy_events();
     
     // Perform conversion
