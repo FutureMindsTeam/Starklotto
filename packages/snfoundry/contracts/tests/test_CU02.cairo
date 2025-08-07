@@ -352,7 +352,7 @@ fn test_convert_to_strk_zero_amount() {
     stop_cheat_caller_address(vault.contract_address);
 }
 
-[should_panic(expected: 'Insufficient prize tokens')]
+#[should_panic(expected: 'Insufficient prize tokens')]
 #[test]
 fn test_convert_to_strk_insufficient_balance() {
     let (vault, starkplay_token) = deploy_vault_contract();
