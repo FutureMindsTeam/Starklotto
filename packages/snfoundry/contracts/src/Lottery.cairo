@@ -752,9 +752,15 @@ pub mod Lottery {
     fn GenerateTicketId(ref self: ContractState) -> felt252 {
         let ticketId = self.currentTicketId.read();
         self.currentTicketId.write(ticketId + 1);
-        // Use modulo to ensure the ticket ID fits within felt252 range
-        // felt252 max value is approximately 2^251 - 1
-        (ticketId % 1000000).into()
+        // Ensure ticket ID fits within felt252 range by using a smaller range
+        // This prevents serialization issues in CI environments
+        if ticketId >= 1000000 {
+            // Reset counter to prevent overflow
+            self.currentTicketId.write(1);
+            1.into()
+        } else {
+            ticketId.into()
+        }
     }
 
     //OK
