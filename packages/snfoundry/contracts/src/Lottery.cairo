@@ -67,6 +67,7 @@ pub trait ILottery<TContractState> {
         number5: u16,
     ) -> u8;
     fn CreateNewDraw(ref self: TContractState, accumulatedPrize: u256);
+    fn ResetTicketIdCounter(ref self: TContractState);
     //=======================================================================================
     //get functions
     fn GetAccumulatedPrize(self: @TContractState) -> u256;
@@ -512,6 +513,12 @@ pub mod Lottery {
                 );
         }
 
+        //OK - For testing purposes only
+        fn ResetTicketIdCounter(ref self: ContractState) {
+            self.ownable.assert_only_owner();
+            self.currentTicketId.write(0);
+        }
+
         //OK
         fn GetDrawStatus(self: @ContractState, drawId: u64) -> bool {
             self.draws.entry(drawId).read().isActive
@@ -762,6 +769,8 @@ pub mod Lottery {
             ticketId.into()
         }
     }
+
+
 
     //OK
     fn GenerateRandomNumbers() -> Array<u16> {

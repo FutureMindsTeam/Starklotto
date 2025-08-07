@@ -123,6 +123,11 @@ fn setup_test_environment() -> (ContractAddress, ContractAddress, ContractAddres
     // Initialize lottery with ticket price and accumulated prize
     start_cheat_caller_address(lottery_address, owner_address());
     lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_ACCUMULATED_PRIZE);
+
+    // Reset ticket ID counter to ensure clean state for each test
+    // This helps prevent CI environment issues with global state
+    lottery_dispatcher.ResetTicketIdCounter();
+
     stop_cheat_caller_address(lottery_address);
 
     // Mint tokens to users for testing
