@@ -604,8 +604,6 @@ pub mod Lottery {
             numbers
         }
 
-
-
         // Set the ticket price (admin only)
         fn SetTicketPrice(ref self: ContractState, price: u256) {
             self.ownable.assert_only_owner();
