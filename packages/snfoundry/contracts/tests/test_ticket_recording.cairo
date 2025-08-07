@@ -538,7 +538,7 @@ fn test_data_integrity_across_operations() {
     let (_token_address, _vault_address, lottery_address) = setup_test_environment();
     let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_address };
 
-    // Purchase ticket
+    // Purchase ticket and get initial info
     let numbers = create_valid_numbers();
     start_cheat_caller_address(lottery_address, user1_address());
     lottery_dispatcher.BuyTicket(1, numbers);
