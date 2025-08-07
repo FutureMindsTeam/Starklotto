@@ -16,7 +16,7 @@
   },
   "devDependencies": {
     "@types/node": "^20",
-    "@types/prettier": "^2",
+    "@types/prettier": "^3",
     "@types/yargs": "^17.0.32",
     "globals": "^15.8.0",
     "shx": "^0.4.0",
@@ -28,7 +28,7 @@
   "dependencies": {
     "dotenv": "^16.3.1",
     "envfile": "^6.18.0",
-    "prettier": "^2.8.8",
+    "prettier": "^3.6.2",
     "starknet": "^7.1.0",
     "toml": "^3.0.0",
     "tslib": "^2.6.2"
