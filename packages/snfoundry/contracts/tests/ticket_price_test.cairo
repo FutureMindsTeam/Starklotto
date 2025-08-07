@@ -1,4 +1,6 @@
 use contracts::Lottery::{ILotteryDispatcher, ILotteryDispatcherTrait};
+use contracts::StarkPlayERC20::{IMintableDispatcher, IMintableDispatcherTrait};
+use contracts::StarkPlayVault::{IStarkPlayVaultDispatcher, IStarkPlayVaultDispatcherTrait};
 use snforge_std::{ContractClassTrait, DeclareResultTrait, declare, start_cheat_caller_address, stop_cheat_caller_address};
 use starknet::ContractAddress;
 
@@ -14,13 +16,39 @@ fn ADMIN() -> ContractAddress {
     'ADMIN'.try_into().unwrap()
 }
 
+fn deploy_mock_strk_play() -> IMintableDispatcher {
+    let starkplay_contract = declare("StarkPlayERC20").unwrap().contract_class();
+    let starkplay_constructor_calldata = array![
+        OWNER().into(), OWNER().into(),
+    ]; // recipient and admin
+    let (starkplay_address, _) = starkplay_contract
+        .deploy(@starkplay_constructor_calldata)
+        .unwrap();
+    IMintableDispatcher { contract_address: starkplay_address }
+}
+
+fn deploy_mock_vault(strk_play_address: ContractAddress) -> IStarkPlayVaultDispatcher {
+    let vault_contract = declare("StarkPlayVault").unwrap().contract_class();
+    let vault_constructor_calldata = array![
+        OWNER().into(), strk_play_address.into(), 50_u64.into(),
+    ]; // owner, starkPlayToken, feePercentage
+    let (vault_address, _) = vault_contract.deploy(@vault_constructor_calldata).unwrap();
+    IStarkPlayVaultDispatcher { contract_address: vault_address }
+}
+
 fn deploy_lottery() -> ContractAddress {
+    // Deploy mock contracts first
+    let mock_strk_play = deploy_mock_strk_play();
+    let mock_vault = deploy_mock_vault(mock_strk_play.contract_address);
+
     let mut constructor_calldata = array![];
     OWNER().serialize(ref constructor_calldata);
-    
+    mock_strk_play.contract_address.serialize(ref constructor_calldata);
+    mock_vault.contract_address.serialize(ref constructor_calldata);
+
     let lottery_class = declare("Lottery").unwrap().contract_class();
     let (lottery_addr, _) = lottery_class.deploy(@constructor_calldata).unwrap();
-    
+
     lottery_addr
 }
 
