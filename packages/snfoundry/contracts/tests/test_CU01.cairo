@@ -11,7 +11,7 @@ use snforge_std::{
     CheatSpan, cheat_caller_address, EventSpy, start_cheat_caller_address,
     stop_cheat_caller_address, declare, ContractClassTrait, DeclareResultTrait, spy_events,
     EventSpyAssertionsTrait, EventSpyTrait, // Add for fetching events directly
-    Event, // A structure describing a raw `Event`
+    Event, // A structure describing a raw Event
     IsEmitted // Trait for checking if a given event was ever emitted
 };
 use starknet::ContractAddress;
@@ -19,27 +19,20 @@ use starknet::contract_address::contract_address_const;
 
 const STRK_TOKEN_CONTRACT_ADDRESS: ContractAddress = FELT_STRK_CONTRACT.try_into().unwrap();
 // Direcciones de prueba
-const OWNER: ContractAddress = 0x02dA5254690b46B9C4059C25366D1778839BE63C142d899F0306fd5c312A5918
-    .try_into()
-    .unwrap();
-
-const USER: ContractAddress = 0x02dA5254690b46B9C4059C25366D1778839BE63C142d899F0306fd5c312A5918
-    .try_into()
-    .unwrap();
-
-const TREASURY: ContractAddress = 0x4661696c656420746f20646573657269616c697a6520706172616d202334
-    .try_into()
-    .unwrap();
+const OWNER_FELT: felt252 = 0x02dA5254690b46B9C4059C25366D1778839BE63C142d899F0306fd5c312A5918;
+const USER_FELT: felt252 = 0x03dA5254690b46B9C4059C25366D1778839BE63C142d899F0306fd5c312A5919;
+const TREASURY_FELT: felt252 = 0x456;
 
 const Initial_Fee_Percentage: u64 = 50; // 50 basis points = 0.5%
 const BASIS_POINTS_DENOMINATOR: u256 = 10000_u256; // 10000 basis points = 100%
 
 //helper function
 fn owner_address_Sepolia() -> ContractAddress {
-    OWNER
+   OWNER_FELT.try_into().unwrap()
 }
 fn user_address_Sepolia() -> ContractAddress {
-    USER
+   USER_FELT.try_into().unwrap()
+
 }
 fn owner_address() -> ContractAddress {
     contract_address_const::<0x123>()
@@ -70,12 +63,12 @@ fn EXCEEDS_MINT_LIMIT() -> u256 {
 }
 
 fn deploy_contract_lottery() -> ContractAddress {
-    let contract_lotery: ContractAddress = OWNER.try_into().unwrap();
+    let contract_lotery: ContractAddress = OWNER_FELT.try_into().unwrap();
     contract_lotery
 }
 
 fn treasury_address() -> ContractAddress {
-    let treasury: ContractAddress = TREASURY.try_into().unwrap();
+    let treasury: ContractAddress = TREASURY_FELT.try_into().unwrap();
     treasury
 }
 
