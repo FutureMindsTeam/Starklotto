@@ -6,22 +6,23 @@ import { Info, RotateCw } from "lucide-react";
 import Image from "next/image";
 import { Tooltip } from "./ui/tooltip";
 import { Toast } from "./ui/toast";
-import { StarkInput } from "./scaffold-stark/Input/StarkInput";
-import useScaffoldStrkBalance from "~~/hooks/scaffold-stark/useScaffoldStrkBalance";
 import { useAccount } from "~~/hooks/useAccount";
+import useScaffoldStrkBalance from "~~/hooks/scaffold-stark/useScaffoldStrkBalance";
 
-interface TokenMintProps {
-  onSuccess?: (amount: number, mintedAmount: number, message: string) => void;
+interface TokenUnmintProps {
+  onSuccess?: (amount: number, unmintedAmount: number, message: string) => void;
   onError?: (error: string) => void;
   useExternalNotifications?: boolean;
 }
 
-export default function TokenMint({
+export default function TokenUnmint({
   onSuccess,
   onError,
   useExternalNotifications = false,
-}: TokenMintProps) {
-  const [inputAmount, setInputAmount] = useState<string>("");
+}: TokenUnmintProps) {
+  const [selectedPercentage, setSelectedPercentage] = useState<number | null>(
+    25,
+  );
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<{
@@ -31,41 +32,32 @@ export default function TokenMint({
     type: "success" | "error";
   } | null>(null);
 
-  // Balance STRK del usuario
   const { address } = useAccount();
   const { value, formatted } = useScaffoldStrkBalance({
     address: address || "",
   });
 
-  console.log(value);
-  const strkBalance = Number(formatted) || 0;
+  const prizeBalance = Number(formatted) || 0;
 
-  // Parámetros de minteo
-  const mintRate = 1; // 1:1 mint rate
-  const feePercentage = 0.5; // 0.5% fee
+  const unmintRate = 1;
+  const feePercentage = 3;
 
-  // Valores calculados
-  const numericAmount = Number.parseFloat(inputAmount) || 0;
-  const feeAmount = numericAmount * (feePercentage / 100);
-  const mintedAmount = numericAmount * mintRate - feeAmount;
+  const percentageOptions = [25, 50, 75, 100];
 
-  // Validación de input
-  const isValidInput =
-    numericAmount > 0 && !isNaN(numericAmount) && numericAmount <= strkBalance;
+  const selectedAmount = selectedPercentage
+    ? (prizeBalance * selectedPercentage) / 100
+    : 0;
+  const feeAmount = selectedAmount * (feePercentage / 100);
+  const netAmount = selectedAmount - feeAmount;
 
-  // Manejar cambio de input desde StarkInput
-  const handleStarkInputChange = (newValue: string) => {
-    setInputAmount(newValue);
+  const isValidSelection =
+    selectedPercentage !== null && selectedAmount > 0 && prizeBalance > 0;
+
+  const handlePercentageSelect = (percentage: number) => {
+    setSelectedPercentage(percentage);
     setError(null);
   };
 
-  // Función MAX
-  const handleMaxClick = () => {
-    setInputAmount(strkBalance.toString());
-    setError(null);
-  };
-
-  // Mostrar notificación toast
   const showToast = (
     title: string,
     message: string,
@@ -81,13 +73,13 @@ export default function TokenMint({
     }
   };
 
-  // Manejar minteo
-  const handleMint = async () => {
-    if (!isValidInput) {
-      if (numericAmount <= 0) {
-        setError("Please enter an amount greater than 0");
-      } else if (numericAmount > strkBalance) {
-        setError("Insufficient STRK balance");
+  // Handle unmint transaction
+  const handleUnmint = async () => {
+    if (!isValidSelection) {
+      if (prizeBalance <= 0) {
+        setError("No convertible STRKP prize tokens available");
+      } else if (selectedAmount <= 0) {
+        setError("Please select a percentage to unmint");
       }
       return;
     }
@@ -96,32 +88,34 @@ export default function TokenMint({
     setError(null);
 
     try {
-      // Simular llamada a contrato
+      // Simulate contract call
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      const successMessage = `Successfully minted ${mintedAmount.toFixed(4)} STRKP using ${numericAmount.toFixed(4)} STRK`;
+      const successMessage = `Successfully unminted ${selectedAmount.toFixed(4)} STRKP and received ${netAmount.toFixed(4)} STRK`;
 
-      showToast("Mint Successful", successMessage, "success");
+      showToast("Unmint Successful", successMessage, "success");
 
       if (onSuccess) {
-        onSuccess(numericAmount, mintedAmount, successMessage);
+        onSuccess(selectedAmount, netAmount, successMessage);
       }
 
       // Reset form
-      setInputAmount("");
+      setSelectedPercentage(null);
     } catch (err) {
-      const errorMessage = "Failed to mint tokens. Please try again.";
+      const errorMessage = "Failed to unmint tokens. Please try again.";
       setError(errorMessage);
 
       if (onError) {
         onError(errorMessage);
       }
 
-      showToast("Mint Failed", errorMessage, "error");
+      showToast("Unmint Failed", errorMessage, "error");
     } finally {
       setIsProcessing(false);
     }
   };
+
+  console.log(selectedAmount);
 
   return (
     <div className="w-full max-w-md mx-auto">
@@ -140,12 +134,80 @@ export default function TokenMint({
       <div className="bg-gray-900 text-white rounded-xl shadow-lg overflow-hidden border border-purple-500/20">
         <div className="flex items-center justify-center p-4 border-b border-purple-500/30">
           <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-purple-600">
-            Mint $tarkPlay
+            Unmint STRKP
           </h2>
         </div>
 
         <div className="p-4 space-y-4">
-          {/* Input STRK - Token a gastar */}
+          {/* Warning about convertible tokens */}
+          <div className="rounded-lg bg-yellow-900/20 border border-yellow-500/30 py-1 px-3">
+            <div className="flex items-start gap-2">
+              <div className="text-sm text-yellow-200">
+                <p>
+                  Note: Only STRKP tokens earned as lottery prizes can be
+                  converted to STRK. Tokens minted for gameplay are NOT
+                  convertible.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Input STRKP - Token to spend */}
+          <div className="rounded-lg bg-gray-800 p-4 border border-purple-500/20">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center p-0.5">
+                  <div className="w-full h-full rounded-full bg-gray-900 flex items-center justify-center">
+                    <span className="text-purple-400 text-xs font-bold">
+                      $P
+                    </span>
+                  </div>
+                </div>
+                <span className="font-semibold">STRKP</span>
+              </div>
+              <div className="text-right text-xl font-medium">
+                {isValidSelection ? selectedAmount.toFixed(6) : "0.0"}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between text-sm text-gray-300">
+              <span>Balance: {prizeBalance.toFixed(4)} STRKP</span>
+              <span className="font-medium text-purple-300">
+                {isValidSelection ? selectedAmount.toFixed(6) : "0.0"} STRKP
+              </span>
+            </div>
+          </div>
+
+          {/* Percentage Selection Buttons */}
+          <div className="grid grid-cols-4 gap-2">
+            {percentageOptions.map((percentage) => (
+              <button
+                key={percentage}
+                className={`py-2 px-3 text-sm font-medium rounded-md transition-all duration-200 ${
+                  selectedPercentage === percentage
+                    ? "bg-purple-500 text-white shadow-lg scale-105"
+                    : "bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 hover:scale-102"
+                } ${
+                  isProcessing || prizeBalance <= 0
+                    ? "opacity-50 cursor-not-allowed"
+                    : "cursor-pointer"
+                }`}
+                onClick={() => handlePercentageSelect(percentage)}
+                disabled={isProcessing || prizeBalance <= 0}
+              >
+                {percentage}%
+              </button>
+            ))}
+          </div>
+
+          {/* Arrow indicator */}
+          <div className="flex justify-center">
+            <div className="bg-purple-500/20 p-2 rounded-full">
+              <RotateCw size={24} className="text-purple-400 rotate-90" />
+            </div>
+          </div>
+
+          {/* Output STRK - Token to receive */}
           <div className="rounded-lg bg-gray-800 p-4 border border-purple-500/20">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
@@ -162,95 +224,46 @@ export default function TokenMint({
                 </div>
                 <span className="font-semibold">STRK</span>
               </div>
-              <div className="w-[60%]">
-                <StarkInput
-                  value={inputAmount}
-                  name="amount"
-                  placeholder="0.0"
-                  onChange={handleStarkInputChange}
-                  disabled={isProcessing}
-                  usdMode={true}
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between text-sm text-gray-300">
-              <div className="flex items-center gap-2">
-                <span>Balance: {strkBalance.toFixed(4)} STRK</span>
-                <button
-                  className="h-6 px-2 py-0 text-xs bg-purple-500/20 hover:bg-purple-500/30 rounded-md transition-colors text-purple-300"
-                  onClick={handleMaxClick}
-                >
-                  MAX
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Arrow indicator */}
-          <div className="flex justify-center">
-            <div className="bg-purple-500/20 p-2 rounded-full">
-              <RotateCw size={24} className="text-purple-400 rotate-90" />
-            </div>
-          </div>
-
-          {/* Output $tarkPlay - Token a recibir */}
-          <div className="rounded-lg bg-gray-800 p-4 border border-purple-500/20">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center p-0.5">
-                  <div className="w-full h-full rounded-full bg-gray-900 flex items-center justify-center">
-                    <span className="text-purple-400 text-xs font-bold">
-                      $P
-                    </span>
-                  </div>
-                </div>
-                <span className="font-semibold">$tarkPlay</span>
-              </div>
               <div className="text-right text-xl font-medium">
-                {isValidInput ? mintedAmount.toFixed(6) : "0.0"}
+                {isValidSelection ? netAmount.toFixed(6) : "0.0"}
               </div>
             </div>
 
             <div className="flex items-center justify-between text-sm text-gray-300">
               <span>You will receive</span>
               <span className="font-medium text-purple-300">
-                {isValidInput ? mintedAmount.toFixed(6) : "0.0"} $P
+                {isValidSelection ? netAmount.toFixed(6) : "0.0"} STRK
               </span>
             </div>
           </div>
 
-          {/* Detalles del minteo */}
+          {/* Unmint details */}
           <div className="rounded-lg bg-gray-800 p-4 space-y-2 border border-purple-500/20">
             <div className="flex items-center justify-between text-sm">
               <div className="flex items-center gap-2">
-                <Image
-                  src="/strk-svg.svg"
-                  alt="STRK Token"
-                  width={16}
-                  height={16}
-                  className="w-4 h-4"
-                />
-                <span>1 STRK = 1 STRKP</span>
+                <span className="text-purple-400 text-xs font-bold">$P</span>
+                <span>1 STRKP = 1 STRK</span>
               </div>
             </div>
 
             <div className="flex items-center justify-between text-sm">
               <div className="flex items-center gap-1">
-                <span>Mint Fee (0.5%)</span>
-                <Tooltip content="A 0.5% fee is applied to all mint operations">
+                <span>Unmint Fee (3%)</span>
+                <Tooltip content="A 3% fee is applied to all unmint operations">
                   <Info size={20} className="text-purple-400" />
                 </Tooltip>
               </div>
-              <span>{isValidInput ? feeAmount.toFixed(6) : "0.0"} STRK</span>
+              <span>
+                {isValidSelection ? feeAmount.toFixed(6) : "0.0"} STRKP
+              </span>
             </div>
 
             <div className="flex items-center justify-between text-sm">
               <div className="flex items-center gap-1">
-                <span>You will receive</span>
+                <span>Net amount</span>
               </div>
               <span className="font-medium text-purple-300">
-                {isValidInput ? mintedAmount.toFixed(6) : "0.0"} STRKP
+                {isValidSelection ? netAmount.toFixed(6) : "0.0"} STRK
               </span>
             </div>
           </div>
@@ -261,14 +274,14 @@ export default function TokenMint({
         <div className="p-4">
           <button
             className={`w-full py-6 text-lg font-medium rounded-lg transition-colors ${
-              isValidInput
+              isValidSelection
                 ? "bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800"
                 : "bg-gray-700 text-gray-400 cursor-not-allowed"
             }`}
-            disabled={!isValidInput || isProcessing}
-            onClick={handleMint}
+            disabled={!isValidSelection || isProcessing}
+            onClick={handleUnmint}
           >
-            {isProcessing ? "Minting..." : "Mint STRKP"}
+            {isProcessing ? "Unminting..." : "Unmint STRKP"}
           </button>
         </div>
       </div>

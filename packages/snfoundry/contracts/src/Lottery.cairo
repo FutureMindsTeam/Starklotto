@@ -67,6 +67,8 @@ pub trait ILottery<TContractState> {
         number5: u16,
     ) -> u8;
     fn CreateNewDraw(ref self: TContractState, accumulatedPrize: u256);
+    fn SetTicketPrice(ref self: TContractState, price: u256);
+    fn GetTicketPrice(self: @TContractState) -> u256;
     //=======================================================================================
     //get functions
     fn GetAccumulatedPrize(self: @TContractState) -> u256;
@@ -99,6 +101,10 @@ pub trait ILottery<TContractState> {
     fn GetJackpotEntryEndTime(self: @TContractState, drawId: u64) -> u64;
     fn GetJackpotEntryIsActive(self: @TContractState, drawId: u64) -> bool;
     fn GetJackpotEntryIsCompleted(self: @TContractState, drawId: u64) -> bool;
+
+    // Dynamic address getters
+    fn GetStarkPlayContractAddress(self: @TContractState) -> ContractAddress;
+    fn GetStarkPlayVaultContractAddress(self: @TContractState) -> ContractAddress;
     //=======================================================================================
 
 }
@@ -130,11 +136,11 @@ pub mod Lottery {
     impl OwnableImpl = OwnableComponent::OwnableImpl<ContractState>;
     impl OwnableInternalImpl = OwnableComponent::InternalImpl<ContractState>;
 
-    // TODO: Update the address of the token contract once the token is deployed
+    // Dynamic contract addresses - will be set in constructor
+    // These constants are kept for backward compatibility but should not be used
     const STRK_PLAY_CONTRACT_ADDRESS: felt252 =
         0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d;
 
-    // TODO: Update the address of the vault contract once the vault is deployed
     const STRK_PLAY_VAULT_CONTRACT_ADDRESS: felt252 =
         0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d;
 
@@ -220,6 +226,9 @@ pub mod Lottery {
         userTicketIds: Map<(ContractAddress, u64, u32), felt252>,
         draws: Map<u64, Draw>,
         tickets: Map<(u64, felt252), Ticket>,
+        // Dynamic contract addresses
+        strkPlayContractAddress: ContractAddress,
+        strkPlayVaultContractAddress: ContractAddress,
         // ownable component by openzeppelin
         #[substorage(v0)]
         ownable: OwnableComponent::Storage,
@@ -231,7 +240,18 @@ pub mod Lottery {
     //=======================================================================================
 
     #[constructor]
-    fn constructor(ref self: ContractState, owner: ContractAddress) {
+    fn constructor(
+        ref self: ContractState,
+        owner: ContractAddress,
+        strkPlayContractAddress: ContractAddress,
+        strkPlayVaultContractAddress: ContractAddress,
+    ) {
+        // Validate that addresses are not zero address
+        assert(strkPlayContractAddress != contract_address_const::<0>(), 'Invalid STRKP contract');
+        assert(
+            strkPlayVaultContractAddress != contract_address_const::<0>(), 'Invalid Vault contract',
+        );
+
         self.ownable.initializer(owner);
         self.fixedPrize4Matches.write(4000000000000000000);
         self.fixedPrize3Matches.write(3000000000000000000);
@@ -239,6 +259,10 @@ pub mod Lottery {
         self.currentDrawId.write(0);
         self.currentTicketId.write(0);
         self.reentrancy_guard.write(false);
+
+        // Store dynamic contract addresses
+        self.strkPlayContractAddress.write(strkPlayContractAddress);
+        self.strkPlayVaultContractAddress.write(strkPlayVaultContractAddress);
     }
     //=======================================================================================
     //impl
@@ -272,16 +296,14 @@ pub mod Lottery {
 
             // Process the payment
             let token_dispatcher = IERC20Dispatcher {
-                contract_address: STRK_PLAY_CONTRACT_ADDRESS.try_into().unwrap(),
+                contract_address: self.strkPlayContractAddress.read(),
             };
 
             // --- Balance validation and deduction logic ---
             // 1. Get ticket price and user/vault addresses
             let ticket_price = self.ticketPrice.read();
             let user = get_caller_address();
-            let vault_address: ContractAddress = STRK_PLAY_VAULT_CONTRACT_ADDRESS
-                .try_into()
-                .unwrap();
+            let vault_address: ContractAddress = self.strkPlayVaultContractAddress.read();
 
             // 2. Validate user has sufficient token balance
             let user_balance = token_dispatcher.balance_of(user);
@@ -582,6 +604,17 @@ pub mod Lottery {
             numbers
         }
 
+        // Set the ticket price (admin only)
+        fn SetTicketPrice(ref self: ContractState, price: u256) {
+            self.ownable.assert_only_owner();
+            self.ticketPrice.write(price);
+        }
+
+        // Get the ticket price (public view)
+        fn GetTicketPrice(self: @ContractState) -> u256 {
+            self.ticketPrice.read()
+        }
+
         //=======================================================================================
         /// Returns the complete history of all jackpot draws
         ///
@@ -693,6 +726,17 @@ pub mod Lottery {
             let draw = self.draws.entry(drawId).read();
             !draw.isActive
         }
+
+        //=======================================================================================
+        // Dynamic address getters
+        //=======================================================================================
+        fn GetStarkPlayContractAddress(self: @ContractState) -> ContractAddress {
+            self.strkPlayContractAddress.read()
+        }
+
+        fn GetStarkPlayVaultContractAddress(self: @ContractState) -> ContractAddress {
+            self.strkPlayVaultContractAddress.read()
+        }
     }
 
     //=======================================================================================
@@ -765,7 +809,8 @@ pub mod Lottery {
         let mut usedNumbers: Felt252Dict<bool> = Default::default();
 
         while count != 5 {
-            let number = (blockTimestamp + count) % (MaxNumber.into() - MinNumber.into() + 1) + MinNumber.into();
+            let number = (blockTimestamp + count) % (MaxNumber.into() - MinNumber.into() + 1)
+                + MinNumber.into();
             let number_u16: u16 = number.try_into().unwrap();
 
             if usedNumbers.get(number.into()) != true {

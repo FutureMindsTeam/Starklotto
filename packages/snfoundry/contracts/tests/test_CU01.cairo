@@ -65,6 +65,18 @@ fn EXCEEDS_MINT_LIMIT() -> u256 {
 fn deploy_contract_lottery() -> ContractAddress {
     let contract_lotery: ContractAddress = OWNER_FELT.try_into().unwrap();
     contract_lotery
+    // Deploy mock contracts first
+    let (vault, starkplay_token) = deploy_vault_contract();
+
+    // Deploy Lottery with the mock contracts
+    let lottery_contract = declare("Lottery").unwrap().contract_class();
+    let lottery_constructor_calldata = array![
+        owner_address().into(),
+        starkplay_token.contract_address.into(),
+        vault.contract_address.into(),
+    ];
+    let (lottery_address, _) = lottery_contract.deploy(@lottery_constructor_calldata).unwrap();
+    lottery_address
 }
 
 fn treasury_address() -> ContractAddress {
@@ -690,7 +702,6 @@ fn test_mixed_amounts_accumulation() {
 }
 
 
-
 //--------------TEST ISSUE-VAULT-HACK14-001------------------------------
 
 //test set fee percentage prizes converted
@@ -729,7 +740,6 @@ fn test_get_fee_percentage_prizes_in_constructor() {
     let fee_percentage = vault_dispatcher.GetFeePercentagePrizesConverted();
     assert!(fee_percentage == 300_u64, "Fee percentage should be 3%");
 }
-
 
 
 //Test for ISSUE-TEST-CU01-003
@@ -1065,7 +1075,6 @@ fn test_decimal_precision_edge_cases() {
     // Verify the contract is still functional after edge case operations
     let final_fee_percentage = vault_dispatcher.GetFeePercentage();
     assert(final_fee_percentage == initial_fee_percentage, 'fee percentage changed');
-
 }
 
 
