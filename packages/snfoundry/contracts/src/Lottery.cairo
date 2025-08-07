@@ -67,7 +67,6 @@ pub trait ILottery<TContractState> {
         number5: u16,
     ) -> u8;
     fn CreateNewDraw(ref self: TContractState, accumulatedPrize: u256);
-    fn ResetTicketIdCounter(ref self: TContractState);
     fn SetTicketPrice(ref self: TContractState, price: u256);
     fn GetTicketPrice(self: @TContractState) -> u256;
     //=======================================================================================
@@ -535,12 +534,6 @@ pub mod Lottery {
                 );
         }
 
-        //OK - For testing purposes only
-        fn ResetTicketIdCounter(ref self: ContractState) {
-            self.ownable.assert_only_owner();
-            self.currentTicketId.write(0);
-        }
-
         //OK
         fn GetDrawStatus(self: @ContractState, drawId: u64) -> bool {
             self.draws.entry(drawId).read().isActive
@@ -610,6 +603,8 @@ pub mod Lottery {
             numbers.append(draw.winningNumber5);
             numbers
         }
+
+
 
         // Set the ticket price (admin only)
         fn SetTicketPrice(ref self: ContractState, price: u256) {
@@ -803,18 +798,8 @@ pub mod Lottery {
     fn GenerateTicketId(ref self: ContractState) -> felt252 {
         let ticketId = self.currentTicketId.read();
         self.currentTicketId.write(ticketId + 1);
-        // Ensure ticket ID fits within felt252 range by using a smaller range
-        // This prevents serialization issues in CI environments
-        if ticketId >= 1000000 {
-            // Reset counter to prevent overflow
-            self.currentTicketId.write(1);
-            1.into()
-        } else {
-            ticketId.into()
-        }
+        ticketId.into()
     }
-
-
 
     //OK
     fn GenerateRandomNumbers() -> Array<u16> {
