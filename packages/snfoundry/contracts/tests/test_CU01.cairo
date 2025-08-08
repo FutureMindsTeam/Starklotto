@@ -66,8 +66,18 @@ fn EXCEEDS_MINT_LIMIT() -> u256 {
 }
 
 fn deploy_contract_lottery() -> ContractAddress {
-    let contract_lotery: ContractAddress = OWNER.try_into().unwrap();
-    contract_lotery
+    // Deploy mock contracts first
+    let (vault, starkplay_token) = deploy_vault_contract();
+
+    // Deploy Lottery with the mock contracts
+    let lottery_contract = declare("Lottery").unwrap().contract_class();
+    let lottery_constructor_calldata = array![
+        owner_address().into(),
+        starkplay_token.contract_address.into(),
+        vault.contract_address.into(),
+    ];
+    let (lottery_address, _) = lottery_contract.deploy(@lottery_constructor_calldata).unwrap();
+    lottery_address
 }
 
 pub fn deploy_mock_strk_token() -> IMintableDispatcher {
