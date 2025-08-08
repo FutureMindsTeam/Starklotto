@@ -37,7 +37,7 @@ fn owner_address_Sepolia() -> ContractAddress {
 fn user_address_Sepolia() -> ContractAddress {
     USER
 }
-pub fn owner_address() -> ContractAddress {
+fn owner_address() -> ContractAddress {
     contract_address_const::<0x123>()
 }
 
@@ -80,7 +80,7 @@ fn deploy_contract_lottery() -> ContractAddress {
     lottery_address
 }
 
-pub fn deploy_mock_strk_token() -> IMintableDispatcher {
+fn deploy_mock_strk_token() -> IMintableDispatcher {
     // Deploy the mock STRK token at the exact constant address that the vault expects
     let target_address: ContractAddress =
         0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d

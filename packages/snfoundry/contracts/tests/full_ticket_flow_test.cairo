@@ -13,9 +13,10 @@ const DEFAULT_PRICE: u256 = 500;
 const DEFAULT_ACCUMULATED_PRIZE: u256 = 1000;
 const DEFAULT_ID: u64 = 1;
 
-fn start(target: ContractAddress, amount: u256, spender: ContractAddress) -> IERC20Dispatcher {
-    let token = deploy_token();
-    let erc = IERC20Dispatcher { contract_address: token.contract_address };
+fn start(lottery: ILotteryDispatcher, target: ContractAddress, amount: u256, spender: ContractAddress) -> IERC20Dispatcher {
+    // fn GetStarkPlayContractAddress(self: @TContractState) -> ContractAddress;
+    let contract_address = lottery.GetStarkPlayContractAddress();
+    let erc = IERC20Dispatcher { contract_address };
     mint(target, amount, spender, erc);
     erc
 }
@@ -23,7 +24,9 @@ fn start(target: ContractAddress, amount: u256, spender: ContractAddress) -> IER
 fn mint(target: ContractAddress, amount: u256, spender: ContractAddress, erc: IERC20Dispatcher) {
     let previous_balance = erc.balance_of(target);
     let token = IMintableDispatcher { contract_address: erc.contract_address };
-    cheat_caller_address(token.contract_address, owner(), CheatSpan::TargetCalls(1));
+    cheat_caller_address(token.contract_address, OWNER(), CheatSpan::TargetCalls(3));
+    token.grant_minter_role(OWNER());
+    token.set_minter_allowance(OWNER(), 1000000000);
     token.mint(target, amount);
     let new_balance = erc.balance_of(target);
     assert(new_balance - previous_balance == amount, 'MINTING FAILED');
@@ -38,7 +41,7 @@ fn context(
     let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery };
     cheat_caller_address(lottery, OWNER(), CheatSpan::TargetCalls(1));
     lottery_dispatcher.Initialize(ticket_price, accumulated_prize);
-    let erc = start(USER(), ticket_price, lottery);
+    let erc = start(lottery_dispatcher, USER(), ticket_price, lottery);
     (erc, lottery_dispatcher)
 }
 
@@ -80,6 +83,11 @@ fn test_buy_ticket_on_same_draw_id_success() {
     feign_buy_ticket(lottery, USER());
     mint(some_player, DEFAULT_PRICE, lottery.contract_address, erc);
     feign_buy_ticket(lottery, some_player);
+    
+    let player1_ticket = lottery.GetUserTickets(1, USER());
+    let player2_ticket = lottery.GetUserTickets(1, some_player);
+    // check if the same buy on the same draw id was successful, len should be 1.
+    assert(player1_ticket.len() == 1 && player2_ticket.len() == 1, 'MULTIPLE BUY FAILED.');
 }
 
 #[test]
