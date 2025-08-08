@@ -19,10 +19,10 @@ describe("useStarkPlayFee", () => {
   });
 
   /**
-   * Simula el valor de retorno del hook useScaffoldReadContract.
-   * @param data Valor simulado devuelto por el contrato (en basis points, bigint)
-   * @param isLoading Estado de carga
-   * @param error Error simulado, si aplica
+   * Simulates the return value of the useScaffoldReadContract hook.
+   * @param data Simulated return value from the contract (in basis points, bigint)
+   * @param isLoading Loading state
+   * @param error Simulated error, if applicable
    */
   const mockRead = (
     data: bigint | undefined,
@@ -38,7 +38,7 @@ describe("useStarkPlayFee", () => {
   };
 
   it("convierte basis-points a porcentaje decimal", async () => {
-    // Simulamos el valor 50n (0.5%)
+    // Simulates the value 50n (0.5%)
     mockRead(50n, false);
     const { result } = renderHook(() => useStarkPlayFee());
     await waitFor(() => expect(result.current.isLoading).toBe(false));
@@ -47,7 +47,7 @@ describe("useStarkPlayFee", () => {
   });
 
   it("muestra isLoading mientras carga", () => {
-    // Simulamos el estado de carga
+    // Simulamos el estado de carga 
     mockRead(undefined, true);
     const { result } = renderHook(() => useStarkPlayFee());
     expect(result.current.isLoading).toBe(true);
@@ -55,7 +55,7 @@ describe("useStarkPlayFee", () => {
   });
 
   it("expone error cuando falla la llamada", () => {
-    // Simulamos un error al obtener el fee
+    // Simulates an error when getting the fee
     mockRead(undefined, false, new Error("RPC error"));
     const { result } = renderHook(() => useStarkPlayFee());
     expect(result.current.error).toBeDefined();

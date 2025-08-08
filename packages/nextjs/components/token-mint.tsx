@@ -22,14 +22,14 @@ export default function TokenMint({
   onError,
   useExternalNotifications = false,
 }: TokenMintProps) {
-  // --- Hook de lectura on-chain del fee ---
+   // --- On-chain fee reading hook ---
   const {
     feePercent,
     isLoading: feeLoading,
     error: feeError,
   } = useStarkPlayFee();
 
-  // Estados UI
+  // UI states
   const [inputAmount, setInputAmount] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,21 +40,21 @@ export default function TokenMint({
     type: "success" | "error";
   } | null>(null);
 
-  // Balance STRK del usuario
+  // User STRK balance
   const { address } = useAccount();
   const { formatted } = useScaffoldStrkBalance({ address: address || "" });
   const strkBalance = Number(formatted) || 0;
 
-  // Parámetros de minteo
+  // Mint parameters
   const mintRate = 1; // 1:1 mint rate
   const feePercentage = feePercent ?? 0; // feePercent es decimal (0.005 ⇒ 0.5%)
 
-  // Valores calculados
+  // Calculated values
   const numericAmount = parseFloat(inputAmount) || 0;
   const feeAmount = numericAmount * feePercentage;
   const mintedAmount = numericAmount * mintRate - feeAmount;
 
-  // Validación de input
+  // Input validation
   const isValidInput =
     numericAmount > 0 && !isNaN(numericAmount) && numericAmount <= strkBalance;
 
@@ -90,11 +90,11 @@ export default function TokenMint({
     setError(null);
 
     try {
-      // Aquí iría la llamada real al contrato:
+      // Here goes the real contract call:
       // const tx = await scaffoldWriteContract.sendAsync(...)
       // await tx.wait()
 
-      // Simulación:
+      // Simulation:
       await new Promise((r) => setTimeout(r, 1500));
 
       const successMessage = `Successfully minted ${mintedAmount.toFixed(
@@ -115,7 +115,7 @@ export default function TokenMint({
 
   return (
     <div className="w-full max-w-md mx-auto">
-      {/* Toast externo */}
+      {/* External toast */}
       {toast?.visible &&
         typeof window !== "undefined" &&
         createPortal(
@@ -177,7 +177,7 @@ export default function TokenMint({
             </div>
           </div>
 
-          {/* Flecha */}
+          {/* Arrow */}
           <div className="flex justify-center">
             <div className="bg-purple-500/20 p-2 rounded-full">
               <RotateCw size={24} className="text-purple-400 rotate-90" />
@@ -209,7 +209,7 @@ export default function TokenMint({
             </div>
           </div>
 
-          {/* Detalles de fee */}
+          {/* Fee details */}
           <div className="bg-gray-800 p-4 rounded-lg border border-purple-500/20 space-y-2">
             <div className="flex items-center justify-between text-sm">
               <div className="flex items-center gap-2">
@@ -262,7 +262,7 @@ export default function TokenMint({
           </div>
         </div>
 
-        {/* Botón Mint */}
+        {/* Mint button */}
         <div className="p-4">
           <button
             className={`w-full py-6 text-lg font-medium rounded-lg transition-colors ${
