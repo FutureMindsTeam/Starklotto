@@ -3969,7 +3969,7 @@ __metadata:
     react: ^18.0.0 || ^19.0.0
     react-copy-to-clipboard: ^5.1.0
     react-dom: ^18.0.0 || ^19.0.0
-    react-hook-form: ^7.54.2
+    react-hook-form: ^7.62.0
     react-hot-toast: ^2.4.1
     react-i18next: ^15.5.3
     recharts: ^2.15.3
@@ -11983,12 +11983,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-hook-form@npm:^7.54.2":
-  version: 7.59.0
-  resolution: "react-hook-form@npm:7.59.0"
+"react-hook-form@npm:^7.62.0":
+  version: 7.62.0
+  resolution: "react-hook-form@npm:7.62.0"
   peerDependencies:
     react: ^16.8.0 || ^17 || ^18 || ^19
-  checksum: 24a0e54a76e9618d3a4808d2efa36821c7fe75de597a2fa0de341fdd98e1720af1b8901d4178987b0274ac1dbfabc28095cc4d1831ac13c785688c4b5a4fa49d
+  checksum: 76f0574d0df632c22b37c2666e8aef8b4378dfa0bcc5ae5b20c410d3103abd17e0bcf6256f8a6d9d18cbd687f96edf3fce35bf41d06872ffb412c91664361b1a
   languageName: node
   linkType: hard
 
