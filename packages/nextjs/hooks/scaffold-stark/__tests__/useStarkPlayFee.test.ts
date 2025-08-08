@@ -47,7 +47,7 @@ describe("useStarkPlayFee", () => {
   });
 
   it("muestra isLoading mientras carga", () => {
-    // Simulamos el estado de carga 
+    // Simulamos el estado de carga
     mockRead(undefined, true);
     const { result } = renderHook(() => useStarkPlayFee());
     expect(result.current.isLoading).toBe(true);

@@ -22,7 +22,7 @@ export default function TokenMint({
   onError,
   useExternalNotifications = false,
 }: TokenMintProps) {
-   // --- On-chain fee reading hook ---
+  // --- On-chain fee reading hook ---
   const {
     feePercent,
     isLoading: feeLoading,
