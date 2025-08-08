@@ -5,871 +5,9 @@
 
 const deployedContracts = {
   devnet: {
-    Lottery: {
-      address:
-        "0x6a6627f0e1137834f3d62a30e30562e5ad03e2477ba5f15792d980dca24976a",
-      abi: [
-        {
-          type: "impl",
-          name: "LotteryImpl",
-          interface_name: "contracts::Lottery::ILottery",
-        },
-        {
-          type: "struct",
-          name: "core::integer::u256",
-          members: [
-            {
-              name: "low",
-              type: "core::integer::u128",
-            },
-            {
-              name: "high",
-              type: "core::integer::u128",
-            },
-          ],
-        },
-        {
-          type: "enum",
-          name: "core::bool",
-          variants: [
-            {
-              name: "False",
-              type: "()",
-            },
-            {
-              name: "True",
-              type: "()",
-            },
-          ],
-        },
-        {
-          type: "struct",
-          name: "contracts::Lottery::Ticket",
-          members: [
-            {
-              name: "player",
-              type: "core::starknet::contract_address::ContractAddress",
-            },
-            {
-              name: "number1",
-              type: "core::integer::u16",
-            },
-            {
-              name: "number2",
-              type: "core::integer::u16",
-            },
-            {
-              name: "number3",
-              type: "core::integer::u16",
-            },
-            {
-              name: "number4",
-              type: "core::integer::u16",
-            },
-            {
-              name: "number5",
-              type: "core::integer::u16",
-            },
-            {
-              name: "claimed",
-              type: "core::bool",
-            },
-            {
-              name: "drawId",
-              type: "core::integer::u64",
-            },
-            {
-              name: "timestamp",
-              type: "core::integer::u64",
-            },
-          ],
-        },
-        {
-          type: "struct",
-          name: "contracts::Lottery::JackpotEntry",
-          members: [
-            {
-              name: "drawId",
-              type: "core::integer::u64",
-            },
-            {
-              name: "jackpotAmount",
-              type: "core::integer::u256",
-            },
-            {
-              name: "startTime",
-              type: "core::integer::u64",
-            },
-            {
-              name: "endTime",
-              type: "core::integer::u64",
-            },
-            {
-              name: "isActive",
-              type: "core::bool",
-            },
-            {
-              name: "isCompleted",
-              type: "core::bool",
-            },
-          ],
-        },
-        {
-          type: "interface",
-          name: "contracts::Lottery::ILottery",
-          items: [
-            {
-              type: "function",
-              name: "Initialize",
-              inputs: [
-                {
-                  name: "ticketPrice",
-                  type: "core::integer::u256",
-                },
-                {
-                  name: "accumulatedPrize",
-                  type: "core::integer::u256",
-                },
-              ],
-              outputs: [],
-              state_mutability: "external",
-            },
-            {
-              type: "function",
-              name: "BuyTicket",
-              inputs: [
-                {
-                  name: "drawId",
-                  type: "core::integer::u64",
-                },
-                {
-                  name: "numbers",
-                  type: "core::array::Array::<core::integer::u16>",
-                },
-              ],
-              outputs: [],
-              state_mutability: "external",
-            },
-            {
-              type: "function",
-              name: "DrawNumbers",
-              inputs: [
-                {
-                  name: "drawId",
-                  type: "core::integer::u64",
-                },
-              ],
-              outputs: [],
-              state_mutability: "external",
-            },
-            {
-              type: "function",
-              name: "ClaimPrize",
-              inputs: [
-                {
-                  name: "drawId",
-                  type: "core::integer::u64",
-                },
-                {
-                  name: "ticketId",
-                  type: "core::felt252",
-                },
-              ],
-              outputs: [],
-              state_mutability: "external",
-            },
-            {
-              type: "function",
-              name: "CheckMatches",
-              inputs: [
-                {
-                  name: "drawId",
-                  type: "core::integer::u64",
-                },
-                {
-                  name: "number1",
-                  type: "core::integer::u16",
-                },
-                {
-                  name: "number2",
-                  type: "core::integer::u16",
-                },
-                {
-                  name: "number3",
-                  type: "core::integer::u16",
-                },
-                {
-                  name: "number4",
-                  type: "core::integer::u16",
-                },
-                {
-                  name: "number5",
-                  type: "core::integer::u16",
-                },
-              ],
-              outputs: [
-                {
-                  type: "core::integer::u8",
-                },
-              ],
-              state_mutability: "view",
-            },
-            {
-              type: "function",
-              name: "CreateNewDraw",
-              inputs: [
-                {
-                  name: "accumulatedPrize",
-                  type: "core::integer::u256",
-                },
-              ],
-              outputs: [],
-              state_mutability: "external",
-            },
-            {
-              type: "function",
-              name: "GetAccumulatedPrize",
-              inputs: [],
-              outputs: [
-                {
-                  type: "core::integer::u256",
-                },
-              ],
-              state_mutability: "view",
-            },
-            {
-              type: "function",
-              name: "GetFixedPrize",
-              inputs: [
-                {
-                  name: "matches",
-                  type: "core::integer::u8",
-                },
-              ],
-              outputs: [
-                {
-                  type: "core::integer::u256",
-                },
-              ],
-              state_mutability: "view",
-            },
-            {
-              type: "function",
-              name: "GetDrawStatus",
-              inputs: [
-                {
-                  name: "drawId",
-                  type: "core::integer::u64",
-                },
-              ],
-              outputs: [
-                {
-                  type: "core::bool",
-                },
-              ],
-              state_mutability: "view",
-            },
-            {
-              type: "function",
-              name: "GetUserTicketIds",
-              inputs: [
-                {
-                  name: "drawId",
-                  type: "core::integer::u64",
-                },
-                {
-                  name: "player",
-                  type: "core::starknet::contract_address::ContractAddress",
-                },
-              ],
-              outputs: [
-                {
-                  type: "core::array::Array::<core::felt252>",
-                },
-              ],
-              state_mutability: "view",
-            },
-            {
-              type: "function",
-              name: "GetUserTickets",
-              inputs: [
-                {
-                  name: "drawId",
-                  type: "core::integer::u64",
-                },
-                {
-                  name: "player",
-                  type: "core::starknet::contract_address::ContractAddress",
-                },
-              ],
-              outputs: [
-                {
-                  type: "core::array::Array::<contracts::Lottery::Ticket>",
-                },
-              ],
-              state_mutability: "external",
-            },
-            {
-              type: "function",
-              name: "GetUserTicketsCount",
-              inputs: [
-                {
-                  name: "drawId",
-                  type: "core::integer::u64",
-                },
-                {
-                  name: "player",
-                  type: "core::starknet::contract_address::ContractAddress",
-                },
-              ],
-              outputs: [
-                {
-                  type: "core::integer::u32",
-                },
-              ],
-              state_mutability: "view",
-            },
-            {
-              type: "function",
-              name: "GetTicketInfo",
-              inputs: [
-                {
-                  name: "drawId",
-                  type: "core::integer::u64",
-                },
-                {
-                  name: "ticketId",
-                  type: "core::felt252",
-                },
-                {
-                  name: "player",
-                  type: "core::starknet::contract_address::ContractAddress",
-                },
-              ],
-              outputs: [
-                {
-                  type: "contracts::Lottery::Ticket",
-                },
-              ],
-              state_mutability: "view",
-            },
-            {
-              type: "function",
-              name: "GetTicketCurrentId",
-              inputs: [],
-              outputs: [
-                {
-                  type: "core::integer::u64",
-                },
-              ],
-              state_mutability: "view",
-            },
-            {
-              type: "function",
-              name: "GetWinningNumbers",
-              inputs: [
-                {
-                  name: "drawId",
-                  type: "core::integer::u64",
-                },
-              ],
-              outputs: [
-                {
-                  type: "core::array::Array::<core::integer::u16>",
-                },
-              ],
-              state_mutability: "view",
-            },
-            {
-              type: "function",
-              name: "get_jackpot_history",
-              inputs: [],
-              outputs: [
-                {
-                  type: "core::array::Array::<contracts::Lottery::JackpotEntry>",
-                },
-              ],
-              state_mutability: "view",
-            },
-            {
-              type: "function",
-              name: "GetTicketPlayer",
-              inputs: [
-                {
-                  name: "drawId",
-                  type: "core::integer::u64",
-                },
-                {
-                  name: "ticketId",
-                  type: "core::felt252",
-                },
-              ],
-              outputs: [
-                {
-                  type: "core::starknet::contract_address::ContractAddress",
-                },
-              ],
-              state_mutability: "view",
-            },
-            {
-              type: "function",
-              name: "GetTicketNumbers",
-              inputs: [
-                {
-                  name: "drawId",
-                  type: "core::integer::u64",
-                },
-                {
-                  name: "ticketId",
-                  type: "core::felt252",
-                },
-              ],
-              outputs: [
-                {
-                  type: "core::array::Array::<core::integer::u16>",
-                },
-              ],
-              state_mutability: "view",
-            },
-            {
-              type: "function",
-              name: "GetTicketClaimed",
-              inputs: [
-                {
-                  name: "drawId",
-                  type: "core::integer::u64",
-                },
-                {
-                  name: "ticketId",
-                  type: "core::felt252",
-                },
-              ],
-              outputs: [
-                {
-                  type: "core::bool",
-                },
-              ],
-              state_mutability: "view",
-            },
-            {
-              type: "function",
-              name: "GetTicketDrawId",
-              inputs: [
-                {
-                  name: "drawId",
-                  type: "core::integer::u64",
-                },
-                {
-                  name: "ticketId",
-                  type: "core::felt252",
-                },
-              ],
-              outputs: [
-                {
-                  type: "core::integer::u64",
-                },
-              ],
-              state_mutability: "view",
-            },
-            {
-              type: "function",
-              name: "GetTicketTimestamp",
-              inputs: [
-                {
-                  name: "drawId",
-                  type: "core::integer::u64",
-                },
-                {
-                  name: "ticketId",
-                  type: "core::felt252",
-                },
-              ],
-              outputs: [
-                {
-                  type: "core::integer::u64",
-                },
-              ],
-              state_mutability: "view",
-            },
-            {
-              type: "function",
-              name: "GetJackpotEntryDrawId",
-              inputs: [
-                {
-                  name: "drawId",
-                  type: "core::integer::u64",
-                },
-              ],
-              outputs: [
-                {
-                  type: "core::integer::u64",
-                },
-              ],
-              state_mutability: "view",
-            },
-            {
-              type: "function",
-              name: "GetJackpotEntryAmount",
-              inputs: [
-                {
-                  name: "drawId",
-                  type: "core::integer::u64",
-                },
-              ],
-              outputs: [
-                {
-                  type: "core::integer::u256",
-                },
-              ],
-              state_mutability: "view",
-            },
-            {
-              type: "function",
-              name: "GetJackpotEntryStartTime",
-              inputs: [
-                {
-                  name: "drawId",
-                  type: "core::integer::u64",
-                },
-              ],
-              outputs: [
-                {
-                  type: "core::integer::u64",
-                },
-              ],
-              state_mutability: "view",
-            },
-            {
-              type: "function",
-              name: "GetJackpotEntryEndTime",
-              inputs: [
-                {
-                  name: "drawId",
-                  type: "core::integer::u64",
-                },
-              ],
-              outputs: [
-                {
-                  type: "core::integer::u64",
-                },
-              ],
-              state_mutability: "view",
-            },
-            {
-              type: "function",
-              name: "GetJackpotEntryIsActive",
-              inputs: [
-                {
-                  name: "drawId",
-                  type: "core::integer::u64",
-                },
-              ],
-              outputs: [
-                {
-                  type: "core::bool",
-                },
-              ],
-              state_mutability: "view",
-            },
-            {
-              type: "function",
-              name: "GetJackpotEntryIsCompleted",
-              inputs: [
-                {
-                  name: "drawId",
-                  type: "core::integer::u64",
-                },
-              ],
-              outputs: [
-                {
-                  type: "core::bool",
-                },
-              ],
-              state_mutability: "view",
-            },
-          ],
-        },
-        {
-          type: "impl",
-          name: "OwnableImpl",
-          interface_name: "openzeppelin_access::ownable::interface::IOwnable",
-        },
-        {
-          type: "interface",
-          name: "openzeppelin_access::ownable::interface::IOwnable",
-          items: [
-            {
-              type: "function",
-              name: "owner",
-              inputs: [],
-              outputs: [
-                {
-                  type: "core::starknet::contract_address::ContractAddress",
-                },
-              ],
-              state_mutability: "view",
-            },
-            {
-              type: "function",
-              name: "transfer_ownership",
-              inputs: [
-                {
-                  name: "new_owner",
-                  type: "core::starknet::contract_address::ContractAddress",
-                },
-              ],
-              outputs: [],
-              state_mutability: "external",
-            },
-            {
-              type: "function",
-              name: "renounce_ownership",
-              inputs: [],
-              outputs: [],
-              state_mutability: "external",
-            },
-          ],
-        },
-        {
-          type: "constructor",
-          name: "constructor",
-          inputs: [
-            {
-              name: "owner",
-              type: "core::starknet::contract_address::ContractAddress",
-            },
-          ],
-        },
-        {
-          type: "event",
-          name: "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferred",
-          kind: "struct",
-          members: [
-            {
-              name: "previous_owner",
-              type: "core::starknet::contract_address::ContractAddress",
-              kind: "key",
-            },
-            {
-              name: "new_owner",
-              type: "core::starknet::contract_address::ContractAddress",
-              kind: "key",
-            },
-          ],
-        },
-        {
-          type: "event",
-          name: "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferStarted",
-          kind: "struct",
-          members: [
-            {
-              name: "previous_owner",
-              type: "core::starknet::contract_address::ContractAddress",
-              kind: "key",
-            },
-            {
-              name: "new_owner",
-              type: "core::starknet::contract_address::ContractAddress",
-              kind: "key",
-            },
-          ],
-        },
-        {
-          type: "event",
-          name: "openzeppelin_access::ownable::ownable::OwnableComponent::Event",
-          kind: "enum",
-          variants: [
-            {
-              name: "OwnershipTransferred",
-              type: "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferred",
-              kind: "nested",
-            },
-            {
-              name: "OwnershipTransferStarted",
-              type: "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferStarted",
-              kind: "nested",
-            },
-          ],
-        },
-        {
-          type: "event",
-          name: "contracts::Lottery::Lottery::TicketPurchased",
-          kind: "struct",
-          members: [
-            {
-              name: "drawId",
-              type: "core::integer::u64",
-              kind: "key",
-            },
-            {
-              name: "player",
-              type: "core::starknet::contract_address::ContractAddress",
-              kind: "key",
-            },
-            {
-              name: "ticketId",
-              type: "core::felt252",
-              kind: "data",
-            },
-            {
-              name: "numbers",
-              type: "core::array::Array::<core::integer::u16>",
-              kind: "data",
-            },
-            {
-              name: "ticketCount",
-              type: "core::integer::u32",
-              kind: "data",
-            },
-            {
-              name: "timestamp",
-              type: "core::integer::u64",
-              kind: "data",
-            },
-          ],
-        },
-        {
-          type: "event",
-          name: "contracts::Lottery::Lottery::DrawCompleted",
-          kind: "struct",
-          members: [
-            {
-              name: "drawId",
-              type: "core::integer::u64",
-              kind: "data",
-            },
-            {
-              name: "winningNumbers",
-              type: "core::array::Array::<core::integer::u16>",
-              kind: "data",
-            },
-            {
-              name: "accumulatedPrize",
-              type: "core::integer::u256",
-              kind: "data",
-            },
-          ],
-        },
-        {
-          type: "event",
-          name: "contracts::Lottery::Lottery::PrizeClaimed",
-          kind: "struct",
-          members: [
-            {
-              name: "drawId",
-              type: "core::integer::u64",
-              kind: "key",
-            },
-            {
-              name: "player",
-              type: "core::starknet::contract_address::ContractAddress",
-              kind: "key",
-            },
-            {
-              name: "ticketId",
-              type: "core::felt252",
-              kind: "data",
-            },
-            {
-              name: "prizeAmount",
-              type: "core::integer::u256",
-              kind: "data",
-            },
-          ],
-        },
-        {
-          type: "event",
-          name: "contracts::Lottery::Lottery::UserTicketsInfo",
-          kind: "struct",
-          members: [
-            {
-              name: "player",
-              type: "core::starknet::contract_address::ContractAddress",
-              kind: "key",
-            },
-            {
-              name: "drawId",
-              type: "core::integer::u64",
-              kind: "data",
-            },
-            {
-              name: "tickets",
-              type: "core::array::Array::<contracts::Lottery::Ticket>",
-              kind: "data",
-            },
-          ],
-        },
-        {
-          type: "event",
-          name: "contracts::Lottery::Lottery::JackpotIncreased",
-          kind: "struct",
-          members: [
-            {
-              name: "drawId",
-              type: "core::integer::u64",
-              kind: "key",
-            },
-            {
-              name: "previousAmount",
-              type: "core::integer::u256",
-              kind: "data",
-            },
-            {
-              name: "newAmount",
-              type: "core::integer::u256",
-              kind: "data",
-            },
-            {
-              name: "timestamp",
-              type: "core::integer::u64",
-              kind: "data",
-            },
-          ],
-        },
-        {
-          type: "event",
-          name: "contracts::Lottery::Lottery::Event",
-          kind: "enum",
-          variants: [
-            {
-              name: "OwnableEvent",
-              type: "openzeppelin_access::ownable::ownable::OwnableComponent::Event",
-              kind: "flat",
-            },
-            {
-              name: "TicketPurchased",
-              type: "contracts::Lottery::Lottery::TicketPurchased",
-              kind: "nested",
-            },
-            {
-              name: "DrawCompleted",
-              type: "contracts::Lottery::Lottery::DrawCompleted",
-              kind: "nested",
-            },
-            {
-              name: "PrizeClaimed",
-              type: "contracts::Lottery::Lottery::PrizeClaimed",
-              kind: "nested",
-            },
-            {
-              name: "UserTicketsInfo",
-              type: "contracts::Lottery::Lottery::UserTicketsInfo",
-              kind: "nested",
-            },
-            {
-              name: "JackpotIncreased",
-              type: "contracts::Lottery::Lottery::JackpotIncreased",
-              kind: "nested",
-            },
-          ],
-        },
-      ],
-      classHash:
-        "0x37e8bdbda8336a2630317b3c5e2a902d9d186bddd659179d04b092f376d2604",
-    },
     StarkPlayERC20: {
       address:
-        "0x1b3ec874f1ec829f70030aedb416e8aa0c4368915934c63f2c5aba5c54c5838",
+        "0x519e2e81aa5a46c989af2963448a12ce03edf2d767cfa50a8a21b75e907f23d",
       abi: [
         {
           type: "impl",
@@ -2051,7 +1189,7 @@ const deployedContracts = {
     },
     StarkPlayVault: {
       address:
-        "0x485e57f383a850e7f150a19665885cc04167f398a4377020b79e6cff2b5ffd",
+        "0x6fd922ab68f6119b05403ccd542a7222b996ea41d5cba2b70058df117e68f91",
       abi: [
         {
           type: "impl",
@@ -2093,6 +1231,17 @@ const deployedContracts = {
             {
               type: "function",
               name: "GetFeePercentage",
+              inputs: [],
+              outputs: [
+                {
+                  type: "core::integer::u64",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "GetFeePercentagePrizesConverted",
               inputs: [],
               outputs: [
                 {
@@ -2158,6 +1307,39 @@ const deployedContracts = {
             },
             {
               type: "function",
+              name: "get_total_starkplay_minted",
+              inputs: [],
+              outputs: [
+                {
+                  type: "core::integer::u256",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "get_total_strk_stored",
+              inputs: [],
+              outputs: [
+                {
+                  type: "core::integer::u256",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "get_total_starkplay_burned",
+              inputs: [],
+              outputs: [
+                {
+                  type: "core::integer::u256",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
               name: "set_fee",
               inputs: [
                 {
@@ -2199,6 +1381,22 @@ const deployedContracts = {
             {
               type: "function",
               name: "setFeePercentage",
+              inputs: [
+                {
+                  name: "new_fee",
+                  type: "core::integer::u64",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::bool",
+                },
+              ],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "setFeePercentagePrizesConverted",
               inputs: [
                 {
                   name: "new_fee",
@@ -2650,6 +1848,28 @@ const deployedContracts = {
         },
         {
           type: "event",
+          name: "contracts::StarkPlayVault::StarkPlayVault::SetFeePercentagePrizesConverted",
+          kind: "struct",
+          members: [
+            {
+              name: "owner",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+            {
+              name: "old_fee",
+              type: "core::integer::u64",
+              kind: "data",
+            },
+            {
+              name: "new_fee",
+              type: "core::integer::u64",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
           name: "contracts::StarkPlayVault::StarkPlayVault::FeeUpdated",
           kind: "struct",
           members: [
@@ -2775,6 +1995,11 @@ const deployedContracts = {
               kind: "nested",
             },
             {
+              name: "SetFeePercentagePrizesConverted",
+              type: "contracts::StarkPlayVault::StarkPlayVault::SetFeePercentagePrizesConverted",
+              kind: "nested",
+            },
+            {
               name: "FeeUpdated",
               type: "contracts::StarkPlayVault::StarkPlayVault::FeeUpdated",
               kind: "nested",
@@ -2793,11 +2018,926 @@ const deployedContracts = {
         },
       ],
       classHash:
-        "0x208bb56318f1cf294eedebdb1048a5906e2a7db6a03ad08272e59e85345492",
+        "0x7d066bdf1784268db489e6049f8c738cbe33abed43502c561d969702f74c297",
+    },
+    Lottery: {
+      address:
+        "0x2d303f7c3c943108cf28c830d348a1ad8f0fa31c4ce93ef054d93ae20596197",
+      abi: [
+        {
+          type: "impl",
+          name: "LotteryImpl",
+          interface_name: "contracts::Lottery::ILottery",
+        },
+        {
+          type: "struct",
+          name: "core::integer::u256",
+          members: [
+            {
+              name: "low",
+              type: "core::integer::u128",
+            },
+            {
+              name: "high",
+              type: "core::integer::u128",
+            },
+          ],
+        },
+        {
+          type: "enum",
+          name: "core::bool",
+          variants: [
+            {
+              name: "False",
+              type: "()",
+            },
+            {
+              name: "True",
+              type: "()",
+            },
+          ],
+        },
+        {
+          type: "struct",
+          name: "contracts::Lottery::Ticket",
+          members: [
+            {
+              name: "player",
+              type: "core::starknet::contract_address::ContractAddress",
+            },
+            {
+              name: "number1",
+              type: "core::integer::u16",
+            },
+            {
+              name: "number2",
+              type: "core::integer::u16",
+            },
+            {
+              name: "number3",
+              type: "core::integer::u16",
+            },
+            {
+              name: "number4",
+              type: "core::integer::u16",
+            },
+            {
+              name: "number5",
+              type: "core::integer::u16",
+            },
+            {
+              name: "claimed",
+              type: "core::bool",
+            },
+            {
+              name: "drawId",
+              type: "core::integer::u64",
+            },
+            {
+              name: "timestamp",
+              type: "core::integer::u64",
+            },
+          ],
+        },
+        {
+          type: "struct",
+          name: "contracts::Lottery::JackpotEntry",
+          members: [
+            {
+              name: "drawId",
+              type: "core::integer::u64",
+            },
+            {
+              name: "jackpotAmount",
+              type: "core::integer::u256",
+            },
+            {
+              name: "startTime",
+              type: "core::integer::u64",
+            },
+            {
+              name: "endTime",
+              type: "core::integer::u64",
+            },
+            {
+              name: "isActive",
+              type: "core::bool",
+            },
+            {
+              name: "isCompleted",
+              type: "core::bool",
+            },
+          ],
+        },
+        {
+          type: "interface",
+          name: "contracts::Lottery::ILottery",
+          items: [
+            {
+              type: "function",
+              name: "Initialize",
+              inputs: [
+                {
+                  name: "ticketPrice",
+                  type: "core::integer::u256",
+                },
+                {
+                  name: "accumulatedPrize",
+                  type: "core::integer::u256",
+                },
+              ],
+              outputs: [],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "BuyTicket",
+              inputs: [
+                {
+                  name: "drawId",
+                  type: "core::integer::u64",
+                },
+                {
+                  name: "numbers",
+                  type: "core::array::Array::<core::integer::u16>",
+                },
+              ],
+              outputs: [],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "DrawNumbers",
+              inputs: [
+                {
+                  name: "drawId",
+                  type: "core::integer::u64",
+                },
+              ],
+              outputs: [],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "ClaimPrize",
+              inputs: [
+                {
+                  name: "drawId",
+                  type: "core::integer::u64",
+                },
+                {
+                  name: "ticketId",
+                  type: "core::felt252",
+                },
+              ],
+              outputs: [],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "CheckMatches",
+              inputs: [
+                {
+                  name: "drawId",
+                  type: "core::integer::u64",
+                },
+                {
+                  name: "number1",
+                  type: "core::integer::u16",
+                },
+                {
+                  name: "number2",
+                  type: "core::integer::u16",
+                },
+                {
+                  name: "number3",
+                  type: "core::integer::u16",
+                },
+                {
+                  name: "number4",
+                  type: "core::integer::u16",
+                },
+                {
+                  name: "number5",
+                  type: "core::integer::u16",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::integer::u8",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "CreateNewDraw",
+              inputs: [
+                {
+                  name: "accumulatedPrize",
+                  type: "core::integer::u256",
+                },
+              ],
+              outputs: [],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "SetTicketPrice",
+              inputs: [
+                {
+                  name: "price",
+                  type: "core::integer::u256",
+                },
+              ],
+              outputs: [],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "GetTicketPrice",
+              inputs: [],
+              outputs: [
+                {
+                  type: "core::integer::u256",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "GetAccumulatedPrize",
+              inputs: [],
+              outputs: [
+                {
+                  type: "core::integer::u256",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "GetFixedPrize",
+              inputs: [
+                {
+                  name: "matches",
+                  type: "core::integer::u8",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::integer::u256",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "GetDrawStatus",
+              inputs: [
+                {
+                  name: "drawId",
+                  type: "core::integer::u64",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::bool",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "GetUserTicketIds",
+              inputs: [
+                {
+                  name: "drawId",
+                  type: "core::integer::u64",
+                },
+                {
+                  name: "player",
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::array::Array::<core::felt252>",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "GetUserTickets",
+              inputs: [
+                {
+                  name: "drawId",
+                  type: "core::integer::u64",
+                },
+                {
+                  name: "player",
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::array::Array::<contracts::Lottery::Ticket>",
+                },
+              ],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "GetUserTicketsCount",
+              inputs: [
+                {
+                  name: "drawId",
+                  type: "core::integer::u64",
+                },
+                {
+                  name: "player",
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::integer::u32",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "GetTicketInfo",
+              inputs: [
+                {
+                  name: "drawId",
+                  type: "core::integer::u64",
+                },
+                {
+                  name: "ticketId",
+                  type: "core::felt252",
+                },
+                {
+                  name: "player",
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              outputs: [
+                {
+                  type: "contracts::Lottery::Ticket",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "GetTicketCurrentId",
+              inputs: [],
+              outputs: [
+                {
+                  type: "core::integer::u64",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "GetWinningNumbers",
+              inputs: [
+                {
+                  name: "drawId",
+                  type: "core::integer::u64",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::array::Array::<core::integer::u16>",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "get_jackpot_history",
+              inputs: [],
+              outputs: [
+                {
+                  type: "core::array::Array::<contracts::Lottery::JackpotEntry>",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "GetTicketPlayer",
+              inputs: [
+                {
+                  name: "drawId",
+                  type: "core::integer::u64",
+                },
+                {
+                  name: "ticketId",
+                  type: "core::felt252",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "GetTicketNumbers",
+              inputs: [
+                {
+                  name: "drawId",
+                  type: "core::integer::u64",
+                },
+                {
+                  name: "ticketId",
+                  type: "core::felt252",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::array::Array::<core::integer::u16>",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "GetTicketClaimed",
+              inputs: [
+                {
+                  name: "drawId",
+                  type: "core::integer::u64",
+                },
+                {
+                  name: "ticketId",
+                  type: "core::felt252",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::bool",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "GetTicketDrawId",
+              inputs: [
+                {
+                  name: "drawId",
+                  type: "core::integer::u64",
+                },
+                {
+                  name: "ticketId",
+                  type: "core::felt252",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::integer::u64",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "GetTicketTimestamp",
+              inputs: [
+                {
+                  name: "drawId",
+                  type: "core::integer::u64",
+                },
+                {
+                  name: "ticketId",
+                  type: "core::felt252",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::integer::u64",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "GetJackpotEntryDrawId",
+              inputs: [
+                {
+                  name: "drawId",
+                  type: "core::integer::u64",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::integer::u64",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "GetJackpotEntryAmount",
+              inputs: [
+                {
+                  name: "drawId",
+                  type: "core::integer::u64",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::integer::u256",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "GetJackpotEntryStartTime",
+              inputs: [
+                {
+                  name: "drawId",
+                  type: "core::integer::u64",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::integer::u64",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "GetJackpotEntryEndTime",
+              inputs: [
+                {
+                  name: "drawId",
+                  type: "core::integer::u64",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::integer::u64",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "GetJackpotEntryIsActive",
+              inputs: [
+                {
+                  name: "drawId",
+                  type: "core::integer::u64",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::bool",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "GetJackpotEntryIsCompleted",
+              inputs: [
+                {
+                  name: "drawId",
+                  type: "core::integer::u64",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::bool",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "GetStarkPlayContractAddress",
+              inputs: [],
+              outputs: [
+                {
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "GetStarkPlayVaultContractAddress",
+              inputs: [],
+              outputs: [
+                {
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              state_mutability: "view",
+            },
+          ],
+        },
+        {
+          type: "impl",
+          name: "OwnableImpl",
+          interface_name: "openzeppelin_access::ownable::interface::IOwnable",
+        },
+        {
+          type: "interface",
+          name: "openzeppelin_access::ownable::interface::IOwnable",
+          items: [
+            {
+              type: "function",
+              name: "owner",
+              inputs: [],
+              outputs: [
+                {
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "transfer_ownership",
+              inputs: [
+                {
+                  name: "new_owner",
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              outputs: [],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "renounce_ownership",
+              inputs: [],
+              outputs: [],
+              state_mutability: "external",
+            },
+          ],
+        },
+        {
+          type: "constructor",
+          name: "constructor",
+          inputs: [
+            {
+              name: "owner",
+              type: "core::starknet::contract_address::ContractAddress",
+            },
+            {
+              name: "strkPlayContractAddress",
+              type: "core::starknet::contract_address::ContractAddress",
+            },
+            {
+              name: "strkPlayVaultContractAddress",
+              type: "core::starknet::contract_address::ContractAddress",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferred",
+          kind: "struct",
+          members: [
+            {
+              name: "previous_owner",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+            {
+              name: "new_owner",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferStarted",
+          kind: "struct",
+          members: [
+            {
+              name: "previous_owner",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+            {
+              name: "new_owner",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "openzeppelin_access::ownable::ownable::OwnableComponent::Event",
+          kind: "enum",
+          variants: [
+            {
+              name: "OwnershipTransferred",
+              type: "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferred",
+              kind: "nested",
+            },
+            {
+              name: "OwnershipTransferStarted",
+              type: "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferStarted",
+              kind: "nested",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "contracts::Lottery::Lottery::TicketPurchased",
+          kind: "struct",
+          members: [
+            {
+              name: "drawId",
+              type: "core::integer::u64",
+              kind: "key",
+            },
+            {
+              name: "player",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+            {
+              name: "ticketId",
+              type: "core::felt252",
+              kind: "data",
+            },
+            {
+              name: "numbers",
+              type: "core::array::Array::<core::integer::u16>",
+              kind: "data",
+            },
+            {
+              name: "ticketCount",
+              type: "core::integer::u32",
+              kind: "data",
+            },
+            {
+              name: "timestamp",
+              type: "core::integer::u64",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "contracts::Lottery::Lottery::DrawCompleted",
+          kind: "struct",
+          members: [
+            {
+              name: "drawId",
+              type: "core::integer::u64",
+              kind: "data",
+            },
+            {
+              name: "winningNumbers",
+              type: "core::array::Array::<core::integer::u16>",
+              kind: "data",
+            },
+            {
+              name: "accumulatedPrize",
+              type: "core::integer::u256",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "contracts::Lottery::Lottery::PrizeClaimed",
+          kind: "struct",
+          members: [
+            {
+              name: "drawId",
+              type: "core::integer::u64",
+              kind: "key",
+            },
+            {
+              name: "player",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+            {
+              name: "ticketId",
+              type: "core::felt252",
+              kind: "data",
+            },
+            {
+              name: "prizeAmount",
+              type: "core::integer::u256",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "contracts::Lottery::Lottery::UserTicketsInfo",
+          kind: "struct",
+          members: [
+            {
+              name: "player",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+            {
+              name: "drawId",
+              type: "core::integer::u64",
+              kind: "data",
+            },
+            {
+              name: "tickets",
+              type: "core::array::Array::<contracts::Lottery::Ticket>",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "contracts::Lottery::Lottery::JackpotIncreased",
+          kind: "struct",
+          members: [
+            {
+              name: "drawId",
+              type: "core::integer::u64",
+              kind: "key",
+            },
+            {
+              name: "previousAmount",
+              type: "core::integer::u256",
+              kind: "data",
+            },
+            {
+              name: "newAmount",
+              type: "core::integer::u256",
+              kind: "data",
+            },
+            {
+              name: "timestamp",
+              type: "core::integer::u64",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "contracts::Lottery::Lottery::Event",
+          kind: "enum",
+          variants: [
+            {
+              name: "OwnableEvent",
+              type: "openzeppelin_access::ownable::ownable::OwnableComponent::Event",
+              kind: "flat",
+            },
+            {
+              name: "TicketPurchased",
+              type: "contracts::Lottery::Lottery::TicketPurchased",
+              kind: "nested",
+            },
+            {
+              name: "DrawCompleted",
+              type: "contracts::Lottery::Lottery::DrawCompleted",
+              kind: "nested",
+            },
+            {
+              name: "PrizeClaimed",
+              type: "contracts::Lottery::Lottery::PrizeClaimed",
+              kind: "nested",
+            },
+            {
+              name: "UserTicketsInfo",
+              type: "contracts::Lottery::Lottery::UserTicketsInfo",
+              kind: "nested",
+            },
+            {
+              name: "JackpotIncreased",
+              type: "contracts::Lottery::Lottery::JackpotIncreased",
+              kind: "nested",
+            },
+          ],
+        },
+      ],
+      classHash:
+        "0x7d858d66d42faff72d012fe739953580dfc633370288106485ab7382e073b8",
     },
     LottoTicketNFT: {
       address:
-        "0x73cec191601b14130c899864913cef874be4d3c8fb2997c4a5c57c95cb6e04b",
+        "0x15533e9a851b089327870822b6294fc90799b84fc7872cd5d50300ec391ca6f",
       abi: [
         {
           type: "impl",
