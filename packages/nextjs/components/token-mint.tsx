@@ -9,6 +9,7 @@ import { Toast } from "./ui/toast";
 import { StarkInput } from "./scaffold-stark/Input/StarkInput";
 import useScaffoldStrkBalance from "~~/hooks/scaffold-stark/useScaffoldStrkBalance";
 import { useAccount } from "~~/hooks/useAccount";
+import { useStarkPlayFee } from "~~/hooks/scaffold-stark/useStarkPlayFee";
 
 interface TokenMintProps {
   onSuccess?: (amount: number, mintedAmount: number, message: string) => void;
@@ -21,6 +22,14 @@ export default function TokenMint({
   onError,
   useExternalNotifications = false,
 }: TokenMintProps) {
+  // --- On-chain fee reading hook ---
+  const {
+    feePercent,
+    isLoading: feeLoading,
+    error: feeError,
+  } = useStarkPlayFee();
+
+  // UI states
   const [inputAmount, setInputAmount] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,64 +40,49 @@ export default function TokenMint({
     type: "success" | "error";
   } | null>(null);
 
-  // Balance STRK del usuario
+  // User STRK balance
   const { address } = useAccount();
-  const { value, formatted } = useScaffoldStrkBalance({
-    address: address || "",
-  });
-
-  console.log(value);
+  const { formatted } = useScaffoldStrkBalance({ address: address || "" });
   const strkBalance = Number(formatted) || 0;
 
-  // Parámetros de minteo
+  // Mint parameters
   const mintRate = 1; // 1:1 mint rate
-  const feePercentage = 0.5; // 0.5% fee
+  const feePercentage = feePercent ?? 0; // feePercent es decimal (0.005 ⇒ 0.5%)
 
-  // Valores calculados
-  const numericAmount = Number.parseFloat(inputAmount) || 0;
-  const feeAmount = numericAmount * (feePercentage / 100);
+  // Calculated values
+  const numericAmount = parseFloat(inputAmount) || 0;
+  const feeAmount = numericAmount * feePercentage;
   const mintedAmount = numericAmount * mintRate - feeAmount;
 
-  // Validación de input
+  // Input validation
   const isValidInput =
     numericAmount > 0 && !isNaN(numericAmount) && numericAmount <= strkBalance;
 
-  // Manejar cambio de input desde StarkInput
+  // Handlers
   const handleStarkInputChange = (newValue: string) => {
     setInputAmount(newValue);
     setError(null);
   };
 
-  // Función MAX
   const handleMaxClick = () => {
     setInputAmount(strkBalance.toString());
     setError(null);
   };
 
-  // Mostrar notificación toast
   const showToast = (
     title: string,
     message: string,
     type: "success" | "error",
   ) => {
     if (!useExternalNotifications) {
-      setToast({
-        visible: true,
-        title,
-        message,
-        type,
-      });
+      setToast({ visible: true, title, message, type });
     }
   };
 
-  // Manejar minteo
   const handleMint = async () => {
     if (!isValidInput) {
-      if (numericAmount <= 0) {
-        setError("Please enter an amount greater than 0");
-      } else if (numericAmount > strkBalance) {
-        setError("Insufficient STRK balance");
-      }
+      if (numericAmount <= 0) setError("Please enter an amount > 0");
+      else setError("Insufficient STRK balance");
       return;
     }
 
@@ -96,27 +90,23 @@ export default function TokenMint({
     setError(null);
 
     try {
-      // Simular llamada a contrato
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // Here goes the real contract call:
+      // const tx = await scaffoldWriteContract.sendAsync(...)
+      // await tx.wait()
 
-      const successMessage = `Successfully minted ${mintedAmount.toFixed(4)} STRKP using ${numericAmount.toFixed(4)} STRK`;
+      // Simulation:
+      await new Promise((r) => setTimeout(r, 1500));
 
+      const successMessage = `Successfully minted ${mintedAmount.toFixed(
+        4,
+      )} STRKP using ${numericAmount.toFixed(4)} STRK`;
       showToast("Mint Successful", successMessage, "success");
-
-      if (onSuccess) {
-        onSuccess(numericAmount, mintedAmount, successMessage);
-      }
-
-      // Reset form
+      onSuccess?.(numericAmount, mintedAmount, successMessage);
       setInputAmount("");
-    } catch (err) {
+    } catch {
       const errorMessage = "Failed to mint tokens. Please try again.";
       setError(errorMessage);
-
-      if (onError) {
-        onError(errorMessage);
-      }
-
+      onError?.(errorMessage);
       showToast("Mint Failed", errorMessage, "error");
     } finally {
       setIsProcessing(false);
@@ -125,6 +115,7 @@ export default function TokenMint({
 
   return (
     <div className="w-full max-w-md mx-auto">
+      {/* External toast */}
       {toast?.visible &&
         typeof window !== "undefined" &&
         createPortal(
@@ -137,23 +128,25 @@ export default function TokenMint({
           document.body,
         )}
 
-      <div className="bg-gray-900 text-white rounded-xl shadow-lg overflow-hidden border border-purple-500/20">
+      <div className="bg-gray-900 text-white rounded-xl shadow-lg border border-purple-500/20 overflow-hidden">
+        {/* Header */}
         <div className="flex items-center justify-center p-4 border-b border-purple-500/30">
           <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-purple-600">
             Mint $tarkPlay
           </h2>
         </div>
 
+        {/* Body */}
         <div className="p-4 space-y-4">
-          {/* Input STRK - Token a gastar */}
-          <div className="rounded-lg bg-gray-800 p-4 border border-purple-500/20">
+          {/* Input STRK */}
+          <div className="bg-gray-800 p-4 rounded-lg border border-purple-500/20">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center p-0.5">
                   <div className="w-full h-full rounded-full bg-gray-900 flex items-center justify-center">
                     <Image
                       src="/strk-svg.svg"
-                      alt="STRK Token"
+                      alt="STRK"
                       width={20}
                       height={20}
                       className="w-5 h-5"
@@ -169,33 +162,30 @@ export default function TokenMint({
                   placeholder="0.0"
                   onChange={handleStarkInputChange}
                   disabled={isProcessing}
-                  usdMode={true}
+                  usdMode
                 />
               </div>
             </div>
-
             <div className="flex items-center justify-between text-sm text-gray-300">
-              <div className="flex items-center gap-2">
-                <span>Balance: {strkBalance.toFixed(4)} STRK</span>
-                <button
-                  className="h-6 px-2 py-0 text-xs bg-purple-500/20 hover:bg-purple-500/30 rounded-md transition-colors text-purple-300"
-                  onClick={handleMaxClick}
-                >
-                  MAX
-                </button>
-              </div>
+              <span>Balance: {strkBalance.toFixed(4)} STRK</span>
+              <button
+                className="h-6 px-2 text-xs bg-purple-500/20 hover:bg-purple-500/30 rounded-md transition-colors text-purple-300"
+                onClick={handleMaxClick}
+              >
+                MAX
+              </button>
             </div>
           </div>
 
-          {/* Arrow indicator */}
+          {/* Arrow */}
           <div className="flex justify-center">
             <div className="bg-purple-500/20 p-2 rounded-full">
               <RotateCw size={24} className="text-purple-400 rotate-90" />
             </div>
           </div>
 
-          {/* Output $tarkPlay - Token a recibir */}
-          <div className="rounded-lg bg-gray-800 p-4 border border-purple-500/20">
+          {/* Output STRKP */}
+          <div className="bg-gray-800 p-4 rounded-lg border border-purple-500/20">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center p-0.5">
@@ -211,7 +201,6 @@ export default function TokenMint({
                 {isValidInput ? mintedAmount.toFixed(6) : "0.0"}
               </div>
             </div>
-
             <div className="flex items-center justify-between text-sm text-gray-300">
               <span>You will receive</span>
               <span className="font-medium text-purple-300">
@@ -220,13 +209,13 @@ export default function TokenMint({
             </div>
           </div>
 
-          {/* Detalles del minteo */}
-          <div className="rounded-lg bg-gray-800 p-4 space-y-2 border border-purple-500/20">
+          {/* Fee details */}
+          <div className="bg-gray-800 p-4 rounded-lg border border-purple-500/20 space-y-2">
             <div className="flex items-center justify-between text-sm">
               <div className="flex items-center gap-2">
                 <Image
                   src="/strk-svg.svg"
-                  alt="STRK Token"
+                  alt="STRK"
                   width={16}
                   height={16}
                   className="w-4 h-4"
@@ -234,30 +223,46 @@ export default function TokenMint({
                 <span>1 STRK = 1 STRKP</span>
               </div>
             </div>
-
             <div className="flex items-center justify-between text-sm">
               <div className="flex items-center gap-1">
-                <span>Mint Fee (0.5%)</span>
-                <Tooltip content="A 0.5% fee is applied to all mint operations">
+                <span>
+                  Mint Fee (
+                  {feePercent !== undefined
+                    ? (feePercent * 100).toFixed(1) + "%"
+                    : "--"}
+                  )
+                </span>
+                <Tooltip
+                  content={`A ${
+                    feePercent !== undefined
+                      ? (feePercent * 100).toFixed(2)
+                      : "--"
+                  }% fee is applied to all mint operations`}
+                >
                   <Info size={20} className="text-purple-400" />
                 </Tooltip>
               </div>
-              <span>{isValidInput ? feeAmount.toFixed(6) : "0.0"} STRK</span>
+              <span className="text-gray-300">
+                {isValidInput ? feeAmount.toFixed(6) : "0.0"} STRK
+              </span>
             </div>
-
+            {feeLoading && (
+              <p className="text-xs text-gray-500">Loading commission…</p>
+            )}
+            {feeError && (
+              <p className="text-xs text-red-500">Error obtaining commission</p>
+            )}
             <div className="flex items-center justify-between text-sm">
-              <div className="flex items-center gap-1">
-                <span>You will receive</span>
-              </div>
+              <span>You will receive</span>
               <span className="font-medium text-purple-300">
                 {isValidInput ? mintedAmount.toFixed(6) : "0.0"} STRKP
               </span>
             </div>
+            {error && <div className="text-red-400 text-sm">{error}</div>}
           </div>
-
-          {error && <div className="text-red-400 text-sm px-1">{error}</div>}
         </div>
 
+        {/* Mint button */}
         <div className="p-4">
           <button
             className={`w-full py-6 text-lg font-medium rounded-lg transition-colors ${
