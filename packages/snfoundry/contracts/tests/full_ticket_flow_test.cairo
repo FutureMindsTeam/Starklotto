@@ -6,7 +6,6 @@ use snforge_std::{
     test_address,
 };
 use starknet::ContractAddress;
-use crate::test_CU01::{deploy_mock_strk_token as deploy_token, owner_address as owner};
 use crate::test_jackpot_history::{OWNER, USER, deploy_lottery};
 
 const DEFAULT_PRICE: u256 = 500;
