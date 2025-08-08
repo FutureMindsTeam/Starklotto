@@ -23,7 +23,11 @@ export default function TokenMint({
   useExternalNotifications = false,
 }: TokenMintProps) {
   // --- Hook de lectura on-chain del fee ---
-  const { feePercent, isLoading: feeLoading, error: feeError } = useStarkPlayFee();
+  const {
+    feePercent,
+    isLoading: feeLoading,
+    error: feeError,
+  } = useStarkPlayFee();
 
   // Estados UI
   const [inputAmount, setInputAmount] = useState<string>("");
@@ -42,7 +46,7 @@ export default function TokenMint({
   const strkBalance = Number(formatted) || 0;
 
   // Parámetros de minteo
-  const mintRate = 1;                    // 1:1 mint rate
+  const mintRate = 1; // 1:1 mint rate
   const feePercentage = feePercent ?? 0; // feePercent es decimal (0.005 ⇒ 0.5%)
 
   // Valores calculados
@@ -52,9 +56,7 @@ export default function TokenMint({
 
   // Validación de input
   const isValidInput =
-    numericAmount > 0 &&
-    !isNaN(numericAmount) &&
-    numericAmount <= strkBalance;
+    numericAmount > 0 && !isNaN(numericAmount) && numericAmount <= strkBalance;
 
   // Handlers
   const handleStarkInputChange = (newValue: string) => {
@@ -70,7 +72,7 @@ export default function TokenMint({
   const showToast = (
     title: string,
     message: string,
-    type: "success" | "error"
+    type: "success" | "error",
   ) => {
     if (!useExternalNotifications) {
       setToast({ visible: true, title, message, type });
@@ -96,7 +98,7 @@ export default function TokenMint({
       await new Promise((r) => setTimeout(r, 1500));
 
       const successMessage = `Successfully minted ${mintedAmount.toFixed(
-        4
+        4,
       )} STRKP using ${numericAmount.toFixed(4)} STRK`;
       showToast("Mint Successful", successMessage, "success");
       onSuccess?.(numericAmount, mintedAmount, successMessage);
@@ -123,7 +125,7 @@ export default function TokenMint({
             type={toast.type}
             onClose={() => setToast(null)}
           />,
-          document.body
+          document.body,
         )}
 
       <div className="bg-gray-900 text-white rounded-xl shadow-lg border border-purple-500/20 overflow-hidden">
@@ -188,7 +190,9 @@ export default function TokenMint({
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center p-0.5">
                   <div className="w-full h-full rounded-full bg-gray-900 flex items-center justify-center">
-                    <span className="text-purple-400 text-xs font-bold">$P</span>
+                    <span className="text-purple-400 text-xs font-bold">
+                      $P
+                    </span>
                   </div>
                 </div>
                 <span className="font-semibold">$tarkPlay</span>
@@ -246,9 +250,7 @@ export default function TokenMint({
               <p className="text-xs text-gray-500">Loading commission…</p>
             )}
             {feeError && (
-              <p className="text-xs text-red-500">
-                Error obtaining commission
-              </p>
+              <p className="text-xs text-red-500">Error obtaining commission</p>
             )}
             <div className="flex items-center justify-between text-sm">
               <span>You will receive</span>

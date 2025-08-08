@@ -13,15 +13,15 @@ vi.mock("~~/hooks/useAccount", () => ({
 
 vi.mock("~~/hooks/scaffold-stark/useScaffoldStrkBalance", () => ({
   default: () => ({
-    // Simulamos un saldo de 100 STRK 
-    value: BigInt("100000000000000000000"), 
+    // Simulamos un saldo de 100 STRK
+    value: BigInt("100000000000000000000"),
     formatted: "100.0",
   }),
 }));
 
 vi.mock("~~/hooks/scaffold-stark/useStarkPlayFee", () => ({
   useStarkPlayFee: () => ({
-    feePercent: 0.005,   
+    feePercent: 0.005,
     isLoading: false,
     error: undefined,
     refetch: vi.fn(),
@@ -38,7 +38,7 @@ describe("<TokenMint />", () => {
 
     // 1) Verificar que en el detalle aparece "Mint Fee (0.50%)"
     expect(
-      screen.getByText(/Mint Fee \(0\.5%\)/, { exact: false })
+      screen.getByText(/Mint Fee \(0\.5%\)/, { exact: false }),
     ).toBeInTheDocument();
 
     // 2) Cambiar el input a "10"

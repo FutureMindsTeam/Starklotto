@@ -9,7 +9,8 @@ vi.mock("~~/hooks/scaffold-stark", () => ({
 
 // Importamos la función mockeada para manipular su comportamiento en los tests
 import { useScaffoldReadContract } from "~~/hooks/scaffold-stark";
-const mockUseScaffoldReadContract = useScaffoldReadContract as unknown as ReturnType<typeof vi.fn>;
+const mockUseScaffoldReadContract =
+  useScaffoldReadContract as unknown as ReturnType<typeof vi.fn>;
 
 describe("useStarkPlayFee", () => {
   // Limpiamos mocks antes de cada test
