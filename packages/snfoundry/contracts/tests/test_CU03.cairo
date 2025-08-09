@@ -248,7 +248,7 @@ fn test_buy_ticket_valid_numbers() {
     assert(*invalid_numbers.at(0) == 0_u16, 'First number is 0 (invalid)');
     assert(*invalid_numbers.at(2) <= 40_u16, 'Third number <= 40');
 
-    lottery_dispatcher.BuyTicket(1_u64, invalid_numbers);
+    lottery_dispatcher.BuyTicket(1_u64, invalid_numbers, 1);
 }
 
 #[should_panic(expected: 'Invalid numbers')]
@@ -260,7 +260,7 @@ fn test_buy_ticket_number_zero() {
     let invalid_numbers = array![0_u16, 10_u16, 20_u16, 30_u16, 40_u16];
 
     // This should panic because 0 is below the minimum (1)
-    lottery_dispatcher.BuyTicket(1_u64, invalid_numbers);
+    lottery_dispatcher.BuyTicket(1_u64, invalid_numbers, 1);
 }
 
 #[should_panic(expected: 'Invalid numbers')]
@@ -272,5 +272,5 @@ fn test_buy_ticket_number_above_max() {
     let invalid_numbers = array![1_u16, 10_u16, 20_u16, 30_u16, 41_u16];
 
     // This should panic because 41 is above the maximum (40)
-    lottery_dispatcher.BuyTicket(1_u64, invalid_numbers);
+    lottery_dispatcher.BuyTicket(1_u64, invalid_numbers, 1);
 }
