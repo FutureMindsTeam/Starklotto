@@ -52,7 +52,7 @@ fn feign_buy_ticket(lottery: ILotteryDispatcher, buyer: ContractAddress) -> Arra
     let numbers = array![1, 2, 3, 4, 5];
     cheat_caller_address(lottery.contract_address, buyer, CheatSpan::Indefinite);
     cheat_block_timestamp(lottery.contract_address, 1, CheatSpan::TargetCalls(1));
-    lottery.BuyTicket(DEFAULT_ID, numbers.clone());
+    lottery.BuyTicket(DEFAULT_ID, numbers.clone(), 1);
     numbers
 }
 
