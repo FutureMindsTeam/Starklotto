@@ -149,6 +149,27 @@ Tests contract initialization process.
 ### test_convert_1000_tokens_with_5_percent_fee
 Tests conversion of 1000 tokens with 5% fee.
 
+### test_convert_to_strk_burn_limit_validation
+Tests converting prize tokens to STRK within the configured burn limit (validation succeeds).
+
+### test_convert_to_strk_correct_fee_percentage
+Tests that the conversion fee is correctly calculated at 3% (300 bps) with 18 decimals.
+
+### test_convert_to_strk_events_emission
+Tests that conversion emits the expected events (StarkPlayBurned, FeeCollected, ConvertedToSTRK).
+
+### test_convert_to_strk_exceeds_burn_limit
+Tests that converting an amount exceeding the burn limit results in a panic.
+
+### test_convert_to_strk_fee_accumulation
+Tests fee accumulation across two consecutive conversions (fees are summed correctly).
+
+### test_convert_to_strk_insufficient_balance
+Tests that conversion panics when the user lacks sufficient prize tokens.
+
+### test_convert_to_strk_zero_amount
+Tests that conversion panics when the amount to convert is zero.
+
 ### test_conversion_1_1_basic
 Tests basic 1:1 conversion functionality.
 
@@ -671,3 +692,12 @@ Tests transactions with zero amount.
 - `test_multiple_users_fee_consistency`
 - `test_fee_accumulation_multiple_users`
 - `test_zero_amount_minting` 
+
+### **Group 20: CU02 – Prize conversion (convert_to_strk)**
+- `test_convert_to_strk_burn_limit_validation` — Converts within burn limit (should succeed and update counters correctly).
+- `test_convert_to_strk_exceeds_burn_limit` — Exceeding burn limit should panic with the expected message.
+- `test_convert_to_strk_zero_amount` — Zero amount should panic with the expected message.
+- `test_convert_to_strk_insufficient_balance` — Insufficient prize tokens should panic.
+- `test_convert_to_strk_correct_fee_percentage` — Verifies fee is 3% (300 bps) using 18 decimals.
+- `test_convert_to_strk_fee_accumulation` — Two consecutive conversions accumulate fees correctly.
+- `test_convert_to_strk_events_emission` — Emits StarkPlayBurned, FeeCollected, and ConvertedToSTRK events.

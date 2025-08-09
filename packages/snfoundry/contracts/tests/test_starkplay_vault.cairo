@@ -651,9 +651,7 @@ fn test_withdraw_general_fees_insufficient_vault_balance() {
 
     store(
         vault.contract_address, // storage owner
-        selector!(
-            "accumulatedFee",
-        ), // field marking the start of the memory chunk being written to
+        selector!("accumulatedFee"), // field marking the start of the memory chunk being written to
         array![5000].span() // array of felts to write
     );
 
