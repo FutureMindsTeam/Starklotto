@@ -105,8 +105,6 @@ const deployScript = async (): Promise<void> => {
     },
   });
 
-
-
   await deployContract({
     contract: "LottoTicketNFT",
     contractName: "LottoTicketNFT",

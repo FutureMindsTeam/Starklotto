@@ -420,22 +420,23 @@ pub mod StarkPlayVault {
     fn convert_to_strk(ref self: ContractState, amount: u256) {
         _assert_not_paused(@self);
         let user = get_caller_address();
-        
+
         // Validate amount is greater than 0
         assert(amount > 0, 'Amount must be greater than 0');
-        
+
         // Validate burnLimit
         assert(amount <= self.burnLimit.read(), 'Exceeds burn limit per tx');
-        
+
         let starkPlayContractAddress = self.starkPlayToken.read();
         let prizeDispatcher = IPrizeTokenDispatcher { contract_address: starkPlayContractAddress };
         let prize_balance = prizeDispatcher.get_prize_balance(user);
         assert(prize_balance >= amount, 'Insufficient prize tokens');
 
-        // Calculate conversion fee using the correct fee percentage 
-        let prizeFeeAmount = (amount * self.feePercentagePrizesConverted.read().into()) / BASIS_POINTS_DENOMINATOR;
+        // Calculate conversion fee using the correct fee percentage
+        let prizeFeeAmount = (amount * self.feePercentagePrizesConverted.read().into())
+            / BASIS_POINTS_DENOMINATOR;
         let netAmount = amount - prizeFeeAmount;
-       
+
         // Burn the full amount of prize tokens from user
         let mut burnDispatcher = IBurnableDispatcher { contract_address: starkPlayContractAddress };
         burnDispatcher.burn_from(user, amount);

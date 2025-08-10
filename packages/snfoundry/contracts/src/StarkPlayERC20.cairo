@@ -377,7 +377,8 @@ pub mod StarkPlayERC20 {
         // Check if the address supports the SRC5 interface
         //let src5_dispatcher = ISRC5Dispatcher { contract_address: address };
         //let src5_interface_id: felt252 =
-        //    0x3f918d17e5ee77373b56385708f855659a07f75997f365cf87748628532a055; // SRC5 interface ID 
+        //    0x3f918d17e5ee77373b56385708f855659a07f75997f365cf87748628532a055; // SRC5 interface
+        //    ID
         //let supports_src5 = src5_dispatcher.supports_interface(src5_interface_id);
 
         true
