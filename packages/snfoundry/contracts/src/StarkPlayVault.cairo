@@ -311,6 +311,11 @@ pub mod StarkPlayVault {
         assert(get_caller_address() == self.owner.read(), 'Caller is not the owner');
     }
 
+    // Helper function for zero address validation
+    fn zero_address_const() -> ContractAddress {
+        contract_address_const::<0x0>()
+    }
+
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //public functions
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -418,11 +423,19 @@ pub mod StarkPlayVault {
     }
 
     fn convert_to_strk(ref self: ContractState, amount: u256) {
+        // Reentrancy protection
+        assert(!self.reentrant_locked.read(), 'ReentrancyGuard: reentrant call');
+        self.reentrant_locked.write(true);
+
+        // Check that the contract is not paused
         _assert_not_paused(@self);
         let user = get_caller_address();
         
         // Validate amount is greater than 0
         assert(amount > 0, 'Amount must be greater than 0');
+        
+        // Zero address validation
+        assert(user != zero_address_const(), 'Zero address not allowed');
         
         // Validate burnLimit
         assert(amount <= self.burnLimit.read(), 'Exceeds burn limit per tx');
@@ -435,6 +448,12 @@ pub mod StarkPlayVault {
         // Calculate conversion fee using the correct fee percentage 
         let prizeFeeAmount = (amount * self.feePercentagePrizesConverted.read().into()) / BASIS_POINTS_DENOMINATOR;
         let netAmount = amount - prizeFeeAmount;
+
+        // Verify contract has sufficient STRK balance before transfer
+        let strk_contract_address = contract_address_const::<TOKEN_STRK_ADDRESS>();
+        let strk_dispatcher = IERC20Dispatcher { contract_address: strk_contract_address };
+        let contract_balance = strk_dispatcher.balance_of(get_contract_address());
+        assert(contract_balance >= netAmount, 'Insufficient STRK in vault');
        
         // Burn the full amount of prize tokens from user
         let mut burnDispatcher = IBurnableDispatcher { contract_address: starkPlayContractAddress };
@@ -458,11 +477,12 @@ pub mod StarkPlayVault {
             );
 
         // Transfer the net amount (after deducting fee) to user
-        let strk_contract_address = contract_address_const::<TOKEN_STRK_ADDRESS>();
-        let strk_dispatcher = IERC20Dispatcher { contract_address: strk_contract_address };
         strk_dispatcher.transfer(user, netAmount);
         self.totalSTRKStored.write(self.totalSTRKStored.read() - netAmount);
         self.emit(ConvertedToSTRK { user, amount: netAmount });
+
+        //Release reentrancy lock
+        self.reentrant_locked.write(false);
     }
 
     #[abi(embed_v0)]
