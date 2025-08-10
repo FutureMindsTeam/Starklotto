@@ -100,10 +100,12 @@ fn deploy_starkplay_vault(starkplay_token: ContractAddress) -> ContractAddress {
     deployed_address
 }
 
-fn deploy_lottery_contract() -> ContractAddress {
+fn deploy_lottery_contract(strk_play_address: ContractAddress, vault_address: ContractAddress) -> ContractAddress {
     let contract_class = declare("Lottery").unwrap().contract_class();
     let mut calldata = array![];
     calldata.append_serde(owner_address()); // owner
+    calldata.append_serde(strk_play_address); // strkPlayContractAddress
+    calldata.append_serde(vault_address); // strkPlayVaultContractAddress
     let (contract_address, _) = contract_class.deploy(@calldata).unwrap();
     contract_address
 }
@@ -117,7 +119,7 @@ fn setup_test_environment() -> (ContractAddress, ContractAddress, ContractAddres
     let vault_address = deploy_starkplay_vault(token_address);
 
     // Deploy lottery contract
-    let lottery_address = deploy_lottery_contract();
+    let lottery_address = deploy_lottery_contract(token_address, vault_address);
     let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_address };
 
     // Initialize lottery with ticket price and accumulated prize
