@@ -54,7 +54,7 @@ pub trait ILottery<TContractState> {
     //=======================================================================================
     //set functions
     fn Initialize(ref self: TContractState, ticketPrice: u256, accumulatedPrize: u256);
-    fn BuyTicket(ref self: TContractState, drawId: u64, numbers: Array<u16>);
+    fn BuyTicket(ref self: TContractState, drawId: u64, numbers: Array<u16>, quantity: u8);
     fn DrawNumbers(ref self: TContractState, drawId: u64);
     fn ClaimPrize(ref self: TContractState, drawId: u64, ticketId: felt252);
     fn CheckMatches(
@@ -106,7 +106,6 @@ pub trait ILottery<TContractState> {
     fn GetStarkPlayContractAddress(self: @TContractState) -> ContractAddress;
     fn GetStarkPlayVaultContractAddress(self: @TContractState) -> ContractAddress;
     //=======================================================================================
-
 }
 
 //=======================================================================================
@@ -150,7 +149,7 @@ pub mod Lottery {
 
     #[event]
     #[derive(Drop, starknet::Event)]
-    enum Event {
+    pub enum Event {
         #[flat]
         OwnableEvent: OwnableComponent::Event,
         TicketPurchased: TicketPurchased,
@@ -161,15 +160,15 @@ pub mod Lottery {
     }
 
     #[derive(Drop, starknet::Event)]
-    struct TicketPurchased {
+    pub struct TicketPurchased {
         #[key]
-        drawId: u64,
+        pub drawId: u64,
         #[key]
-        player: ContractAddress,
-        ticketId: felt252,
-        numbers: Array<u16>,
-        ticketCount: u32,
-        timestamp: u64,
+        pub player: ContractAddress,
+        pub ticketId: felt252,
+        pub numbers: Array<u16>,
+        pub ticketCount: u32,
+        pub timestamp: u64,
     }
 
     #[derive(Drop, starknet::Event)]
@@ -280,7 +279,7 @@ pub mod Lottery {
 
         //=======================================================================================
         //OK
-        fn BuyTicket(ref self: ContractState, drawId: u64, numbers: Array<u16>) {
+        fn BuyTicket(ref self: ContractState, drawId: u64, numbers: Array<u16>, quantity: u8) {
             // Reentrancy guard at the very beginning
             assert(!self.reentrancy_guard.read(), 'ReentrancyGuard: reentrant call');
             self.reentrancy_guard.write(true);
@@ -288,6 +287,10 @@ pub mod Lottery {
             // Input validation
             assert(self.ValidateNumbers(@numbers), 'Invalid numbers');
             assert(numbers.len() == 5, 'Invalid numbers length');
+
+            // Validate quantity limits (1-10 tickets)
+            assert(quantity >= 1, 'Quantity too low');
+            assert(quantity <= 10, 'Quantity too high');
 
             let draw = self.draws.entry(drawId).read();
             assert(draw.isActive, 'Draw is not active');
@@ -343,28 +346,58 @@ pub mod Lottery {
                 timestamp: current_timestamp,
             };
 
-            let ticketId = GenerateTicketId(ref self);
-            self.tickets.entry((drawId, ticketId)).write(ticketNew);
-
-            //Incrementar contador y guardar ticketId
-
             let caller = get_caller_address();
             let mut count = self.userTicketCount.entry((caller, drawId)).read();
-            count += 1;
-            self.userTicketCount.entry((caller, drawId)).write(count);
-            self.userTicketIds.entry((caller, drawId, count)).write(ticketId);
 
-            self
-                .emit(
-                    TicketPurchased {
-                        drawId,
-                        player: caller,
-                        ticketId,
-                        numbers,
-                        ticketCount: count,
-                        timestamp: current_timestamp,
-                    },
-                );
+            // Generate multiple tickets in a loop
+            let mut i: u8 = 0;
+            while i < quantity {
+                // TODO: Mint the NFT here, for now it is simulated
+                let minted = true;
+                assert(minted, 'NFT minting failed');
+
+                let ticketNew = Ticket {
+                    player: caller,
+                    number1: n1,
+                    number2: n2,
+                    number3: n3,
+                    number4: n4,
+                    number5: n5,
+                    claimed: false,
+                    drawId: drawId,
+                    timestamp: current_timestamp,
+                };
+
+                let ticketId = GenerateTicketId(ref self);
+                self.tickets.entry((drawId, ticketId)).write(ticketNew);
+
+                // Increment counter and save ticketId
+                count += 1;
+                self.userTicketCount.entry((caller, drawId)).write(count);
+                self.userTicketIds.entry((caller, drawId, count)).write(ticketId);
+
+                // Emit event for each generated ticket
+                let mut event_numbers = ArrayTrait::new();
+                event_numbers.append(n1);
+                event_numbers.append(n2);
+                event_numbers.append(n3);
+                event_numbers.append(n4);
+                event_numbers.append(n5);
+
+                self
+                    .emit(
+                        TicketPurchased {
+                            drawId,
+                            player: caller,
+                            ticketId,
+                            numbers: event_numbers,
+                            ticketCount: count,
+                            timestamp: current_timestamp,
+                        },
+                    );
+
+                i += 1;
+            }
 
             // Release reentrancy guard
             self.reentrancy_guard.write(false);

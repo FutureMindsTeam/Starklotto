@@ -17,7 +17,7 @@ pub fn USER() -> ContractAddress {
     'USER'.try_into().unwrap()
 }
 
-fn deploy_lottery() -> ContractAddress {
+pub fn deploy_lottery() -> ContractAddress {
     // Deploy mock contracts first
     let mock_strk_play = deploy_mock_strk_play();
     let mock_vault = deploy_mock_vault(mock_strk_play.contract_address);
