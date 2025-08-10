@@ -178,7 +178,7 @@ fn test_ticket_purchase_records_ticket_details() {
     // Purchase ticket
     let numbers = create_valid_numbers();
     start_cheat_caller_address(lottery_address, user1_address());
-    lottery_dispatcher.BuyTicket(1, numbers.clone());
+    lottery_dispatcher.BuyTicket(1, numbers.clone(), 1);
     stop_cheat_caller_address(lottery_address);
 
     // Verify ticket is recorded correctly
@@ -196,7 +196,7 @@ fn test_ticket_purchase_records_ticket_details() {
     let ticket_numbers = lottery_dispatcher.GetTicketNumbers(1, ticket_id);
     let claimed = lottery_dispatcher.GetTicketClaimed(1, ticket_id);
     let draw_id = lottery_dispatcher.GetTicketDrawId(1, ticket_id);
-    let timestamp = lottery_dispatcher.GetTicketTimestamp(1, ticket_id);
+    let _timestamp = lottery_dispatcher.GetTicketTimestamp(1, ticket_id);
 
     assert(player == user1_address(), 'Ticket player should match');
     assert(*ticket_numbers.at(0) == 1, 'Number1 should match');
@@ -218,7 +218,7 @@ fn test_ticket_purchased_event_emission() {
     // Purchase ticket
     let numbers = create_valid_numbers();
     start_cheat_caller_address(lottery_address, user1_address());
-    lottery_dispatcher.BuyTicket(1, numbers.clone());
+    lottery_dispatcher.BuyTicket(1, numbers.clone(), 1);
     stop_cheat_caller_address(lottery_address);
     // Verify ticket was actually purchased (this confirms the function worked)
     let ticket_count = lottery_dispatcher.GetUserTicketsCount(1, user1_address());
@@ -259,11 +259,11 @@ fn test_multiple_tickets_same_user() {
     // Purchase first ticket
     let numbers1 = create_valid_numbers();
     start_cheat_caller_address(lottery_address, user1_address());
-    lottery_dispatcher.BuyTicket(1, numbers1);
+    lottery_dispatcher.BuyTicket(1, numbers1, 1);
 
     // Purchase second ticket
     let numbers2 = create_another_valid_numbers();
-    lottery_dispatcher.BuyTicket(1, numbers2);
+    lottery_dispatcher.BuyTicket(1, numbers2, 1);
     stop_cheat_caller_address(lottery_address);
 
     // Verify ticket count
@@ -303,7 +303,7 @@ fn test_tickets_across_different_draws() {
     // Purchase ticket in draw 1
     let numbers1 = create_valid_numbers();
     start_cheat_caller_address(lottery_address, user1_address());
-    lottery_dispatcher.BuyTicket(1, numbers1);
+    lottery_dispatcher.BuyTicket(1, numbers1, 1);
 
     // Complete draw 1 and create draw 2
     start_cheat_caller_address(lottery_address, owner_address());
@@ -314,7 +314,7 @@ fn test_tickets_across_different_draws() {
     // Purchase ticket in draw 2
     let numbers2 = create_another_valid_numbers();
     start_cheat_caller_address(lottery_address, user1_address());
-    lottery_dispatcher.BuyTicket(2, numbers2);
+    lottery_dispatcher.BuyTicket(2, numbers2, 1);
     stop_cheat_caller_address(lottery_address);
 
     // Verify tickets are stored separately for each draw
@@ -349,19 +349,19 @@ fn test_multiple_users_ticket_recording() {
     // User1 purchases ticket
     let numbers1 = create_valid_numbers();
     start_cheat_caller_address(lottery_address, user1_address());
-    lottery_dispatcher.BuyTicket(1, numbers1);
+    lottery_dispatcher.BuyTicket(1, numbers1, 1);
     stop_cheat_caller_address(lottery_address);
 
     // User2 purchases ticket
     let numbers2 = create_another_valid_numbers();
     start_cheat_caller_address(lottery_address, user2_address());
-    lottery_dispatcher.BuyTicket(1, numbers2);
+    lottery_dispatcher.BuyTicket(1, numbers2, 1);
     stop_cheat_caller_address(lottery_address);
 
     // User3 purchases ticket
     let numbers3 = create_valid_numbers();
     start_cheat_caller_address(lottery_address, user3_address());
-    lottery_dispatcher.BuyTicket(1, numbers3);
+    lottery_dispatcher.BuyTicket(1, numbers3, 1);
     stop_cheat_caller_address(lottery_address);
 
     // Verify each user has their ticket recorded
@@ -406,8 +406,8 @@ fn test_get_user_tickets_function() {
     let numbers2 = create_another_valid_numbers();
 
     start_cheat_caller_address(lottery_address, user1_address());
-    lottery_dispatcher.BuyTicket(1, numbers1);
-    lottery_dispatcher.BuyTicket(1, numbers2);
+    lottery_dispatcher.BuyTicket(1, numbers1, 1);
+    lottery_dispatcher.BuyTicket(1, numbers2, 1);
     stop_cheat_caller_address(lottery_address);
 
     // Get user ticket IDs (using the working pattern from other tests)
@@ -443,11 +443,11 @@ fn test_ticket_id_generation_increments() {
     // Purchase first ticket
     let numbers1 = create_valid_numbers();
     start_cheat_caller_address(lottery_address, user1_address());
-    lottery_dispatcher.BuyTicket(1, numbers1);
+    lottery_dispatcher.BuyTicket(1, numbers1, 1);
 
     // Purchase second ticket
     let numbers2 = create_another_valid_numbers();
-    lottery_dispatcher.BuyTicket(1, numbers2);
+    lottery_dispatcher.BuyTicket(1, numbers2, 1);
     stop_cheat_caller_address(lottery_address);
 
     // Get ticket IDs
@@ -470,17 +470,17 @@ fn test_ticket_timestamp_recording() {
     // Purchase ticket
     let numbers = create_valid_numbers();
     start_cheat_caller_address(lottery_address, user1_address());
-    lottery_dispatcher.BuyTicket(1, numbers);
+    lottery_dispatcher.BuyTicket(1, numbers, 1);
     stop_cheat_caller_address(lottery_address);
     // Get ticket info
     let ticket_ids = lottery_dispatcher.GetUserTicketIds(1, user1_address());
     let ticket_id = *ticket_ids.at(0);
-    let timestamp = lottery_dispatcher.GetTicketTimestamp(1, ticket_id);
+    let _timestamp = lottery_dispatcher.GetTicketTimestamp(1, ticket_id);
 
     // Note: timestamp validation removed for test environment compatibility
     // Verify timestamp was recorded (in test environment, this will be 0)
     // In production, this would be set by get_block_timestamp()
-    assert(timestamp == 0_u64, 'Timestamp should be 0');
+    assert(_timestamp == 0_u64, 'Timestamp should be 0');
 
     // Verify ticket belongs to the correct user
     let ticket_player = lottery_dispatcher.GetTicketPlayer(1, ticket_id);
@@ -506,7 +506,7 @@ fn test_ticket_numbers_retrieval() {
     // Purchase ticket
     let numbers = create_valid_numbers();
     start_cheat_caller_address(lottery_address, user1_address());
-    lottery_dispatcher.BuyTicket(1, numbers);
+    lottery_dispatcher.BuyTicket(1, numbers, 1);
     stop_cheat_caller_address(lottery_address);
 
     // Get ticket info - use a defensive approach for CI environment
@@ -519,7 +519,7 @@ fn test_ticket_numbers_retrieval() {
     let ticket_numbers = lottery_dispatcher.GetTicketNumbers(1, ticket_id);
     let claimed = lottery_dispatcher.GetTicketClaimed(1, ticket_id);
     let draw_id = lottery_dispatcher.GetTicketDrawId(1, ticket_id);
-    let timestamp = lottery_dispatcher.GetTicketTimestamp(1, ticket_id);
+    let _timestamp = lottery_dispatcher.GetTicketTimestamp(1, ticket_id);
 
     // Verify getter functions return correct values
     assert(player == user1_address(), 'Player should match');
@@ -542,7 +542,7 @@ fn test_data_integrity_across_operations() {
     // Purchase ticket
     let numbers = create_valid_numbers();
     start_cheat_caller_address(lottery_address, user1_address());
-    lottery_dispatcher.BuyTicket(1, numbers);
+    lottery_dispatcher.BuyTicket(1, numbers, 1);
     stop_cheat_caller_address(lottery_address);
 
     // Get initial ticket info

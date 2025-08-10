@@ -8,6 +8,7 @@ use openzeppelin_token::erc20::interface::{
 };
 use openzeppelin_utils::serde::SerializedAppend;
 use snforge_std::{ContractClassTrait, DeclareResultTrait, declare};
+#[feature("deprecated-starknet-consts")]
 use starknet::{ContractAddress, contract_address_const};
 
 pub fn ADMIN() -> ContractAddress {
