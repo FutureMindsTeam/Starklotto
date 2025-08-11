@@ -11,8 +11,6 @@ on:
       - "packages/snfoundry/contracts/**"
       - ".github/workflows/**"
 
-
-
 jobs:
   build-and-test-contracts:
     runs-on: ubuntu-latest
@@ -36,6 +34,16 @@ jobs:
         run: scarb build
         working-directory: ./packages/snfoundry/contracts
 
-      - name: Run snfoundry tests
-        run: snforge test
+      # Diagnóstico previo: lista todos los tests detectados
+      - name: List tests
+        run: snforge test -- --list
+        working-directory: ./packages/snfoundry/contracts
+
+      # Ejecuta tests en modo verbose, imprime logs y stacktrace si algo falla.
+      # SNFORGE_FORMAT=pretty fuerza salida legible (no JSON), evitando parsers aguas abajo.
+      - name: Run snfoundry tests (verbose + logs)
+        env:
+          RUST_BACKTRACE: 1
+          SNFORGE_FORMAT: pretty
+        run: snforge test -- -v --print-logs
         working-directory: ./packages/snfoundry/contracts

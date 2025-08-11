@@ -94,7 +94,7 @@ fn deploy_mock_strk_token() -> IMintableDispatcher {
     let (deployed_address, _) = contract.deploy_at(@constructor_calldata, target_address).unwrap();
 
     // Verify it deployed at the correct address
-    assert(deployed_address == target_address, 'Mock STRK address mismatch');
+    assert(deployed_address == target_address, 'Mock STRk address mismatch');
 
     // Set up the STRK token with initial balances for users
     let strk_token = IMintableDispatcher { contract_address: deployed_address };
