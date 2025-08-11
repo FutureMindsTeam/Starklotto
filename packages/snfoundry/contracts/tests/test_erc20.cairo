@@ -8,10 +8,9 @@ use openzeppelin_token::erc20::interface::{
 };
 use openzeppelin_utils::serde::SerializedAppend;
 use snforge_std::{ContractClassTrait, DeclareResultTrait, declare};
-#[feature("deprecated-starknet-consts")]
 use starknet::{ContractAddress, contract_address_const};
 
-pub fn ADMIN() -> ContractAddress {
+fn ADMIN() -> ContractAddress {
     contract_address_const::<0x01234>()
 }
 fn OWNER() -> ContractAddress {
@@ -25,7 +24,7 @@ fn STRK_TOKEN_ADDRESS() -> ContractAddress {
 }
 
 
-pub fn deploy_token() -> ContractAddress {
+fn deploy_token() -> ContractAddress {
     let contract_class = declare("StarkPlayERC20").unwrap().contract_class();
     let mut calldata = array![];
     calldata.append_serde(ADMIN()); // recipient (unused)
