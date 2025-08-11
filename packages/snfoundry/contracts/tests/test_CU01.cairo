@@ -309,7 +309,7 @@ fn test_set_fee_zero_like_negative_value() {
     let vault_address = deploy_contract_starkplayvault_with_Lottery();
     let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
     let new_fee = 0_u64;
-    let result = vault_dispatcher.setFeePercentage(new_fee);
+    let _ = vault_dispatcher.setFeePercentage(new_fee);
 }
 
 //tests have to fail
@@ -326,7 +326,7 @@ fn test_set_fee_max_like_501() {
 fn test_set_fee_deploy_contract() {
     let vault_address = deploy_contract_starkplayvault_with_Lottery();
     let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
-    let fee_percentage = 50_u64;
+    let _ = 50_u64;
     let val = vault_dispatcher.GetFeePercentage();
     assert(val == 50_u64, 'Fee  should be 50');
 }
@@ -337,7 +337,7 @@ fn test_set_fee_min() {
     let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
     let new_fee = 10_u64;
     let result = vault_dispatcher.setFeePercentage(new_fee);
-    assert(result == true, 'Fee should be set');
+    assert(result, 'Fee should be set');
     assert(vault_dispatcher.GetFeePercentage() == new_fee, 'Fee is not 10_u64');
 }
 
@@ -347,7 +347,7 @@ fn test_set_fee_max() {
     let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
     let new_fee = 500_u64;
     let result = vault_dispatcher.setFeePercentage(new_fee);
-    assert(result == true, 'Fee should be set');
+    assert(result, 'Fee should be set');
     assert(vault_dispatcher.GetFeePercentage() == new_fee, 'Fee is not 500_u64');
 }
 
@@ -357,7 +357,7 @@ fn test_set_fee_middle() {
     let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
     let new_fee = 250_u64;
     let result = vault_dispatcher.setFeePercentage(new_fee);
-    assert(result == true, 'Fee should be set');
+    assert(result, 'Fee should be set');
     assert(vault_dispatcher.GetFeePercentage() == new_fee, 'Fee is not 250_u64');
 }
 
@@ -368,7 +368,7 @@ fn test_event_set_fee_percentage() {
     let new_fee = 250_u64;
     let mut spy = spy_events();
 
-    let result = vault_dispatcher.setFeePercentage(new_fee);
+    let _ = vault_dispatcher.setFeePercentage(new_fee);
 
     let events = spy.get_events();
 
@@ -460,7 +460,7 @@ fn test_basis_points_calculation() {
 fn test_consecutive_conversion_fee_accumulation() {
     let token_address = deploy_starkplay_token();
     let vault_address = deploy_vault_with_fee(token_address, 500_u64); // 5% fee
-    let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
+    let _ = IStarkPlayVaultDispatcher { contract_address: vault_address };
 
     let mut simulated_accumulated_fees = 0_u256;
 
@@ -791,7 +791,7 @@ fn test_fee_calculation_overflow_prevention() {
     let result1 = vault_dispatcher.buySTRKP(user_address, large_amount);
 
     // Verify first transaction completed successfully
-    assert(result1 == true, 'first tx failed');
+    assert(result1, 'first tx failed');
 
     // Check that fees were calculated correctly for large amounts
     let fee_percentage = vault_dispatcher.GetFeePercentage();
@@ -806,7 +806,7 @@ fn test_fee_calculation_overflow_prevention() {
     let result2 = vault_dispatcher.buySTRKP(user_address, large_amount.into());
 
     // Verify second transaction completed successfully
-    assert(result2 == true, 'second tx failed');
+    assert(result2, 'second tx failed');
 
     // Verify final state after both transactions
     let final_accumulated_fee = vault_dispatcher.get_accumulated_fee();
@@ -917,7 +917,7 @@ fn test_fee_calculation_underflow_prevention() {
     let result1 = vault_dispatcher.buySTRKP(user_address, thousand_wei);
 
     // Verify first transaction completed successfully
-    assert(result1 == true, 'first tx failed');
+    assert(result1, 'first tx failed');
 
     // Check that fees were calculated correctly for small amounts
     let actual_accumulated_fee = vault_dispatcher.get_accumulated_fee();
@@ -930,7 +930,7 @@ fn test_fee_calculation_underflow_prevention() {
     let result2 = vault_dispatcher.buySTRKP(user_address, thousand_wei);
 
     // Verify second transaction completed successfully
-    assert(result2 == true, 'second tx failed');
+    assert(result2, 'second tx failed');
 
     // Verify final state after both transactions
     let final_accumulated_fee = vault_dispatcher.get_accumulated_fee();
@@ -1047,7 +1047,7 @@ fn test_decimal_precision_edge_cases() {
     let result1 = vault_dispatcher.buySTRKP(user_address, amount_for_exact_one_wei);
 
     // Verify first transaction completed successfully
-    assert(result1 == true, 'first tx failed');
+    assert(result1, 'first tx failed');
 
     // Check that fees were calculated correctly for edge case amounts
     let actual_accumulated_fee = vault_dispatcher.get_accumulated_fee();
@@ -1060,7 +1060,7 @@ fn test_decimal_precision_edge_cases() {
     let result2 = vault_dispatcher.buySTRKP(user_address, amount_for_one_and_half_wei);
 
     // Verify second transaction completed successfully
-    assert(result2 == true, 'second tx failed');
+    assert(result2, 'second tx failed');
 
     // Verify final state after both transactions
     let final_accumulated_fee = vault_dispatcher.get_accumulated_fee();
@@ -1108,7 +1108,7 @@ fn test_conversion_1_1_basic() {
     let success = vault_dispatcher.buySTRKP(user_address, amount_strk);
     stop_cheat_caller_address(vault.contract_address);
 
-    assert(success == true, 'buySTRKP should succeed');
+    assert(success, 'buySTRKP should succeed');
 
     // Get final $tarkPlay balance
     let final_starkplay_balance = erc20_dispatcher.balance_of(user_address);
@@ -1172,7 +1172,7 @@ fn test_conversion_1_1_different_amounts() {
         let success = vault_dispatcher.buySTRKP(user_address, amount_strk);
         stop_cheat_caller_address(vault.contract_address);
 
-        assert(success == true, 'buySTRKP should succeed');
+        assert(success, 'buySTRKP should succeed');
 
         // Get final balance and calculate minted amount
         let final_starkplay_balance = erc20_dispatcher.balance_of(user_address);
@@ -1234,7 +1234,7 @@ fn test_conversion_1_1_precision() {
         let success = vault_dispatcher.buySTRKP(user_address, amount_strk);
         stop_cheat_caller_address(vault.contract_address);
 
-        assert(success == true, 'buySTRKP should succeed');
+        assert(success, 'buySTRKP should succeed');
 
         // Get final balance and calculate minted amount
         let final_starkplay_balance = erc20_dispatcher.balance_of(user_address);
@@ -1277,7 +1277,7 @@ fn test_user_balance_after_conversion() {
 
     // Execute buySTRKP
     start_cheat_caller_address(vault.contract_address, user_address);
-    let success = vault_dispatcher.buySTRKP(user_address, amount_strk);
+    let _ = vault_dispatcher.buySTRKP(user_address, amount_strk);
     stop_cheat_caller_address(vault.contract_address);
 
     let newBalance = strk_erc20_dispatcher.balance_of(user_address);
@@ -1321,7 +1321,7 @@ fn test_1_1_conversion_consistency() {
 
     let strk_token = IMintableDispatcher { contract_address: strk_token_address };
 
-    let strk_erc20_dispatcher = IERC20Dispatcher { contract_address: strk_token_address };
+    let _ = IERC20Dispatcher { contract_address: strk_token_address };
 
     let user_address = USER1();
     let erc20_dispatcher = IERC20Dispatcher { contract_address: starkplay_token.contract_address };
@@ -1348,7 +1348,7 @@ fn test_1_1_conversion_consistency() {
         let success = vault_dispatcher.buySTRKP(user_address, amount_strk);
         stop_cheat_caller_address(vault.contract_address);
 
-        assert(success == true, 'buySTRKP should succeed');
+        assert(success, 'buySTRKP should succeed');
 
         // Get final balance and calculate minted amount
         let final_starkplay_balance = erc20_dispatcher.balance_of(user_address);
@@ -1370,4 +1370,431 @@ fn test_1_1_conversion_consistency() {
     let total_starkplay_minted2 = vault_dispatcher.get_total_starkplay_minted();
     assert(total_starkplay_minted2 == expected_total_starkplay, 'Tot mint should be consistent');
     assert(total_starkplay_minted2 == 4975000000000000000_u256, 'Tot mint should be 4.975');
+}
+
+}
+
+// ============================================================================================
+// ISSUE-BC-AUTH-002: Tests for mint and burn authorization in StarkPlayERC20
+// ============================================================================================
+
+fn deploy_starkplay_erc20_for_auth_tests() -> (IMintableDispatcher, IBurnableDispatcher) {
+    let starkplay_contract = declare("StarkPlayERC20").unwrap().contract_class();
+    let starkplay_constructor_calldata = array![
+        owner_address().into(), owner_address().into(),
+    ]; // recipient and admin
+    let (starkplay_address, _) = starkplay_contract
+        .deploy(@starkplay_constructor_calldata)
+        .unwrap();
+
+    let mintable_dispatcher = IMintableDispatcher { contract_address: starkplay_address };
+    let burnable_dispatcher = IBurnableDispatcher { contract_address: starkplay_address };
+
+    (mintable_dispatcher, burnable_dispatcher)
+}
+
+// ============================================================================================
+// 1. ROLE MANAGEMENT TESTS
+// ============================================================================================
+
+#[test]
+fn test_owner_can_grant_minter_role() {
+    let (token, _) = deploy_starkplay_erc20_for_auth_tests();
+
+    start_cheat_caller_address(token.contract_address, owner_address());
+
+    // Grant MINTER_ROLE to a contract address
+    token.grant_minter_role(user_address());
+
+    // Verify the role was granted by checking if the address is in authorized minters
+    let authorized_minters = token.get_authorized_minters();
+    assert(authorized_minters.len() == 1, 'Should have 1 minter');
+    assert(*authorized_minters.at(0) == user_address(), 'User should be minter');
+
+    stop_cheat_caller_address(token.contract_address);
+}
+
+#[test]
+fn test_owner_can_grant_burner_role() {
+    let (_, token) = deploy_starkplay_erc20_for_auth_tests();
+
+    start_cheat_caller_address(token.contract_address, owner_address());
+
+    // Grant BURNER_ROLE to a contract address
+    token.grant_burner_role(user_address());
+
+    // Verify the role was granted by checking if the address is in authorized burners
+    let authorized_burners = token.get_authorized_burners();
+    assert(authorized_burners.len() == 1, 'Should have 1 burner');
+    assert(*authorized_burners.at(0) == user_address(), 'User should be burner');
+
+    stop_cheat_caller_address(token.contract_address);
+}
+
+#[test]
+fn test_owner_can_revoke_minter_role() {
+    let (token, _) = deploy_starkplay_erc20_for_auth_tests();
+
+    start_cheat_caller_address(token.contract_address, owner_address());
+
+    // First grant the role
+    token.grant_minter_role(user_address());
+    let authorized_minters = token.get_authorized_minters();
+    assert(authorized_minters.len() == 1, 'Should have 1 minter');
+
+    // Then revoke the role
+    token.revoke_minter_role(user_address());
+    let authorized_minters_after = token.get_authorized_minters();
+    assert(authorized_minters_after.len() == 0, 'Should have 0 minters');
+
+    stop_cheat_caller_address(token.contract_address);
+}
+
+#[test]
+fn test_owner_can_revoke_burner_role() {
+    let (_, token) = deploy_starkplay_erc20_for_auth_tests();
+
+    start_cheat_caller_address(token.contract_address, owner_address());
+
+    // First grant the role
+    token.grant_burner_role(user_address());
+    let authorized_burners = token.get_authorized_burners();
+    assert(authorized_burners.len() == 1, 'Should have 1 burner');
+
+    // Then revoke the role
+    token.revoke_burner_role(user_address());
+    let authorized_burners_after = token.get_authorized_burners();
+    assert(authorized_burners_after.len() == 0, 'Should have 0 burners');
+
+    stop_cheat_caller_address(token.contract_address);
+}
+
+#[should_panic(expected: 'Caller is missing role')]
+#[test]
+fn test_only_owner_can_grant_minter_role() {
+    let (token, _) = deploy_starkplay_erc20_for_auth_tests();
+
+    // Try to grant role as non-owner (should fail)
+    start_cheat_caller_address(token.contract_address, user_address());
+    token.grant_minter_role(USER1());
+    stop_cheat_caller_address(token.contract_address);
+}
+
+#[should_panic(expected: 'Caller is missing role')]
+#[test]
+fn test_only_owner_can_grant_burner_role() {
+    let (_, token) = deploy_starkplay_erc20_for_auth_tests();
+
+    // Try to grant role as non-owner (should fail)
+    start_cheat_caller_address(token.contract_address, user_address());
+    token.grant_burner_role(USER1());
+    stop_cheat_caller_address(token.contract_address);
+}
+
+#[should_panic(expected: 'Caller is missing role')]
+#[test]
+fn test_only_owner_can_revoke_minter_role() {
+    let (token, _) = deploy_starkplay_erc20_for_auth_tests();
+
+    // First grant role as owner
+    start_cheat_caller_address(token.contract_address, owner_address());
+    token.grant_minter_role(user_address());
+    stop_cheat_caller_address(token.contract_address);
+
+    // Try to revoke role as non-owner (should fail)
+    start_cheat_caller_address(token.contract_address, user_address());
+    token.revoke_minter_role(user_address());
+    stop_cheat_caller_address(token.contract_address);
+}
+
+#[should_panic(expected: 'Caller is missing role')]
+#[test]
+fn test_only_owner_can_revoke_burner_role() {
+    let (_, token) = deploy_starkplay_erc20_for_auth_tests();
+
+    // First grant role as owner
+    start_cheat_caller_address(token.contract_address, owner_address());
+    token.grant_burner_role(user_address());
+    stop_cheat_caller_address(token.contract_address);
+
+    // Try to revoke role as non-owner (should fail)
+    start_cheat_caller_address(token.contract_address, user_address());
+    token.revoke_burner_role(user_address());
+    stop_cheat_caller_address(token.contract_address);
+}
+
+// ============================================================================================
+// 2. AUTHORIZED CONTRACT OPERATION TESTS
+// ============================================================================================
+
+#[test]
+fn test_authorized_contract_can_mint() {
+    let (token, _) = deploy_starkplay_erc20_for_auth_tests();
+    let erc20_dispatcher = IERC20Dispatcher { contract_address: token.contract_address };
+
+    // Setup: Owner grants MINTER_ROLE and sets allowance
+    start_cheat_caller_address(token.contract_address, owner_address());
+    token.grant_minter_role(user_address());
+    token.set_minter_allowance(user_address(), LARGE_AMOUNT());
+    stop_cheat_caller_address(token.contract_address);
+
+    // Get initial balance
+    let initial_balance = erc20_dispatcher.balance_of(USER1());
+
+    // Authorized contract mints tokens
+    start_cheat_caller_address(token.contract_address, user_address());
+    token.mint(USER1(), 1000_u256);
+    stop_cheat_caller_address(token.contract_address);
+
+    // Verify mint was successful
+    let final_balance = erc20_dispatcher.balance_of(USER1());
+    assert(final_balance == initial_balance + 1000_u256, 'Mint should succeed');
+}
+
+#[test]
+fn test_authorized_contract_can_burn() {
+    let (mint_token, burn_token) = deploy_starkplay_erc20_for_auth_tests();
+    let erc20_dispatcher = IERC20Dispatcher { contract_address: mint_token.contract_address };
+
+    // Setup: Owner grants roles and sets allowances
+    start_cheat_caller_address(mint_token.contract_address, owner_address());
+    mint_token.grant_minter_role(owner_address());
+    mint_token.set_minter_allowance(owner_address(), LARGE_AMOUNT());
+    burn_token.grant_burner_role(user_address());
+    burn_token.set_burner_allowance(user_address(), LARGE_AMOUNT());
+
+    // Mint some tokens first
+    mint_token.mint(user_address(), 2000_u256);
+    stop_cheat_caller_address(mint_token.contract_address);
+
+    // Get initial balance
+    let initial_balance = erc20_dispatcher.balance_of(user_address());
+    assert(initial_balance >= 2000_u256, 'Should have tokens to burn');
+
+    // Authorized contract burns tokens
+    start_cheat_caller_address(burn_token.contract_address, user_address());
+    burn_token.burn(1000_u256);
+    stop_cheat_caller_address(burn_token.contract_address);
+
+    // Verify burn was successful
+    let final_balance = erc20_dispatcher.balance_of(user_address());
+    assert(final_balance == initial_balance - 1000_u256, 'Burn should succeed');
+}
+
+#[should_panic(expected: 'Caller is missing role')]
+#[test]
+fn test_unauthorized_contract_cannot_mint() {
+    let (token, _) = deploy_starkplay_erc20_for_auth_tests();
+
+    // Try to mint without MINTER_ROLE (should fail)
+    start_cheat_caller_address(token.contract_address, user_address());
+    token.mint(USER1(), 1000_u256);
+    stop_cheat_caller_address(token.contract_address);
+}
+
+#[should_panic(expected: 'Caller is missing role')]
+#[test]
+fn test_unauthorized_contract_cannot_burn() {
+    let (_, token) = deploy_starkplay_erc20_for_auth_tests();
+
+    // Try to burn without BURNER_ROLE (should fail)
+    start_cheat_caller_address(token.contract_address, user_address());
+    token.burn(1000_u256);
+    stop_cheat_caller_address(token.contract_address);
+}
+
+#[should_panic(expected: 'Caller is missing role')]
+#[test]
+fn test_minter_cannot_burn_without_burner_role() {
+    let (mint_token, burn_token) = deploy_starkplay_erc20_for_auth_tests();
+
+    // Setup: Grant only MINTER_ROLE to user_address
+    start_cheat_caller_address(mint_token.contract_address, owner_address());
+    mint_token.grant_minter_role(user_address());
+    mint_token.set_minter_allowance(user_address(), LARGE_AMOUNT());
+    stop_cheat_caller_address(mint_token.contract_address);
+
+    // Try to burn without BURNER_ROLE (should fail)
+    start_cheat_caller_address(burn_token.contract_address, user_address());
+    burn_token.burn(1000_u256);
+    stop_cheat_caller_address(burn_token.contract_address);
+}
+
+// ============================================================================================
+// 3. SECURITY TESTS - MINT/BURN LIMITS AND ALLOWANCES
+// ============================================================================================
+
+#[should_panic(expected: 'Insufficient minter allowance')]
+#[test]
+fn test_mint_limit_enforcement() {
+    let (token, _) = deploy_starkplay_erc20_for_auth_tests();
+
+    // Setup: Grant role but set low allowance
+    start_cheat_caller_address(token.contract_address, owner_address());
+    token.grant_minter_role(user_address());
+    token.set_minter_allowance(user_address(), 500_u256); // Low allowance
+    stop_cheat_caller_address(token.contract_address);
+
+    // Try to mint more than allowance (should fail)
+    start_cheat_caller_address(token.contract_address, user_address());
+    token.mint(USER1(), 1000_u256); // Exceeds allowance
+    stop_cheat_caller_address(token.contract_address);
+}
+
+#[should_panic(expected: 'Insufficient burner allowance')]
+#[test]
+fn test_burn_limit_enforcement() {
+    let (mint_token, burn_token) = deploy_starkplay_erc20_for_auth_tests();
+
+    // Setup: Grant roles and mint tokens first
+    start_cheat_caller_address(mint_token.contract_address, owner_address());
+    mint_token.grant_minter_role(owner_address());
+    mint_token.set_minter_allowance(owner_address(), LARGE_AMOUNT());
+    burn_token.grant_burner_role(user_address());
+    burn_token.set_burner_allowance(user_address(), 500_u256); // Low allowance
+    mint_token.mint(user_address(), 2000_u256);
+    stop_cheat_caller_address(mint_token.contract_address);
+
+    // Try to burn more than allowance (should fail)
+    start_cheat_caller_address(burn_token.contract_address, user_address());
+    burn_token.burn(1000_u256); // Exceeds allowance
+    stop_cheat_caller_address(burn_token.contract_address);
+}
+
+#[test]
+fn test_allowance_decreases_after_mint() {
+    let (token, _) = deploy_starkplay_erc20_for_auth_tests();
+
+    // Setup: Grant role and set allowance
+    start_cheat_caller_address(token.contract_address, owner_address());
+    token.grant_minter_role(user_address());
+    token.set_minter_allowance(user_address(), 1000_u256);
+    stop_cheat_caller_address(token.contract_address);
+
+    // Check initial allowance
+    let initial_allowance = token.get_minter_allowance(user_address());
+    assert(initial_allowance == 1000_u256, 'Initial allowance incorrect');
+
+    // Mint tokens
+    start_cheat_caller_address(token.contract_address, user_address());
+    token.mint(USER1(), 300_u256);
+    stop_cheat_caller_address(token.contract_address);
+
+    // Check allowance decreased
+    let final_allowance = token.get_minter_allowance(user_address());
+    assert(final_allowance == 700_u256, 'Allowance should decrease');
+}
+
+#[test]
+fn test_allowance_decreases_after_burn() {
+    let (mint_token, burn_token) = deploy_starkplay_erc20_for_auth_tests();
+
+    // Setup: Grant roles and mint tokens first
+    start_cheat_caller_address(mint_token.contract_address, owner_address());
+    mint_token.grant_minter_role(owner_address());
+    mint_token.set_minter_allowance(owner_address(), LARGE_AMOUNT());
+    burn_token.grant_burner_role(user_address());
+    burn_token.set_burner_allowance(user_address(), 1000_u256);
+    mint_token.mint(user_address(), 2000_u256);
+    stop_cheat_caller_address(mint_token.contract_address);
+
+    // Check initial burn allowance
+    let initial_allowance = burn_token.get_burner_allowance(user_address());
+    assert(initial_allowance == 1000_u256, 'Initial allowance incorrect');
+
+    // Burn tokens
+    start_cheat_caller_address(burn_token.contract_address, user_address());
+    burn_token.burn(300_u256);
+    stop_cheat_caller_address(burn_token.contract_address);
+
+    // Check allowance decreased
+    let final_allowance = burn_token.get_burner_allowance(user_address());
+    assert(final_allowance == 700_u256, 'Allowance should decrease');
+}
+
+// ============================================================================================
+// 4. INTEGRATION TESTS WITH STARKPLAYVAULT
+// ============================================================================================
+
+#[test]
+fn test_vault_integration_with_mint_role() {
+    // Deploy vault which should automatically get MINTER_ROLE
+    let (vault, starkplay_token) = deploy_vault_contract();
+
+    // Verify vault has MINTER_ROLE
+    let authorized_minters = starkplay_token.get_authorized_minters();
+    let mut vault_is_minter = false;
+    let mut i = 0;
+    while i != authorized_minters.len() {
+        if *authorized_minters.at(i) == vault.contract_address {
+            vault_is_minter = true;
+            break;
+        }
+        i += 1;
+    }
+    assert(vault_is_minter, 'Vault should have MINTER_ROLE');
+
+    // Verify vault has sufficient allowance
+    let minter_allowance = starkplay_token.get_minter_allowance(vault.contract_address);
+    assert(minter_allowance > 0, 'Vault should have allowance');
+}
+
+#[test]
+fn test_vault_integration_with_burn_role() {
+    // Deploy vault which should automatically get BURNER_ROLE
+    let (vault, starkplay_token_mint) = deploy_vault_contract();
+    let starkplay_token_burn = IBurnableDispatcher {
+        contract_address: starkplay_token_mint.contract_address,
+    };
+
+    // Verify vault has BURNER_ROLE
+    let authorized_burners = starkplay_token_burn.get_authorized_burners();
+    let mut vault_is_burner = false;
+    let mut i = 0;
+    while i != authorized_burners.len() {
+        if *authorized_burners.at(i) == vault.contract_address {
+            vault_is_burner = true;
+            break;
+        }
+        i += 1;
+    }
+    assert(vault_is_burner, 'Vault should have BURNER_ROLE');
+
+    // Verify vault has sufficient burn allowance
+    let burner_allowance = starkplay_token_burn.get_burner_allowance(vault.contract_address);
+    assert(burner_allowance > 0, 'Vault has burn allowance');
+}
+
+#[test]
+fn test_multiple_authorized_contracts() {
+    let (token_mint, token_burn) = deploy_starkplay_erc20_for_auth_tests();
+
+    // Setup: Grant roles to multiple contracts
+    start_cheat_caller_address(token_mint.contract_address, owner_address());
+    token_mint.grant_minter_role(user_address());
+    token_mint.grant_minter_role(USER1());
+    token_mint.set_minter_allowance(user_address(), LARGE_AMOUNT());
+    token_mint.set_minter_allowance(USER1(), LARGE_AMOUNT());
+
+    token_burn.grant_burner_role(user_address());
+    token_burn.grant_burner_role(USER1());
+    token_burn.set_burner_allowance(user_address(), LARGE_AMOUNT());
+    token_burn.set_burner_allowance(USER1(), LARGE_AMOUNT());
+    stop_cheat_caller_address(token_mint.contract_address);
+
+    // Verify both contracts are authorized
+    let authorized_minters = token_mint.get_authorized_minters();
+    assert(authorized_minters.len() == 2, 'Should have 2 minters');
+
+    let authorized_burners = token_burn.get_authorized_burners();
+    assert(authorized_burners.len() == 2, 'Should have 2 burners');
+
+    // Both should be able to mint
+    start_cheat_caller_address(token_mint.contract_address, user_address());
+    token_mint.mint(owner_address(), 1000_u256);
+    stop_cheat_caller_address(token_mint.contract_address);
+
+    start_cheat_caller_address(token_mint.contract_address, USER1());
+    token_mint.mint(owner_address(), 1000_u256);
+    stop_cheat_caller_address(token_mint.contract_address);
 }
