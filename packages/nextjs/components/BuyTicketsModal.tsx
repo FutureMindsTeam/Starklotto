@@ -93,7 +93,7 @@ export default function BuyTicketsModal({
   const generateRandom = (ticketId: number) => {
     const numbers = new Set<number>();
     while (numbers.size < 5) {
-      numbers.add(Math.floor(Math.random() * 41)); // 0-40 inclusive
+      numbers.add(Math.floor(Math.random() * 40) + 1); // 1-40 inclusive
     }
     setSelectedNumbers((current) => ({
       ...current,
@@ -106,7 +106,7 @@ export default function BuyTicketsModal({
     for (let i = 1; i <= ticketCount; i++) {
       const numbers = new Set<number>();
       while (numbers.size < 5) {
-        numbers.add(Math.floor(Math.random() * 41)); // 0-40 inclusive
+        numbers.add(Math.floor(Math.random() * 40) + 1); // 1-40 inclusive
       }
       newSelections[i] = Array.from(numbers);
     }

@@ -41,7 +41,7 @@ const NumberSelectionPage = () => {
     const randomNums: Set<number> = new Set();
 
     while (randomNums.size < randomNumbersToGenerate) {
-      randomNums.add(Math.floor(Math.random() * 41));
+      randomNums.add(Math.floor(Math.random() * 40) + 1);
     }
 
     const newNumbers = Array.from(randomNums);
