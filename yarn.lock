@@ -3930,7 +3930,7 @@ __metadata:
     "@scaffold-stark/stark-burner": ^0.1.9
     "@starknet-io/types-js": ^0.8.1
     "@starknet-react/chains": ^3.1.2
-    "@starknet-react/core": ^3.7.2
+    "@starknet-react/core": ^4.0.4
     "@starknet-react/typescript-config": 0.0.2
     "@testing-library/dom": ^10.4.0
     "@testing-library/jest-dom": ^6.6.3
@@ -4020,7 +4020,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@starknet-io/starknet-types-07@npm:@starknet-io/types-js@~0.7.10, @starknet-io/types-js@npm:^0.7.7":
+"@starknet-io/starknet-types-07@npm:@starknet-io/types-js@~0.7.10, @starknet-io/types-js@npm:^0.7.10, @starknet-io/types-js@npm:^0.7.7":
   version: 0.7.10
   resolution: "@starknet-io/types-js@npm:0.7.10"
   checksum: 8f71c57d0f101ebbde91e3016b73ab70ce3329ccb7463764a27a61db42b9ea14b690bd620a6b2dd4303e890b4a9212bdd40626962e0320e82e0c600fd3be5abf
@@ -4034,19 +4034,26 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@starknet-react/chains@npm:^3.1.2, @starknet-react/chains@npm:^3.1.3":
+"@starknet-react/chains@npm:^3.1.2":
   version: 3.1.3
   resolution: "@starknet-react/chains@npm:3.1.3"
   checksum: 28acadd103c2248bb189a4300eb81307f27cc91b6cdc1af737a9ea1bf43b16fd0634194de80d8e6968be73ca387deb3119720ecfee8e2943b8fe533e5dd25b58
   languageName: node
   linkType: hard
 
-"@starknet-react/core@npm:^3.7.2":
-  version: 3.7.4
-  resolution: "@starknet-react/core@npm:3.7.4"
+"@starknet-react/chains@npm:^4.0.4":
+  version: 4.0.4
+  resolution: "@starknet-react/chains@npm:4.0.4"
+  checksum: 4967cd83e515bb85946dad32a864f39ba8cc4ac4e64350e31c9555f9b6304d1fb6f041db627ed76fda1f183bffecec241a61db2cedac67e3766fea3eab1075b6
+  languageName: node
+  linkType: hard
+
+"@starknet-react/core@npm:^4.0.4":
+  version: 4.0.4
+  resolution: "@starknet-react/core@npm:4.0.4"
   dependencies:
-    "@starknet-io/types-js": ^0.7.7
-    "@starknet-react/chains": ^3.1.3
+    "@starknet-io/types-js": ^0.7.10
+    "@starknet-react/chains": ^4.0.4
     "@tanstack/react-query": ^5.25.0
     abi-wan-kanabi: ^2.2.4
     eventemitter3: ^5.0.1
@@ -4055,8 +4062,8 @@ __metadata:
   peerDependencies:
     get-starknet-core: ^4.0.0
     react: ^18.0
-    starknet: ^6.11.0
-  checksum: 2808e2072e5cdbd858a457be860f30f00342e80a0f139616b1989efc0539b8ba1c6e5dcbd91f04a91a57e4b200caf36bfda43dfb52660ee7218b517604d0456d
+    starknet: ^7.6.4
+  checksum: ba4edc1eba93a68e321b354af942d2721914994c32d951307708a14fd930437c224849c0bb6df536d239aa746ed3ac4c787032f57815e80dc705f30967f9e0b9
   languageName: node
   linkType: hard
 
