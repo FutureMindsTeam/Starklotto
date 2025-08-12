@@ -3985,7 +3985,7 @@ __metadata:
     "@testing-library/dom": ^10.4.0
     "@testing-library/jest-dom": ^6.6.3
     "@testing-library/react": ^16.2.0
-    "@tsparticles/engine": ^3.8.1
+    "@tsparticles/engine": ^3.9.1
     "@tsparticles/react": ^3.0.0
     "@types/next-pwa": ^5.6.0
     "@types/node": ^20
@@ -4296,10 +4296,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tsparticles/engine@npm:3.8.1, @tsparticles/engine@npm:^3.8.1":
+"@tsparticles/engine@npm:3.8.1":
   version: 3.8.1
   resolution: "@tsparticles/engine@npm:3.8.1"
   checksum: deb024fc3a51136bb74a0dd0bc635f1240aae0710c78bde4d51c2aba41f4ed80ca3a3095c2d5f42b56dd67e7b2c0db696a53f951eabd5e8804e3d03d65b33a22
+  languageName: node
+  linkType: hard
+
+"@tsparticles/engine@npm:^3.9.1":
+  version: 3.9.1
+  resolution: "@tsparticles/engine@npm:3.9.1"
+  checksum: 4e9fcc8ed08651da2279c93f58dcbcede9a9d410e0b487f61caa5ab7b92b8a2c0f7814f587904daf23859ee7176694a848411b3ef3526700bad28ad3fcc58937
   languageName: node
   linkType: hard
 

@@ -34,7 +34,7 @@
     "@starknet-react/chains": "^3.1.2",
     "@starknet-react/core": "^3.7.2",
     "@starknet-react/typescript-config": "0.0.2",
-    "@tsparticles/engine": "^3.8.1",
+    "@tsparticles/engine": "^3.9.1",
     "@tsparticles/react": "^3.0.0",
     "abi-wan-kanabi": "^2.2.2",
     "blo": "^1.1.1",
