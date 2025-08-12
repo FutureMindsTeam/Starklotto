@@ -43,15 +43,7 @@ import { green } from "./helpers/colorize-log";
  */
 
 const deployScript = async (): Promise<void> => {
-  await deployContract({
-    contract: "Lottery",
-    contractName: "Lottery",
-    constructorArgs: {
-      owner: deployer.address,
-    },
-  });
-
-  // Deploy StarkPlayERC20
+  // Deploy StarkPlayERC20 first
   const starkPlayERC20DeploymentResult = await deployContract({
     contract: "StarkPlayERC20",
     contractName: "StarkPlayERC20",
@@ -77,13 +69,39 @@ const deployScript = async (): Promise<void> => {
     );
   }
 
-  await deployContract({
+  // Deploy StarkPlayVault
+  const starkPlayVaultDeploymentResult = await deployContract({
     contract: "StarkPlayVault",
     contractName: "StarkPlayVault",
     constructorArgs: {
       owner: deployer.address,
       starkPlayToken: starkPlayERC20Address, // Pass the deployed StarkPlayERC20 address
-      feePercentage: 5, // Default fee percentage, adjust as needed
+      feePercentage: 50, // Default fee percentage, adjust as needed
+    },
+  });
+  const starkPlayVaultAddress = starkPlayVaultDeploymentResult.address;
+
+  // Basic check for a valid address
+  if (
+    !starkPlayVaultAddress ||
+    starkPlayVaultAddress === "" ||
+    starkPlayVaultAddress.startsWith(
+      "0x0000000000000000000000000000000000000000000000000000000000000000"
+    )
+  ) {
+    throw new Error(
+      `Failed to deploy StarkPlayVault or address is invalid: ${starkPlayVaultAddress}`
+    );
+  }
+
+  // Deploy Lottery with dynamic addresses
+  await deployContract({
+    contract: "Lottery",
+    contractName: "Lottery",
+    constructorArgs: {
+      owner: deployer.address,
+      strkPlayContractAddress: starkPlayERC20Address,
+      strkPlayVaultContractAddress: starkPlayVaultAddress,
     },
   });
 
