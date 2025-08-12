@@ -2097,12 +2097,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@next/eslint-plugin-next@npm:15.2.3":
-  version: 15.2.3
-  resolution: "@next/eslint-plugin-next@npm:15.2.3"
+"@next/eslint-plugin-next@npm:15.4.6":
+  version: 15.4.6
+  resolution: "@next/eslint-plugin-next@npm:15.4.6"
   dependencies:
     fast-glob: 3.3.1
-  checksum: 4311f0983bd2245ec8b532906208c09898b3034d291ee7c22d312e54cdfe7efc0bac5d63cd4d808526fc6769b2eb43fcf7023b584d51ecf6e8720a6b6003001c
+  checksum: e2316e5668087164dd63d663c1c10415f6bddd428a0d8f31204b53d398f528929aff443b052bb0cdb03fed0b55941935cd3a7b3f4a76823b11a14dd2c5052a67
   languageName: node
   linkType: hard
 
@@ -3950,7 +3950,7 @@ __metadata:
     clsx: ^2.1.1
     daisyui: ^4.7.3
     eslint: ^8
-    eslint-config-next: 15.2.3
+    eslint-config-next: 15.4.6
     ethers: ^6.12.0
     framer-motion: ^12.5.0
     get-starknet-core: ^4.0.0
@@ -8273,11 +8273,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-config-next@npm:15.2.3":
-  version: 15.2.3
-  resolution: "eslint-config-next@npm:15.2.3"
+"eslint-config-next@npm:15.4.6":
+  version: 15.4.6
+  resolution: "eslint-config-next@npm:15.4.6"
   dependencies:
-    "@next/eslint-plugin-next": 15.2.3
+    "@next/eslint-plugin-next": 15.4.6
     "@rushstack/eslint-patch": ^1.10.3
     "@typescript-eslint/eslint-plugin": ^5.4.2 || ^6.0.0 || ^7.0.0 || ^8.0.0
     "@typescript-eslint/parser": ^5.4.2 || ^6.0.0 || ^7.0.0 || ^8.0.0
@@ -8293,7 +8293,7 @@ __metadata:
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: 4fbf96bda87b64bbb5ac58ff1c9e04b6596151d4ffa2f8df8febc8d4c4f767df654ec12291b7aeafaff5dec16489beccebc6a2a9f5c7175b8bf8e202879f1855
+  checksum: da053475f57edb79b5036f58718cacad466c8242dc438be97dc26d7f7a0a7481a787bec3e92d721cf400b8b59d6adf25d02bf706dfb4cf95fb65af08279a0822
   languageName: node
   linkType: hard
 
