@@ -1961,7 +1961,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@keplr-wallet/common@npm:0.12.250, @keplr-wallet/common@npm:^0.12.175":
+"@keplr-wallet/common@npm:0.12.263":
+  version: 0.12.263
+  resolution: "@keplr-wallet/common@npm:0.12.263"
+  dependencies:
+    "@keplr-wallet/crypto": 0.12.263
+    "@keplr-wallet/types": 0.12.263
+    buffer: ^6.0.3
+    delay: ^4.4.0
+  checksum: 37cbb40d9defc0b69a25ca687c072f4df45a78b4d778a464806c56f3c938b0ca971c9af1473bcbcb9cced94870c2ea91dd2e67fce3b48237bb3612cf2d88a61d
+  languageName: node
+  linkType: hard
+
+"@keplr-wallet/common@npm:^0.12.175":
   version: 0.12.250
   resolution: "@keplr-wallet/common@npm:0.12.250"
   dependencies:
@@ -1973,22 +1985,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@keplr-wallet/cosmos@npm:^0.12.175":
-  version: 0.12.250
-  resolution: "@keplr-wallet/cosmos@npm:0.12.250"
+"@keplr-wallet/cosmos@npm:^0.12.263":
+  version: 0.12.263
+  resolution: "@keplr-wallet/cosmos@npm:0.12.263"
   dependencies:
     "@ethersproject/address": ^5.6.0
-    "@keplr-wallet/common": 0.12.250
-    "@keplr-wallet/crypto": 0.12.250
-    "@keplr-wallet/proto-types": 0.12.250
-    "@keplr-wallet/simple-fetch": 0.12.250
-    "@keplr-wallet/types": 0.12.250
-    "@keplr-wallet/unit": 0.12.250
+    "@keplr-wallet/common": 0.12.263
+    "@keplr-wallet/crypto": 0.12.263
+    "@keplr-wallet/proto-types": 0.12.263
+    "@keplr-wallet/simple-fetch": 0.12.263
+    "@keplr-wallet/types": 0.12.263
+    "@keplr-wallet/unit": 0.12.263
     bech32: ^1.1.4
     buffer: ^6.0.3
     long: ^4.0.0
     protobufjs: ^6.11.2
-  checksum: c6645d9df732f9e9d3948152cc4f1dd7be7386f9e3f99e3e3534fd4335d4aae2ceec0237403cf15ebcb3a51928b536ae3d81846292651e72ab86233cc4e16a7a
+  checksum: 354a491b5ff46570be6d3972fd818460fa91e4a8e2fbdab190de249778a6b169b64972a6d1355d2fdc799002cec56cb1efc81e6d03564501a49a338cc5047272
   languageName: node
   linkType: hard
 
@@ -2010,13 +2022,31 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@keplr-wallet/proto-types@npm:0.12.250":
-  version: 0.12.250
-  resolution: "@keplr-wallet/proto-types@npm:0.12.250"
+"@keplr-wallet/crypto@npm:0.12.263":
+  version: 0.12.263
+  resolution: "@keplr-wallet/crypto@npm:0.12.263"
+  dependencies:
+    "@noble/curves": ^1.4.2
+    "@noble/hashes": ^1.4.0
+    bip32: ^2.0.6
+    bip39: ^3.0.3
+    bs58check: ^2.1.2
+    buffer: ^6.0.3
+    ecpair: ^2.1.0
+  peerDependencies:
+    bitcoinjs-lib: ^6
+    starknet: ^7
+  checksum: 88b172f50e514eb011e5541c0cf797e9eec7d72f7de32ea5fc3e446658b95aaa75a5152b780ade0c1e8d237d9f69c5d1a6fd59c5f719601dbec902c678628a79
+  languageName: node
+  linkType: hard
+
+"@keplr-wallet/proto-types@npm:0.12.263":
+  version: 0.12.263
+  resolution: "@keplr-wallet/proto-types@npm:0.12.263"
   dependencies:
     long: ^4.0.0
     protobufjs: ^6.11.2
-  checksum: 99df47912c9feb3cd7e8e00da89082c92ef6afefe8c571bd449b0a326ca7b0513634d0684e9d76755c002c0a40b86824d81c5370c75c51d0723ed1a37f6a8b51
+  checksum: 71889cdd7f9d7860d511acbe109fbda30fd3aff74a9ded9c7a25495deba56e9a31aa31785bf7c0631e51c9016cddcff7ee37809f30f75471a6ce67ba5453fdcc
   languageName: node
   linkType: hard
 
@@ -2033,10 +2063,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@keplr-wallet/simple-fetch@npm:0.12.250":
-  version: 0.12.250
-  resolution: "@keplr-wallet/simple-fetch@npm:0.12.250"
-  checksum: 7f217745a4b2cb6ec6fa36ae5278420ef9d7c3387a46a25731bbb85df0536efa2b82a26e63edf07ae134a8eea4ddb3e43493897c645e81b604548a133e652ad0
+"@keplr-wallet/simple-fetch@npm:0.12.263":
+  version: 0.12.263
+  resolution: "@keplr-wallet/simple-fetch@npm:0.12.263"
+  checksum: 7245284d55ef23f0d851fc6b2a322d85e306191c62f4325ebdcdc3fd669b923604ad5891aa04d2e41fd749aa823d069f22095574f7b16182b8f8af434bf11673
   languageName: node
   linkType: hard
 
@@ -2051,7 +2081,29 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@keplr-wallet/unit@npm:0.12.250, @keplr-wallet/unit@npm:^0.12.175":
+"@keplr-wallet/types@npm:0.12.263":
+  version: 0.12.263
+  resolution: "@keplr-wallet/types@npm:0.12.263"
+  dependencies:
+    long: ^4.0.0
+  peerDependencies:
+    starknet: ^7
+  checksum: 0e99edc35221077b75024194bbf583f580075504def6aecfdb3e18ca430d50c6dd397e8bde91fd6dfc37604c42d091d4bdbbdd67760ad7c7cbe1f5f40becbf8d
+  languageName: node
+  linkType: hard
+
+"@keplr-wallet/unit@npm:0.12.263":
+  version: 0.12.263
+  resolution: "@keplr-wallet/unit@npm:0.12.263"
+  dependencies:
+    "@keplr-wallet/types": 0.12.263
+    big-integer: ^1.6.48
+    utility-types: ^3.10.0
+  checksum: fc0d143f4163adc86e38f7f3d5de19756929c0124f85cd2f99195f4dffaea7369a1d5118aded208fad4e1e22778eb5483e1f6a9df42da6d482ec3f6b6932f2d3
+  languageName: node
+  linkType: hard
+
+"@keplr-wallet/unit@npm:^0.12.175":
   version: 0.12.250
   resolution: "@keplr-wallet/unit@npm:0.12.250"
   dependencies:
@@ -3970,7 +4022,7 @@ __metadata:
     "@hookform/resolvers": ^3.10.0
     "@jridgewell/gen-mapping": ^0.3.12
     "@keplr-wallet/common": ^0.12.175
-    "@keplr-wallet/cosmos": ^0.12.175
+    "@keplr-wallet/cosmos": ^0.12.263
     "@keplr-wallet/provider-extension": ^0.12.175
     "@keplr-wallet/types": ^0.12.175
     "@keplr-wallet/unit": ^0.12.175
