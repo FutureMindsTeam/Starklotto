@@ -46,6 +46,6 @@
     "postcss": "^8.4.38",
     "react-i18next": "^15.6.0",
     "react-tsparticles": "^2.12.2",
-    "tsparticles": "^3.8.1"
+    "tsparticles": "^3.9.1"
   }
 }
