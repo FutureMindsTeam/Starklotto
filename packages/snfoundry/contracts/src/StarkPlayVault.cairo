@@ -75,7 +75,7 @@ pub mod StarkPlayVault {
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //constants
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    const FELT_STRK_CONTRACT: felt252 =
+    const TOKEN_STRK_ADDRESS: felt252 = 
         0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d;
     const Initial_Fee_Percentage: u64 = 50_u64; // 50 basis points = 0.5%
     const BASIS_POINTS_DENOMINATOR: u256 = 10000_u256; // 10000 basis points = 100%
@@ -516,10 +516,6 @@ pub mod StarkPlayVault {
             self.ownable.assert_only_owner();
             self.totalSTRKStored.write(amount);
         }
-
-        fn update_total_strk_stored(ref self: ContractState, amount: u256) {
-            self.ownable.assert_only_owner();
-            self.totalSTRKStored.write(amount);
 
         fn setMintLimit(ref self: ContractState, new_limit: u256) {
             self.ownable.assert_only_owner();
