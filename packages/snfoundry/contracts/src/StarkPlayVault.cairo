@@ -36,6 +36,7 @@ pub trait IStarkPlayVault<TContractState> {
     fn withdrawPrizeConversionFees(
         ref self: TContractState, recipient: ContractAddress, amount: u256,
     ) -> bool;
+
     //test functions
     fn update_total_strk_stored(ref self: TContractState, amount: u256);
 }
@@ -59,6 +60,8 @@ pub mod StarkPlayVault {
         IBurnableDispatcher, IBurnableDispatcherTrait, IMintable, IMintableDispatcher,
         IMintableDispatcherTrait, IPrizeTokenDispatcher, IPrizeTokenDispatcherTrait,
     };
+    use openzeppelin_access::accesscontrol::{AccessControlComponent, DEFAULT_ADMIN_ROLE};
+    use openzeppelin_access::accesscontrol::interface::{IAccessControlDispatcher, IAccessControlDispatcherTrait};
     use super::IStarkPlayVault;
 
     component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
@@ -149,6 +152,22 @@ pub mod StarkPlayVault {
         self.feePercentagePrizesConverted.write(300); //3%
         self.feePercentagePrizesConvertedMin.write(10); //0.1%
         self.feePercentagePrizesConvertedMax.write(500); //5%
+
+        // Auto-configure minter permissions
+        // The token constructor granted temporary admin role to this vault
+        let vault_address = get_contract_address();
+        let token_dispatcher = IMintableDispatcher { contract_address: starkPlayToken };
+        
+        // Grant minter role to this vault
+        token_dispatcher.grant_minter_role(vault_address);
+        
+        // Set maximum allowance for this vault (1 Billion tokens)
+        //let max_allowance: u256 = 1_000_000_000 * DECIMALS_FACTOR; // 1B tokens
+        //token_dispatcher.set_minter_allowance(vault_address, max_allowance);
+        
+        // Revoke temporary admin role for security (vault no longer needs it)
+        //let access_control_dispatcher = IAccessControlDispatcher { contract_address: starkPlayToken };
+        //access_control_dispatcher.revoke_role(DEFAULT_ADMIN_ROLE, vault_address);
     }
 
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

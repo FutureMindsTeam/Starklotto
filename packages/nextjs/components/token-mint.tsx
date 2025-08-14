@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { Info, RotateCw } from "lucide-react";
 import Image from "next/image";
@@ -10,6 +10,12 @@ import { StarkInput } from "./scaffold-stark/Input/StarkInput";
 import useScaffoldStrkBalance from "~~/hooks/scaffold-stark/useScaffoldStrkBalance";
 import { useAccount } from "~~/hooks/useAccount";
 import { useStarkPlayFee } from "~~/hooks/scaffold-stark/useStarkPlayFee";
+import { useScaffoldWriteContract } from "~~/hooks/scaffold-stark/useScaffoldWriteContract";
+import { useScaffoldReadContract } from "~~/hooks/scaffold-stark/useScaffoldReadContract";
+import { useScaffoldEventHistory } from "~~/hooks/scaffold-stark/useScaffoldEventHistory";
+import { notification } from "~~/utils/scaffold-stark";
+import { useContractAddresses } from "~~/hooks/useContractAddresses";
+import { useStrkContract } from "~~/hooks/useStrkContract";
 
 interface TokenMintProps {
   onSuccess?: (amount: number, mintedAmount: number, message: string) => void;
@@ -45,6 +51,48 @@ export default function TokenMint({
   const { formatted } = useScaffoldStrkBalance({ address: address || "" });
   const strkBalance = Number(formatted) || 0;
 
+  // --- Contract Integration ---
+  // STRK contract operations
+  const { approveStrk, isApproving, isReady: strkReady } = useStrkContract();
+
+  // Write contract hook for buySTRKP
+  const { sendAsync: buySTRKP, isPending: isBuying } = useScaffoldWriteContract({
+    contractName: "StarkPlayVault", 
+    functionName: "buySTRKP",
+    args: [undefined, undefined] as const, // Proper type for [user, amountSTRK]
+  });
+
+  // Read StarkPlay balance
+  const { data: starkPlayBalance, refetch: refetchStarkPlayBalance } = useScaffoldReadContract({
+    contractName: "StarkPlayERC20",
+    functionName: "balance_of",
+    args: [address],
+  });
+
+  // Read total StarkPlay minted (for UI display)
+  const { data: totalStarkPlayMinted, refetch: refetchTotalMinted } = useScaffoldReadContract({
+    contractName: "StarkPlayVault",
+    functionName: "get_total_starkplay_minted",
+    args: [],
+  });
+
+  // Listen for StarkPlayMinted events with proper event namespace
+  const { data: mintEvents } = useScaffoldEventHistory({
+    contractName: "StarkPlayVault",
+    eventName: "contracts::StarkPlayVault::StarkPlayVault::StarkPlayMinted",
+    fromBlock: 0n,
+    watch: true,
+    filters: { user: address },
+  });
+
+  // Auto-refetch balances when new mint events are detected
+  useEffect(() => {
+    if (mintEvents && mintEvents.length > 0) {
+      refetchStarkPlayBalance();
+      refetchTotalMinted();
+    }
+  }, [mintEvents, refetchStarkPlayBalance, refetchTotalMinted]);
+
   // Mint parameters
   const mintRate = 1; // 1:1 mint rate
   const feePercentage = feePercent ?? 0; // feePercent es decimal (0.005 ⇒ 0.5%)
@@ -53,10 +101,27 @@ export default function TokenMint({
   const numericAmount = parseFloat(inputAmount) || 0;
   const feeAmount = numericAmount * feePercentage;
   const mintedAmount = numericAmount * mintRate - feeAmount;
+  
+  // Convert StarkPlay balance from wei to readable format
+  const starkPlayBalanceFormatted = starkPlayBalance ? Number(starkPlayBalance) / 10**18 : 0;
 
   // Input validation
   const isValidInput =
     numericAmount > 0 && !isNaN(numericAmount) && numericAmount <= strkBalance;
+
+  // Get contract addresses for current network
+  const { StarkPlayVault, isValid, currentNetwork } = useContractAddresses();
+  
+  // Validate all contracts are ready
+  const contractsReady = isValid && strkReady;
+  
+  // Early validation - log errors but don't break rendering
+  if (!contractsReady) {
+    console.error("Contract addresses not properly configured for network:", currentNetwork);
+  }
+
+  // Loading states
+  const isLoading = isProcessing || isBuying || isApproving;
 
   // Handlers
   const handleStarkInputChange = (newValue: string) => {
@@ -86,28 +151,76 @@ export default function TokenMint({
       return;
     }
 
+    if (!address) {
+      setError("Please connect your wallet");
+      return;
+    }
+
     setIsProcessing(true);
     setError(null);
 
     try {
-      // Here goes the real contract call:
-      // const tx = await scaffoldWriteContract.sendAsync(...)
-      // await tx.wait()
+      // Convert amount to wei (multiply by 10^18)
+      const amountInWei = BigInt(Math.floor(numericAmount * 10**18));
+      
+      // Validate contract readiness before proceeding
+      if (!contractsReady || !StarkPlayVault) {
+        throw new Error(`Contract addresses not available for ${currentNetwork} network`);
+      }
 
-      // Simulation:
-      await new Promise((r) => setTimeout(r, 1500));
+      // Step 1: Approve STRK to Vault (user must approve vault to spend their STRK)
+      notification.info("Approving STRK tokens...");
+      const approvalResult = await approveStrk(StarkPlayVault, amountInWei);
 
-      const successMessage = `Successfully minted ${mintedAmount.toFixed(
-        4,
-      )} STRKP using ${numericAmount.toFixed(4)} STRK`;
-      showToast("Mint Successful", successMessage, "success");
-      onSuccess?.(numericAmount, mintedAmount, successMessage);
-      setInputAmount("");
-    } catch {
-      const errorMessage = "Failed to mint tokens. Please try again.";
+      if (!approvalResult) {
+        throw new Error("STRK approval failed");
+      }
+
+      notification.success("STRK approved successfully");
+      
+      // Step 2: Call buySTRKP (vault will transfer STRK from user and mint STRKP)
+      notification.info("Minting STRKP tokens...");
+      const result = await buySTRKP({
+        args: [address, amountInWei],
+      });
+
+      if (result) {
+        const successMessage = `Successfully minted ${mintedAmount.toFixed(
+          4,
+        )} STRKP using ${numericAmount.toFixed(4)} STRK`;
+        
+        // Show success notification
+        notification.success(successMessage);
+        showToast("Mint Successful", successMessage, "success");
+        onSuccess?.(numericAmount, mintedAmount, successMessage);
+        
+        // Clear input and refresh balances
+        setInputAmount("");
+        refetchStarkPlayBalance();
+        refetchTotalMinted();
+      }
+    } catch (error: any) {
+      console.error("Mint error:", error);
+      
+      // Handle specific contract errors
+      let errorMessage = "Failed to mint tokens. Please try again.";
+      
+      if (error?.message?.includes("Insufficient STRK balance")) {
+        errorMessage = "Insufficient STRK balance to complete the transaction.";
+      } else if (error?.message?.includes("Exceeds mint limit")) {
+        errorMessage = "The amount exceeds the maximum mint limit.";
+      } else if (error?.message?.includes("Contract is paused")) {
+        errorMessage = "Minting is currently paused. Please try again later.";
+      } else if (error?.message?.includes("User rejected")) {
+        errorMessage = "Transaction was rejected by user.";
+      } else if (error?.message?.includes("insufficient funds")) {
+        errorMessage = "Insufficient funds for transaction fees.";
+      }
+      
       setError(errorMessage);
       onError?.(errorMessage);
       showToast("Mint Failed", errorMessage, "error");
+      notification.error(errorMessage);
     } finally {
       setIsProcessing(false);
     }
@@ -207,6 +320,12 @@ export default function TokenMint({
                 {isValidInput ? mintedAmount.toFixed(6) : "0.0"} $P
               </span>
             </div>
+            <div className="flex items-center justify-between text-sm text-gray-300">
+              <span>Current Balance</span>
+              <span className="font-medium text-purple-300">
+                {starkPlayBalanceFormatted.toFixed(6)} $P
+              </span>
+            </div>
           </div>
 
           {/* Fee details */}
@@ -266,14 +385,14 @@ export default function TokenMint({
         <div className="p-4">
           <button
             className={`w-full py-6 text-lg font-medium rounded-lg transition-colors ${
-              isValidInput
+              isValidInput && !isLoading
                 ? "bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800"
                 : "bg-gray-700 text-gray-400 cursor-not-allowed"
             }`}
-            disabled={!isValidInput || isProcessing}
+            disabled={!isValidInput || isLoading}
             onClick={handleMint}
           >
-            {isProcessing ? "Minting..." : "Mint STRKP"}
+            {isLoading ? "Minting..." : "Mint STRKP"}
           </button>
         </div>
       </div>
