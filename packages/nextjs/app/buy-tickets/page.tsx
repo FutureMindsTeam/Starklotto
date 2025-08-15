@@ -57,7 +57,9 @@ export default function BuyTicketsPage() {
     refetch,
   } = useTicketPrice({ decimals: 18 });
 
-  const ticketPriceNumber = priceFormatted ? toNumberSafe(priceFormatted, 6) : 0;
+  const ticketPriceNumber = priceFormatted
+    ? toNumberSafe(priceFormatted, 6)
+    : 0;
 
   // DEBUG: exponer refetch temporalmente
   if (typeof window !== "undefined") {
@@ -249,8 +251,6 @@ export default function BuyTicketsPage() {
 
   const writeTxn = useTransactor();
 
- 
-
   // Cálculo del total con el precio on-chain
   const totalCost = Number((ticketCount * ticketPriceNumber).toFixed(6));
 
@@ -395,17 +395,21 @@ export default function BuyTicketsPage() {
                 {/* Ticket Price (on-chain) */}
                 <div className="mb-4">
                   {priceLoading ? (
-                    <p className="text-sm text-gray-400">Cargando precio del ticket…</p>
+                    <p className="text-sm text-gray-400">
+                      Cargando precio del ticket…
+                    </p>
                   ) : priceError || priceFormatted === undefined ? (
-                    <p className="text-sm text-red-500">Error obteniendo precio del ticket</p>
+                    <p className="text-sm text-red-500">
+                      Error obteniendo precio del ticket
+                    </p>
                   ) : (
                     <p className="text-sm text-gray-200">
-                      Ticket Price: <span className="font-semibold">{priceFormatted} SP</span>
+                      Ticket Price:{" "}
+                      <span className="font-semibold">{priceFormatted} SP</span>
                     </p>
                   )}
                 </div>
 
-                
                 {/* Next Draw */}
                 <div className="mb-6">
                   <p className="text-gray-300 mb-1">
