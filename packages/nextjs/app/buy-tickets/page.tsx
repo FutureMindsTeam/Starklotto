@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { Navbar } from "~~/components/Navbar";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Abi, useContract } from "@starknet-react/core";
+import { Abi, useContract, useReadContract } from "@starknet-react/core";
 import { useTransactor } from "~~/hooks/scaffold-stark/useTransactor";
 import deployedContracts from "~~/contracts/deployedContracts";
 import { LOTT_CONTRACT_NAME } from "~~/utils/Constants";
@@ -14,6 +14,8 @@ import { useTranslation } from "react-i18next";
 import TicketControls from "~~/components/buy-tickets/TicketControls";
 import TicketSelector from "~~/components/buy-tickets/TicketSelector";
 import PurchaseSummary from "~~/components/buy-tickets/PurchaseSummary";
+import { useTicketPrice } from "~~/hooks/scaffold-stark/useTicketPrice";
+import { formatUnits, toNumberSafe } from "~~/utils/units";
 
 export default function BuyTicketsPage() {
   const { t } = useTranslation();
@@ -45,7 +47,23 @@ export default function BuyTicketsPage() {
   const jackpotAmount = "$250,295 USDC";
   const countdown = { days: "00", hours: "23", minutes: "57", seconds: "46" };
   const balance = 1000;
-  const ticketPrice = 10;
+
+  // Precio del ticket (on-chain)
+  const {
+    priceRaw,
+    priceFormatted,
+    isLoading: priceLoading,
+    error: priceError,
+    refetch,
+  } = useTicketPrice({ decimals: 18 });
+
+  const ticketPriceNumber = priceFormatted ? toNumberSafe(priceFormatted, 6) : 0;
+
+  // DEBUG: exponer refetch temporalmente
+  if (typeof window !== "undefined") {
+    // @ts-ignore
+    window.refetchTicketPrice = refetch;
+  }
 
   const increaseTickets = () => {
     if (ticketCount < 10) {
@@ -222,6 +240,7 @@ export default function BuyTicketsPage() {
   const contractInfo = deployedContracts.devnet[LOTT_CONTRACT_NAME];
   const abi = contractInfo.abi as Abi;
   const contractAddress = contractInfo.address;
+  console.log("Lottery address usada por la UI:", contractAddress);
 
   const { contract: contractInstance } = useContract({
     abi,
@@ -230,7 +249,10 @@ export default function BuyTicketsPage() {
 
   const writeTxn = useTransactor();
 
-  const totalCost = ticketCount * ticketPrice;
+ 
+
+  // Cálculo del total con el precio on-chain
+  const totalCost = Number((ticketCount * ticketPriceNumber).toFixed(6));
 
   const handlePurchase = async () => {
     setTxError(null);
@@ -370,6 +392,20 @@ export default function BuyTicketsPage() {
                   {t("buyTickets.title")}
                 </h1>
 
+                {/* Ticket Price (on-chain) */}
+                <div className="mb-4">
+                  {priceLoading ? (
+                    <p className="text-sm text-gray-400">Cargando precio del ticket…</p>
+                  ) : priceError || priceFormatted === undefined ? (
+                    <p className="text-sm text-red-500">Error obteniendo precio del ticket</p>
+                  ) : (
+                    <p className="text-sm text-gray-200">
+                      Ticket Price: <span className="font-semibold">{priceFormatted} SP</span>
+                    </p>
+                  )}
+                </div>
+
+                
                 {/* Next Draw */}
                 <div className="mb-6">
                   <p className="text-gray-300 mb-1">
