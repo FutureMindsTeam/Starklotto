@@ -2,11 +2,23 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronRight, Trophy, RefreshCw, Wifi, Clock, CheckCircle, AlertCircle } from "lucide-react";
+import {
+  ChevronRight,
+  Trophy,
+  RefreshCw,
+  Wifi,
+  Clock,
+  CheckCircle,
+  AlertCircle,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "next/navigation";
 import { useLatestDraw } from "~~/hooks/useLatestDraw";
-import { DrawResult, formatCurrency, formatDrawDate } from "~~/services/draw.service.simple";
+import {
+  DrawResult,
+  formatCurrency,
+  formatDrawDate,
+} from "~~/services/draw.service.simple";
 import { ErrorMessage } from "~~/components/ui/ErrorMessage";
 import { DrawResultsSkeleton } from "~~/components/ui/LoadingSkeleton";
 import toast from "react-hot-toast";
@@ -15,31 +27,31 @@ export function LastDrawResults() {
   const { t } = useTranslation();
   const router = useRouter();
   const [showNewDrawNotification, setShowNewDrawNotification] = useState(false);
-  
+
   // Ref para evitar notificaciones duplicadas
   const lastNotifiedDrawRef = useRef<string | null>(null);
   const notificationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  
+
   // Callbacks estables para evitar re-renders
   const handleNewDraw = useCallback((newDraw: DrawResult) => {
     // Evitar notificaciones duplicadas
     if (lastNotifiedDrawRef.current === newDraw.id) {
       return;
     }
-    
+
     lastNotifiedDrawRef.current = newDraw.id;
     setShowNewDrawNotification(true);
-    
+
     toast.success("New lottery draw results available!", {
       duration: 4000,
       icon: "🎉",
     });
-    
+
     // Limpiar timeout anterior si existe
     if (notificationTimeoutRef.current) {
       clearTimeout(notificationTimeoutRef.current);
     }
-    
+
     // Hide notification after 5 seconds
     notificationTimeoutRef.current = setTimeout(() => {
       setShowNewDrawNotification(false);
@@ -47,7 +59,7 @@ export function LastDrawResults() {
   }, []);
 
   const handleError = useCallback((error: any) => {
-    if (error.code === 'NETWORK_ERROR') {
+    if (error.code === "NETWORK_ERROR") {
       toast.error("Connection lost. Trying to reconnect...");
     }
   }, []);
@@ -100,8 +112,8 @@ export function LastDrawResults() {
             </h2>
           </div>
           <div className="p-6">
-            <ErrorMessage 
-              error={error} 
+            <ErrorMessage
+              error={error}
               onRetry={handleManualRefresh}
               showRetryButton={true}
             />
@@ -150,7 +162,7 @@ export function LastDrawResults() {
                 </p>
               )}
             </div>
-            
+
             {/* Status indicators */}
             <div className="flex items-center gap-2">
               {isRefreshing && (
@@ -187,7 +199,7 @@ export function LastDrawResults() {
           {isLoading ? (
             <DrawResultsSkeleton />
           ) : drawResult ? (
-            <motion.div 
+            <motion.div
               key={drawResult.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -214,7 +226,7 @@ export function LastDrawResults() {
               </div>
 
               <div className="grid grid-cols-1 gap-4 pt-2 md:grid-cols-2">
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.3 }}
@@ -227,8 +239,8 @@ export function LastDrawResults() {
                     {formatCurrency(drawResult.jackpotAmount)}
                   </p>
                 </motion.div>
-                
-                <motion.div 
+
+                <motion.div
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.4 }}
@@ -265,14 +277,16 @@ export function LastDrawResults() {
 
           {/* Inline error display if there's an error but we still have data */}
           {error && drawResult && (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg dark:bg-yellow-950 dark:border-yellow-800"
             >
               <div className="flex items-center gap-2 text-sm text-yellow-800 dark:text-yellow-200">
                 <AlertCircle className="h-4 w-4" />
-                <span>Unable to fetch latest updates. Showing cached results.</span>
+                <span>
+                  Unable to fetch latest updates. Showing cached results.
+                </span>
                 <button
                   onClick={handleManualRefresh}
                   className="ml-auto text-yellow-600 hover:text-yellow-500 dark:text-yellow-400"
@@ -303,7 +317,9 @@ export function LastDrawResults() {
               disabled={isLoading || isRefreshing}
               className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700"
             >
-              <RefreshCw className={`h-3 w-3 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <RefreshCw
+                className={`h-3 w-3 ${isRefreshing ? "animate-spin" : ""}`}
+              />
               Refresh
             </motion.button>
 
@@ -311,13 +327,15 @@ export function LastDrawResults() {
             <button
               onClick={isPolling ? stopPolling : startPolling}
               className={`inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                isPolling 
-                  ? 'text-green-700 bg-green-100 hover:bg-green-200 dark:text-green-400 dark:bg-green-900 dark:hover:bg-green-800'
-                  : 'text-gray-600 bg-gray-100 hover:bg-gray-200 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700'
+                isPolling
+                  ? "text-green-700 bg-green-100 hover:bg-green-200 dark:text-green-400 dark:bg-green-900 dark:hover:bg-green-800"
+                  : "text-gray-600 bg-gray-100 hover:bg-gray-200 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700"
               }`}
             >
-              <div className={`h-2 w-2 rounded-full ${isPolling ? 'bg-green-500' : 'bg-gray-400'}`} />
-              {isPolling ? 'Auto-refresh On' : 'Auto-refresh Off'}
+              <div
+                className={`h-2 w-2 rounded-full ${isPolling ? "bg-green-500" : "bg-gray-400"}`}
+              />
+              {isPolling ? "Auto-refresh On" : "Auto-refresh Off"}
             </button>
           </div>
         </div>
@@ -325,5 +343,3 @@ export function LastDrawResults() {
     </section>
   );
 }
-
-

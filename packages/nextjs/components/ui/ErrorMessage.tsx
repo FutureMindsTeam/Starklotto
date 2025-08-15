@@ -4,7 +4,13 @@
  */
 
 import { motion } from "framer-motion";
-import { AlertCircle, RefreshCw, Wifi, Clock, AlertTriangle } from "lucide-react";
+import {
+  AlertCircle,
+  RefreshCw,
+  Wifi,
+  Clock,
+  AlertTriangle,
+} from "lucide-react";
 import { DrawServiceError } from "~~/services/draw.service";
 
 interface ErrorMessageProps {
@@ -14,52 +20,54 @@ interface ErrorMessageProps {
   className?: string;
 }
 
-export function ErrorMessage({ 
-  error, 
-  onRetry, 
+export function ErrorMessage({
+  error,
+  onRetry,
   showRetryButton = true,
-  className = ""
+  className = "",
 }: ErrorMessageProps) {
   const getErrorDetails = () => {
-    if (typeof error === 'string') {
+    if (typeof error === "string") {
       return {
         icon: AlertCircle,
         title: "Error",
         message: error,
-        retryable: true
+        retryable: true,
       };
     }
 
-    if ('code' in error) {
+    if ("code" in error) {
       const drawError = error as DrawServiceError;
       switch (drawError.code) {
-        case 'NETWORK_ERROR':
+        case "NETWORK_ERROR":
           return {
             icon: Wifi,
             title: "Connection Error",
-            message: "Unable to connect to the lottery service. Please check your internet connection.",
-            retryable: drawError.retryable
+            message:
+              "Unable to connect to the lottery service. Please check your internet connection.",
+            retryable: drawError.retryable,
           };
-        case 'TIMEOUT':
+        case "TIMEOUT":
           return {
             icon: Clock,
             title: "Request Timeout",
             message: "The request took too long to complete. Please try again.",
-            retryable: drawError.retryable
+            retryable: drawError.retryable,
           };
-        case 'API_ERROR':
+        case "API_ERROR":
           return {
             icon: AlertTriangle,
             title: "Service Error",
-            message: "The lottery service is experiencing issues. Please try again later.",
-            retryable: drawError.retryable
+            message:
+              "The lottery service is experiencing issues. Please try again later.",
+            retryable: drawError.retryable,
           };
         default:
           return {
             icon: AlertCircle,
             title: "Unexpected Error",
             message: drawError.message || "An unexpected error occurred.",
-            retryable: drawError.retryable
+            retryable: drawError.retryable,
           };
       }
     }
@@ -68,14 +76,14 @@ export function ErrorMessage({
       icon: AlertCircle,
       title: "Error",
       message: error.message || "An error occurred while loading draw results.",
-      retryable: true
+      retryable: true,
     };
   };
 
   const { icon: Icon, title, message, retryable } = getErrorDetails();
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       className={`rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950 ${className}`}
@@ -113,17 +121,22 @@ export function ErrorMessage({
 /**
  * Compact error message for inline use
  */
-export function InlineErrorMessage({ 
-  error, 
+export function InlineErrorMessage({
+  error,
   onRetry,
-  className = ""
-}: Omit<ErrorMessageProps, 'showRetryButton'>) {
-  const message = typeof error === 'string' 
-    ? error 
-    : ('message' in error ? error.message : 'An error occurred');
+  className = "",
+}: Omit<ErrorMessageProps, "showRetryButton">) {
+  const message =
+    typeof error === "string"
+      ? error
+      : "message" in error
+        ? error.message
+        : "An error occurred";
 
   return (
-    <div className={`flex items-center gap-2 text-sm text-red-600 dark:text-red-400 ${className}`}>
+    <div
+      className={`flex items-center gap-2 text-sm text-red-600 dark:text-red-400 ${className}`}
+    >
       <AlertCircle className="h-4 w-4 flex-shrink-0" />
       <span className="flex-1">{message}</span>
       {onRetry && (

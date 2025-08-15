@@ -3,14 +3,14 @@
  * Manages automatic polling and state for lottery draw results
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from "react";
 // Usar servicio simple para debugging
-import { 
-  getLatestDraw, 
-  DrawResult, 
-  DrawServiceError, 
-  isSameDraw 
-} from '~~/services/draw.service.simple';
+import {
+  getLatestDraw,
+  DrawResult,
+  DrawServiceError,
+  isSameDraw,
+} from "~~/services/draw.service.simple";
 
 // Configuración temporal para debugging
 const DRAW_SERVICE_CONFIG = {
@@ -51,7 +51,9 @@ export interface UseLatestDrawReturn {
   lastFetch: number | null;
 }
 
-export function useLatestDraw(options: UseLatestDrawOptions = {}): UseLatestDrawReturn {
+export function useLatestDraw(
+  options: UseLatestDrawOptions = {},
+): UseLatestDrawReturn {
   const {
     pollingInterval = DRAW_SERVICE_CONFIG.POLLING_INTERVAL,
     enabled = true,
@@ -94,24 +96,23 @@ export function useLatestDraw(options: UseLatestDrawOptions = {}): UseLatestDraw
       const newDraw = await getLatestDraw();
 
       // Actualizar estado directamente sin chequeos
-      setData(prevData => {
+      setData((prevData) => {
         const isNewDraw = !isSameDraw(prevData, newDraw);
-        
+
         // Notify about new draw
         if (isNewDraw && !isInitialLoad && onNewDraw) {
           setTimeout(() => onNewDraw(newDraw), 0);
         }
-        
+
         return newDraw;
       });
-      
+
       setError(null);
       setLastFetch(Date.now());
-
     } catch (err) {
       const drawError = err as DrawServiceError;
       setError(drawError);
-      
+
       if (onError) {
         setTimeout(() => onError(drawError), 0);
       }
@@ -136,7 +137,7 @@ export function useLatestDraw(options: UseLatestDrawOptions = {}): UseLatestDraw
     }
 
     setIsPolling(true);
-    
+
     pollingIntervalRef.current = setInterval(() => {
       fetchDraw(false);
     }, pollingInterval);
@@ -166,15 +167,14 @@ export function useLatestDraw(options: UseLatestDrawOptions = {}): UseLatestDraw
     // Start polling after initial fetch
     const startPollingTimeout = setTimeout(() => {
       setIsPolling(true);
-      
+
       if (pollingIntervalRef.current) {
         clearInterval(pollingIntervalRef.current);
       }
-      
+
       pollingIntervalRef.current = setInterval(() => {
         fetchDraw(false);
       }, pollingInterval);
-      
     }, 2000); // 2 segundos después del fetch inicial
 
     return () => {

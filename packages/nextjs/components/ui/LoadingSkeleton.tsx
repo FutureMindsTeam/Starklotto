@@ -7,36 +7,36 @@ import { motion } from "framer-motion";
 
 interface LoadingSkeletonProps {
   className?: string;
-  variant?: 'default' | 'circle' | 'text' | 'card';
+  variant?: "default" | "circle" | "text" | "card";
   animate?: boolean;
 }
 
-export function LoadingSkeleton({ 
-  className = "", 
-  variant = 'default',
-  animate = true 
+export function LoadingSkeleton({
+  className = "",
+  variant = "default",
+  animate = true,
 }: LoadingSkeletonProps) {
   const baseClasses = "bg-gray-200 dark:bg-gray-700";
-  
+
   const variantClasses = {
     default: "rounded",
     circle: "rounded-full",
     text: "rounded h-4",
-    card: "rounded-lg"
+    card: "rounded-lg",
   };
 
   const classes = `${baseClasses} ${variantClasses[variant]} ${className}`;
 
   if (animate) {
     return (
-      <motion.div 
+      <motion.div
         className={`${classes} animate-pulse`}
         initial={{ opacity: 0.6 }}
         animate={{ opacity: [0.6, 1, 0.6] }}
-        transition={{ 
-          duration: 1.5, 
-          repeat: Infinity, 
-          ease: "easeInOut" 
+        transition={{
+          duration: 1.5,
+          repeat: Infinity,
+          ease: "easeInOut",
         }}
       />
     );
