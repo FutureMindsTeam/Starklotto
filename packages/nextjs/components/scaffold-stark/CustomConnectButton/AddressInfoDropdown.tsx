@@ -23,6 +23,7 @@ import { getStarknetPFPIfExists } from "~~/utils/profile";
 import { useScaffoldStarkProfile } from "~~/hooks/scaffold-stark/useScaffoldStarkProfile";
 import { useTheme } from "next-themes";
 import { default as NextImage } from "next/image";
+import { User } from "lucide-react";
 
 const allowedNetworks = getTargetNetworks();
 
@@ -48,6 +49,7 @@ export const AddressInfoDropdown = ({
   const { connectors, connect } = useConnect();
   const { resolvedTheme } = useTheme();
   const isDarkMode = resolvedTheme === "dark";
+  const [profileImageError, setProfileImageError] = useState(false);
   const dropdownRef = useRef<HTMLDetailsElement>(null);
   const closeDropdown = () => {
     setSelectingNetwork(false);
@@ -85,13 +87,20 @@ export const AddressInfoDropdown = ({
           className="btn bg-transparent btn-sm px-2 py-[0.35rem] dropdown-toggle gap-0 !h-auto border border-[#5c4fe5] "
         >
           <div className="hidden [@media(min-width:412px)]:block">
-            {getStarknetPFPIfExists(profile?.profilePicture) ? (
+            {getStarknetPFPIfExists(profile?.profilePicture) && !profileImageError ? (
               <NextImage
                 src={profile?.profilePicture || ""}
                 alt="Profile Picture"
                 className="rounded-full"
                 width={30}
                 height={30}
+                onError={() => {
+                  console.warn("Profile picture failed to load:", profile?.profilePicture);
+                  setProfileImageError(true);
+                }}
+                onLoad={() => {
+                  setProfileImageError(false);
+                }}
               />
             ) : (
               <BlockieAvatar address={address} size={28} ensImage={ensAvatar} />

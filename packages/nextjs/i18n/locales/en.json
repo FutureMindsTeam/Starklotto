@@ -57,7 +57,10 @@
     "profile": "Profile",
     "about": "About",
     "contact": "Contact",
-    "features": "Features"
+    "features": "Features",
+    "mint": "Mint $TRKP",
+    "claim": "Claim Rewards",
+    "unmint": "Unmint $TRKP"
   },
   "home": {
     "hero": {
@@ -150,5 +153,22 @@
       "chooseAccount": "Choose account",
       "close": "✕"
     }
+  },
+  "error404": {
+    "title": "Oops! Page Not Found",
+    "description": "Looks like this page decided to cash out early!",
+    "subtitle": "Don't worry, your luck is still waiting for you on our main page.",
+    "suggestions": {
+      "title": "What would you like to do?"
+    },
+    "actions": {
+      "goHome": "Go Home",
+      "goBack": "Go Back"
+    },
+    "funMessage": "Better luck next time! 🎲"
+  },
+  "comingSoon": {
+    "message": "Coming Soon",
+    "description": "This feature will be available soon. Stay tuned!"
   }
 }

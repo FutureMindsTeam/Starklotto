@@ -98,7 +98,7 @@ export function LastDrawResults() {
   }
 
   return (
-    <section aria-labelledby="last-draw-title" className="my-12">
+    <section aria-labelledby="last-draw-title" className="my-0">
       <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-950">
         {/* Header */}
         <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-6 text-white">

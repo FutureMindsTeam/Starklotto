@@ -9,7 +9,7 @@ import Header from "~~/components/Header";
 export const metadata: Metadata = {
   title: "StarkLotto",
   description: "Fast track your starknet journey",
-  icons: "/logo.ico",
+  icons: "/Starklotto.png",
 };
 
 const ScaffoldStarkApp = ({ children }: { children: React.ReactNode }) => {

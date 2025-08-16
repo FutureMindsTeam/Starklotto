@@ -57,7 +57,10 @@
     "profile": "Profil",
     "about": "À Propos",
     "contact": "Contact",
-    "features": "Fonctionnalités"
+    "features": "Fonctionnalités",
+    "mint": "Créer $TRKP",
+    "claim": "Réclamer Récompenses",
+    "unmint": "Convertir $TRKP"
   },
   "home": {
     "hero": {
@@ -150,5 +153,22 @@
       "chooseAccount": "Choisir un compte",
       "close": "✕"
     }
+  },
+  "error404": {
+    "title": "Oups! Page Non Trouvée",
+    "description": "Il semble que cette page ait décidé de partir plus tôt!",
+    "subtitle": "Ne vous inquiétez pas, votre chance vous attend sur notre page principale.",
+    "suggestions": {
+      "title": "Que souhaitez-vous faire?"
+    },
+    "actions": {
+      "goHome": "Retour à l'Accueil",
+      "goBack": "Retour"
+    },
+    "funMessage": "Plus de chance la prochaine fois! 🎲"
+  },
+  "comingSoon": {
+    "message": "Bientôt Disponible",
+    "description": "Cette fonctionnalité sera bientôt disponible. Restez à l'écoute!"
   }
 }

@@ -7,6 +7,7 @@ import type { Engine } from "@tsparticles/engine";
 import { Button } from "../../ui/button";
 import { ChevronRight } from "lucide-react";
 import { particlePresets, loadOrbitPlugin } from "../../../lib/particlePresets";
+import { useRouter } from "next/navigation";
 
 type PresetName = keyof typeof particlePresets;
 interface HeroProps {
@@ -14,6 +15,7 @@ interface HeroProps {
 }
 
 export default function Hero({ variant = "casinoGlitz" }: HeroProps) {
+  const navigation = useRouter();
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -23,6 +25,10 @@ export default function Hero({ variant = "casinoGlitz" }: HeroProps) {
   }, [variant]);
 
   const options = particlePresets[variant];
+
+  const goToDapp = () =>{
+    navigation.push('/dapp')
+  }
 
   return (
     <section
@@ -100,11 +106,7 @@ export default function Hero({ variant = "casinoGlitz" }: HeroProps) {
           <Button
             size="lg"
             className="flex-1 px-8 py-6 text-lg bg-starkYellow hover:bg-starkYellow-light text-black"
-            onClick={() =>
-              document
-                .getElementById("games")
-                ?.scrollIntoView({ behavior: "smooth" })
-            }
+            onClick={goToDapp}
           >
             Play&nbsp;now <ChevronRight className="ml-2 h-5 w-5 shrink-0" />
           </Button>
