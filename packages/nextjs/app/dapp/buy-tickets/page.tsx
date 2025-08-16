@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
-import { Navbar } from "~~/components/Navbar";
+
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Abi, useContract } from "@starknet-react/core";
@@ -346,26 +346,16 @@ export default function BuyTicketsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#111827]">
-      <Navbar
-        onBuyTicket={() => {}}
-        onNavigate={(sectionId: string) => {
-          if (sectionId === "home") {
-            router.push("/");
-          }
-        }}
-      />
-
-      <div className="pt-24 pb-8 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left Column - Main Content */}
-            <div className="lg:col-span-2 space-y-6">
-              <motion.div
-                className="bg-[#1a2234] rounded-xl p-6"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-              >
+    <div className="pb-8 px-4">
+      <div className="max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Column - Main Content */}
+          <div className="lg:col-span-2 space-y-6">
+            <motion.div
+              className="bg-[#1a2234] rounded-xl p-6"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
                 <h1 className="text-3xl font-bold text-purple-400 mb-6">
                   {t("buyTickets.title")}
                 </h1>
@@ -443,22 +433,21 @@ export default function BuyTicketsPage() {
                   onPurchase={handlePurchase}
                 />
               </motion.div>
-            </div>
+          </div>
 
-            {/* Right Column - Illustration */}
-            <div className="hidden lg:block">
-              <div className="flex flex-col items-center justify-center h-full">
-                <Image
-                  src="/jackpot.svg"
-                  alt="Jackpot Illustration"
-                  width={320}
-                  height={320}
-                  className="mb-6"
-                />
-                <p className="text-gray-400 text-center">
-                  {/* Puedes agregar aquí más textos traducibles si lo deseas */}
-                </p>
-              </div>
+          {/* Right Column - Illustration */}
+          <div className="hidden lg:block">
+            <div className="flex flex-col items-center justify-center h-full">
+              <Image
+                src="/jackpot.svg"
+                alt="Jackpot Illustration"
+                width={320}
+                height={320}
+                className="mb-6"
+              />
+              <p className="text-gray-400 text-center">
+                {/* Puedes agregar aquí más textos traducibles si lo deseas */}
+              </p>
             </div>
           </div>
         </div>
