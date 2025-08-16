@@ -310,23 +310,51 @@ export function Navbar({ onBuyTicket }: NavbarProps) {
                   </AnimatePresence>
                 </div>
                 {isConnected && (
-                  <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="relative"
-                  >
-                    <div className="absolute inset-0 bg-[#00FFA3]/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
-                    <Link href="/profile">
-                      <Image
-                        src="/profile-icon.png"
-                        alt="Profile"
-                        width={28}
-                        height={28}
-                        className="rounded-full border border-[#00FFA3]/30 hover:border-[#00FFA3]/60 transition-colors"
-                      />
-                    </Link>
-                  </motion.div>
-                )}
+                  <div className="flex items-center gap-2">
+                    {/* Avatar NFT genérico forzado */}
+                    <div
+                      className="rounded-full overflow-hidden border-2 border-purple-400"
+                      style={{ width: 32, height: 32 }}
+                    >
+                      <svg
+                        width={32}
+                        height={32}
+                        viewBox="0 0 100 100"
+                        className="w-full h-full"
+                        style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}
+                      >
+                        <defs>
+                          <linearGradient id="nftGradNavbar1" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor="#00FFA3" />
+                            <stop offset="50%" stopColor="#00E5FF" />
+                            <stop offset="100%" stopColor="#9C27B0" />
+                          </linearGradient>
+                          <linearGradient id="nftGradNavbar2" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor="#FF6B35" />
+                            <stop offset="100%" stopColor="#F7931E" />
+                          </linearGradient>
+                        </defs>
+                        <circle cx="30" cy="25" r="8" fill="url(#nftGradNavbar1)" opacity="0.7" />
+                        <circle cx="70" cy="35" r="6" fill="url(#nftGradNavbar2)" opacity="0.8" />
+                        <circle cx="50" cy="20" r="4" fill="#FFD700" opacity="0.9" />
+                        <polygon 
+                          points="50,30 65,40 65,60 50,70 35,60 35,40" 
+                          fill="url(#nftGradNavbar1)"
+                          opacity="0.9"
+                        />
+                        <polygon 
+                          points="50,35 60,45 50,55 40,45" 
+                          fill="#FFFFFF" 
+                          opacity="0.8"
+                        />
+                        <circle cx="25" cy="75" r="3" fill="#00FFA3" />
+                        <circle cx="75" cy="75" r="3" fill="#00E5FF" />
+                        <circle cx="85" cy="20" r="2" fill="#FFD700" />
+                        <circle cx="15" cy="50" r="2" fill="#FF6B35" />
+                      </svg>
+                    </div>
+                  </div>
+              )}
 
                 {/* Mobile Menu Button */}
                 <motion.button
