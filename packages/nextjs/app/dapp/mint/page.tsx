@@ -19,15 +19,15 @@ export default function MintPage() {
           onClose={() => setNotification(null)}
         />
       )}
-      
+
       {/* Page Header */}
       <div className="mb-8 text-center">
         <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-violet-500 to-indigo-600 mb-4">
           Mint STRKP Tokens
         </h1>
         <p className="max-w-2xl mx-auto text-gray-300 text-lg">
-          Convert your STRK tokens to STRKP tokens to participate in our
-          gaming ecosystem.
+          Convert your STRK tokens to STRKP tokens to participate in our gaming
+          ecosystem.
         </p>
       </div>
 
@@ -55,15 +55,14 @@ export default function MintPage() {
             About STRKP Tokens
           </h2>
           <p className="text-gray-300 mb-4">
-            STRKP tokens are the native gaming currency of our platform.
-            These tokens are required to participate in lottery games,
-            purchase tickets, and access premium features within the
-            StarkLotto ecosystem.
+            STRKP tokens are the native gaming currency of our platform. These
+            tokens are required to participate in lottery games, purchase
+            tickets, and access premium features within the StarkLotto
+            ecosystem.
           </p>
           <p className="text-gray-300">
-            The minting process converts your STRK tokens at a 1:1 ratio,
-            with a minimal fee of 0.5% to support platform development and
-            maintenance.
+            The minting process converts your STRK tokens at a 1:1 ratio, with a
+            minimal fee of 0.5% to support platform development and maintenance.
           </p>
         </div>
         <div className="bg-gray-900 rounded-xl p-6 border border-purple-500/20">
@@ -120,8 +119,7 @@ export default function MintPage() {
               Instant Conversion
             </h3>
             <p className="text-gray-300 text-sm">
-              Quick and seamless token conversion with immediate
-              availability
+              Quick and seamless token conversion with immediate availability
             </p>
           </div>
           <div>

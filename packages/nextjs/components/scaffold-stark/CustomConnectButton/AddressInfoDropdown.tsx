@@ -87,7 +87,8 @@ export const AddressInfoDropdown = ({
           className="btn bg-transparent btn-sm px-2 py-[0.35rem] dropdown-toggle gap-0 !h-auto border border-[#5c4fe5] "
         >
           <div className="hidden [@media(min-width:412px)]:block">
-            {getStarknetPFPIfExists(profile?.profilePicture) && !profileImageError ? (
+            {getStarknetPFPIfExists(profile?.profilePicture) &&
+            !profileImageError ? (
               <NextImage
                 src={profile?.profilePicture || ""}
                 alt="Profile Picture"
@@ -95,7 +96,10 @@ export const AddressInfoDropdown = ({
                 width={30}
                 height={30}
                 onError={() => {
-                  console.warn("Profile picture failed to load:", profile?.profilePicture);
+                  console.warn(
+                    "Profile picture failed to load:",
+                    profile?.profilePicture,
+                  );
                   setProfileImageError(true);
                 }}
                 onLoad={() => {

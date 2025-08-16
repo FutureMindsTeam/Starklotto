@@ -10,7 +10,11 @@ interface ScrollToTopProps {
   variant?: "dapp" | "landing";
 }
 
-export function ScrollToTop({ threshold = 400, className = "", variant = "dapp" }: ScrollToTopProps) {
+export function ScrollToTop({
+  threshold = 400,
+  className = "",
+  variant = "dapp",
+}: ScrollToTopProps) {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -37,17 +41,26 @@ export function ScrollToTop({ threshold = 400, className = "", variant = "dapp" 
   };
 
   // Styles for different variants
-  const styles = variant === "landing" ? {
-    glowEffect: "absolute inset-0 bg-gradient-to-r from-starkYellow to-starkYellow-light rounded-full blur-lg opacity-60 group-hover:opacity-80 transition-opacity duration-300",
-    buttonContent: "relative w-12 h-12 bg-gradient-to-r from-starkYellow to-starkYellow-light rounded-full flex items-center justify-center shadow-lg border border-starkYellow/20 backdrop-blur-sm",
-    iconColor: "h-6 w-6 text-heroDark font-bold",
-    animatedRing: "absolute inset-0 border-2 border-starkYellow/40 rounded-full"
-  } : {
-    glowEffect: "absolute inset-0 bg-gradient-to-r from-[#00FFA3] to-[#00E5FF] rounded-full blur-lg opacity-60 group-hover:opacity-80 transition-opacity duration-300",
-    buttonContent: "relative w-12 h-12 bg-gradient-to-r from-[#00FFA3] to-[#00E5FF] rounded-full flex items-center justify-center shadow-lg border border-white/10 backdrop-blur-sm",
-    iconColor: "h-6 w-6 text-black font-bold",
-    animatedRing: "absolute inset-0 border-2 border-[#00FFA3]/30 rounded-full"
-  };
+  const styles =
+    variant === "landing"
+      ? {
+          glowEffect:
+            "absolute inset-0 bg-gradient-to-r from-starkYellow to-starkYellow-light rounded-full blur-lg opacity-60 group-hover:opacity-80 transition-opacity duration-300",
+          buttonContent:
+            "relative w-12 h-12 bg-gradient-to-r from-starkYellow to-starkYellow-light rounded-full flex items-center justify-center shadow-lg border border-starkYellow/20 backdrop-blur-sm",
+          iconColor: "h-6 w-6 text-heroDark font-bold",
+          animatedRing:
+            "absolute inset-0 border-2 border-starkYellow/40 rounded-full",
+        }
+      : {
+          glowEffect:
+            "absolute inset-0 bg-gradient-to-r from-[#00FFA3] to-[#00E5FF] rounded-full blur-lg opacity-60 group-hover:opacity-80 transition-opacity duration-300",
+          buttonContent:
+            "relative w-12 h-12 bg-gradient-to-r from-[#00FFA3] to-[#00E5FF] rounded-full flex items-center justify-center shadow-lg border border-white/10 backdrop-blur-sm",
+          iconColor: "h-6 w-6 text-black font-bold",
+          animatedRing:
+            "absolute inset-0 border-2 border-[#00FFA3]/30 rounded-full",
+        };
 
   return (
     <AnimatePresence>
@@ -64,12 +77,12 @@ export function ScrollToTop({ threshold = 400, className = "", variant = "dapp" 
         >
           {/* Glow effect */}
           <div className={styles.glowEffect} />
-          
+
           {/* Button content */}
           <div className={styles.buttonContent}>
             <ChevronUp className={styles.iconColor} />
           </div>
-          
+
           {/* Animated ring */}
           <motion.div
             className={styles.animatedRing}

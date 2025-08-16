@@ -19,15 +19,15 @@ export default function UnmintPage() {
           onClose={() => setNotification(null)}
         />
       )}
-      
+
       {/* Page Header */}
       <div className="mb-8 text-center">
         <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-violet-500 to-indigo-600 mb-4">
           Unmint STRKP Tokens
         </h1>
         <p className="max-w-2xl mx-auto text-gray-300 text-lg">
-          Convert your STRKP prize tokens back to STRK. Only tokens earned
-          as lottery prizes are eligible for conversion.
+          Convert your STRKP prize tokens back to STRK. Only tokens earned as
+          lottery prizes are eligible for conversion.
         </p>
       </div>
 
@@ -60,9 +60,7 @@ export default function UnmintPage() {
             <div className="space-y-3 text-gray-300">
               <div className="flex items-center gap-3 gap-x-5">
                 <div className="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-purple-400 text-sm font-bold">
-                    1
-                  </span>
+                  <span className="text-purple-400 text-sm font-bold">1</span>
                 </div>
                 <p>
                   Select a percentage (25%, 50%, 75%, or 100%) of your
@@ -71,17 +69,13 @@ export default function UnmintPage() {
               </div>
               <div className="flex items-center gap-3 gap-x-5">
                 <div className="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-purple-400 text-sm font-bold">
-                    2
-                  </span>
+                  <span className="text-purple-400 text-sm font-bold">2</span>
                 </div>
                 <p>A 3% fee is deducted from the conversion amount</p>
               </div>
               <div className="flex items-center gap-3 gap-x-5">
                 <div className="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-purple-400 text-sm font-bold">
-                    3
-                  </span>
+                  <span className="text-purple-400 text-sm font-bold">3</span>
                 </div>
                 <p>Receive STRK tokens at a 1:1 rate (minus fees)</p>
               </div>
@@ -97,8 +91,8 @@ export default function UnmintPage() {
               <div className="flex items-center gap-3">
                 <div className="w-2 h-2 rounded-full bg-purple-400 flex-shrink-0 mt-2"></div>
                 <p>
-                  <strong>Prize Tokens Only:</strong> Only STRKP tokens
-                  earned as lottery prizes can be unminted
+                  <strong>Prize Tokens Only:</strong> Only STRKP tokens earned
+                  as lottery prizes can be unminted
                 </p>
               </div>
               <div className="flex items-center gap-3 gap-x-5">
@@ -118,8 +112,8 @@ export default function UnmintPage() {
               <div className="flex items-center gap-3 gap-x-5">
                 <div className="w-2 h-2 rounded-full bg-purple-400 flex-shrink-0 mt-2"></div>
                 <p>
-                  <strong>Percentage Selection:</strong> Choose from
-                  predefined percentages - manual amounts are not allowed
+                  <strong>Percentage Selection:</strong> Choose from predefined
+                  percentages - manual amounts are not allowed
                 </p>
               </div>
             </div>

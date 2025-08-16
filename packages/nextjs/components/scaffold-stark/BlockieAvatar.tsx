@@ -33,14 +33,11 @@ export const BlockieAvatar = ({
   // Si hay errores tanto en ensImage como en blo, mostrar icono de usuario
   if ((imageError || !ensImage) && (bloError || !address)) {
     return (
-      <div 
+      <div
         className="rounded-full bg-gradient-to-r from-[#00FFA3] to-[#00E5FF] flex items-center justify-center"
         style={{ width: size, height: size }}
       >
-        <User 
-          className="text-black" 
-          size={size * 0.6} 
-        />
+        <User className="text-black" size={size * 0.6} />
       </div>
     );
   }
@@ -49,14 +46,11 @@ export const BlockieAvatar = ({
 
   if (!avatarSrc) {
     return (
-      <div 
+      <div
         className="rounded-full bg-gradient-to-r from-[#00FFA3] to-[#00E5FF] flex items-center justify-center"
         style={{ width: size, height: size }}
       >
-        <User 
-          className="text-black" 
-          size={size * 0.6} 
-        />
+        <User className="text-black" size={size * 0.6} />
       </div>
     );
   }

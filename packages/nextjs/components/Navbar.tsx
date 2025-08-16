@@ -97,21 +97,23 @@ export function Navbar({ onBuyTicket }: NavbarProps) {
 
               {/* Desktop Navigation */}
               <div className="hidden md:flex items-center gap-8">
-                {menuItems.slice(0, isConnected ? 2 : 1).map(({ id, labelKey, icon: Icon }) => (
-                  <Link key={id} href={id}>
-                    <motion.div
-                      className="text-white/80 hover:text-white transition-colors flex items-center gap-1.5 group cursor-pointer"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <Icon className="h-3.5 w-3.5 text-[#00FFA3] group-hover:text-[#00FFA3] transition-colors" />
-                      <span className="relative text-sm">
-                        {t(labelKey)}
-                        <span className="absolute inset-x-0 -bottom-1 h-px bg-gradient-to-r from-[#00FFA3]/0 via-[#00FFA3]/70 to-[#00FFA3]/0 scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
-                      </span>
-                    </motion.div>
-                  </Link>
-                ))}
+                {menuItems
+                  .slice(0, isConnected ? 2 : 1)
+                  .map(({ id, labelKey, icon: Icon }) => (
+                    <Link key={id} href={id}>
+                      <motion.div
+                        className="text-white/80 hover:text-white transition-colors flex items-center gap-1.5 group cursor-pointer"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <Icon className="h-3.5 w-3.5 text-[#00FFA3] group-hover:text-[#00FFA3] transition-colors" />
+                        <span className="relative text-sm">
+                          {t(labelKey)}
+                          <span className="absolute inset-x-0 -bottom-1 h-px bg-gradient-to-r from-[#00FFA3]/0 via-[#00FFA3]/70 to-[#00FFA3]/0 scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
+                        </span>
+                      </motion.div>
+                    </Link>
+                  ))}
 
                 {isConnected ? (
                   <>
@@ -149,7 +151,6 @@ export function Navbar({ onBuyTicket }: NavbarProps) {
                         </motion.div>
                       </div>
                     </motion.button>
-
 
                     {menuItems.slice(2).map(({ id, labelKey, icon: Icon }) => (
                       <Link key={id} href={id}>
@@ -212,10 +213,11 @@ export function Navbar({ onBuyTicket }: NavbarProps) {
                               changeLanguage("en");
                               setIsLanguageOpen(false);
                             }}
-                            className={`w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-[#00FFA3]/10 transition-colors ${currentLanguage === "en"
+                            className={`w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-[#00FFA3]/10 transition-colors ${
+                              currentLanguage === "en"
                                 ? "text-[#00FFA3]"
                                 : "text-white/80"
-                              }`}
+                            }`}
                             whileHover={{ x: 4 }}
                             whileTap={{ scale: 0.98 }}
                           >
@@ -235,10 +237,11 @@ export function Navbar({ onBuyTicket }: NavbarProps) {
                               changeLanguage("es");
                               setIsLanguageOpen(false);
                             }}
-                            className={`w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-[#00FFA3]/10 transition-colors ${currentLanguage === "es"
+                            className={`w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-[#00FFA3]/10 transition-colors ${
+                              currentLanguage === "es"
                                 ? "text-[#00FFA3]"
                                 : "text-white/80"
-                              }`}
+                            }`}
                             whileHover={{ x: 4 }}
                             whileTap={{ scale: 0.98 }}
                           >
@@ -258,10 +261,11 @@ export function Navbar({ onBuyTicket }: NavbarProps) {
                               changeLanguage("fr");
                               setIsLanguageOpen(false);
                             }}
-                            className={`w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-[#00FFA3]/10 transition-colors ${currentLanguage === "fr"
+                            className={`w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-[#00FFA3]/10 transition-colors ${
+                              currentLanguage === "fr"
                                 ? "text-[#00FFA3]"
                                 : "text-white/80"
-                              }`}
+                            }`}
                             whileHover={{ x: 4 }}
                             whileTap={{ scale: 0.98 }}
                           >
@@ -281,10 +285,11 @@ export function Navbar({ onBuyTicket }: NavbarProps) {
                               changeLanguage("pt");
                               setIsLanguageOpen(false);
                             }}
-                            className={`w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-[#00FFA3]/10 transition-colors ${currentLanguage === "pt"
+                            className={`w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-[#00FFA3]/10 transition-colors ${
+                              currentLanguage === "pt"
                                 ? "text-[#00FFA3]"
                                 : "text-white/80"
-                              }`}
+                            }`}
                             whileHover={{ x: 4 }}
                             whileTap={{ scale: 0.98 }}
                           >
@@ -414,40 +419,44 @@ export function Navbar({ onBuyTicket }: NavbarProps) {
                       <div className="flex gap-2">
                         <motion.button
                           onClick={() => changeLanguage("en")}
-                          className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${currentLanguage === "en"
+                          className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                            currentLanguage === "en"
                               ? "bg-[#00FFA3] text-black"
                               : "bg-white/10 text-white/80 hover:bg-white/20"
-                            }`}
+                          }`}
                           whileTap={{ scale: 0.95 }}
                         >
                           🇺🇸 EN
                         </motion.button>
                         <motion.button
                           onClick={() => changeLanguage("es")}
-                          className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${currentLanguage === "es"
+                          className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                            currentLanguage === "es"
                               ? "bg-[#00FFA3] text-black"
                               : "bg-white/10 text-white/80 hover:bg-white/20"
-                            }`}
+                          }`}
                           whileTap={{ scale: 0.95 }}
                         >
                           🇪🇸 ES
                         </motion.button>
                         <motion.button
                           onClick={() => changeLanguage("fr")}
-                          className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${currentLanguage === "fr"
+                          className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                            currentLanguage === "fr"
                               ? "bg-[#00FFA3] text-black"
                               : "bg-white/10 text-white/80 hover:bg-white/20"
-                            }`}
+                          }`}
                           whileTap={{ scale: 0.95 }}
                         >
                           🇫🇷 FR
                         </motion.button>
                         <motion.button
                           onClick={() => changeLanguage("pt")}
-                          className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${currentLanguage === "pt"
+                          className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                            currentLanguage === "pt"
                               ? "bg-[#00FFA3] text-black"
                               : "bg-white/10 text-white/80 hover:bg-white/20"
-                            }`}
+                          }`}
                           whileTap={{ scale: 0.95 }}
                         >
                           🇧🇷 PT

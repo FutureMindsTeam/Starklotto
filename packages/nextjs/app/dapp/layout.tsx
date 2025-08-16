@@ -23,7 +23,11 @@ export default function DappLayout({
     <div className="flex min-h-screen flex-col bg-background text-foreground overflow-x-hidden">
       <AnimatedBackground />
       <FloatingCoins />
-      <Navbar onBuyTicket={() => {navigate.push('/dapp/buy-tickets')}} />
+      <Navbar
+        onBuyTicket={() => {
+          navigate.push("/dapp/buy-tickets");
+        }}
+      />
       {notification && (
         <Notification
           message={notification.message}
@@ -31,9 +35,7 @@ export default function DappLayout({
           onClose={() => setNotification(null)}
         />
       )}
-      <main className="flex-1 pt-24 relative z-10">
-        {children}
-      </main>
+      <main className="flex-1 pt-24 relative z-10">{children}</main>
       <ScrollToTop />
     </div>
   );

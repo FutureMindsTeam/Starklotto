@@ -40,7 +40,6 @@ export function HeroSection({
       className="relative min-h-screen flex items-center justify-center px-8 py-5"
     >
       <div className="w-full mx-auto grid grid-cols-1 gap-12 items-center">
-
         {/* Right Column - Next Draw */}
         <motion.div
           initial={{ opacity: 0, x: 20 }}

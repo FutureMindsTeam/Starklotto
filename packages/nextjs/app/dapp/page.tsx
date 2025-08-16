@@ -2,10 +2,7 @@
 
 import { useState } from "react";
 import { useScroll, useTransform } from "framer-motion";
-import {
-  HeroSection,
-  PrizeDistributionSection,
-} from "~~/components/sections";
+import { HeroSection, PrizeDistributionSection } from "~~/components/sections";
 import { useAccount } from "@starknet-react/core";
 import { useRouter } from "next/navigation";
 import { LastDrawResults } from "~~/components/LastDrawResults";
@@ -26,10 +23,10 @@ export default function DappHome() {
   const targetDate = new Date();
   targetDate.setDate(targetDate.getDate() + 1);
 
-  const handleRoute = (route: string) =>{
-    navigate.push(route)
-  }
-  
+  const handleRoute = (route: string) => {
+    navigate.push(route);
+  };
+
   const handleSelectNumbers = (numbers: number[]) => {
     setSelectedNumbers(numbers);
   };
@@ -45,7 +42,7 @@ export default function DappHome() {
         jackpot={jackpot}
         showSecurityInfo={showSecurityInfo}
         targetDate={targetDate}
-        onBuyTicket={() => handleRoute('/dapp/buy-tickets')}
+        onBuyTicket={() => handleRoute("/dapp/buy-tickets")}
         onToggleSecurityInfo={() => setShowSecurityInfo(!showSecurityInfo)}
         showTicketSelector={showTicketSelector}
         selectedNumbers={selectedNumbers}

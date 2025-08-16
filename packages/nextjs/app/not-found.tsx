@@ -65,10 +65,16 @@ export default function NotFound() {
               {t("error404.title", "Oops! Page Not Found")}
             </h1>
             <p className="text-white/70 text-lg mb-2">
-              {t("error404.description", "Looks like this page decided to cash out early!")}
+              {t(
+                "error404.description",
+                "Looks like this page decided to cash out early!",
+              )}
             </p>
             <p className="text-white/60">
-              {t("error404.subtitle", "Don't worry, your luck is still waiting for you on our main page.")}
+              {t(
+                "error404.subtitle",
+                "Don't worry, your luck is still waiting for you on our main page.",
+              )}
             </p>
           </motion.div>
 
@@ -81,12 +87,12 @@ export default function NotFound() {
           >
             {/* Glow effect */}
             <div className="absolute inset-0 bg-gradient-to-r from-[#00FFA3]/10 via-transparent to-[#00E5FF]/10 rounded-2xl blur-xl" />
-            
+
             <div className="relative">
               <h2 className="text-xl font-semibold mb-6 text-[#00FFA3]">
                 {t("error404.suggestions.title", "What would you like to do?")}
               </h2>
-              
+
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 {/* Go Home Button */}
                 <Link href="/">
@@ -121,9 +127,7 @@ export default function NotFound() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.6 }}
           >
-            <p>
-              {t("error404.funMessage", "Better luck next time! 🎲")}
-            </p>
+            <p>{t("error404.funMessage", "Better luck next time! 🎲")}</p>
           </motion.div>
         </div>
       </div>
@@ -135,12 +139,19 @@ export default function NotFound() {
             key={i}
             className="absolute w-2 h-2 bg-[#00FFA3]/20 rounded-full"
             initial={{
-              x: typeof window !== 'undefined' ? Math.random() * window.innerWidth : Math.random() * 1000,
-              y: typeof window !== 'undefined' ? window.innerHeight + 100 : 1000,
+              x:
+                typeof window !== "undefined"
+                  ? Math.random() * window.innerWidth
+                  : Math.random() * 1000,
+              y:
+                typeof window !== "undefined" ? window.innerHeight + 100 : 1000,
             }}
             animate={{
               y: -100,
-              x: typeof window !== 'undefined' ? Math.random() * window.innerWidth : Math.random() * 1000,
+              x:
+                typeof window !== "undefined"
+                  ? Math.random() * window.innerWidth
+                  : Math.random() * 1000,
             }}
             transition={{
               duration: Math.random() * 10 + 10,

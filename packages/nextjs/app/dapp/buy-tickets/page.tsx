@@ -356,83 +356,81 @@ export default function BuyTicketsPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
-                <h1 className="text-3xl font-bold text-purple-400 mb-6">
-                  {t("buyTickets.title")}
-                </h1>
+              <h1 className="text-3xl font-bold text-purple-400 mb-6">
+                {t("buyTickets.title")}
+              </h1>
 
-                {/* Next Draw */}
-                <div className="mb-6">
-                  <p className="text-gray-300 mb-1">
-                    {t("buyTickets.nextDraw")}
-                  </p>
-                  <motion.p
-                    className="text-[#4ade80] text-4xl font-bold"
-                    initial={{ scale: 0.9 }}
-                    animate={{ scale: 1 }}
-                  >
-                    {jackpotAmount}
-                  </motion.p>
+              {/* Next Draw */}
+              <div className="mb-6">
+                <p className="text-gray-300 mb-1">{t("buyTickets.nextDraw")}</p>
+                <motion.p
+                  className="text-[#4ade80] text-4xl font-bold"
+                  initial={{ scale: 0.9 }}
+                  animate={{ scale: 1 }}
+                >
+                  {jackpotAmount}
+                </motion.p>
 
-                  {/* Countdown */}
-                  <div className="flex justify-between mt-4">
-                    {Object.entries(countdown).map(([key, value], index) => (
-                      <motion.div
-                        key={key}
-                        className="text-center"
-                        custom={index}
-                        variants={countdownItemVariants}
-                        initial="hidden"
-                        animate="visible"
-                      >
-                        <p className="text-purple-400 text-2xl font-bold">
-                          {value}
-                        </p>
-                        <p className="text-gray-400 text-sm capitalize">
-                          {t(`buyTickets.countdown.${key}`)}
-                        </p>
-                      </motion.div>
-                    ))}
-                  </div>
+                {/* Countdown */}
+                <div className="flex justify-between mt-4">
+                  {Object.entries(countdown).map(([key, value], index) => (
+                    <motion.div
+                      key={key}
+                      className="text-center"
+                      custom={index}
+                      variants={countdownItemVariants}
+                      initial="hidden"
+                      animate="visible"
+                    >
+                      <p className="text-purple-400 text-2xl font-bold">
+                        {value}
+                      </p>
+                      <p className="text-gray-400 text-sm capitalize">
+                        {t(`buyTickets.countdown.${key}`)}
+                      </p>
+                    </motion.div>
+                  ))}
                 </div>
+              </div>
 
-                {/* Ticket Controls */}
-                <TicketControls
-                  ticketCount={ticketCount}
-                  onIncreaseTickets={increaseTickets}
-                  onDecreaseTickets={decreaseTickets}
-                  onGenerateRandomForAll={generateRandomForAll}
-                />
+              {/* Ticket Controls */}
+              <TicketControls
+                ticketCount={ticketCount}
+                onIncreaseTickets={increaseTickets}
+                onDecreaseTickets={decreaseTickets}
+                onGenerateRandomForAll={generateRandomForAll}
+              />
 
-                {/* Ticket Selection */}
-                <div className="space-y-4">
-                  {Array.from({ length: ticketCount }).map((_, idx) => {
-                    const ticketId = idx + 1;
-                    return (
-                      <TicketSelector
-                        key={ticketId}
-                        ticketId={ticketId}
-                        selectedNumbers={selectedNumbers[ticketId] || []}
-                        animatingNumbers={animatingNumbers}
-                        onNumberSelect={selectNumber}
-                        onGenerateRandom={generateRandom}
-                        numberAnimationVariants={numberAnimationVariants}
-                        lotteryRevealVariants={lotteryRevealVariants}
-                        ticketVariants={ticketVariants}
-                        idx={idx}
-                      />
-                    );
-                  })}
-                </div>
+              {/* Ticket Selection */}
+              <div className="space-y-4">
+                {Array.from({ length: ticketCount }).map((_, idx) => {
+                  const ticketId = idx + 1;
+                  return (
+                    <TicketSelector
+                      key={ticketId}
+                      ticketId={ticketId}
+                      selectedNumbers={selectedNumbers[ticketId] || []}
+                      animatingNumbers={animatingNumbers}
+                      onNumberSelect={selectNumber}
+                      onGenerateRandom={generateRandom}
+                      numberAnimationVariants={numberAnimationVariants}
+                      lotteryRevealVariants={lotteryRevealVariants}
+                      ticketVariants={ticketVariants}
+                      idx={idx}
+                    />
+                  );
+                })}
+              </div>
 
-                {/* Purchase Summary */}
-                <PurchaseSummary
-                  totalCost={totalCost}
-                  isLoading={isLoading}
-                  txError={txError}
-                  txSuccess={txSuccess}
-                  onPurchase={handlePurchase}
-                />
-              </motion.div>
+              {/* Purchase Summary */}
+              <PurchaseSummary
+                totalCost={totalCost}
+                isLoading={isLoading}
+                txError={txError}
+                txSuccess={txSuccess}
+                onPurchase={handlePurchase}
+              />
+            </motion.div>
           </div>
 
           {/* Right Column - Illustration */}
