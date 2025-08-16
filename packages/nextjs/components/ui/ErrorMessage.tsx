@@ -28,7 +28,7 @@ export function ErrorMessage({
   className = "",
 }: ErrorMessageProps) {
   const { t } = useTranslation();
-  
+
   const getErrorDetails = () => {
     if (typeof error === "string") {
       return {

@@ -15,7 +15,7 @@ import {
 // Configuración temporal para debugging
 const DRAW_SERVICE_CONFIG = {
   POLLING_INTERVAL: 30 * 1000,
-  AUTO_REFRESH_KEY: 'starklotto_auto_refresh',
+  AUTO_REFRESH_KEY: "starklotto_auto_refresh",
 } as const;
 
 export interface UseLatestDrawOptions {
@@ -64,7 +64,7 @@ export function useLatestDraw(
 
   // Get initial auto-refresh preference from localStorage
   const getInitialAutoRefreshState = () => {
-    if (typeof window === 'undefined') return true; // SSR default
+    if (typeof window === "undefined") return true; // SSR default
     const saved = localStorage.getItem(DRAW_SERVICE_CONFIG.AUTO_REFRESH_KEY);
     return saved !== null ? JSON.parse(saved) : true; // Default to true
   };
@@ -145,10 +145,10 @@ export function useLatestDraw(
     }
 
     setIsPolling(true);
-    
+
     // Save preference to localStorage
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(DRAW_SERVICE_CONFIG.AUTO_REFRESH_KEY, 'true');
+    if (typeof window !== "undefined") {
+      localStorage.setItem(DRAW_SERVICE_CONFIG.AUTO_REFRESH_KEY, "true");
     }
 
     pollingIntervalRef.current = setInterval(() => {
@@ -163,10 +163,10 @@ export function useLatestDraw(
       pollingIntervalRef.current = null;
     }
     setIsPolling(false);
-    
+
     // Save preference to localStorage
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(DRAW_SERVICE_CONFIG.AUTO_REFRESH_KEY, 'false');
+    if (typeof window !== "undefined") {
+      localStorage.setItem(DRAW_SERVICE_CONFIG.AUTO_REFRESH_KEY, "false");
     }
   }, []);
 
@@ -185,7 +185,7 @@ export function useLatestDraw(
     // Start polling after initial fetch only if auto-refresh is enabled
     const startPollingTimeout = setTimeout(() => {
       const shouldAutoRefresh = getInitialAutoRefreshState();
-      
+
       if (shouldAutoRefresh) {
         setIsPolling(true);
 

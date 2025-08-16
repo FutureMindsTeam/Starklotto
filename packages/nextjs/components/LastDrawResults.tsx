@@ -58,11 +58,14 @@ export function LastDrawResults() {
     }, 5000);
   }, []);
 
-  const handleError = useCallback((error: any) => {
-    if (error.code === "NETWORK_ERROR") {
-      toast.error(t("notifications.connectionLost"));
-    }
-  }, [t]);
+  const handleError = useCallback(
+    (error: any) => {
+      if (error.code === "NETWORK_ERROR") {
+        toast.error(t("notifications.connectionLost"));
+      }
+    },
+    [t],
+  );
 
   // Cleanup timeouts cuando el componente se desmonta
   useEffect(() => {
@@ -187,7 +190,8 @@ export function LastDrawResults() {
               )}
               {lastFetch && (
                 <div className="text-xs text-white/60">
-                  {t("status.updated")} {new Date(lastFetch).toLocaleTimeString()}
+                  {t("status.updated")}{" "}
+                  {new Date(lastFetch).toLocaleTimeString()}
                 </div>
               )}
             </div>
@@ -282,9 +286,7 @@ export function LastDrawResults() {
             >
               <div className="flex items-center gap-2 text-sm text-yellow-800 dark:text-yellow-200">
                 <AlertCircle className="h-4 w-4" />
-                <span>
-                  {t("notifications.unableToFetch")}
-                </span>
+                <span>{t("notifications.unableToFetch")}</span>
                 <button
                   onClick={handleManualRefresh}
                   className="ml-auto text-yellow-600 hover:text-yellow-500 dark:text-yellow-400"
@@ -333,7 +335,9 @@ export function LastDrawResults() {
               <div
                 className={`h-2 w-2 rounded-full ${isPolling ? "bg-green-500" : "bg-gray-400"}`}
               />
-              {isPolling ? t("status.autoRefreshOn") : t("status.autoRefreshOff")}
+              {isPolling
+                ? t("status.autoRefreshOn")
+                : t("status.autoRefreshOff")}
             </button>
           </div>
         </div>
