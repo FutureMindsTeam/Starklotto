@@ -15,6 +15,7 @@ import {
 // Configuración temporal para debugging
 const DRAW_SERVICE_CONFIG = {
   POLLING_INTERVAL: 30 * 1000,
+  AUTO_REFRESH_KEY: 'starklotto_auto_refresh',
 } as const;
 
 export interface UseLatestDrawOptions {
@@ -61,12 +62,19 @@ export function useLatestDraw(
     onError,
   } = options;
 
+  // Get initial auto-refresh preference from localStorage
+  const getInitialAutoRefreshState = () => {
+    if (typeof window === 'undefined') return true; // SSR default
+    const saved = localStorage.getItem(DRAW_SERVICE_CONFIG.AUTO_REFRESH_KEY);
+    return saved !== null ? JSON.parse(saved) : true; // Default to true
+  };
+
   // State
   const [data, setData] = useState<DrawResult | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<DrawServiceError | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isPolling, setIsPolling] = useState(false);
+  const [isPolling, setIsPolling] = useState(getInitialAutoRefreshState());
   const [lastFetch, setLastFetch] = useState<number | null>(null);
 
   // Refs
@@ -137,6 +145,11 @@ export function useLatestDraw(
     }
 
     setIsPolling(true);
+    
+    // Save preference to localStorage
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(DRAW_SERVICE_CONFIG.AUTO_REFRESH_KEY, 'true');
+    }
 
     pollingIntervalRef.current = setInterval(() => {
       fetchDraw(false);
@@ -150,6 +163,11 @@ export function useLatestDraw(
       pollingIntervalRef.current = null;
     }
     setIsPolling(false);
+    
+    // Save preference to localStorage
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(DRAW_SERVICE_CONFIG.AUTO_REFRESH_KEY, 'false');
+    }
   }, []);
 
   // Clear error function
@@ -164,17 +182,21 @@ export function useLatestDraw(
     // Initial fetch
     fetchDraw(true);
 
-    // Start polling after initial fetch
+    // Start polling after initial fetch only if auto-refresh is enabled
     const startPollingTimeout = setTimeout(() => {
-      setIsPolling(true);
+      const shouldAutoRefresh = getInitialAutoRefreshState();
+      
+      if (shouldAutoRefresh) {
+        setIsPolling(true);
 
-      if (pollingIntervalRef.current) {
-        clearInterval(pollingIntervalRef.current);
+        if (pollingIntervalRef.current) {
+          clearInterval(pollingIntervalRef.current);
+        }
+
+        pollingIntervalRef.current = setInterval(() => {
+          fetchDraw(false);
+        }, pollingInterval);
       }
-
-      pollingIntervalRef.current = setInterval(() => {
-        fetchDraw(false);
-      }, pollingInterval);
     }, 2000); // 2 segundos después del fetch inicial
 
     return () => {
@@ -183,7 +205,6 @@ export function useLatestDraw(
         clearInterval(pollingIntervalRef.current);
         pollingIntervalRef.current = null;
       }
-      setIsPolling(false);
     };
   }, [enabled, pollingInterval]); // Solo dependencias esenciales
 

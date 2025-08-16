@@ -42,7 +42,7 @@ export function LastDrawResults() {
     lastNotifiedDrawRef.current = newDraw.id;
     setShowNewDrawNotification(true);
 
-    toast.success("New lottery draw results available!", {
+    toast.success(t("notifications.newDrawAvailable"), {
       duration: 4000,
       icon: "🎉",
     });
@@ -60,9 +60,9 @@ export function LastDrawResults() {
 
   const handleError = useCallback((error: any) => {
     if (error.code === "NETWORK_ERROR") {
-      toast.error("Connection lost. Trying to reconnect...");
+      toast.error(t("notifications.connectionLost"));
     }
-  }, []);
+  }, [t]);
 
   // Cleanup timeouts cuando el componente se desmonta
   useEffect(() => {
@@ -138,7 +138,7 @@ export function LastDrawResults() {
               <div className="flex items-center gap-2">
                 <CheckCircle className="h-5 w-5" />
                 <span className="text-sm font-medium">
-                  New draw results have been loaded!
+                  {t("notifications.newDrawLoaded")}
                 </span>
               </div>
             </motion.div>
@@ -182,12 +182,12 @@ export function LastDrawResults() {
                   >
                     <Wifi className="h-5 w-5" />
                   </motion.div>
-                  <span className="text-xs">Live</span>
+                  <span className="text-xs">{t("status.live")}</span>
                 </div>
               )}
               {lastFetch && (
                 <div className="text-xs text-white/60">
-                  Updated {new Date(lastFetch).toLocaleTimeString()}
+                  {t("status.updated")} {new Date(lastFetch).toLocaleTimeString()}
                 </div>
               )}
             </div>
@@ -247,12 +247,10 @@ export function LastDrawResults() {
                   className="rounded-lg bg-gray-50 p-4 dark:bg-gray-900"
                 >
                   <h3 className="mb-1 text-sm font-medium text-gray-500 dark:text-gray-400">
-                    {t("lastDraw.winners")}
+                    {t("lastDraw.results")}
                   </h3>
                   <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                    {drawResult.winnerCount > 0
-                      ? `${drawResult.winnerCount} ${t("lastDraw.winners")}`
-                      : t("lastDraw.noWinners")}
+                    {`${drawResult.winnerCount} ${drawResult.winnerCount === 1 ? t("lastDraw.winner") : t("lastDraw.winners")}`}
                   </p>
                 </motion.div>
               </div>
@@ -270,7 +268,7 @@ export function LastDrawResults() {
           ) : (
             <div className="text-center py-8">
               <p className="text-gray-500 dark:text-gray-400">
-                {t("lastDraw.noResults", "No results available yet")}
+                {t("status.noResults")}
               </p>
             </div>
           )}
@@ -285,7 +283,7 @@ export function LastDrawResults() {
               <div className="flex items-center gap-2 text-sm text-yellow-800 dark:text-yellow-200">
                 <AlertCircle className="h-4 w-4" />
                 <span>
-                  Unable to fetch latest updates. Showing cached results.
+                  {t("notifications.unableToFetch")}
                 </span>
                 <button
                   onClick={handleManualRefresh}
@@ -320,7 +318,7 @@ export function LastDrawResults() {
               <RefreshCw
                 className={`h-3 w-3 ${isRefreshing ? "animate-spin" : ""}`}
               />
-              Refresh
+              {t("status.refresh")}
             </motion.button>
 
             {/* Polling control */}
@@ -335,7 +333,7 @@ export function LastDrawResults() {
               <div
                 className={`h-2 w-2 rounded-full ${isPolling ? "bg-green-500" : "bg-gray-400"}`}
               />
-              {isPolling ? "Auto-refresh On" : "Auto-refresh Off"}
+              {isPolling ? t("status.autoRefreshOn") : t("status.autoRefreshOff")}
             </button>
           </div>
         </div>

@@ -11,6 +11,7 @@ import {
   Clock,
   AlertTriangle,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { DrawServiceError } from "~~/services/draw.service";
 
 interface ErrorMessageProps {
@@ -26,11 +27,13 @@ export function ErrorMessage({
   showRetryButton = true,
   className = "",
 }: ErrorMessageProps) {
+  const { t } = useTranslation();
+  
   const getErrorDetails = () => {
     if (typeof error === "string") {
       return {
         icon: AlertCircle,
-        title: "Error",
+        title: t("common.error"),
         message: error,
         retryable: true,
       };
@@ -42,31 +45,29 @@ export function ErrorMessage({
         case "NETWORK_ERROR":
           return {
             icon: Wifi,
-            title: "Connection Error",
-            message:
-              "Unable to connect to the lottery service. Please check your internet connection.",
+            title: t("errors.connectionError"),
+            message: t("errors.networkErrorMessage"),
             retryable: drawError.retryable,
           };
         case "TIMEOUT":
           return {
             icon: Clock,
-            title: "Request Timeout",
-            message: "The request took too long to complete. Please try again.",
+            title: t("errors.requestTimeout"),
+            message: t("errors.timeoutErrorMessage"),
             retryable: drawError.retryable,
           };
         case "API_ERROR":
           return {
             icon: AlertTriangle,
-            title: "Service Error",
-            message:
-              "The lottery service is experiencing issues. Please try again later.",
+            title: t("errors.serviceError"),
+            message: t("errors.apiErrorMessage"),
             retryable: drawError.retryable,
           };
         default:
           return {
             icon: AlertCircle,
-            title: "Unexpected Error",
-            message: drawError.message || "An unexpected error occurred.",
+            title: t("errors.unexpectedError"),
+            message: drawError.message || t("errors.unexpectedErrorMessage"),
             retryable: drawError.retryable,
           };
       }
@@ -74,8 +75,8 @@ export function ErrorMessage({
 
     return {
       icon: AlertCircle,
-      title: "Error",
-      message: error.message || "An error occurred while loading draw results.",
+      title: t("common.error"),
+      message: error.message || t("errors.loadingErrorMessage"),
       retryable: true,
     };
   };
@@ -108,7 +109,7 @@ export function ErrorMessage({
                 className="inline-flex items-center gap-2 rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 dark:bg-red-500 dark:hover:bg-red-400"
               >
                 <RefreshCw className="h-4 w-4" />
-                Retry
+                {t("status.retry")}
               </motion.button>
             </div>
           )}
