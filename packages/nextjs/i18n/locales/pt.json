@@ -112,7 +112,9 @@
     "title": "Resultados do Último Sorteio",
     "winningNumbers": "Números Vencedores",
     "jackpotAmount": "Valor do Jackpot",
+    "winner": "Vencedor",
     "winners": "Vencedores",
+    "results": "Resultados",
     "noWinners": "Nenhum vencedor",
     "viewPrevious": "Ver Sorteios Anteriores"
   },
@@ -170,5 +172,31 @@
   "comingSoon": {
     "message": "Em Breve",
     "description": "Este recurso estará disponível em breve. Fique ligado!"
+  },
+  "notifications": {
+    "newDrawAvailable": "Novos resultados de sorteio de loteria disponíveis!",
+    "newDrawLoaded": "Os novos resultados do sorteio foram carregados!",
+    "connectionLost": "Conexão perdida. Tentando reconectar...",
+    "unableToFetch": "Não foi possível buscar as últimas atualizações. Mostrando resultados em cache."
+  },
+  "status": {
+    "live": "Ao vivo",
+    "updated": "Atualizado",
+    "refresh": "Atualizar",
+    "autoRefreshOn": "Atualização Automática Ativada",
+    "autoRefreshOff": "Atualização Automática Desativada",
+    "retry": "Tentar Novamente",
+    "noResults": "Nenhum resultado disponível ainda"
+  },
+  "errors": {
+    "connectionError": "Erro de Conexão",
+    "requestTimeout": "Tempo Limite Excedido",
+    "serviceError": "Erro de Serviço",
+    "unexpectedError": "Erro Inesperado",
+    "networkErrorMessage": "Não foi possível conectar ao serviço de loteria. Por favor, verifique sua conexão com a internet.",
+    "timeoutErrorMessage": "A solicitação demorou muito para ser concluída. Por favor, tente novamente.",
+    "apiErrorMessage": "O serviço de loteria está enfrentando problemas. Por favor, tente novamente mais tarde.",
+    "unexpectedErrorMessage": "Ocorreu um erro inesperado.",
+    "loadingErrorMessage": "Ocorreu um erro ao carregar os resultados do sorteio."
   }
 }
