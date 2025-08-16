@@ -109,7 +109,9 @@
     "title": "Last Draw Results",
     "winningNumbers": "Winning Numbers",
     "jackpotAmount": "Jackpot Amount",
+    "winner": "Winner",
     "winners": "Winners",
+    "results": "Results",
     "noWinners": "No winners",
     "viewPrevious": "View Previous Draws"
   },
@@ -150,5 +152,31 @@
       "chooseAccount": "Choose account",
       "close": "✕"
     }
+  },
+  "notifications": {
+    "newDrawAvailable": "New lottery draw results available!",
+    "newDrawLoaded": "New draw results have been loaded!",
+    "connectionLost": "Connection lost. Trying to reconnect...",
+    "unableToFetch": "Unable to fetch latest updates. Showing cached results."
+  },
+  "status": {
+    "live": "Live",
+    "updated": "Updated",
+    "refresh": "Refresh",
+    "autoRefreshOn": "Auto-refresh On",
+    "autoRefreshOff": "Auto-refresh Off",
+    "retry": "Retry",
+    "noResults": "No results available yet"
+  },
+  "errors": {
+    "connectionError": "Connection Error",
+    "requestTimeout": "Request Timeout",
+    "serviceError": "Service Error",
+    "unexpectedError": "Unexpected Error",
+    "networkErrorMessage": "Unable to connect to the lottery service. Please check your internet connection.",
+    "timeoutErrorMessage": "The request took too long to complete. Please try again.",
+    "apiErrorMessage": "The lottery service is experiencing issues. Please try again later.",
+    "unexpectedErrorMessage": "An unexpected error occurred.",
+    "loadingErrorMessage": "An error occurred while loading draw results."
   }
 }
