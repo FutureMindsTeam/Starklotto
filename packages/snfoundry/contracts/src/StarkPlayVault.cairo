@@ -134,8 +134,10 @@ pub mod StarkPlayVault {
     ) {
         self.strkToken.write(TOKEN_STRK_ADDRESS);
         self.starkPlayToken.write(starkPlayToken);
-        self.owner.write(starknet::get_caller_address());
-        self.ownable.initializer(owner);
+        //TODO: delete this when issue #439 is fixed
+        //self.owner.write(get_caller_address());
+        self.owner.write(owner); // Use the owner parameter, not caller address
+        self.ownable.initializer(owner); // Initialize OpenZeppelin Ownable with same owner
         self.mintLimit.write(MAX_MINT_AMOUNT);
         self.burnLimit.write(MAX_BURN_AMOUNT);
         self.paused.write(false);
@@ -153,21 +155,8 @@ pub mod StarkPlayVault {
         self.feePercentagePrizesConvertedMin.write(10); //0.1%
         self.feePercentagePrizesConvertedMax.write(500); //5%
 
-        // Auto-configure minter permissions
-        // The token constructor granted temporary admin role to this vault
-        let vault_address = get_contract_address();
-        let token_dispatcher = IMintableDispatcher { contract_address: starkPlayToken };
-        
-        // Grant minter role to this vault
-        token_dispatcher.grant_minter_role(vault_address);
-        
-        // Set maximum allowance for this vault (1 Billion tokens)
-        //let max_allowance: u256 = 1_000_000_000 * DECIMALS_FACTOR; // 1B tokens
-        //token_dispatcher.set_minter_allowance(vault_address, max_allowance);
-        
-        // Revoke temporary admin role for security (vault no longer needs it)
-        //let access_control_dispatcher = IAccessControlDispatcher { contract_address: starkPlayToken };
-        //access_control_dispatcher.revoke_role(DEFAULT_ADMIN_ROLE, vault_address);
+        // Note: During constructor, contract address might not be final
+        // Permission initialization moved to post-deploy function
     }
 
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -518,9 +507,11 @@ pub mod StarkPlayVault {
             self.accumulatedPrizeConversionFees.read()
         }
 
-        fn convert_to_strk(ref self: ContractState, amount: u256) {
-            convert_to_strk(ref self, amount)
-        }
+            fn convert_to_strk(ref self: ContractState, amount: u256) {
+        convert_to_strk(ref self, amount)
+    }
+
+
 
         // Function to update totalSTRKStored (for testing purposes)
         fn update_total_strk_stored(ref self: ContractState, amount: u256) {

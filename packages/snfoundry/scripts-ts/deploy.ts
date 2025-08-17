@@ -5,6 +5,8 @@ import {
   deployer,
 } from "./deploy-contract";
 import { green } from "./helpers/colorize-log";
+import fs from "fs";
+import path from "path";
 
 /**
  * Deploy a contract using the specified parameters.
@@ -94,6 +96,52 @@ const deployScript = async (): Promise<void> => {
     );
   }
 
+  // Execute pending deploy calls and wait for confirmation
+  console.log("Executing deployment calls and waiting for confirmation...");
+  await executeDeployCalls();
+  console.log("All deployments confirmed successfully");
+
+  // Post-deploy role assignment: Configure token permissions following best practices
+  console.log("Assigning roles to StarkPlayVault...");
+  try {
+    const { Contract } = await import("starknet");
+    
+    // Load StarkPlayERC20 contract ABI to interact with it
+    const starkPlayTokenCompiledContract = JSON.parse(
+      fs.readFileSync(
+        path.join(__dirname, "../contracts/target/dev/contracts_StarkPlayERC20.contract_class.json"),
+        "utf8"
+      )
+    );
+
+    const starkPlayTokenContract = new Contract(
+      starkPlayTokenCompiledContract.abi,
+      starkPlayERC20Address,
+      deployer
+    );
+
+    // Owner (deployer) assigns MINTER_ROLE to the vault
+    console.log("Granting MINTER_ROLE to vault...");
+    await starkPlayTokenContract.grant_minter_role(starkPlayVaultAddress);
+    
+    // Set minter allowance for the vault
+    const mint_allowance = 1_000_000_000n * 1000000000000000000n; // 1B tokens with 18 decimals
+    await starkPlayTokenContract.set_minter_allowance(starkPlayVaultAddress, mint_allowance);
+    
+    // Owner (deployer) assigns BURNER_ROLE to the vault
+    console.log("Granting BURNER_ROLE to vault...");
+    await starkPlayTokenContract.grant_burner_role(starkPlayVaultAddress);
+    
+    // Set burner allowance for the vault  
+    const burn_allowance = 1_000_000_000n * 1000000000000000000n; // 1B tokens with 18 decimals
+    await starkPlayTokenContract.set_burner_allowance(starkPlayVaultAddress, burn_allowance);
+
+    console.log("StarkPlayVault roles assigned successfully by owner");
+  } catch (error) {
+    console.error("Failed to assign vault roles:", error);
+    throw new Error(`Vault role assignment failed: ${error}`);
+  }
+
   // Deploy Lottery with dynamic addresses
   await deployContract({
     contract: "Lottery",
@@ -120,7 +168,7 @@ const deployScript = async (): Promise<void> => {
 const main = async (): Promise<void> => {
   try {
     await deployScript();
-    await executeDeployCalls();
+    // executeDeployCalls() is already called inside deployScript() - no need to call it again
     exportDeployments();
 
     console.log(green("All Setup Done!"));
