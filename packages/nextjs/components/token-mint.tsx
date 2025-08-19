@@ -105,9 +105,11 @@ export default function TokenMint({
   // Convert StarkPlay balance from wei to readable format
   const starkPlayBalanceFormatted = starkPlayBalance ? Number(starkPlayBalance) / 10**18 : 0;
 
-  // Input validation
+  // Input validation - consider 95% limit for fees and minimum amount
+  const maxAllowedForFees = strkBalance * 0.95;
+  const minAmount = 0.000001; // Minimum 0.000001 STRK
   const isValidInput =
-    numericAmount > 0 && !isNaN(numericAmount) && numericAmount <= strkBalance;
+    numericAmount >= minAmount && !isNaN(numericAmount) && numericAmount <= maxAllowedForFees;
 
   // Get contract addresses for current network
   const { StarkPlayVault, isValid, currentNetwork } = useContractAddresses();
@@ -130,7 +132,9 @@ export default function TokenMint({
   };
 
   const handleMaxClick = () => {
-    setInputAmount(strkBalance.toString());
+    // Set to 95% of balance to leave room for fees
+    const maxAmount = strkBalance * 0.95;
+    setInputAmount(maxAmount.toString());
     setError(null);
   };
 
@@ -146,8 +150,9 @@ export default function TokenMint({
 
   const handleMint = async () => {
     if (!isValidInput) {
-      if (numericAmount <= 0) setError("Please enter an amount > 0");
-      else setError("Insufficient STRK balance");
+      if (numericAmount < minAmount) setError(`Please enter an amount >= ${minAmount} STRK`);
+      else if (numericAmount > maxAllowedForFees) setError(`Amount too large. Maximum allowed: ${maxAllowedForFees.toFixed(6)} STRK (95% of balance)`);
+      else setError("Invalid amount");
       return;
     }
 
@@ -163,9 +168,35 @@ export default function TokenMint({
       // Convert amount to wei (multiply by 10^18)
       const amountInWei = BigInt(Math.floor(numericAmount * 10**18));
       
+      // Validate that amountInWei is not 0
+      if (amountInWei === BigInt(0)) {
+        throw new Error("Amount too small. Please enter a larger amount.");
+      }
+      
       // Validate contract readiness before proceeding
       if (!contractsReady || !StarkPlayVault) {
         throw new Error(`Contract addresses not available for ${currentNetwork} network`);
+      }
+
+      // Additional validation: Check if user has enough STRK balance
+      const strkBalanceWei = BigInt(Math.floor(strkBalance * 10**18));
+      
+      // Debug logging
+      console.log("Debug - User balance:", {
+        strkBalance,
+        strkBalanceWei: strkBalanceWei.toString(),
+        amountInWei: amountInWei.toString(),
+        numericAmount
+      });
+      
+      if (amountInWei > strkBalanceWei) {
+        throw new Error("Insufficient STRK balance for this transaction");
+      }
+
+      // Additional safety check: Leave some balance for fees (95% max)
+      const maxAllowedAmount = (strkBalanceWei * BigInt(95)) / BigInt(100);
+      if (amountInWei > maxAllowedAmount) {
+        throw new Error("Amount too large. Please leave some STRK for transaction fees (max 95% of balance).");
       }
 
       // Step 1: Approve STRK to Vault (user must approve vault to spend their STRK)
@@ -207,6 +238,10 @@ export default function TokenMint({
       
       if (error?.message?.includes("Insufficient STRK balance")) {
         errorMessage = "Insufficient STRK balance to complete the transaction.";
+      } else if (error?.message?.includes("u256_sub Overflow") || error?.message?.includes("Overflow")) {
+        errorMessage = "Transaction failed due to insufficient balance. Please check your STRK balance and try a smaller amount.";
+      } else if (error?.message?.includes("Amount too large")) {
+        errorMessage = "Amount too large. Please leave some STRK for transaction fees (max 95% of balance).";
       } else if (error?.message?.includes("Exceeds mint limit")) {
         errorMessage = "The amount exceeds the maximum mint limit.";
       } else if (error?.message?.includes("Contract is paused")) {
@@ -287,6 +322,9 @@ export default function TokenMint({
               >
                 MAX
               </button>
+            </div>
+            <div className="text-xs text-gray-400 mt-1">
+              💡 Max {maxAllowedForFees.toFixed(6)} STRK (95% of balance) to leave room for transaction fees
             </div>
           </div>
 

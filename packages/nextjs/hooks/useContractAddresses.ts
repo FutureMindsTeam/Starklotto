@@ -30,18 +30,36 @@ export const useContractAddresses = () => {
   const { targetNetwork } = useTargetNetwork();
   
   const contractAddresses = useMemo(() => {
-    const networkName = targetNetwork.name as keyof typeof deployedContracts;
-    const contracts = deployedContracts[networkName];
+    // Try multiple possible network names
+    const possibleNames = [
+      targetNetwork.name,
+      targetNetwork.network,
+      targetNetwork.name.toLowerCase(),
+      targetNetwork.network?.toLowerCase()
+    ].filter(Boolean);
+    
+    let contracts = null;
+    let usedNetworkName = '';
+    
+    for (const networkName of possibleNames) {
+      if (deployedContracts[networkName as keyof typeof deployedContracts]) {
+        contracts = deployedContracts[networkName as keyof typeof deployedContracts];
+        usedNetworkName = networkName;
+        break;
+      }
+    }
     
     if (!contracts) {
-      console.warn(`No contracts found for network: ${networkName}`);
+      console.warn(`No contracts found for network: ${targetNetwork.name}. Tried: ${possibleNames.join(', ')}`);
       return null;
     }
 
     // Get network-specific configuration
-    const networkConfig = NETWORK_CONFIG[networkName as NetworkName];
+    const networkConfig = NETWORK_CONFIG[usedNetworkName as NetworkName] || 
+                         NETWORK_CONFIG[targetNetwork.name as NetworkName] ||
+                         NETWORK_CONFIG[targetNetwork.network as NetworkName];
     if (!networkConfig) {
-      console.warn(`No network configuration found for: ${networkName}`);
+      console.warn(`No network configuration found for: ${usedNetworkName || targetNetwork.name}`);
     }
 
     return {
