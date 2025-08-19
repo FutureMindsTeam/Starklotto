@@ -36,16 +36,16 @@ export const useStrkContract = () => {
 
       // Create contract instance for STRK using ERC20 ABI
       const strkContract = new Contract(strkPlayERC20Abi, strkAddress, account);
-      
+
       console.log("STRK Approval Debug:", {
         strkAddress,
         spender,
-        amount: amount.toString()
+        amount: amount.toString(),
       });
 
       // Execute the approve transaction
       const result = await strkContract.approve(spender, amount);
-      
+
       console.log("STRK Approval Result:", result);
       return result;
     } catch (error) {
