@@ -36,6 +36,8 @@ pub trait IStarkPlayVault<TContractState> {
     fn withdrawPrizeConversionFees(
         ref self: TContractState, recipient: ContractAddress, amount: u256,
     ) -> bool;
+    fn set_treasury_address(ref self: TContractState, treasury: ContractAddress) -> bool;
+    fn get_treasury_address(self: @TContractState) -> ContractAddress;
 
     //test functions
     fn update_total_strk_stored(ref self: TContractState, amount: u256);
@@ -117,6 +119,7 @@ pub mod StarkPlayVault {
         reentrant_locked: bool,
         accumulatedFee: u256,
         accumulatedPrizeConversionFees: u256,
+        treasury_address: ContractAddress,
         #[substorage(v0)]
         ownable: OwnableComponent::Storage,
     }
@@ -283,6 +286,15 @@ pub mod StarkPlayVault {
         amount: u256,
     }
 
+    #[derive(Drop, starknet::Event)]
+    struct TreasuryFeeTransferred {
+        #[key]
+        user: ContractAddress,
+        #[key]
+        amount: u256,
+        treasury: ContractAddress,
+    }
+
     #[event]
     #[derive(Drop, starknet::Event)]
     pub enum Event {
@@ -304,6 +316,7 @@ pub mod StarkPlayVault {
         FeeUpdated: FeeUpdated,
         GeneralFeesWithdrawn: GeneralFeesWithdrawn,
         PrizeConversionFeesWithdrawn: PrizeConversionFeesWithdrawn,
+        TreasuryFeeTransferred: TreasuryFeeTransferred,
     }
 
 
@@ -438,31 +451,41 @@ pub mod StarkPlayVault {
         // Check that the contract is not paused
         _assert_not_paused(@self);
         let user = get_caller_address();
-        
+
         // Validate amount is greater than 0
         assert(amount > 0, 'Amount must be greater than 0');
-        
+
         // Zero address validation
         assert(user != zero_address_const(), 'Zero address not allowed');
-        
+
         // Validate burnLimit
         assert(amount <= self.burnLimit.read(), 'Exceeds burn limit per tx');
-        
+
         let starkPlayContractAddress = self.starkPlayToken.read();
         let prizeDispatcher = IPrizeTokenDispatcher { contract_address: starkPlayContractAddress };
         let prize_balance = prizeDispatcher.get_prize_balance(user);
         assert(prize_balance >= amount, 'Insufficient prize tokens');
 
-        // Calculate conversion fee using the correct fee percentage 
-        let prizeFeeAmount = (amount * self.feePercentagePrizesConverted.read().into()) / BASIS_POINTS_DENOMINATOR;
+        // Calculate conversion fee using the correct fee percentage
+        let prizeFeeAmount = (amount * self.feePercentagePrizesConverted.read().into())
+            / BASIS_POINTS_DENOMINATOR;
         let netAmount = amount - prizeFeeAmount;
 
-        // Verify contract has sufficient STRK balance before transfer
+        // Get treasury address and setup STRK dispatcher
+        let treasury = self.treasury_address.read();
         let strk_contract_address = contract_address_const::<TOKEN_STRK_ADDRESS>();
         let strk_dispatcher = IERC20Dispatcher { contract_address: strk_contract_address };
         let contract_balance = strk_dispatcher.balance_of(get_contract_address());
-        assert(contract_balance >= netAmount, 'Insufficient STRK in vault');
-       
+
+        // Conditional verification of balance and transfers based on treasury status
+        if treasury != zero_address_const() {
+            // If treasury is set, contract must have enough for both net amount and fee
+            assert(contract_balance >= netAmount + prizeFeeAmount, 'Insufficient STRK in vault');
+        } else {
+            // If no treasury, only need net amount
+            assert(contract_balance >= netAmount, 'Insufficient STRK in vault');
+        }
+
         // Burn the full amount of prize tokens from user
         let mut burnDispatcher = IBurnableDispatcher { contract_address: starkPlayContractAddress };
         burnDispatcher.burn_from(user, amount);
@@ -484,9 +507,23 @@ pub mod StarkPlayVault {
                 },
             );
 
-        // Transfer the net amount (after deducting fee) to user
+        // Handle transfers based on treasury configuration
+        if treasury != zero_address_const() {
+            // Transfer prize fee to treasury
+            strk_dispatcher.transfer(treasury, prizeFeeAmount);
+
+            // Emit treasury fee transfer event
+            self.emit(TreasuryFeeTransferred { user, amount: prizeFeeAmount, treasury });
+
+            // Update totalSTRKStored by the full amount (net + fee)
+            self.totalSTRKStored.write(self.totalSTRKStored.read() - (netAmount + prizeFeeAmount));
+        } else {
+            // Maintain current behavior: only reduce by net amount
+            self.totalSTRKStored.write(self.totalSTRKStored.read() - netAmount);
+        }
+
+        // Always transfer the net amount to user
         strk_dispatcher.transfer(user, netAmount);
-        self.totalSTRKStored.write(self.totalSTRKStored.read() - netAmount);
         self.emit(ConvertedToSTRK { user, amount: netAmount });
 
         //Release reentrancy lock
@@ -661,6 +698,17 @@ pub mod StarkPlayVault {
 
         fn get_total_starkplay_burned(self: @ContractState) -> u256 {
             self.totalStarkPlayBurned.read()
+        }
+
+        fn set_treasury_address(ref self: ContractState, treasury: ContractAddress) -> bool {
+            assert_only_owner(@self);
+            assert(treasury != zero_address_const(), 'Invalid treasury address');
+            self.treasury_address.write(treasury);
+            true
+        }
+
+        fn get_treasury_address(self: @ContractState) -> ContractAddress {
+            self.treasury_address.read()
         }
         //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     }
