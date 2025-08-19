@@ -31,7 +31,8 @@ vi.mock("~~/hooks/scaffold-stark/useStarkPlayFee", () => ({
 vi.mock("~~/hooks/useStrkContract", () => ({
   useStrkContract: () => ({
     approveStrk: vi.fn(),
-    strkAddress: "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
+    strkAddress:
+      "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
     isReady: true,
   }),
 }));
