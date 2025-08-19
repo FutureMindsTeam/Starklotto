@@ -10,7 +10,6 @@ pub trait IStarkPlayVault<TContractState> {
     fn get_mint_limit(self: @TContractState) -> u256;
     fn get_burn_limit(self: @TContractState) -> u256;
     fn get_accumulated_fee(self: @TContractState) -> u256;
-    fn get_owner(self: @TContractState) -> ContractAddress;
     fn get_total_starkplay_minted(self: @TContractState) -> u256;
     fn get_total_strk_stored(self: @TContractState) -> u256;
     fn get_total_starkplay_burned(self: @TContractState) -> u256;
@@ -108,8 +107,7 @@ pub mod StarkPlayVault {
         feePercentagePrizesConvertedMin: u64, //min fee percentage for the vault to convert prizes to STRKP (0.1% = 10 basis points)
         feePercentagePrizesConvertedMax: u64, //max fee percentage for the vault to convert prizes to STRKP (5% = 500 basis points)
         //------------------------------------------------
-        //owner of the vault
-        owner: ContractAddress,
+        //OpenZeppelin OwnableComponent handles ownership
         paused: bool,
         mintLimit: u256,
         burnLimit: u256,
@@ -134,7 +132,7 @@ pub mod StarkPlayVault {
     ) {
         self.strkToken.write(TOKEN_STRK_ADDRESS);
         self.starkPlayToken.write(starkPlayToken);
-        self.owner.write(starknet::get_caller_address());
+        // OpenZeppelin OwnableComponent handles ownership
         self.ownable.initializer(owner);
         self.mintLimit.write(MAX_MINT_AMOUNT);
         self.burnLimit.write(MAX_BURN_AMOUNT);
@@ -320,9 +318,6 @@ pub mod StarkPlayVault {
         assert(!self.paused.read(), 'Contract is paused');
     }
 
-    fn assert_only_owner(self: @ContractState) {
-        assert(get_caller_address() == self.owner.read(), 'Caller is not the owner');
-    }
 
     // Helper function for zero address validation
     fn zero_address_const() -> ContractAddress {
@@ -334,7 +329,7 @@ pub mod StarkPlayVault {
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     fn pause(ref self: ContractState) -> bool {
-        assert_only_owner(@self);
+        self.ownable.assert_only_owner();
         assert(!self.paused.read(), 'Contract already paused');
         self.paused.write(true);
         self.emit(Paused { admin: get_caller_address() });
@@ -342,7 +337,7 @@ pub mod StarkPlayVault {
     }
 
     fn unpause(ref self: ContractState) -> bool {
-        assert_only_owner(@self);
+        self.ownable.assert_only_owner();
         assert(self.paused.read(), 'Contract not paused');
         self.paused.write(false);
         self.emit(Unpaused { admin: get_caller_address() });
@@ -564,7 +559,7 @@ pub mod StarkPlayVault {
         }
 
         fn setFeePercentage(ref self: ContractState, new_fee: u64) -> bool {
-            assert_only_owner(@self);
+            self.ownable.assert_only_owner();
             assert(new_fee >= self.feePercentageMin.read(), 'Fee percentage is too low');
             assert(new_fee <= self.feePercentageMax.read(), 'Fee percentage is too high');
             let old_fee = self.feePercentage.read();
@@ -574,7 +569,7 @@ pub mod StarkPlayVault {
         }
 
         fn setFeePercentagePrizesConverted(ref self: ContractState, new_fee: u64) -> bool {
-            assert_only_owner(@self);
+            self.ownable.assert_only_owner();
             assert(
                 new_fee >= self.feePercentagePrizesConvertedMin.read(), 'Fee percentage is too low',
             );
@@ -602,10 +597,6 @@ pub mod StarkPlayVault {
 
         fn get_accumulated_fee(self: @ContractState) -> u256 {
             self.accumulatedFee.read()
-        }
-
-        fn get_owner(self: @ContractState) -> ContractAddress {
-            self.owner.read()
         }
 
         fn is_paused(self: @ContractState) -> bool {
@@ -643,7 +634,7 @@ pub mod StarkPlayVault {
             ref self: ContractState, recipient: ContractAddress, amount: u256,
         ) -> bool {
             // Only owner can withdraw
-            assert_only_owner(@self);
+            self.ownable.assert_only_owner();
             let current_fees = self.accumulatedFee.read();
             assert(amount > 0, 'Amount must be > 0');
             assert(amount <= current_fees, 'Withdraw amount exceeds fees');
@@ -662,7 +653,7 @@ pub mod StarkPlayVault {
             ref self: ContractState, recipient: ContractAddress, amount: u256,
         ) -> bool {
             // Only owner can withdraw
-            assert_only_owner(@self);
+            self.ownable.assert_only_owner();
             let current_fees = self.accumulatedPrizeConversionFees.read();
             assert(amount > 0, 'Amount must be > 0');
             assert(amount <= current_fees, 'Withdraw amount exceeds fees');
@@ -691,7 +682,7 @@ pub mod StarkPlayVault {
         }
 
         fn set_treasury_address(ref self: ContractState, treasury: ContractAddress) -> bool {
-            assert_only_owner(@self);
+            self.ownable.assert_only_owner();
             assert(treasury != zero_address_const(), 'Invalid treasury address');
             self.treasury_address.write(treasury);
             true
