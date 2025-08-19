@@ -6,6 +6,7 @@ use contracts::StarkPlayVault::{IStarkPlayVaultDispatcher, IStarkPlayVaultDispat
 use openzeppelin_access::accesscontrol::interface::{
     IAccessControlDispatcher, IAccessControlDispatcherTrait,
 };
+use openzeppelin_access::ownable::interface::{IOwnableDispatcher, IOwnableDispatcherTrait};
 use openzeppelin_token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
 use openzeppelin_utils::serde::SerializedAppend;
 use snforge_std::{
@@ -64,9 +65,7 @@ fn deploy_mock_strk_token() -> IMintableDispatcher {
     // Grant MINTER_ROLE to OWNER so we can mint tokens
     strk_token.grant_minter_role(owner_address());
     strk_token
-        .set_minter_allowance(
-            owner_address(), EXCEEDS_MINT_LIMIT().into() * 10,
-        ); // Large allowance
+        .set_minter_allowance(owner_address(), EXCEEDS_MINT_LIMIT().into() * 10); // Large allowance
 
     strk_token.mint(USER1(), EXCEEDS_MINT_LIMIT().into() * 3); // Mint plenty for testing
 
@@ -574,7 +573,8 @@ fn test_treasury_basic_configuration() {
 
     assert(vault.get_treasury_address().into() == 0, 'Treasury should start zero');
 
-    let actual_owner = vault.get_owner();
+    let ownable = IOwnableDispatcher { contract_address: vault.contract_address };
+    let actual_owner = ownable.owner();
 
     start_cheat_caller_address(vault.contract_address, actual_owner);
     let result = vault.set_treasury_address(TREASURY());
@@ -588,7 +588,8 @@ fn test_treasury_basic_configuration() {
 fn test_treasury_receives_fees_simple() {
     let (vault, starkplay_token) = deploy_vault_contract();
 
-    let actual_owner = vault.get_owner();
+    let ownable = IOwnableDispatcher { contract_address: vault.contract_address };
+    let actual_owner = ownable.owner();
     start_cheat_caller_address(vault.contract_address, actual_owner);
     vault.set_treasury_address(TREASURY());
     stop_cheat_caller_address(vault.contract_address);
@@ -642,7 +643,8 @@ fn test_no_treasury_behaves_normally() {
 fn test_treasury_events_basic() {
     let (vault, starkplay_token) = deploy_vault_contract();
 
-    let actual_owner = vault.get_owner();
+    let ownable = IOwnableDispatcher { contract_address: vault.contract_address };
+    let actual_owner = ownable.owner();
     start_cheat_caller_address(vault.contract_address, actual_owner);
     vault.set_treasury_address(TREASURY());
     stop_cheat_caller_address(vault.contract_address);
