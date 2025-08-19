@@ -53,7 +53,7 @@ export default function TokenMint({
 
   // --- Contract Integration ---
   // STRK contract operations
-  const { approveStrk, isApproving, isReady: strkReady } = useStrkContract();
+  const { approveStrk, isReady: strkReady } = useStrkContract();
 
   // Write contract hook for buySTRKP
   const { sendAsync: buySTRKP, isPending: isBuying } = useScaffoldWriteContract({
@@ -123,7 +123,7 @@ export default function TokenMint({
   }
 
   // Loading states
-  const isLoading = isProcessing || isBuying || isApproving;
+  const isLoading = isProcessing || isBuying;
 
   // Handlers
   const handleStarkInputChange = (newValue: string) => {
@@ -210,7 +210,7 @@ export default function TokenMint({
       notification.success("STRK approved successfully");
       
       // Step 2: Call buySTRKP (vault will transfer STRK from user and mint STRKP)
-      notification.info("Minting STRKP tokens...");
+      notification.info("Minting $TRKP tokens...");
       const result = await buySTRKP({
         args: [address, amountInWei],
       });
@@ -233,24 +233,28 @@ export default function TokenMint({
     } catch (error: any) {
       console.error("Mint error:", error);
       
-      // Handle specific contract errors
-      let errorMessage = "Failed to mint tokens. Please try again.";
-      
-      if (error?.message?.includes("Insufficient STRK balance")) {
-        errorMessage = "Insufficient STRK balance to complete the transaction.";
-      } else if (error?.message?.includes("u256_sub Overflow") || error?.message?.includes("Overflow")) {
-        errorMessage = "Transaction failed due to insufficient balance. Please check your STRK balance and try a smaller amount.";
-      } else if (error?.message?.includes("Amount too large")) {
-        errorMessage = "Amount too large. Please leave some STRK for transaction fees (max 95% of balance).";
-      } else if (error?.message?.includes("Exceeds mint limit")) {
-        errorMessage = "The amount exceeds the maximum mint limit.";
-      } else if (error?.message?.includes("Contract is paused")) {
-        errorMessage = "Minting is currently paused. Please try again later.";
-      } else if (error?.message?.includes("User rejected")) {
-        errorMessage = "Transaction was rejected by user.";
-      } else if (error?.message?.includes("insufficient funds")) {
-        errorMessage = "Insufficient funds for transaction fees.";
-      }
+             // Handle specific contract errors
+       let errorMessage = "Failed to mint tokens. Please try again.";
+       
+       if (error?.message?.includes("STRK contract integration needs to be fixed")) {
+         errorMessage = "STRK integration is currently being fixed. Please try again later.";
+       } else if (error?.message?.includes("STRK approval failed")) {
+         errorMessage = "Failed to approve STRK tokens. Please ensure you have sufficient balance and try again.";
+       } else if (error?.message?.includes("Insufficient STRK balance")) {
+         errorMessage = "Insufficient STRK balance to complete the transaction.";
+       } else if (error?.message?.includes("u256_sub Overflow") || error?.message?.includes("Overflow")) {
+         errorMessage = "Transaction failed due to insufficient balance. Please check your STRK balance and try a smaller amount.";
+       } else if (error?.message?.includes("Amount too large")) {
+         errorMessage = "Amount too large. Please leave some STRK for transaction fees (max 95% of balance).";
+       } else if (error?.message?.includes("Exceeds mint limit")) {
+         errorMessage = "The amount exceeds the maximum mint limit.";
+       } else if (error?.message?.includes("Contract is paused")) {
+         errorMessage = "Minting is currently paused. Please try again later.";
+       } else if (error?.message?.includes("User rejected")) {
+         errorMessage = "Transaction was rejected by user.";
+       } else if (error?.message?.includes("insufficient funds")) {
+         errorMessage = "Insufficient funds for transaction fees.";
+       }
       
       setError(errorMessage);
       onError?.(errorMessage);
@@ -324,7 +328,7 @@ export default function TokenMint({
               </button>
             </div>
             <div className="text-xs text-gray-400 mt-1">
-              💡 Max {maxAllowedForFees.toFixed(6)} STRK (95% of balance) to leave room for transaction fees
+              💡 Max 95% of balance to leave room for transaction fees
             </div>
           </div>
 
@@ -346,7 +350,7 @@ export default function TokenMint({
                     </span>
                   </div>
                 </div>
-                <span className="font-semibold">$tarkPlay</span>
+                <span className="font-semibold">$TRKP</span>
               </div>
               <div className="text-right text-xl font-medium">
                 {isValidInput ? mintedAmount.toFixed(6) : "0.0"}
@@ -355,13 +359,13 @@ export default function TokenMint({
             <div className="flex items-center justify-between text-sm text-gray-300">
               <span>You will receive</span>
               <span className="font-medium text-purple-300">
-                {isValidInput ? mintedAmount.toFixed(6) : "0.0"} $P
+                {isValidInput ? mintedAmount.toFixed(6) : "0.0"} $TRKP
               </span>
             </div>
             <div className="flex items-center justify-between text-sm text-gray-300">
               <span>Current Balance</span>
               <span className="font-medium text-purple-300">
-                {starkPlayBalanceFormatted.toFixed(6)} $P
+                {starkPlayBalanceFormatted.toFixed(6)} $TRKP
               </span>
             </div>
           </div>
@@ -377,7 +381,7 @@ export default function TokenMint({
                   height={16}
                   className="w-4 h-4"
                 />
-                <span>1 STRK = 1 STRKP</span>
+                <span>1 STRK = 1 $TRKP</span>
               </div>
             </div>
             <div className="flex items-center justify-between text-sm">
@@ -412,7 +416,7 @@ export default function TokenMint({
             <div className="flex items-center justify-between text-sm">
               <span>You will receive</span>
               <span className="font-medium text-purple-300">
-                {isValidInput ? mintedAmount.toFixed(6) : "0.0"} STRKP
+                {isValidInput ? mintedAmount.toFixed(6) : "0.0"} $TRKP
               </span>
             </div>
             {error && <div className="text-red-400 text-sm">{error}</div>}
@@ -430,7 +434,7 @@ export default function TokenMint({
             disabled={!isValidInput || isLoading}
             onClick={handleMint}
           >
-            {isLoading ? "Minting..." : "Mint STRKP"}
+            {isLoading ? "Minting..." : "Mint $TRKP"}
           </button>
         </div>
       </div>

@@ -1,5 +1,7 @@
-import { useScaffoldWriteContract } from "./scaffold-stark/useScaffoldWriteContract";
+import { useAccount, useContract } from "@starknet-react/core";
 import { useContractAddresses } from "./useContractAddresses";
+import { Contract, CallData } from "starknet";
+import deployedContracts from "~~/contracts/deployedContracts";
 
 /**
  * Custom hook for STRK token operations
@@ -8,14 +10,7 @@ import { useContractAddresses } from "./useContractAddresses";
  */
 export const useStrkContract = () => {
   const { Strk: strkAddress, isValid } = useContractAddresses();
-
-  // For STRK approve, we need to use the native ERC20 interface
-  // This is a workaround since STRK isn't in deployedContracts but follows ERC20 standard
-  const { sendAsync: approve, isPending: isApproving } = useScaffoldWriteContract({
-    contractName: "StarkPlayERC20", // Use any ERC20 contract for type inference
-    functionName: "approve",
-    args: [undefined, undefined] as const,
-  });
+  const { account } = useAccount();
 
   /**
    * Approve STRK tokens to a spender
@@ -27,16 +22,40 @@ export const useStrkContract = () => {
       throw new Error("STRK contract address not available");
     }
 
-    // Override the contract address to use STRK address
-    // This is a clean way to reuse the scaffold infrastructure
-    return approve({
-      args: [spender, amount],
-    });
+    if (!account) {
+      throw new Error("Wallet not connected");
+    }
+
+    try {
+      // Use the ERC20 ABI from StarkPlayERC20 for the STRK contract
+      // Since STRK follows the ERC20 standard, we can reuse the ABI
+      const strkPlayERC20Abi = deployedContracts.devnet?.StarkPlayERC20?.abi;
+      if (!strkPlayERC20Abi) {
+        throw new Error("ERC20 ABI not available");
+      }
+
+      // Create contract instance for STRK using ERC20 ABI
+      const strkContract = new Contract(strkPlayERC20Abi, strkAddress, account);
+      
+      console.log("STRK Approval Debug:", {
+        strkAddress,
+        spender,
+        amount: amount.toString()
+      });
+
+      // Execute the approve transaction
+      const result = await strkContract.approve(spender, amount);
+      
+      console.log("STRK Approval Result:", result);
+      return result;
+    } catch (error) {
+      console.error("STRK approval error:", error);
+      throw new Error(`STRK approval failed: ${error}`);
+    }
   };
 
   return {
     approveStrk,
-    isApproving,
     strkAddress,
     isReady: isValid && !!strkAddress,
   };
