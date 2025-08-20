@@ -24,8 +24,16 @@ type TicketPriceProps = {
   contractName?: string;
 };
 
-const TicketPrice: React.FC<TicketPriceProps> = ({ symbol = "SP", decimals, className, contractName }) => {
-  const { formatted, isLoading, error } = useTicketPrice({ decimals, contractName });
+const TicketPrice: React.FC<TicketPriceProps> = ({
+  symbol = "SP",
+  decimals,
+  className,
+  contractName,
+}) => {
+  const { formatted, isLoading, error } = useTicketPrice({
+    decimals,
+    contractName,
+  });
 
   if (isLoading) {
     return (
