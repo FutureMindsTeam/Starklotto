@@ -22,7 +22,7 @@ export default function PurchaseSummary({
     <>
       <div className="bg-[#232b3b] rounded-lg p-4 flex justify-between items-center mt-6">
         <p className="text-white font-medium">{t("buyTickets.totalCost")}</p>
-        <p className="text-[#4ade80] font-medium">${totalCost} $tarkPlay</p>
+        <p className="text-[#4ade80] font-medium">{totalCost} $tarkPlay</p>
       </div>
 
       <GlowingButton

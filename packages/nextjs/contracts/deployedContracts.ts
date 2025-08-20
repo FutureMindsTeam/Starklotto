@@ -7,7 +7,7 @@ const deployedContracts = {
   devnet: {
     StarkPlayERC20: {
       address:
-        "0x20bc4c8eda453956975632eec08585be5702d7046f1c5a5e906116b9b77a1bd",
+        "0x6c3c0ac7e5fbe3299dcf04d6ef191441a2d40230b865528cd96b4dbb1dfda98",
       abi: [
         {
           type: "impl",
@@ -1189,7 +1189,7 @@ const deployedContracts = {
     },
     StarkPlayVault: {
       address:
-        "0x75e8bd3f04b4c98bb7246836bacc8ca9469e5cd6f155cff09c6c0dc5aed233c",
+        "0x6c808a77396fd3dde5dc7d1436ba9f4f0096cac3570d9263f78cac18cb7bb30",
       abi: [
         {
           type: "impl",
@@ -1534,6 +1534,33 @@ const deployedContracts = {
                 },
               ],
               state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "set_treasury_address",
+              inputs: [
+                {
+                  name: "treasury",
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::bool",
+                },
+              ],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "get_treasury_address",
+              inputs: [],
+              outputs: [
+                {
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              state_mutability: "view",
             },
             {
               type: "function",
@@ -1938,6 +1965,28 @@ const deployedContracts = {
         },
         {
           type: "event",
+          name: "contracts::StarkPlayVault::StarkPlayVault::TreasuryFeeTransferred",
+          kind: "struct",
+          members: [
+            {
+              name: "user",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+            {
+              name: "amount",
+              type: "core::integer::u256",
+              kind: "key",
+            },
+            {
+              name: "treasury",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
           name: "contracts::StarkPlayVault::StarkPlayVault::Event",
           kind: "enum",
           variants: [
@@ -2026,15 +2075,20 @@ const deployedContracts = {
               type: "contracts::StarkPlayVault::StarkPlayVault::PrizeConversionFeesWithdrawn",
               kind: "nested",
             },
+            {
+              name: "TreasuryFeeTransferred",
+              type: "contracts::StarkPlayVault::StarkPlayVault::TreasuryFeeTransferred",
+              kind: "nested",
+            },
           ],
         },
       ],
       classHash:
-        "0x7e725c6512bb59f61327cdfef2cb15a5c3e899e279590ec4130444c7abb220d",
+        "0x5d467ac58d444abfd958e97611d46d5c213d54e45570e2dc9629850c4b1286b",
     },
     Lottery: {
       address:
-        "0x1596dedf8117e6c693b7cc647fd9265582f40929e97ec4cf4b72dd04c2df010",
+        "0x63424c4ef70d802e1fba198345b5f0fe475a6c314e45e9158eaa56621fc0286",
       abi: [
         {
           type: "impl",
@@ -2953,7 +3007,7 @@ const deployedContracts = {
     },
     LottoTicketNFT: {
       address:
-        "0x1af2a65b6ed985b150ce8f6d998911fbe38e92054713dacd7a1dc7e20434078",
+        "0x183779e1a2502036cc90cb415dc4b873f85a71e24e2ec5f4e5337b54b2b77d8",
       abi: [
         {
           type: "impl",
