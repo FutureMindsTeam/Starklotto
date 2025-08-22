@@ -12,6 +12,7 @@ import { useAccount, useConnect, useNetwork } from "@starknet-react/core";
 import { Address } from "@starknet-react/chains";
 import { useEffect, useMemo, useState } from "react";
 import ConnectModal from "./ConnectModal";
+import { ContractClassHashCache } from "~~/hooks/scaffold-stark/ContractClassHashCache";
 
 /**
  * Custom Connect Button (watch balance + custom design)
@@ -21,9 +22,9 @@ export const CustomConnectButton = () => {
   const networkColor = useNetworkColor();
   const { connector } = useConnect();
   const { targetNetwork } = useTargetNetwork();
-  const { account, status, address: accountAddress } = useAccount();
-  const [accountChainId, setAccountChainId] = useState<bigint>(0n);
+  const { account, status, address: accountAddress, chainId } = useAccount();
   const { chain } = useNetwork();
+  const [localChainId, setLocalChainId] = useState<bigint | undefined>(chainId);
 
   const blockExplorerAddressLink = useMemo(() => {
     return (
@@ -32,37 +33,81 @@ export const CustomConnectButton = () => {
     );
   }, [accountAddress, targetNetwork]);
 
-  // effect to get chain id and address from account
+  // Sync local chain ID with hook chain ID
   useEffect(() => {
-    if (account) {
-      const getChainId = async () => {
-        const chainId = await account.channel.getChainId();
-        setAccountChainId(BigInt(chainId as string));
-      };
-
-      getChainId();
+    if (chainId) {
+      setLocalChainId(chainId);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [account, status]);
+  }, [chainId]);
 
+  // Listen for network changes from connector
   useEffect(() => {
     const handleChainChange = (event: { chainId?: bigint }) => {
-      const { chainId } = event;
-      if (chainId && chainId !== accountChainId) {
-        setAccountChainId(chainId);
+      const { chainId: newChainId } = event;
+      if (newChainId) {
+        setLocalChainId(newChainId);
       }
     };
-    connector?.on("change", handleChainChange);
-    return () => {
-      connector?.off("change", handleChainChange);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
+    if (connector) {
+      connector.on("change", handleChainChange);
+      return () => {
+        connector.off("change", handleChainChange);
+      };
+    }
   }, [connector]);
 
-  if (status === "disconnected" || accountChainId === 0n)
-    return <ConnectModal />;
+  // Fallback chain ID detection for cases where hook doesn't provide it
+  useEffect(() => {
+    if (account && !chainId && !localChainId) {
+      const getChainIdFallback = async () => {
+        try {
+          // Try different methods to get chain ID
+          let detectedChainId: string | bigint | undefined;
 
-  if (accountChainId !== targetNetwork.id) {
+          if (typeof account.getChainId === "function") {
+            detectedChainId = await account.getChainId();
+          } else if ((account as any).channel?.getChainId) {
+            detectedChainId = await (account as any).channel.getChainId();
+          }
+
+          if (detectedChainId) {
+            setLocalChainId(BigInt(detectedChainId.toString()));
+          }
+        } catch (error) {
+          console.warn("Could not detect chain ID:", error);
+          // Use target network as fallback
+          setLocalChainId(targetNetwork.id);
+        }
+      };
+
+      getChainIdFallback();
+    }
+  }, [account, chainId, localChainId, targetNetwork.id]);
+
+  // Clear cache when account changes to prevent stale data
+  useEffect(() => {
+    if (accountAddress) {
+      const cache = ContractClassHashCache.getInstance();
+      cache.clearFailedRequests();
+    }
+  }, [accountAddress]);
+
+  // Use the most reliable chain ID available
+  const effectiveChainId = chainId || localChainId;
+
+  // Show connect modal if not connected or no address
+  if (status === "disconnected" || !accountAddress) {
+    return <ConnectModal />;
+  }
+
+  // Show connecting state if still connecting
+  if (status === "connecting" || (status === "connected" && !account)) {
+    return <ConnectModal />;
+  }
+
+  // Show wrong network if chain ids don't match (only check if chainId is available)
+  if (effectiveChainId && effectiveChainId !== targetNetwork.id) {
     return <WrongNetworkDropdown />;
   }
 

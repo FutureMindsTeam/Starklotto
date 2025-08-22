@@ -57,7 +57,10 @@
     "profile": "Perfil",
     "about": "Sobre",
     "contact": "Contato",
-    "features": "Recursos"
+    "features": "Recursos",
+    "mint": "Criar $TRKP",
+    "claim": "Reivindicar Recompensas",
+    "unmint": "Converter $TRKP"
   },
   "home": {
     "hero": {
@@ -152,6 +155,23 @@
       "chooseAccount": "Escolher conta",
       "close": "✕"
     }
+  },
+  "error404": {
+    "title": "Ops! Página Não Encontrada",
+    "description": "Parece que esta página decidiu sair mais cedo!",
+    "subtitle": "Não se preocupe, sua sorte está esperando por você em nossa página principal.",
+    "suggestions": {
+      "title": "O que você gostaria de fazer?"
+    },
+    "actions": {
+      "goHome": "Ir para o Início",
+      "goBack": "Voltar"
+    },
+    "funMessage": "Mais sorte na próxima vez! 🎲"
+  },
+  "comingSoon": {
+    "message": "Em Breve",
+    "description": "Este recurso estará disponível em breve. Fique ligado!"
   },
   "notifications": {
     "newDrawAvailable": "Novos resultados de sorteio de loteria disponíveis!",

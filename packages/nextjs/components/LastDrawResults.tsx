@@ -127,7 +127,7 @@ export function LastDrawResults() {
   }
 
   return (
-    <section aria-labelledby="last-draw-title" className="my-12">
+    <section aria-labelledby="last-draw-title" className="my-0">
       <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-950">
         {/* New Draw Notification */}
         <AnimatePresence>

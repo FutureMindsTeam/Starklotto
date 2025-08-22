@@ -57,7 +57,7 @@ export function useLatestDraw(
 ): UseLatestDrawReturn {
   const {
     pollingInterval = DRAW_SERVICE_CONFIG.POLLING_INTERVAL,
-    enabled = true,
+    enabled = false,
     onNewDraw,
     onError,
   } = options;
