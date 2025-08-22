@@ -91,11 +91,14 @@ export class ContractClassHashCache {
       }
       return undefined;
     } catch (error) {
-      console.warn(`Failed to fetch class hash (attempt ${attempt + 1}):`, error);
-      
+      console.warn(
+        `Failed to fetch class hash (attempt ${attempt + 1}):`,
+        error,
+      );
+
       // Retry logic
       if (attempt < this.MAX_RETRIES) {
-        await new Promise(resolve => setTimeout(resolve, this.RETRY_DELAY));
+        await new Promise((resolve) => setTimeout(resolve, this.RETRY_DELAY));
         return this.fetchClassHashWithRetry(
           publicClient,
           address,
@@ -104,14 +107,14 @@ export class ContractClassHashCache {
           attempt + 1,
         );
       }
-      
+
       // Mark as failed after max retries
       this.failedRequests.add(cacheKey);
       // Remove failed requests after 30 seconds to allow retries later
       setTimeout(() => {
         this.failedRequests.delete(cacheKey);
       }, 30000);
-      
+
       return undefined;
     }
   }

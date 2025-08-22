@@ -169,7 +169,6 @@ export function Navbar({ onBuyTicket }: NavbarProps) {
                     ))}
                   </>
                 )}
-
               </div>
 
               {/* Right Side Actions */}

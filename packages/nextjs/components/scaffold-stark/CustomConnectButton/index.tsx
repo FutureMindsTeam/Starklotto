@@ -64,13 +64,13 @@ export const CustomConnectButton = () => {
         try {
           // Try different methods to get chain ID
           let detectedChainId: string | bigint | undefined;
-          
+
           if (typeof account.getChainId === "function") {
             detectedChainId = await account.getChainId();
           } else if ((account as any).channel?.getChainId) {
             detectedChainId = await (account as any).channel.getChainId();
           }
-          
+
           if (detectedChainId) {
             setLocalChainId(BigInt(detectedChainId.toString()));
           }
