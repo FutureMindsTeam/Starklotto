@@ -1,4 +1,3 @@
-use core::serde::Serde;
 use starknet::ContractAddress;
 
 /// Enum representing the status of a lottery ticket
