@@ -1260,7 +1260,7 @@ fn test_user_balance_after_conversion() {
 
     // Execute buySTRKP
     start_cheat_caller_address(vault.contract_address, user_address);
-    let success = vault_dispatcher.buySTRKP(user_address, amount_strk);
+    let _success = vault_dispatcher.buySTRKP(user_address, amount_strk);
     stop_cheat_caller_address(vault.contract_address);
 
     let newBalance = strk_erc20_dispatcher.balance_of(user_address);
