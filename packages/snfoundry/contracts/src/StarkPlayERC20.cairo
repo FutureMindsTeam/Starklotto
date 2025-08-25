@@ -229,7 +229,7 @@ pub mod StarkPlayERC20 {
             let mut minters = ArrayTrait::new();
             let count = self.minters_count.read();
             let mut i = 0;
-            while i < count {
+            while i != count {
                 minters.append(self.minters.entry(i).read());
                 i += 1;
             }
