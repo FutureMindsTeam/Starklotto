@@ -1,5 +1,5 @@
 use contracts::Lottery::{ILotteryDispatcher, ILotteryDispatcherTrait};
-use core::array::{Array, ArrayTrait};
+use core::array::ArrayTrait;
 use snforge_std::{
     ContractClassTrait, DeclareResultTrait, declare, start_cheat_caller_address,
     stop_cheat_caller_address,
