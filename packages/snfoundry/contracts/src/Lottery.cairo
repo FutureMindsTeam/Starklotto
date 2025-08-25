@@ -725,7 +725,7 @@ pub mod Lottery {
                 }
 
                 // Verify duplicates
-                if usedNumbers.get(number.into()) == true {
+                if usedNumbers.get(number.into()) {
                     valid = false;
                     break;
                 }
