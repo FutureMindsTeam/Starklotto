@@ -22,7 +22,7 @@ fn should_declare_contract() {
 #[test]
 fn should_deploy_contract() {
     let lottery = declare("Lottery").unwrap().contract_class();
-    let admin = 'owner'.try_into().unwrap();
+    let admin: ContractAddress = 'owner'.try_into().unwrap();
     let init_data = array![admin.into()];
     let (lottery_address, _) = lottery.deploy(@init_data).unwrap();
     assert(lottery_address != 0.try_into().unwrap(), 'Contract deployment');
@@ -30,8 +30,8 @@ fn should_deploy_contract() {
 
 #[test]
 fn test_contract_initialization() {
-    let player = 'player'.try_into().unwrap();
-    let admin = 'owner'.try_into().unwrap();
+    let player: ContractAddress = 'player'.try_into().unwrap();
+    let admin: ContractAddress = 'owner'.try_into().unwrap();
     let lottery = setup_lottery();
     
     assert(lottery != 0.try_into().unwrap(), 'Lottery contract deployed');
@@ -44,7 +44,7 @@ fn test_contract_initialization() {
 
 #[test]
 fn validate_ticket_numbers() {
-    let admin = 'owner'.try_into().unwrap();
+    let admin: ContractAddress = 'owner'.try_into().unwrap();
     let lottery = setup_lottery();
     
     start_cheat_caller_address(lottery, admin);
@@ -73,8 +73,8 @@ fn validate_ticket_numbers() {
 
 #[test]
 fn test_multiple_tickets() {
-    let _user1 = 'player1'.try_into().unwrap();
-    let _user2 = 'player2'.try_into().unwrap();
+    let _user1: ContractAddress = 'player1'.try_into().unwrap();
+    let _user2: ContractAddress = 'player2'.try_into().unwrap();
     let _lottery = setup_lottery();
     
     let ticket1 = array![4_u16, 9_u16, 13_u16, 19_u16, 24_u16];
@@ -129,7 +129,7 @@ fn test_invalid_inputs() {
 
 #[test]
 fn test_draw_state() {
-    let _player = 'player'.try_into().unwrap();
+    let _player: ContractAddress = 'player'.try_into().unwrap();
     let _lottery = setup_lottery();
     
     let test_numbers = array![3_u16, 9_u16, 14_u16, 22_u16, 31_u16];
@@ -144,7 +144,7 @@ fn test_draw_state() {
 
 #[test]
 fn test_event_emission() {
-    let participant = 'player'.try_into().unwrap();
+    let participant: ContractAddress = 'player'.try_into().unwrap();
     let _lottery = setup_lottery();
     
     let current_draw = 7_u64;
@@ -161,7 +161,7 @@ fn test_event_emission() {
 
 #[test]
 fn test_data_storage() {
-    let user = 'player'.try_into().unwrap();
+    let user: ContractAddress = 'player'.try_into().unwrap();
     let _lottery = setup_lottery();
     
     let stored_numbers = array![2_u16, 11_u16, 19_u16, 27_u16, 33_u16];
@@ -183,7 +183,7 @@ fn test_data_storage() {
 
 #[test]
 fn test_payment_handling() {
-    let _user = 'player'.try_into().unwrap();
+    let _user: ContractAddress = 'player'.try_into().unwrap();
     let _lottery = setup_lottery();
     
     let price_per_ticket = 1000000000000000000_u256;

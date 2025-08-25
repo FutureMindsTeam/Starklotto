@@ -1244,7 +1244,7 @@ fn test_user_balance_after_conversion() {
 
     let strk_token = IMintableDispatcher { contract_address: strk_token_address };
 
-    let _strk_erc20_dispatcher = IERC20Dispatcher { contract_address: strk_token_address };
+    let strk_erc20_dispatcher = IERC20Dispatcher { contract_address: strk_token_address };
 
     let user_address = USER1();
     let erc20_dispatcher = IERC20Dispatcher { contract_address: starkplay_token.contract_address };
@@ -1304,7 +1304,7 @@ fn test_1_1_conversion_consistency() {
 
     let strk_token = IMintableDispatcher { contract_address: strk_token_address };
 
-    let _strk_erc20_dispatcher = IERC20Dispatcher { contract_address: strk_token_address };
+    let strk_erc20_dispatcher = IERC20Dispatcher { contract_address: strk_token_address };
 
     let user_address = USER1();
     let erc20_dispatcher = IERC20Dispatcher { contract_address: starkplay_token.contract_address };

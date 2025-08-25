@@ -4,18 +4,18 @@ use openzeppelin_testing::declare_and_deploy;
 use openzeppelin_token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
 use openzeppelin_utils::serde::SerializedAppend;
 use snforge_std::{EventSpyTrait, spy_events, start_cheat_caller_address, stop_cheat_caller_address};
-use starknet::{ContractAddress, contract_address_const};
+use starknet::ContractAddress;
 
 
 const MAX_MINT_AMOUNT: u256 = 1_000_000 * 1_000_000_000_000_000_000;
 const INITIAL_FEE_PERCENTAGE: u64 = 50;
 
 fn owner_address() -> ContractAddress {
-    contract_address_const::<'owner'>()
+    'owner'.try_into().unwrap()
 }
 
 fn user_address() -> ContractAddress {
-    contract_address_const::<'user'>()
+    'user'.try_into().unwrap()
 }
 
 fn deploy_starkplay_token() -> ContractAddress {
