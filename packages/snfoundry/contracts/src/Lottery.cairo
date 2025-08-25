@@ -715,11 +715,7 @@ pub mod Lottery {
             let mut i: usize = 0;
             let mut valid = true;
 
-            loop {
-                if i >= numbers.len() {
-                    break;
-                }
-
+            while i < numbers.len() && valid {
                 let number = *numbers.at(i);
 
                 // Verify range (1-40)
