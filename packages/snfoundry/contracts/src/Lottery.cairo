@@ -117,7 +117,7 @@ pub mod Lottery {
         Map, StoragePathEntry, StoragePointerReadAccess, StoragePointerWriteAccess,
     };
     use starknet::{
-        ContractAddress, contract_address_const, get_block_timestamp, get_caller_address,
+        ContractAddress, get_block_timestamp, get_caller_address,
         get_contract_address,
     };
     use super::{Draw, ILottery, JackpotEntry, Ticket};
