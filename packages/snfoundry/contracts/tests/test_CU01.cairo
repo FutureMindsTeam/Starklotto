@@ -289,7 +289,7 @@ fn test_set_fee_zero_like_negative_value() {
     let vault_address = deploy_contract_starkplayvault_with_Lottery();
     let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
     let new_fee = 0_u64;
-    let result = vault_dispatcher.setFeePercentage(new_fee);
+    let _result = vault_dispatcher.setFeePercentage(new_fee);
 }
 
 //tests have to fail
@@ -308,7 +308,7 @@ fn test_set_fee_deploy_contract() {
     let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
     let fee_percentage = 50_u64;
     let val = vault_dispatcher.GetFeePercentage();
-    assert(val == 50_u64, 'Fee  should be 50');
+    assert(val == fee_percentage, 'Fee  should be 50');
 }
 
 #[test]
@@ -1304,7 +1304,7 @@ fn test_1_1_conversion_consistency() {
 
     let strk_token = IMintableDispatcher { contract_address: strk_token_address };
 
-    let strk_erc20_dispatcher = IERC20Dispatcher { contract_address: strk_token_address };
+    let _strk_erc20_dispatcher = IERC20Dispatcher { contract_address: strk_token_address };
 
     let user_address = USER1();
     let erc20_dispatcher = IERC20Dispatcher { contract_address: starkplay_token.contract_address };

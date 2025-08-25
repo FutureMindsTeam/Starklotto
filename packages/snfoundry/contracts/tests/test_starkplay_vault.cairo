@@ -660,7 +660,7 @@ fn test_withdraw_general_fees_insufficient_vault_balance() {
 
 #[test]
 fn test_withdraw_prize_conversion_fees_success() {
-    let (vault, starkplay_token) = deploy_vault_contract();
+    let (vault, _starkplay_token) = deploy_vault_contract();
     let strk_token = IMintableDispatcher {
         contract_address: 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d.try_into().unwrap(),
     };
