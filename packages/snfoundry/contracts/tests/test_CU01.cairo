@@ -12,7 +12,6 @@ use snforge_std::{
     EventSpyTrait // Add for fetching events directly
 };
 use starknet::ContractAddress;
-use starknet::contract_address::contract_address_const;
 
 const STRK_TOKEN_CONTRACT_ADDRESS: ContractAddress = FELT_STRK_CONTRACT.try_into().unwrap();
 // Direcciones de prueba
@@ -35,16 +34,16 @@ fn user_address_Sepolia() -> ContractAddress {
     USER
 }
 fn owner_address() -> ContractAddress {
-    contract_address_const::<0x123>()
+    0x123_felt252.try_into().unwrap()
 }
 
 fn user_address() -> ContractAddress {
-    contract_address_const::<0x456>()
+    0x456_felt252.try_into().unwrap()
 }
 
 
 fn USER1() -> ContractAddress {
-    contract_address_const::<0x456>()
+    0x456_felt252.try_into().unwrap()
 }
 
 
@@ -1245,7 +1244,7 @@ fn test_user_balance_after_conversion() {
 
     let strk_token = IMintableDispatcher { contract_address: strk_token_address };
 
-    let strk_erc20_dispatcher = IERC20Dispatcher { contract_address: strk_token_address };
+    let _strk_erc20_dispatcher = IERC20Dispatcher { contract_address: strk_token_address };
 
     let user_address = USER1();
     let erc20_dispatcher = IERC20Dispatcher { contract_address: starkplay_token.contract_address };
@@ -1305,7 +1304,7 @@ fn test_1_1_conversion_consistency() {
 
     let strk_token = IMintableDispatcher { contract_address: strk_token_address };
 
-    let strk_erc20_dispatcher = IERC20Dispatcher { contract_address: strk_token_address };
+    let _strk_erc20_dispatcher = IERC20Dispatcher { contract_address: strk_token_address };
 
     let user_address = USER1();
     let erc20_dispatcher = IERC20Dispatcher { contract_address: starkplay_token.contract_address };

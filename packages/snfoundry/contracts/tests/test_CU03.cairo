@@ -3,11 +3,11 @@
 use contracts::Lottery::{ILotteryDispatcher, ILotteryDispatcherTrait};
 use snforge_std::{ContractClassTrait, DeclareResultTrait, declare};
 use snforge_std::{start_cheat_caller_address, stop_cheat_caller_address};
-use starknet::{ContractAddress, contract_address_const};
+use starknet::ContractAddress;
 
 fn setup_lottery() -> ContractAddress {
     let lottery = declare("Lottery").unwrap().contract_class();
-    let admin: ContractAddress = contract_address_const::<'owner'>();
+    let admin: ContractAddress = 'owner'.try_into().unwrap();
     let init_data = array![admin.into()];
     let (lottery_address, _) = lottery.deploy(@init_data).unwrap();
     lottery_address
@@ -22,19 +22,19 @@ fn should_declare_contract() {
 #[test]
 fn should_deploy_contract() {
     let lottery = declare("Lottery").unwrap().contract_class();
-    let admin = contract_address_const::<'owner'>();
+    let admin = 'owner'.try_into().unwrap();
     let init_data = array![admin.into()];
     let (lottery_address, _) = lottery.deploy(@init_data).unwrap();
-    assert(lottery_address != contract_address_const::<0>(), 'Contract deployment');
+    assert(lottery_address != 0.try_into().unwrap(), 'Contract deployment');
 }
 
 #[test]
 fn test_contract_initialization() {
-    let player = contract_address_const::<'player'>();
-    let admin = contract_address_const::<'owner'>();
+    let player = 'player'.try_into().unwrap();
+    let admin = 'owner'.try_into().unwrap();
     let lottery = setup_lottery();
     
-    assert(lottery != contract_address_const::<0>(), 'Lottery contract deployed');
+    assert(lottery != 0.try_into().unwrap(), 'Lottery contract deployed');
     
     start_cheat_caller_address(lottery, admin);
     stop_cheat_caller_address(lottery);
@@ -44,7 +44,7 @@ fn test_contract_initialization() {
 
 #[test]
 fn validate_ticket_numbers() {
-    let admin = contract_address_const::<'owner'>();
+    let admin = 'owner'.try_into().unwrap();
     let lottery = setup_lottery();
     
     start_cheat_caller_address(lottery, admin);
@@ -73,8 +73,8 @@ fn validate_ticket_numbers() {
 
 #[test]
 fn test_multiple_tickets() {
-    let _user1 = contract_address_const::<'player1'>();
-    let _user2 = contract_address_const::<'player2'>();
+    let _user1 = 'player1'.try_into().unwrap();
+    let _user2 = 'player2'.try_into().unwrap();
     let _lottery = setup_lottery();
     
     let ticket1 = array![4_u16, 9_u16, 13_u16, 19_u16, 24_u16];
@@ -129,7 +129,7 @@ fn test_invalid_inputs() {
 
 #[test]
 fn test_draw_state() {
-    let _player = contract_address_const::<'player'>();
+    let _player = 'player'.try_into().unwrap();
     let _lottery = setup_lottery();
     
     let test_numbers = array![3_u16, 9_u16, 14_u16, 22_u16, 31_u16];
@@ -144,7 +144,7 @@ fn test_draw_state() {
 
 #[test]
 fn test_event_emission() {
-    let participant = contract_address_const::<'player'>();
+    let participant = 'player'.try_into().unwrap();
     let _lottery = setup_lottery();
     
     let current_draw = 7_u64;
@@ -154,14 +154,14 @@ fn test_event_emission() {
     assert(current_draw > 0, 'Valid draw ID');
     assert(ticket_numbers.len() == 5, 'Correct number of numbers');
     assert(quantity > 0, 'Positive quantity');
-    assert(participant != contract_address_const::<0>(), 'Valid participant');
+    assert(participant != 0.try_into().unwrap(), 'Valid participant');
     
     assert(true, 'Event validation');
 }
 
 #[test]
 fn test_data_storage() {
-    let user = contract_address_const::<'player'>();
+    let user = 'player'.try_into().unwrap();
     let _lottery = setup_lottery();
     
     let stored_numbers = array![2_u16, 11_u16, 19_u16, 27_u16, 33_u16];
@@ -174,7 +174,7 @@ fn test_data_storage() {
     assert(*stored_numbers.at(3) == 27_u16, 'Fourth position');
     assert(*stored_numbers.at(4) == 33_u16, 'Fifth position');
     
-    assert(user != contract_address_const::<0>(), 'User address valid');
+    assert(user != 0.try_into().unwrap(), 'User address valid');
     assert(draw_number > 0, 'Valid draw number');
     
     let is_claimed = false;
@@ -183,7 +183,7 @@ fn test_data_storage() {
 
 #[test]
 fn test_payment_handling() {
-    let _user = contract_address_const::<'player'>();
+    let _user = 'player'.try_into().unwrap();
     let _lottery = setup_lottery();
     
     let price_per_ticket = 1000000000000000000_u256;
