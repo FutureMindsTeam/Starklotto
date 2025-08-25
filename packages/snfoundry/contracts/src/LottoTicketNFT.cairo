@@ -1,6 +1,5 @@
 use core::serde::Serde;
 use starknet::ContractAddress;
-use starknet::storage::Map;
 
 /// Enum representing the status of a lottery ticket
 #[derive(Drop, Copy, Serde, starknet::Store)]
@@ -70,7 +69,7 @@ mod LottoTicketNFT {
     use openzeppelin_token::erc721::interface::{IERC721, IERC721Metadata};
     use openzeppelin_token::erc721::{ERC721Component, ERC721HooksEmptyImpl};
     use starknet::storage::{
-        Map, StorageMapReadAccess, StorageMapWriteAccess, StoragePathEntry,
+        Map, StorageMapReadAccess, StorageMapWriteAccess,
         StoragePointerReadAccess, StoragePointerWriteAccess,
     };
     use starknet::{
