@@ -30,7 +30,7 @@ fn should_deploy_contract() {
 
 #[test]
 fn test_contract_initialization() {
-    let player: ContractAddress = 'player'.try_into().unwrap();
+    let _player: ContractAddress = 'player'.try_into().unwrap();
     let admin: ContractAddress = 'owner'.try_into().unwrap();
     let lottery = setup_lottery();
     
