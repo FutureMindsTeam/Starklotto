@@ -45,14 +45,13 @@ pub mod StarkPlayVault {
     use openzeppelin_access::ownable::OwnableComponent;
     use openzeppelin_token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
     use starknet::storage::{
-        Map, StorageMapReadAccess, StorageMapWriteAccess, StoragePathEntry,
         StoragePointerReadAccess, StoragePointerWriteAccess,
     };
     use starknet::{
         ContractAddress, contract_address_const, get_caller_address, get_contract_address,
     };
     use crate::StarkPlayERC20::{
-        IBurnableDispatcher, IBurnableDispatcherTrait, IMintable, IMintableDispatcher,
+        IBurnableDispatcher, IBurnableDispatcherTrait, IMintableDispatcher,
         IMintableDispatcherTrait, IPrizeTokenDispatcher, IPrizeTokenDispatcherTrait,
     };
     use super::IStarkPlayVault;
