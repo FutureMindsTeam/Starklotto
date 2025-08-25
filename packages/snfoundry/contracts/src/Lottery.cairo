@@ -525,7 +525,7 @@ pub mod Lottery {
             let count = self.userTicketCount.entry((player, drawId)).read();
 
             let mut i: u32 = 1;
-            while i <= count {
+            while i != count + 1 {
                 let ticketId = self.userTicketIds.entry((player, drawId, i)).read();
                 userTicket_ids.append(ticketId);
                 i += 1;
