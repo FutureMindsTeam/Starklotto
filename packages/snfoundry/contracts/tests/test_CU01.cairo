@@ -440,7 +440,7 @@ fn test_basis_points_calculation() {
 fn test_consecutive_conversion_fee_accumulation() {
     let token_address = deploy_starkplay_token();
     let vault_address = deploy_vault_with_fee(token_address, 500_u64); // 5% fee
-    let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
+    let _vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
 
     let mut simulated_accumulated_fees = 0_u256;
 
