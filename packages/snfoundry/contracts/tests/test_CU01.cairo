@@ -1,6 +1,5 @@
 use contracts::StarkPlayERC20::{
     IBurnableDispatcher, IBurnableDispatcherTrait, IMintableDispatcher, IMintableDispatcherTrait,
-    IPrizeTokenDispatcher, IPrizeTokenDispatcherTrait,
 };
 use contracts::StarkPlayVault::StarkPlayVault::FELT_STRK_CONTRACT;
 use contracts::StarkPlayVault::{IStarkPlayVaultDispatcher, IStarkPlayVaultDispatcherTrait};
@@ -8,11 +7,9 @@ use openzeppelin_testing::declare_and_deploy;
 use openzeppelin_token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
 use openzeppelin_utils::serde::SerializedAppend;
 use snforge_std::{
-    CheatSpan, cheat_caller_address, EventSpy, start_cheat_caller_address,
+    start_cheat_caller_address,
     stop_cheat_caller_address, declare, ContractClassTrait, DeclareResultTrait, spy_events,
-    EventSpyAssertionsTrait, EventSpyTrait, // Add for fetching events directly
-    Event, // A structure describing a raw `Event`
-    IsEmitted // Trait for checking if a given event was ever emitted
+    EventSpyTrait // Add for fetching events directly
 };
 use starknet::ContractAddress;
 use starknet::contract_address::contract_address_const;
