@@ -311,7 +311,7 @@ pub mod StarkPlayERC20 {
             let mut burners = ArrayTrait::new();
             let count = self.burners_count.read();
             let mut i = 0;
-            while i < count {
+            while i != count {
                 burners.append(self.burners.read(i));
                 i += 1;
             }
