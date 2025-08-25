@@ -348,7 +348,7 @@ fn test_event_set_fee_percentage() {
     let new_fee = 250_u64;
     let mut spy = spy_events();
 
-    let result = vault_dispatcher.setFeePercentage(new_fee);
+    let _result = vault_dispatcher.setFeePercentage(new_fee);
 
     let events = spy.get_events();
 
