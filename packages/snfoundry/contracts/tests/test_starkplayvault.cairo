@@ -1,4 +1,3 @@
-use contracts::StarkPlayVault::StarkPlayVault::{Event, FeeUpdated};
 use contracts::StarkPlayVault::{
     IStarkPlayVault, IStarkPlayVaultDispatcher, IStarkPlayVaultDispatcherTrait, StarkPlayVault,
 };
@@ -7,7 +6,7 @@ use snforge_std::{
     spy_events, start_cheat_caller_address, stop_cheat_caller_address, test_address,
 };
 use starknet::storage::StorableStoragePointerReadAccess;
-use starknet::{ContractAddress, contract_address_const};
+use starknet::contract_address_const;
 
 // setting up the contract state
 fn CONTRACT_STATE() -> StarkPlayVault::ContractState {
