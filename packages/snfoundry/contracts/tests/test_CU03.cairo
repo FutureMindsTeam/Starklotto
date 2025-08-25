@@ -15,7 +15,7 @@ fn setup_lottery() -> ContractAddress {
 
 #[test]
 fn should_declare_contract() {
-    let lottery = declare("Lottery").unwrap().contract_class();
+    let _lottery = declare("Lottery").unwrap().contract_class();
     assert(true, 'Contract declaration successful');
 }
 
