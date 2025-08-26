@@ -62,7 +62,7 @@ fn setup_minting_permissions(vault: ContractAddress, starkplay_token: ContractAd
 
 #[test]
 fn test_contract_deployment() {
-    let (vault, starkplay_token) = setup_contracts();
+    let (vault, _starkplay_token) = setup_contracts();
 
     let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault };
 
