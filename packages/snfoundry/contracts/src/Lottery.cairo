@@ -781,7 +781,7 @@ pub mod Lottery {
             let mut i: usize = 0;
             let mut valid = true;
 
-            while i < numbers.len() {
+            while i != numbers.len() {
 
                 let number = *numbers.at(i);
 
