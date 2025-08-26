@@ -310,7 +310,7 @@ pub mod Lottery {
             assert(quantity <= 10, 'Quantity too high');
 
             // Validate that draw exists
-            self.AssertDrawExists(drawId);
+            self.AssertDrawExists(drawId, 'BuyTicket');
 
             // Validate that draw is active
             let draw = self.draws.entry(drawId).read();
@@ -455,7 +455,7 @@ pub mod Lottery {
         //OK
         fn ClaimPrize(ref self: ContractState, drawId: u64, ticketId: felt252) {
             // Validate that draw exists
-            self.AssertDrawExists(drawId);
+            self.AssertDrawExists(drawId, 'ClaimPrize');
             
             let draw = self.draws.entry(drawId).read();
             let ticket = self.tickets.entry((drawId, ticketId)).read();
@@ -621,7 +621,7 @@ pub mod Lottery {
             ref self: ContractState, drawId: u64, player: ContractAddress,
         ) -> Array<Ticket> {
             // Validate that draw exists
-            self.AssertDrawExists(drawId);
+            self.AssertDrawExists(drawId, 'GetUserTickets');
 
             let ticket_ids = self.GetUserTicketIds(drawId, player);
             let mut user_tickets_data = ArrayTrait::new();
@@ -856,16 +856,10 @@ pub mod Lottery {
         }
 
         fn DrawExists(self: @ContractState, drawId: u64) -> bool {
-            let current_draw_id = self.currentDrawId.read();
-
-            if drawId == 0 || drawId > current_draw_id {
-                return false;
-            }
-
-            return true;
+            drawId > 0 && drawId <= self.currentDrawId.read()
         }
 
-        fn ValidateDrawExists(ref self: ContractState, drawId: u64) -> bool {
+        fn ValidateDrawExists(ref self: ContractState, drawId: u64, function_name: felt252) -> bool {
             if !self.DrawExists(drawId) {
                 self
                     .emit(
@@ -873,28 +867,27 @@ pub mod Lottery {
                             caller: get_caller_address(),
                             attempted_draw_id: drawId,
                             current_draw_id: self.currentDrawId.read(),
-                            function_name: 0.into(),
+                            function_name,
                         },
                     );
                 return false;
             }
 
             let draw = self.draws.entry(drawId).read();
-            let valid_active_draw =draw.drawId == drawId && draw.isActive;
-
-            if !valid_active_draw {
+            if !(draw.drawId == drawId && draw.isActive) {
                 self.emit( DrawValidationFailed {
                     draw_id: drawId,
-                    reason: 'Draw does not exist',
+                    reason: 'Draw is not active',
                     caller: get_caller_address(),
                 });
+                return false;
             }
 
-            valid_active_draw
+            true
         }
 
-        fn AssertDrawExists(ref self: ContractState, drawId: u64) {
-            assert(self.ValidateDrawExists(drawId), 'Draw is not active');
+        fn AssertDrawExists(ref self: ContractState, drawId: u64, function_name: felt252) {
+            assert(self.ValidateDrawExists(drawId, function_name), 'Draw is not active');
         }
     }
 
