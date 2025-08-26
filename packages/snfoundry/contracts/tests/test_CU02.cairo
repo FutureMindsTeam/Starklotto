@@ -269,7 +269,7 @@ fn test_convert_to_strk_burn_limit_validation() {
 #[should_panic(expected: 'Exceeds burn limit per tx')]
 #[test]
 fn test_convert_to_strk_exceeds_burn_limit() {
-    let (vault, starkplay_token) = deploy_vault_contract();
+    let (vault, _starkplay_token) = deploy_vault_contract();
 
     // Set a very small burn limit (considering 18 decimals)
     let burn_limit = 50_000_000_000_000_000_000_u256; // 50 tokens with 18 decimals
