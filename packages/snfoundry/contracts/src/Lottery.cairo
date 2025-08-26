@@ -580,7 +580,7 @@ pub mod Lottery {
             let count = self.userTicketCount.entry((player, drawId)).read();
 
             let mut i: u32 = 1;
-            while i <= count {
+            while i != (count + 1) {
                 let ticketId = self.userTicketIds.entry((player, drawId, i)).read();
                 userTicket_ids.append(ticketId);
                 i += 1;
@@ -666,7 +666,7 @@ pub mod Lottery {
 
             // Iterate through all draws from 1 to currentDrawId
             let mut drawId: u64 = 1;
-            while drawId <= currentDrawId {
+            while drawId != (currentDrawId + 1) {
 
                 let draw = self.draws.entry(drawId).read();
                 let jackpotEntry = JackpotEntry {
