@@ -122,7 +122,7 @@ pub mod Lottery {
         Map, StoragePathEntry, StoragePointerReadAccess, StoragePointerWriteAccess,
     };
     use starknet::{
-        ContractAddress, contract_address_const, get_block_timestamp, get_caller_address,
+        ContractAddress, get_block_timestamp, get_caller_address,
         get_contract_address,
     };
     use super::{Draw, ILottery, JackpotEntry, Ticket};
@@ -246,9 +246,9 @@ pub mod Lottery {
         strkPlayVaultContractAddress: ContractAddress,
     ) {
         // Validate that addresses are not zero address
-        assert(strkPlayContractAddress != contract_address_const::<0>(), 'Invalid STRKP contract');
+        assert(strkPlayContractAddress != 0.try_into().unwrap(), 'Invalid STRKP contract');
         assert(
-            strkPlayVaultContractAddress != contract_address_const::<0>(), 'Invalid Vault contract',
+            strkPlayVaultContractAddress != 0.try_into().unwrap(), 'Invalid Vault contract',
         );
 
         self.ownable.initializer(owner);
