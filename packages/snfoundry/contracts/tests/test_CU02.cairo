@@ -209,7 +209,7 @@ fn calculate_prize_conversion_fee(amount: u256) -> u256 {
 
 #[test]
 fn test_convert_to_strk_burn_limit_validation() {
-    let (vault, starkplay_token) = deploy_vault_contract();
+    let (vault, _starkplay_token) = deploy_vault_contract();
 
     // Set a small burn limit for testing (considering 18 decimals)
     let small_burn_limit = 100_000_000_000_000_000_000_u256; // 100 tokens with 18 decimals
