@@ -1205,7 +1205,7 @@ fn test_events_in_error_cases() {
 
     // Don't setup user balance - this will cause insufficient balance error
 
-    let mut spy = spy_events();
+    let mut _spy = spy_events();
 
     // Try to make a transaction that will fail
     start_cheat_caller_address(vault.contract_address, USER1());
