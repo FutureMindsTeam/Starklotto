@@ -1301,7 +1301,7 @@ fn test_buy_ticket_event_ticketpurchased_structure() {
     assert(events.events.len() >= 1, 'Should emit TicketPurchased');
 
     // Verify the event is from the correct contract
-    let (event_contract, event_data) = events.events.at(0);
+    let (event_contract, _event_data) = events.events.at(0);
     assert(event_contract == @lottery_address, 'Event from lottery contract');
 
     // Verify state consistency after event
