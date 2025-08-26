@@ -334,18 +334,6 @@ pub mod Lottery {
             let n4 = *numbers.at(3);
             let n5 = *numbers.at(4);
 
-            let ticketNew = Ticket {
-                player: get_caller_address(),
-                number1: n1,
-                number2: n2,
-                number3: n3,
-                number4: n4,
-                number5: n5,
-                claimed: false,
-                drawId: drawId,
-                timestamp: current_timestamp,
-            };
-
             let caller = get_caller_address();
             let mut count = self.userTicketCount.entry((caller, drawId)).read();
 
