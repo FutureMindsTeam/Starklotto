@@ -351,7 +351,7 @@ pub mod Lottery {
 
             // Generate multiple tickets in a loop
             let mut i: u8 = 0;
-            while i < quantity {
+            while i != quantity {
                 // TODO: Mint the NFT here, for now it is simulated
                 let minted = true;
                 assert(minted, 'NFT minting failed');
