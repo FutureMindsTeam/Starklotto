@@ -5,7 +5,7 @@ use snforge_std::{
     ContractClassTrait, DeclareResultTrait, EventSpyAssertionsTrait, EventSpyTrait, declare, load,
     spy_events, start_cheat_caller_address, stop_cheat_caller_address, test_address,
 };
-use starknet::storage::StorableStoragePointerReadAccess;
+use starknet::{ContractAddress, storage::StorableStoragePointerReadAccess};
 
 // setting up the contract state
 fn CONTRACT_STATE() -> StarkPlayVault::ContractState {
