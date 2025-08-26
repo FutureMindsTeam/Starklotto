@@ -810,7 +810,7 @@ pub mod Lottery {
                 }
 
                 // Verify duplicates
-                if usedNumbers.get(number.into()) == true {
+                if usedNumbers.get(number.into()) {
                     valid = false;
                     break;
                 }
@@ -846,7 +846,7 @@ pub mod Lottery {
                 + MinNumber.into();
             let number_u16: u16 = number.try_into().unwrap();
 
-            if usedNumbers.get(number.into()) != true {
+            if !usedNumbers.get(number.into()) {
                 numbers.append(number_u16);
                 usedNumbers.insert(number.into(), true);
                 count += 1;
