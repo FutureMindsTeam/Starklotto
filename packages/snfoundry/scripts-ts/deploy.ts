@@ -5,6 +5,8 @@ import {
   deployer,
 } from "./deploy-contract";
 import { green } from "./helpers/colorize-log";
+import fs from "fs";
+import path from "path";
 
 /**
  * Deploy a contract using the specified parameters.
@@ -43,15 +45,7 @@ import { green } from "./helpers/colorize-log";
  */
 
 const deployScript = async (): Promise<void> => {
-  await deployContract({
-    contract: "Lottery",
-    contractName: "Lottery",
-    constructorArgs: {
-      owner: deployer.address,
-    },
-  });
-
-  // Deploy StarkPlayERC20
+  // Deploy StarkPlayERC20 first
   const starkPlayERC20DeploymentResult = await deployContract({
     contract: "StarkPlayERC20",
     contractName: "StarkPlayERC20",
@@ -77,13 +71,85 @@ const deployScript = async (): Promise<void> => {
     );
   }
 
-  await deployContract({
+  // Deploy StarkPlayVault
+  const starkPlayVaultDeploymentResult = await deployContract({
     contract: "StarkPlayVault",
     contractName: "StarkPlayVault",
     constructorArgs: {
       owner: deployer.address,
       starkPlayToken: starkPlayERC20Address, // Pass the deployed StarkPlayERC20 address
-      feePercentage: 5, // Default fee percentage, adjust as needed
+      feePercentage: 50, // Default fee percentage, adjust as needed
+    },
+  });
+  const starkPlayVaultAddress = starkPlayVaultDeploymentResult.address;
+
+  // Basic check for a valid address
+  if (
+    !starkPlayVaultAddress ||
+    starkPlayVaultAddress === "" ||
+    starkPlayVaultAddress.startsWith(
+      "0x0000000000000000000000000000000000000000000000000000000000000000"
+    )
+  ) {
+    throw new Error(
+      `Failed to deploy StarkPlayVault or address is invalid: ${starkPlayVaultAddress}`
+    );
+  }
+
+  // Execute pending deploy calls and wait for confirmation
+  console.log("Executing deployment calls and waiting for confirmation...");
+  await executeDeployCalls();
+  console.log("All deployments confirmed successfully");
+
+  // Post-deploy role assignment: Configure token permissions following best practices
+  console.log("Assigning roles to StarkPlayVault...");
+  try {
+    const { Contract } = await import("starknet");
+    
+    // Load StarkPlayERC20 contract ABI to interact with it
+    const starkPlayTokenCompiledContract = JSON.parse(
+      fs.readFileSync(
+        path.join(__dirname, "../contracts/target/dev/contracts_StarkPlayERC20.contract_class.json"),
+        "utf8"
+      )
+    );
+
+    const starkPlayTokenContract = new Contract(
+      starkPlayTokenCompiledContract.abi,
+      starkPlayERC20Address,
+      deployer
+    );
+
+    // Owner (deployer) assigns MINTER_ROLE to the vault
+    console.log("Granting MINTER_ROLE to vault...");
+    await starkPlayTokenContract.grant_minter_role(starkPlayVaultAddress);
+    
+    // Set minter allowance for the vault
+    const mint_allowance = 1_000_000_000n * 1000000000000000000n; // 1B tokens with 18 decimals
+    await starkPlayTokenContract.set_minter_allowance(starkPlayVaultAddress, mint_allowance);
+    
+    // Owner (deployer) assigns BURNER_ROLE to the vault
+    console.log("Granting BURNER_ROLE to vault...");
+    await starkPlayTokenContract.grant_burner_role(starkPlayVaultAddress);
+    
+    // Set burner allowance for the vault  
+    const burn_allowance = 1_000_000_000n * 1000000000000000000n; // 1B tokens with 18 decimals
+    await starkPlayTokenContract.set_burner_allowance(starkPlayVaultAddress, burn_allowance);
+
+    console.log("StarkPlayVault roles assigned successfully by owner");
+  } catch (error) {
+    console.error("Failed to assign vault roles:", error);
+    throw new Error(`Vault role assignment failed: ${error}`);
+  }
+
+  // Deploy Lottery with dynamic addresses
+  await deployContract({
+    contract: "Lottery",
+    contractName: "Lottery",
+    constructorArgs: {
+      owner: deployer.address,
+      strkPlayContractAddress: starkPlayERC20Address,
+      strkPlayVaultContractAddress: starkPlayVaultAddress,
     },
   });
 
@@ -102,7 +168,7 @@ const deployScript = async (): Promise<void> => {
 const main = async (): Promise<void> => {
   try {
     await deployScript();
-    await executeDeployCalls();
+    // executeDeployCalls() is already called inside deployScript() - no need to call it again
     exportDeployments();
 
     console.log(green("All Setup Done!"));

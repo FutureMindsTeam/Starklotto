@@ -5,9 +5,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import {
-  Shield,
-  Info,
+  Coins,
   Trophy,
+  ArrowUpDown,
   User,
   HomeIcon,
   Menu,
@@ -15,24 +15,22 @@ import {
   Globe,
 } from "lucide-react";
 import { CustomConnectButton } from "./scaffold-stark/CustomConnectButton";
-import { GlowingButton } from "./glowing-button";
 import { useAccount } from "@starknet-react/core";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "../hooks/useLanguage";
 
 interface NavbarProps {
   onBuyTicket: () => void;
-  onNavigate: (sectionId: string) => void;
 }
 
 const menuItems = [
-  { id: "hero", labelKey: "navigation.home", icon: HomeIcon },
-  { id: "features", labelKey: "navigation.features", icon: Shield },
-  { id: "how-it-works", labelKey: "navigation.howItWorks", icon: Info },
-  { id: "faq", labelKey: "navigation.faq", icon: Trophy },
+  { id: "/dapp", labelKey: "navigation.home", icon: HomeIcon },
+  { id: "/dapp/mint", labelKey: "navigation.mint", icon: Coins },
+  { id: "/dapp/claim", labelKey: "navigation.claim", icon: Trophy },
+  { id: "/dapp/unmint", labelKey: "navigation.unmint", icon: ArrowUpDown },
 ];
 
-export function Navbar({ onBuyTicket, onNavigate }: NavbarProps) {
+export function Navbar({ onBuyTicket }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { status } = useAccount();
   const isConnected = status === "connected";
@@ -61,7 +59,7 @@ export function Navbar({ onBuyTicket, onNavigate }: NavbarProps) {
   return (
     <>
       <motion.nav
-        className="fixed top-0 left-0 right-0 z-50"
+        className="fixed top-0 left-0 right-0 z-50 my-0"
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
@@ -99,74 +97,78 @@ export function Navbar({ onBuyTicket, onNavigate }: NavbarProps) {
 
               {/* Desktop Navigation */}
               <div className="hidden md:flex items-center gap-8">
-                {menuItems.slice(0, 2).map(({ id, labelKey, icon: Icon }) => (
-                  <motion.button
-                    key={id}
-                    onClick={() => onNavigate(id)}
-                    className="text-white/80 hover:text-white transition-colors flex items-center gap-1.5 group"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <Icon className="h-3.5 w-3.5 text-[#00FFA3] group-hover:text-[#00FFA3] transition-colors" />
-                    <span className="relative text-sm">
-                      {t(labelKey)}
-                      <span className="absolute inset-x-0 -bottom-1 h-px bg-gradient-to-r from-[#00FFA3]/0 via-[#00FFA3]/70 to-[#00FFA3]/0 scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
-                    </span>
-                  </motion.button>
-                ))}
+                {menuItems
+                  .slice(0, isConnected ? 2 : 1)
+                  .map(({ id, labelKey, icon: Icon }) => (
+                    <Link key={id} href={id}>
+                      <motion.div
+                        className="text-white/80 hover:text-white transition-colors flex items-center gap-1.5 group cursor-pointer"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <Icon className="h-3.5 w-3.5 text-[#00FFA3] group-hover:text-[#00FFA3] transition-colors" />
+                        <span className="relative text-sm">
+                          {t(labelKey)}
+                          <span className="absolute inset-x-0 -bottom-1 h-px bg-gradient-to-r from-[#00FFA3]/0 via-[#00FFA3]/70 to-[#00FFA3]/0 scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
+                        </span>
+                      </motion.div>
+                    </Link>
+                  ))}
 
                 {isConnected && (
-                  <motion.button
-                    onClick={onBuyTicket}
-                    className="relative group"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    {/* Animated background glow */}
-                    <div className="absolute -inset-1 bg-gradient-to-r from-[#8A3FFC] via-[#00FFA3] to-[#9B51E0] rounded-lg blur-lg group-hover:blur-xl opacity-70 group-hover:opacity-100 transition-all duration-500 animate-gradient-xy"></div>
+                  <>
+                    <motion.button
+                      onClick={onBuyTicket}
+                      className="relative group"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      {/* Animated background glow */}
+                      <div className="absolute -inset-1 bg-gradient-to-r from-[#8A3FFC] via-[#00FFA3] to-[#9B51E0] rounded-lg blur-lg group-hover:blur-xl opacity-70 group-hover:opacity-100 transition-all duration-500 animate-gradient-xy"></div>
 
-                    {/* Button content */}
-                    <div className="relative px-4 py-2 bg-black rounded-lg flex items-center gap-2 border border-[#00FFA3]/30">
-                      <div className="absolute inset-0 bg-gradient-to-r from-[#8A3FFC]/20 to-[#00FFA3]/20 rounded-lg"></div>
+                      {/* Button content */}
+                      <div className="relative px-4 py-2 bg-black rounded-lg flex items-center gap-2 border border-[#00FFA3]/30">
+                        <div className="absolute inset-0 bg-gradient-to-r from-[#8A3FFC]/20 to-[#00FFA3]/20 rounded-lg"></div>
 
-                      <span className="font-semibold text-sm bg-gradient-to-r from-[#00FFA3] to-white bg-clip-text text-transparent">
-                        {t("home.hero.playNow")}
-                      </span>
+                        <span className="font-semibold text-sm bg-gradient-to-r from-[#00FFA3] to-white bg-clip-text text-transparent">
+                          {t("home.hero.playNow")}
+                        </span>
 
-                      <motion.div
-                        className="relative"
-                        animate={{
-                          rotate: [0, 360],
-                          scale: [1, 1.1, 1],
-                        }}
-                        transition={{
-                          duration: 3,
-                          repeat: Infinity,
-                          repeatType: "loop",
-                        }}
-                      >
-                        <span className="text-base">🎲</span>
-                        <div className="absolute -inset-1 bg-[#00FFA3] rounded-full blur-md opacity-50 animate-pulse"></div>
-                      </motion.div>
-                    </div>
-                  </motion.button>
+                        <motion.div
+                          className="relative"
+                          animate={{
+                            rotate: [0, 360],
+                            scale: [1, 1.1, 1],
+                          }}
+                          transition={{
+                            duration: 3,
+                            repeat: Infinity,
+                            repeatType: "loop",
+                          }}
+                        >
+                          <span className="text-base">🎲</span>
+                          <div className="absolute -inset-1 bg-[#00FFA3] rounded-full blur-md opacity-50 animate-pulse"></div>
+                        </motion.div>
+                      </div>
+                    </motion.button>
+
+                    {menuItems.slice(2).map(({ id, labelKey, icon: Icon }) => (
+                      <Link key={id} href={id}>
+                        <motion.div
+                          className="text-white/80 hover:text-white transition-colors flex items-center gap-1.5 group cursor-pointer"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          <Icon className="h-3.5 w-3.5 text-[#00FFA3] group-hover:text-[#00FFA3] transition-colors" />
+                          <span className="relative text-sm">
+                            {t(labelKey)}
+                            <span className="absolute inset-x-0 -bottom-1 h-px bg-gradient-to-r from-[#00FFA3]/0 via-[#00FFA3]/70 to-[#00FFA3]/0 scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
+                          </span>
+                        </motion.div>
+                      </Link>
+                    ))}
+                  </>
                 )}
-
-                {menuItems.slice(2).map(({ id, labelKey, icon: Icon }) => (
-                  <motion.button
-                    key={id}
-                    onClick={() => onNavigate(id)}
-                    className="text-white/80 hover:text-white transition-colors flex items-center gap-1.5 group"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <Icon className="h-3.5 w-3.5 text-[#00FFA3] group-hover:text-[#00FFA3] transition-colors" />
-                    <span className="relative text-sm">
-                      {t(labelKey)}
-                      <span className="absolute inset-x-0 -bottom-1 h-px bg-gradient-to-r from-[#00FFA3]/0 via-[#00FFA3]/70 to-[#00FFA3]/0 scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
-                    </span>
-                  </motion.button>
-                ))}
               </div>
 
               {/* Right Side Actions */}
@@ -305,26 +307,8 @@ export function Navbar({ onBuyTicket, onNavigate }: NavbarProps) {
                     )}
                   </AnimatePresence>
                 </div>
-
+                {/* Wallet Connect Button - handles connected/disconnected states internally */}
                 <CustomConnectButton />
-                {isConnected && (
-                  <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="relative"
-                  >
-                    <div className="absolute inset-0 bg-[#00FFA3]/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
-                    <Link href="/profile">
-                      <Image
-                        src="/profile-icon.png"
-                        alt="Profile"
-                        width={28}
-                        height={28}
-                        className="rounded-full border border-[#00FFA3]/30 hover:border-[#00FFA3]/60 transition-colors"
-                      />
-                    </Link>
-                  </motion.div>
-                )}
 
                 {/* Mobile Menu Button */}
                 <motion.button
@@ -359,18 +343,16 @@ export function Navbar({ onBuyTicket, onNavigate }: NavbarProps) {
               <div className="container mx-auto px-4">
                 <div className="py-4 space-y-3">
                   {menuItems.map(({ id, labelKey, icon: Icon }) => (
-                    <motion.button
-                      key={id}
-                      onClick={() => {
-                        onNavigate(id);
-                        setIsMenuOpen(false);
-                      }}
-                      className="flex items-center gap-3 w-full px-4 py-2.5 text-white/80 hover:text-white hover:bg-[#00FFA3]/10 rounded-lg transition-colors group text-sm"
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      <Icon className="h-4 w-4 text-[#00FFA3] group-hover:text-[#00FFA3] transition-colors" />
-                      {t(labelKey)}
-                    </motion.button>
+                    <Link key={id} href={id}>
+                      <motion.div
+                        onClick={() => setIsMenuOpen(false)}
+                        className="flex items-center gap-3 w-full px-4 py-2.5 text-white/80 hover:text-white hover:bg-[#00FFA3]/10 rounded-lg transition-colors group text-sm cursor-pointer"
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        <Icon className="h-4 w-4 text-[#00FFA3] group-hover:text-[#00FFA3] transition-colors" />
+                        {t(labelKey)}
+                      </motion.div>
+                    </Link>
                   ))}
                   {isConnected && (
                     <div className="px-4">

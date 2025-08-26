@@ -54,7 +54,7 @@ pub trait ILottery<TContractState> {
     //=======================================================================================
     //set functions
     fn Initialize(ref self: TContractState, ticketPrice: u256, accumulatedPrize: u256);
-    fn BuyTicket(ref self: TContractState, drawId: u64, numbers: Array<u16>);
+    fn BuyTicket(ref self: TContractState, drawId: u64, numbers: Array<u16>, quantity: u8);
     fn DrawNumbers(ref self: TContractState, drawId: u64);
     fn ClaimPrize(ref self: TContractState, drawId: u64, ticketId: felt252);
     fn CheckMatches(
@@ -67,6 +67,8 @@ pub trait ILottery<TContractState> {
         number5: u16,
     ) -> u8;
     fn CreateNewDraw(ref self: TContractState, accumulatedPrize: u256);
+    fn SetTicketPrice(ref self: TContractState, price: u256);
+    fn GetTicketPrice(self: @TContractState) -> u256;
     //=======================================================================================
     //get functions
     fn GetAccumulatedPrize(self: @TContractState) -> u256;
@@ -99,8 +101,11 @@ pub trait ILottery<TContractState> {
     fn GetJackpotEntryEndTime(self: @TContractState, drawId: u64) -> u64;
     fn GetJackpotEntryIsActive(self: @TContractState, drawId: u64) -> bool;
     fn GetJackpotEntryIsCompleted(self: @TContractState, drawId: u64) -> bool;
-    //=======================================================================================
 
+    // Dynamic address getters
+    fn GetStarkPlayContractAddress(self: @TContractState) -> ContractAddress;
+    fn GetStarkPlayVaultContractAddress(self: @TContractState) -> ContractAddress;
+    //=======================================================================================
 }
 
 //=======================================================================================
@@ -130,11 +135,11 @@ pub mod Lottery {
     impl OwnableImpl = OwnableComponent::OwnableImpl<ContractState>;
     impl OwnableInternalImpl = OwnableComponent::InternalImpl<ContractState>;
 
-    // TODO: Update the address of the token contract once the token is deployed
+    // Dynamic contract addresses - will be set in constructor
+    // These constants are kept for backward compatibility but should not be used
     const STRK_PLAY_CONTRACT_ADDRESS: felt252 =
         0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d;
 
-    // TODO: Update the address of the vault contract once the vault is deployed
     const STRK_PLAY_VAULT_CONTRACT_ADDRESS: felt252 =
         0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d;
 
@@ -144,7 +149,7 @@ pub mod Lottery {
 
     #[event]
     #[derive(Drop, starknet::Event)]
-    enum Event {
+    pub enum Event {
         #[flat]
         OwnableEvent: OwnableComponent::Event,
         TicketPurchased: TicketPurchased,
@@ -155,15 +160,15 @@ pub mod Lottery {
     }
 
     #[derive(Drop, starknet::Event)]
-    struct TicketPurchased {
+    pub struct TicketPurchased {
         #[key]
-        drawId: u64,
+        pub drawId: u64,
         #[key]
-        player: ContractAddress,
-        ticketId: felt252,
-        numbers: Array<u16>,
-        ticketCount: u32,
-        timestamp: u64,
+        pub player: ContractAddress,
+        pub ticketId: felt252,
+        pub numbers: Array<u16>,
+        pub ticketCount: u32,
+        pub timestamp: u64,
     }
 
     #[derive(Drop, starknet::Event)]
@@ -220,6 +225,9 @@ pub mod Lottery {
         userTicketIds: Map<(ContractAddress, u64, u32), felt252>,
         draws: Map<u64, Draw>,
         tickets: Map<(u64, felt252), Ticket>,
+        // Dynamic contract addresses
+        strkPlayContractAddress: ContractAddress,
+        strkPlayVaultContractAddress: ContractAddress,
         // ownable component by openzeppelin
         #[substorage(v0)]
         ownable: OwnableComponent::Storage,
@@ -231,7 +239,18 @@ pub mod Lottery {
     //=======================================================================================
 
     #[constructor]
-    fn constructor(ref self: ContractState, owner: ContractAddress) {
+    fn constructor(
+        ref self: ContractState,
+        owner: ContractAddress,
+        strkPlayContractAddress: ContractAddress,
+        strkPlayVaultContractAddress: ContractAddress,
+    ) {
+        // Validate that addresses are not zero address
+        assert(strkPlayContractAddress != contract_address_const::<0>(), 'Invalid STRKP contract');
+        assert(
+            strkPlayVaultContractAddress != contract_address_const::<0>(), 'Invalid Vault contract',
+        );
+
         self.ownable.initializer(owner);
         self.fixedPrize4Matches.write(4000000000000000000);
         self.fixedPrize3Matches.write(3000000000000000000);
@@ -239,6 +258,10 @@ pub mod Lottery {
         self.currentDrawId.write(0);
         self.currentTicketId.write(0);
         self.reentrancy_guard.write(false);
+
+        // Store dynamic contract addresses
+        self.strkPlayContractAddress.write(strkPlayContractAddress);
+        self.strkPlayVaultContractAddress.write(strkPlayVaultContractAddress);
     }
     //=======================================================================================
     //impl
@@ -256,7 +279,7 @@ pub mod Lottery {
 
         //=======================================================================================
         //OK
-        fn BuyTicket(ref self: ContractState, drawId: u64, numbers: Array<u16>) {
+        fn BuyTicket(ref self: ContractState, drawId: u64, numbers: Array<u16>, quantity: u8) {
             // Reentrancy guard at the very beginning
             assert(!self.reentrancy_guard.read(), 'ReentrancyGuard: reentrant call');
             self.reentrancy_guard.write(true);
@@ -265,6 +288,10 @@ pub mod Lottery {
             assert(self.ValidateNumbers(@numbers), 'Invalid numbers');
             assert(numbers.len() == 5, 'Invalid numbers length');
 
+            // Validate quantity limits (1-10 tickets)
+            assert(quantity >= 1, 'Quantity too low');
+            assert(quantity <= 10, 'Quantity too high');
+
             let draw = self.draws.entry(drawId).read();
             assert(draw.isActive, 'Draw is not active');
 
@@ -272,16 +299,14 @@ pub mod Lottery {
 
             // Process the payment
             let token_dispatcher = IERC20Dispatcher {
-                contract_address: STRK_PLAY_CONTRACT_ADDRESS.try_into().unwrap(),
+                contract_address: self.strkPlayContractAddress.read(),
             };
 
             // --- Balance validation and deduction logic ---
             // 1. Get ticket price and user/vault addresses
             let ticket_price = self.ticketPrice.read();
             let user = get_caller_address();
-            let vault_address: ContractAddress = STRK_PLAY_VAULT_CONTRACT_ADDRESS
-                .try_into()
-                .unwrap();
+            let vault_address: ContractAddress = self.strkPlayVaultContractAddress.read();
 
             // 2. Validate user has sufficient token balance
             let user_balance = token_dispatcher.balance_of(user);
@@ -321,28 +346,58 @@ pub mod Lottery {
                 timestamp: current_timestamp,
             };
 
-            let ticketId = GenerateTicketId(ref self);
-            self.tickets.entry((drawId, ticketId)).write(ticketNew);
-
-            //Incrementar contador y guardar ticketId
-
             let caller = get_caller_address();
             let mut count = self.userTicketCount.entry((caller, drawId)).read();
-            count += 1;
-            self.userTicketCount.entry((caller, drawId)).write(count);
-            self.userTicketIds.entry((caller, drawId, count)).write(ticketId);
 
-            self
-                .emit(
-                    TicketPurchased {
-                        drawId,
-                        player: caller,
-                        ticketId,
-                        numbers,
-                        ticketCount: count,
-                        timestamp: current_timestamp,
-                    },
-                );
+            // Generate multiple tickets in a loop
+            let mut i: u8 = 0;
+            while i < quantity {
+                // TODO: Mint the NFT here, for now it is simulated
+                let minted = true;
+                assert(minted, 'NFT minting failed');
+
+                let ticketNew = Ticket {
+                    player: caller,
+                    number1: n1,
+                    number2: n2,
+                    number3: n3,
+                    number4: n4,
+                    number5: n5,
+                    claimed: false,
+                    drawId: drawId,
+                    timestamp: current_timestamp,
+                };
+
+                let ticketId = GenerateTicketId(ref self);
+                self.tickets.entry((drawId, ticketId)).write(ticketNew);
+
+                // Increment counter and save ticketId
+                count += 1;
+                self.userTicketCount.entry((caller, drawId)).write(count);
+                self.userTicketIds.entry((caller, drawId, count)).write(ticketId);
+
+                // Emit event for each generated ticket
+                let mut event_numbers = ArrayTrait::new();
+                event_numbers.append(n1);
+                event_numbers.append(n2);
+                event_numbers.append(n3);
+                event_numbers.append(n4);
+                event_numbers.append(n5);
+
+                self
+                    .emit(
+                        TicketPurchased {
+                            drawId,
+                            player: caller,
+                            ticketId,
+                            numbers: event_numbers,
+                            ticketCount: count,
+                            timestamp: current_timestamp,
+                        },
+                    );
+
+                i += 1;
+            }
 
             // Release reentrancy guard
             self.reentrancy_guard.write(false);
@@ -582,6 +637,17 @@ pub mod Lottery {
             numbers
         }
 
+        // Set the ticket price (admin only)
+        fn SetTicketPrice(ref self: ContractState, price: u256) {
+            self.ownable.assert_only_owner();
+            self.ticketPrice.write(price);
+        }
+
+        // Get the ticket price (public view)
+        fn GetTicketPrice(self: @ContractState) -> u256 {
+            self.ticketPrice.read()
+        }
+
         //=======================================================================================
         /// Returns the complete history of all jackpot draws
         ///
@@ -693,6 +759,17 @@ pub mod Lottery {
             let draw = self.draws.entry(drawId).read();
             !draw.isActive
         }
+
+        //=======================================================================================
+        // Dynamic address getters
+        //=======================================================================================
+        fn GetStarkPlayContractAddress(self: @ContractState) -> ContractAddress {
+            self.strkPlayContractAddress.read()
+        }
+
+        fn GetStarkPlayVaultContractAddress(self: @ContractState) -> ContractAddress {
+            self.strkPlayVaultContractAddress.read()
+        }
     }
 
     //=======================================================================================
@@ -765,7 +842,8 @@ pub mod Lottery {
         let mut usedNumbers: Felt252Dict<bool> = Default::default();
 
         while count != 5 {
-            let number = (blockTimestamp + count) % (MaxNumber.into() - MinNumber.into() + 1) + MinNumber.into();
+            let number = (blockTimestamp + count) % (MaxNumber.into() - MinNumber.into() + 1)
+                + MinNumber.into();
             let number_u16: u16 = number.try_into().unwrap();
 
             if usedNumbers.get(number.into()) != true {

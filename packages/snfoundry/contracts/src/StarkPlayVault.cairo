@@ -10,8 +10,9 @@ pub trait IStarkPlayVault<TContractState> {
     fn get_mint_limit(self: @TContractState) -> u256;
     fn get_burn_limit(self: @TContractState) -> u256;
     fn get_accumulated_fee(self: @TContractState) -> u256;
-    fn get_owner(self: @TContractState) -> ContractAddress;
     fn get_total_starkplay_minted(self: @TContractState) -> u256;
+    fn get_total_strk_stored(self: @TContractState) -> u256;
+    fn get_total_starkplay_burned(self: @TContractState) -> u256;
 
     //=======================================================================================
     //set functions
@@ -34,6 +35,11 @@ pub trait IStarkPlayVault<TContractState> {
     fn withdrawPrizeConversionFees(
         ref self: TContractState, recipient: ContractAddress, amount: u256,
     ) -> bool;
+    fn set_treasury_address(ref self: TContractState, treasury: ContractAddress) -> bool;
+    fn get_treasury_address(self: @TContractState) -> ContractAddress;
+
+    //test functions
+    fn update_total_strk_stored(ref self: TContractState, amount: u256);
 }
 
 
@@ -55,6 +61,8 @@ pub mod StarkPlayVault {
         IBurnableDispatcher, IBurnableDispatcherTrait, IMintable, IMintableDispatcher,
         IMintableDispatcherTrait, IPrizeTokenDispatcher, IPrizeTokenDispatcherTrait,
     };
+    use openzeppelin_access::accesscontrol::{AccessControlComponent, DEFAULT_ADMIN_ROLE};
+    use openzeppelin_access::accesscontrol::interface::{IAccessControlDispatcher, IAccessControlDispatcherTrait};
     use super::IStarkPlayVault;
 
     component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
@@ -102,14 +110,14 @@ pub mod StarkPlayVault {
         feePercentagePrizesConvertedMin: u64, //min fee percentage for the vault to convert prizes to STRKP (0.1% = 10 basis points)
         feePercentagePrizesConvertedMax: u64, //max fee percentage for the vault to convert prizes to STRKP (5% = 500 basis points)
         //------------------------------------------------
-        //owner of the vault
-        owner: ContractAddress,
+        //OpenZeppelin OwnableComponent handles ownership
         paused: bool,
         mintLimit: u256,
         burnLimit: u256,
         reentrant_locked: bool,
         accumulatedFee: u256,
         accumulatedPrizeConversionFees: u256,
+        treasury_address: ContractAddress,
         #[substorage(v0)]
         ownable: OwnableComponent::Storage,
     }
@@ -127,13 +135,17 @@ pub mod StarkPlayVault {
     ) {
         self.strkToken.write(TOKEN_STRK_ADDRESS);
         self.starkPlayToken.write(starkPlayToken);
-        self.owner.write(starknet::get_caller_address());
+        // OpenZeppelin OwnableComponent handles ownership
         self.ownable.initializer(owner);
         self.mintLimit.write(MAX_MINT_AMOUNT);
         self.burnLimit.write(MAX_BURN_AMOUNT);
         self.paused.write(false);
         self.reentrant_locked.write(false);
         self.accumulatedPrizeConversionFees.write(0);
+        self.totalSTRKStored.write(0); // Initialize totalSTRKStored to 0
+        self.totalStarkPlayMinted.write(0); // Initialize totalStarkPlayMinted to 0
+        self.totalStarkPlayBurned.write(0); // Initialize totalStarkPlayBurned to 0
+        self.accumulatedFee.write(0); // Initialize accumulatedFee to 0
         //set fee percentage
         self.feePercentage.write(feePercentage);
         self.feePercentageMin.write(10); //0.1%
@@ -141,6 +153,9 @@ pub mod StarkPlayVault {
         self.feePercentagePrizesConverted.write(300); //3%
         self.feePercentagePrizesConvertedMin.write(10); //0.1%
         self.feePercentagePrizesConvertedMax.write(500); //5%
+
+        // Note: During constructor, contract address might not be final
+        // Permission initialization moved to post-deploy function
     }
 
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -267,6 +282,15 @@ pub mod StarkPlayVault {
         amount: u256,
     }
 
+    #[derive(Drop, starknet::Event)]
+    struct TreasuryFeeTransferred {
+        #[key]
+        user: ContractAddress,
+        #[key]
+        amount: u256,
+        treasury: ContractAddress,
+    }
+
     #[event]
     #[derive(Drop, starknet::Event)]
     pub enum Event {
@@ -288,6 +312,7 @@ pub mod StarkPlayVault {
         FeeUpdated: FeeUpdated,
         GeneralFeesWithdrawn: GeneralFeesWithdrawn,
         PrizeConversionFeesWithdrawn: PrizeConversionFeesWithdrawn,
+        TreasuryFeeTransferred: TreasuryFeeTransferred,
     }
 
 
@@ -299,8 +324,10 @@ pub mod StarkPlayVault {
         assert(!self.paused.read(), 'Contract is paused');
     }
 
-    fn assert_only_owner(self: @ContractState) {
-        assert(get_caller_address() == self.owner.read(), 'Caller is not the owner');
+
+    // Helper function for zero address validation
+    fn zero_address_const() -> ContractAddress {
+        contract_address_const::<0x0>()
     }
 
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -308,7 +335,7 @@ pub mod StarkPlayVault {
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     fn pause(ref self: ContractState) -> bool {
-        assert_only_owner(@self);
+        self.ownable.assert_only_owner();
         assert(!self.paused.read(), 'Contract already paused');
         self.paused.write(true);
         self.emit(Paused { admin: get_caller_address() });
@@ -316,7 +343,7 @@ pub mod StarkPlayVault {
     }
 
     fn unpause(ref self: ContractState) -> bool {
-        assert_only_owner(@self);
+        self.ownable.assert_only_owner();
         assert(self.paused.read(), 'Contract not paused');
         self.paused.write(false);
         self.emit(Unpaused { admin: get_caller_address() });
@@ -410,16 +437,47 @@ pub mod StarkPlayVault {
     }
 
     fn convert_to_strk(ref self: ContractState, amount: u256) {
+        // Reentrancy protection
+        assert(!self.reentrant_locked.read(), 'ReentrancyGuard: reentrant call');
+        self.reentrant_locked.write(true);
+
+        // Check that the contract is not paused
         _assert_not_paused(@self);
         let user = get_caller_address();
+
+        // Validate amount is greater than 0
+        assert(amount > 0, 'Amount must be greater than 0');
+
+        // Zero address validation
+        assert(user != zero_address_const(), 'Zero address not allowed');
+
+        // Validate burnLimit
+        assert(amount <= self.burnLimit.read(), 'Exceeds burn limit per tx');
+
         let starkPlayContractAddress = self.starkPlayToken.read();
         let prizeDispatcher = IPrizeTokenDispatcher { contract_address: starkPlayContractAddress };
         let prize_balance = prizeDispatcher.get_prize_balance(user);
         assert(prize_balance >= amount, 'Insufficient prize tokens');
 
-        // Calculate conversion fee
-        let prizeFeeAmount = (amount * self.feePercentage.read().into()) / BASIS_POINTS_DENOMINATOR;
+        // Calculate conversion fee using the correct fee percentage
+        let prizeFeeAmount = (amount * self.feePercentagePrizesConverted.read().into())
+            / BASIS_POINTS_DENOMINATOR;
         let netAmount = amount - prizeFeeAmount;
+
+        // Get treasury address and setup STRK dispatcher
+        let treasury = self.treasury_address.read();
+        let strk_contract_address = contract_address_const::<TOKEN_STRK_ADDRESS>();
+        let strk_dispatcher = IERC20Dispatcher { contract_address: strk_contract_address };
+        let contract_balance = strk_dispatcher.balance_of(get_contract_address());
+
+        // Conditional verification of balance and transfers based on treasury status
+        if treasury != zero_address_const() {
+            // If treasury is set, contract must have enough for both net amount and fee
+            assert(contract_balance >= netAmount + prizeFeeAmount, 'Insufficient STRK in vault');
+        } else {
+            // If no treasury, only need net amount
+            assert(contract_balance >= netAmount, 'Insufficient STRK in vault');
+        }
 
         // Burn the full amount of prize tokens from user
         let mut burnDispatcher = IBurnableDispatcher { contract_address: starkPlayContractAddress };
@@ -442,63 +500,28 @@ pub mod StarkPlayVault {
                 },
             );
 
-        // Transfer the net amount (after deducting fee) to user
-        let strk_contract_address = contract_address_const::<TOKEN_STRK_ADDRESS>();
-        let strk_dispatcher = IERC20Dispatcher { contract_address: strk_contract_address };
+        // Handle transfers based on treasury configuration
+        if treasury != zero_address_const() {
+            // Transfer prize fee to treasury
+            strk_dispatcher.transfer(treasury, prizeFeeAmount);
+
+            // Emit treasury fee transfer event
+            self.emit(TreasuryFeeTransferred { user, amount: prizeFeeAmount, treasury });
+
+            // Update totalSTRKStored by the full amount (net + fee)
+            self.totalSTRKStored.write(self.totalSTRKStored.read() - (netAmount + prizeFeeAmount));
+        } else {
+            // Maintain current behavior: only reduce by net amount
+            self.totalSTRKStored.write(self.totalSTRKStored.read() - netAmount);
+        }
+
+        // Always transfer the net amount to user
         strk_dispatcher.transfer(user, netAmount);
-        self.totalSTRKStored.write(self.totalSTRKStored.read() - netAmount);
         self.emit(ConvertedToSTRK { user, amount: netAmount });
+
+        //Release reentrancy lock
+        self.reentrant_locked.write(false);
     }
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    //private functions
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    //fn depositSTRK(ref self: ContractState, user: ContractAddress, amount: u256) -> bool {
-    //deposit strk to vault
-    //emit event STRKDeposited
-    //return true
-
-    //in case of error al depositar el STRK
-    //return false
-    //}
-
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    //fn withdrawSTRK(address, u64): bool{
-
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    //fn setFee(ref self: ContractState, new_fee: u64) -> bool {
-    //    self.assert_only_owner();
-    //   assert(new_fee <= BASIS_POINTS_DENOMINATOR, 'Fee too high'); // Máximo 100% (10000 basis
-    //   points)
-    //   self.feePercentage.write(new_fee);
-    //    true
-    //}
-
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    //fn setFee(u64): bool{
-
-    //}
-
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    //fn  getVaultBalance(): u64{
-
-    //}
-
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    //fn  getTotalSTRKStored(): u64{
-
-    //}
-
-    //fn  getTotalStarkPlayBurned(): u64{
-
-    //}
-
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     #[abi(embed_v0)]
     impl StarkPlayVaultImpl of IStarkPlayVault<ContractState> {
@@ -514,8 +537,16 @@ pub mod StarkPlayVault {
             self.accumulatedPrizeConversionFees.read()
         }
 
-        fn convert_to_strk(ref self: ContractState, amount: u256) {
-            convert_to_strk(ref self, amount)
+            fn convert_to_strk(ref self: ContractState, amount: u256) {
+        convert_to_strk(ref self, amount)
+    }
+
+
+
+        // Function to update totalSTRKStored (for testing purposes)
+        fn update_total_strk_stored(ref self: ContractState, amount: u256) {
+            self.ownable.assert_only_owner();
+            self.totalSTRKStored.write(amount);
         }
 
         fn setMintLimit(ref self: ContractState, new_limit: u256) {
@@ -536,7 +567,7 @@ pub mod StarkPlayVault {
         }
 
         fn setFeePercentage(ref self: ContractState, new_fee: u64) -> bool {
-            assert_only_owner(@self);
+            self.ownable.assert_only_owner();
             assert(new_fee >= self.feePercentageMin.read(), 'Fee percentage is too low');
             assert(new_fee <= self.feePercentageMax.read(), 'Fee percentage is too high');
             let old_fee = self.feePercentage.read();
@@ -546,12 +577,22 @@ pub mod StarkPlayVault {
         }
 
         fn setFeePercentagePrizesConverted(ref self: ContractState, new_fee: u64) -> bool {
-            assert_only_owner(@self);
-            assert(new_fee >= self.feePercentagePrizesConvertedMin.read(), 'Fee percentage is too low');
-            assert(new_fee <= self.feePercentagePrizesConvertedMax.read(), 'Fee percentage is too high');
+            self.ownable.assert_only_owner();
+            assert(
+                new_fee >= self.feePercentagePrizesConvertedMin.read(), 'Fee percentage is too low',
+            );
+            assert(
+                new_fee <= self.feePercentagePrizesConvertedMax.read(),
+                'Fee percentage is too high',
+            );
             let old_fee = self.feePercentagePrizesConverted.read();
             self.feePercentagePrizesConverted.write(new_fee);
-            self.emit(SetFeePercentagePrizesConverted { owner: get_caller_address(), old_fee, new_fee });
+            self
+                .emit(
+                    SetFeePercentagePrizesConverted {
+                        owner: get_caller_address(), old_fee, new_fee,
+                    },
+                );
             true
         }
         fn get_mint_limit(self: @ContractState) -> u256 {
@@ -564,10 +605,6 @@ pub mod StarkPlayVault {
 
         fn get_accumulated_fee(self: @ContractState) -> u256 {
             self.accumulatedFee.read()
-        }
-
-        fn get_owner(self: @ContractState) -> ContractAddress {
-            self.owner.read()
         }
 
         fn is_paused(self: @ContractState) -> bool {
@@ -605,7 +642,7 @@ pub mod StarkPlayVault {
             ref self: ContractState, recipient: ContractAddress, amount: u256,
         ) -> bool {
             // Only owner can withdraw
-            assert_only_owner(@self);
+            self.ownable.assert_only_owner();
             let current_fees = self.accumulatedFee.read();
             assert(amount > 0, 'Amount must be > 0');
             assert(amount <= current_fees, 'Withdraw amount exceeds fees');
@@ -624,7 +661,7 @@ pub mod StarkPlayVault {
             ref self: ContractState, recipient: ContractAddress, amount: u256,
         ) -> bool {
             // Only owner can withdraw
-            assert_only_owner(@self);
+            self.ownable.assert_only_owner();
             let current_fees = self.accumulatedPrizeConversionFees.read();
             assert(amount > 0, 'Amount must be > 0');
             assert(amount <= current_fees, 'Withdraw amount exceeds fees');
@@ -642,6 +679,25 @@ pub mod StarkPlayVault {
 
         fn get_total_starkplay_minted(self: @ContractState) -> u256 {
             self.totalStarkPlayMinted.read()
+        }
+
+        fn get_total_strk_stored(self: @ContractState) -> u256 {
+            self.totalSTRKStored.read()
+        }
+
+        fn get_total_starkplay_burned(self: @ContractState) -> u256 {
+            self.totalStarkPlayBurned.read()
+        }
+
+        fn set_treasury_address(ref self: ContractState, treasury: ContractAddress) -> bool {
+            self.ownable.assert_only_owner();
+            assert(treasury != zero_address_const(), 'Invalid treasury address');
+            self.treasury_address.write(treasury);
+            true
+        }
+
+        fn get_treasury_address(self: @ContractState) -> ContractAddress {
+            self.treasury_address.read()
         }
         //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     }

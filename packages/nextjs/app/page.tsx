@@ -1,96 +1,37 @@
 "use client";
+import { useEffect } from "react";
+import Header from "~~/components/landing-page/layout/hader";
+import HeroSection from "~~/components/landing-page/sections/HeroSection";
+import About from "~~/components/landing-page/sections/About";
+import Roadmap from "~~/components/landing-page/sections/Roadmap";
+import HowItWorks from "~~/components/landing-page/sections/HowItWorks";
+import TeamPreview from "~~/components/landing-page/sections/TeamPreview";
+import CommunitySection from "~~/components/landing-page/sections/CommunitySection";
+import FinalCTA from "~~/components/landing-page/sections/FinalCTA";
+import Footer from "~~/components/landing-page/layout/footer";
+import { ScrollToTop } from "~~/components/scroll-to-top";
 
-import { useState } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { Navbar } from "~~/components/Navbar";
-import { AnimatedBackground } from "~~/components/animated-background";
-import { FloatingCoins } from "~~/components/floating-coins";
-import { Notification } from "~~/components/notification";
-import {
-  HeroSection,
-  FeaturesSection,
-  HowItWorksSection,
-  FAQSection,
-  CTASection,
-} from "~~/components/sections";
-import { useAccount } from "@starknet-react/core";
-import { useRouter } from "next/navigation";
-import BuyTicketsModal from "~~/components/BuyTicketsModal";
-import { LastDrawResults } from "~~/components/LastDrawResults";
-
-export default function Home() {
-  const router = useRouter();
-  const { scrollY } = useScroll();
-  const { status } = useAccount();
-
-  const heroY = useTransform(scrollY, [0, 500], [0, -100]);
-  const featuresY = useTransform(scrollY, [0, 1000], [0, -50]);
-  const howItWorksY = useTransform(scrollY, [0, 1500], [0, -50]);
-  const faqY = useTransform(scrollY, [0, 2000], [0, -50]);
-
-  const [showSecurityInfo, setShowSecurityInfo] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [notification, setNotification] = useState<{
-    message: string;
-    type: "success" | "error" | "info";
-  } | null>(null);
-
-  const [showTicketSelector, setShowTicketSelector] = useState(false);
-  const [selectedNumbers, setSelectedNumbers] = useState<number[]>([]);
-
-  const jackpot = 250295;
-  const targetDate = new Date();
-  targetDate.setDate(targetDate.getDate() + 1);
-
-  const handleBuyTicket = () => {
-    router.push("/buy-tickets");
-  };
-
-  const handleScroll = (sectionId: string) => {
-    const section = document.getElementById(sectionId);
-    if (section) {
-      section.scrollIntoView({ behavior: "smooth" });
+export default function LandingPage() {
+  useEffect(() => {
+    if ("scrollRestoration" in history) {
+      history.scrollRestoration = "manual";
     }
-  };
 
-  const handleSelectNumbers = (numbers: number[]) => {
-    setSelectedNumbers(numbers);
-  };
-
-  const handlePurchase = (quantity: number, totalPrice: number) => {
-    console.log("Purchasing", quantity, "tickets for", totalPrice);
-  };
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#111827] to-[#0f172a] text-white">
-      <AnimatedBackground />
-      <FloatingCoins />
-
-      <Navbar onBuyTicket={handleBuyTicket} onNavigate={handleScroll} />
-
-      <main className="flex-1 pt-16 relative z-10">
-        <HeroSection
-          heroY={heroY}
-          jackpot={jackpot}
-          showSecurityInfo={showSecurityInfo}
-          targetDate={targetDate}
-          onBuyTicket={handleBuyTicket}
-          onToggleSecurityInfo={() => setShowSecurityInfo(!showSecurityInfo)}
-          showTicketSelector={showTicketSelector}
-          selectedNumbers={selectedNumbers}
-          onSelectNumbers={handleSelectNumbers}
-          onPurchase={handlePurchase}
-        />
-
-        <div className="container mx-auto px-4 relative z-20">
-          <LastDrawResults />
-        </div>
-
-        <FeaturesSection featuresY={featuresY} />
-        <HowItWorksSection howItWorksY={howItWorksY} />
-        <FAQSection faqY={faqY} />
-        <CTASection onBuyTicket={handleBuyTicket} />
-      </main>
-    </div>
+    <main className="flex flex-col min-h-screen bg-[#101326] text-white">
+      <Header />
+      <HeroSection />
+      <About />
+      <Roadmap />
+      <HowItWorks />
+      <TeamPreview />
+      <CommunitySection />
+      <FinalCTA />
+      <Footer />
+      <ScrollToTop variant="landing" />
+    </main>
   );
 }

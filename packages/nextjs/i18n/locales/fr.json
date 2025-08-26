@@ -57,7 +57,10 @@
     "profile": "Profil",
     "about": "À Propos",
     "contact": "Contact",
-    "features": "Fonctionnalités"
+    "features": "Fonctionnalités",
+    "mint": "Créer $TRKP",
+    "claim": "Réclamer Récompenses",
+    "unmint": "Convertir $TRKP"
   },
   "home": {
     "hero": {
@@ -109,7 +112,9 @@
     "title": "Résultats du Dernier Tirage",
     "winningNumbers": "Numéros Gagnants",
     "jackpotAmount": "Montant du Jackpot",
+    "winner": "Gagnant",
     "winners": "Gagnants",
+    "results": "Résultats",
     "noWinners": "Aucun gagnant",
     "viewPrevious": "Voir les Tirages Précédents"
   },
@@ -150,5 +155,48 @@
       "chooseAccount": "Choisir un compte",
       "close": "✕"
     }
+  },
+  "error404": {
+    "title": "Oups! Page Non Trouvée",
+    "description": "Il semble que cette page ait décidé de partir plus tôt!",
+    "subtitle": "Ne vous inquiétez pas, votre chance vous attend sur notre page principale.",
+    "suggestions": {
+      "title": "Que souhaitez-vous faire?"
+    },
+    "actions": {
+      "goHome": "Retour à l'Accueil",
+      "goBack": "Retour"
+    },
+    "funMessage": "Plus de chance la prochaine fois! 🎲"
+  },
+  "comingSoon": {
+    "message": "Bientôt Disponible",
+    "description": "Cette fonctionnalité sera bientôt disponible. Restez à l'écoute!"
+  },
+  "notifications": {
+    "newDrawAvailable": "Nouveaux résultats de tirage de loterie disponibles !",
+    "newDrawLoaded": "Les nouveaux résultats du tirage ont été chargés !",
+    "connectionLost": "Connexion perdue. Tentative de reconnexion...",
+    "unableToFetch": "Impossible de récupérer les dernières mises à jour. Affichage des résultats mis en cache."
+  },
+  "status": {
+    "live": "En direct",
+    "updated": "Mis à jour",
+    "refresh": "Actualiser",
+    "autoRefreshOn": "Actualisation Automatique Activée",
+    "autoRefreshOff": "Actualisation Automatique Désactivée",
+    "retry": "Réessayer",
+    "noResults": "Aucun résultat disponible pour le moment"
+  },
+  "errors": {
+    "connectionError": "Erreur de Connexion",
+    "requestTimeout": "Délai d'Attente Dépassé",
+    "serviceError": "Erreur de Service",
+    "unexpectedError": "Erreur Inattendue",
+    "networkErrorMessage": "Impossible de se connecter au service de loterie. Veuillez vérifier votre connexion internet.",
+    "timeoutErrorMessage": "La demande a pris trop de temps à aboutir. Veuillez réessayer.",
+    "apiErrorMessage": "Le service de loterie rencontre des problèmes. Veuillez réessayer plus tard.",
+    "unexpectedErrorMessage": "Une erreur inattendue s'est produite.",
+    "loadingErrorMessage": "Une erreur s'est produite lors du chargement des résultats du tirage."
   }
 }
