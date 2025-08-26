@@ -292,7 +292,7 @@ fn test_convert_to_strk_exceeds_burn_limit() {
 
 #[test]
 fn test_convert_to_strk_correct_fee_percentage() {
-    let (vault, starkplay_token) = deploy_vault_contract();
+    let (vault, _starkplay_token) = deploy_vault_contract();
 
     // Get the correct fee percentage for prize conversion
     let prize_conversion_fee = vault.GetFeePercentagePrizesConverted();
