@@ -37,6 +37,7 @@ block_id.tag = "latest"
 exit_first = true
 
 [tool.scarb]
+allow-warnings = false
 allow-prebuilt-plugins = [
 	"snforge_std",
 ] # Avoids the need to install Rust for snforge_std/starknet-foundry

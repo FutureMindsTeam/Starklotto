@@ -611,7 +611,7 @@ fn test_buy_ticket_invalid_draw_id_out_of_range() {
 
     // Try to buy ticket with draw_id way out of range
     cheat_caller_address(lottery_address, USER1, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.BuyTicket(9999, numbers);
+    lottery_dispatcher.BuyTicket(9999, numbers, 1);
 
     cleanup_mocks();
 }
