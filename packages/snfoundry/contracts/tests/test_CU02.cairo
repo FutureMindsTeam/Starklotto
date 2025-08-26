@@ -10,29 +10,26 @@ use openzeppelin_access::ownable::interface::{IOwnableDispatcher, IOwnableDispat
 use openzeppelin_token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
 use openzeppelin_utils::serde::SerializedAppend;
 use snforge_std::{
-    CheatSpan, cheat_caller_address, EventSpy, start_cheat_caller_address,
+    start_cheat_caller_address,
     stop_cheat_caller_address, declare, ContractClassTrait, DeclareResultTrait, spy_events,
-    EventSpyAssertionsTrait, EventSpyTrait, // Add for fetching events directly
-    Event, // A structure describing a raw `Event`
-    IsEmitted // Trait for checking if a given event was ever emitted
+    EventSpyTrait // Add for fetching events directly
 };
-#[feature("deprecated-starknet-consts")]
-use starknet::{ContractAddress, contract_address_const};
+use starknet::ContractAddress;
 
 const Initial_Fee_Percentage: u64 = 50; // 50 basis points = 0.5%
 const BASIS_POINTS_DENOMINATOR: u256 = 10000_u256; // 10000 basis points = 100%
 // Test constants
 fn OWNER() -> ContractAddress {
-    contract_address_const::<0x123>()
+    0x123.try_into().unwrap()
 }
 
 fn owner_address() -> ContractAddress {
-    contract_address_const::<0x123>()
+    0x123.try_into().unwrap()
 }
 
 
 fn USER1() -> ContractAddress {
-    contract_address_const::<0x456>()
+    0x456.try_into().unwrap()
 }
 
 
@@ -564,7 +561,7 @@ fn test_convert_to_strk_exact_vault_balance() {
 // ============================================================================================
 
 fn TREASURY() -> ContractAddress {
-    contract_address_const::<0x789>()
+    0x789.try_into().unwrap()
 }
 
 #[test]
