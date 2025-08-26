@@ -955,7 +955,7 @@ fn test_buy_ticket_single_element_array() {
     let single_number = array![1];
 
     cheat_caller_address(lottery_address, USER1, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.BuyTicket(1, single_number);
+    lottery_dispatcher.BuyTicket(1, single_number, 1);
 
     cleanup_mocks();
 }
