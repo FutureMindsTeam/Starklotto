@@ -26,7 +26,7 @@ fn init_vault() -> StarkPlayVault::ContractState {
 // Helper function to deploy the contract and return dispatcher and address
 fn deploy_vault() -> IStarkPlayVaultDispatcher {
     let contract = declare("StarkPlayVault").unwrap().contract_class();
-    let owner = 5.try_into().unwrap(); // 
+    let owner: ContractAddress = 5.try_into().unwrap(); // 
     let token = 'token'.try_into().unwrap(); //
     let fee_percentage: u128 = 10000;
 
