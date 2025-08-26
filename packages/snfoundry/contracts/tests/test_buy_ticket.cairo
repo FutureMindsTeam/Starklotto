@@ -907,7 +907,7 @@ fn test_buy_ticket_draw_id_negative_edge() {
 
     // Try to buy ticket with very large draw_id (simulating negative in u32 context)
     cheat_caller_address(lottery_address, USER1, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.BuyTicket(4294967295, numbers); // Max u32
+    lottery_dispatcher.BuyTicket(4294967295, numbers, 1); // Max u32
 
     cleanup_mocks();
 }
