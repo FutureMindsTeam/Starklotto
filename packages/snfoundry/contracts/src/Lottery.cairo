@@ -654,10 +654,7 @@ pub mod Lottery {
 
             // Iterate through all draws from 1 to currentDrawId
             let mut drawId: u64 = 1;
-            loop {
-                if drawId > currentDrawId {
-                    break;
-                }
+            while drawId <= currentDrawId {
 
                 let draw = self.draws.entry(drawId).read();
                 let jackpotEntry = JackpotEntry {
