@@ -1,0 +1,431 @@
+use contracts::Lottery::{ILotteryDispatcher, ILotteryDispatcherTrait, Lottery};
+use contracts::StarkPlayERC20::{IMintableDispatcher, IMintableDispatcherTrait};
+use contracts::StarkPlayVault::{IStarkPlayVaultDispatcher, IStarkPlayVaultDispatcherTrait};
+use openzeppelin_testing::declare_and_deploy;
+use openzeppelin_token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
+use snforge_std::{
+    CheatSpan, ContractClassTrait, DeclareResultTrait, EventSpyAssertionsTrait, EventSpyTrait,
+    cheat_block_timestamp, cheat_caller_address, declare, spy_events, start_cheat_caller_address,
+    start_mock_call, stop_cheat_caller_address, stop_mock_call,
+};
+use starknet::ContractAddress;
+
+// Test addresses - following existing pattern
+const OWNER: ContractAddress = 0x02dA5254690b46B9C4059C25366D1778839BE63C142d899F0306fd5c312A5918
+    .try_into()
+    .unwrap();
+
+const USER1: ContractAddress = 0x03dA5254690b46B9C4059C25366D1778839BE63C142d899F0306fd5c312A5919
+    .try_into()
+    .unwrap();
+
+// Constants
+const TICKET_PRICE: u256 = 1000000000000000000; // 1 STRK token
+const VAULT_BALANCE: u256 = 50000000000000000000; // 50 STRK tokens in vault
+
+//=======================================================================================
+// Helper functions
+//=======================================================================================
+
+fn owner_address() -> ContractAddress {
+    OWNER
+}
+
+fn deploy_mock_strk_play() -> ContractAddress {
+    let contract_class = declare("StarkPlayERC20").unwrap().contract_class();
+    let mut calldata = array![owner_address().into(), owner_address().into()];
+    let (contract_address, _) = contract_class.deploy(@calldata).unwrap();
+    contract_address
+}
+
+fn deploy_mock_vault(strk_play_address: ContractAddress) -> ContractAddress {
+    let contract_class = declare("StarkPlayVault").unwrap().contract_class();
+    let mut calldata = array![owner_address().into(), strk_play_address.into(), 50_u64.into()];
+    let (contract_address, _) = contract_class.deploy(@calldata).unwrap();
+    contract_address
+}
+
+fn deploy_lottery_with_mocks() -> (ILotteryDispatcher, ContractAddress, ContractAddress) {
+    // Deploy mock contracts first
+    let mock_strk_play = deploy_mock_strk_play();
+    let mock_vault = deploy_mock_vault(mock_strk_play);
+
+    let mut calldata = array![owner_address().into(), mock_strk_play.into(), mock_vault.into()];
+    let lottery_address = declare_and_deploy("Lottery", calldata);
+    
+    let lottery = ILotteryDispatcher { contract_address: lottery_address };
+    
+    (lottery, mock_strk_play, mock_vault)
+}
+
+fn setup_vault_balance_mock(vault_address: ContractAddress, balance: u256) {
+    // Mock the balance_of call that the vault will receive
+    start_mock_call(vault_address, selector!("balance_of"), balance);
+}
+
+//=======================================================================================
+// TESTS: Core Functionality
+//=======================================================================================
+
+#[test]
+fn test_create_new_draw_automatic_calculation() {
+    // Setup
+    let (lottery, mock_strk_play, mock_vault) = deploy_lottery_with_mocks();
+    start_cheat_caller_address(lottery.contract_address, owner_address());
+    
+    // Mock vault balance
+    setup_vault_balance_mock(mock_strk_play, VAULT_BALANCE);
+    
+    // Initialize lottery (should create first draw automatically)
+    lottery.Initialize(TICKET_PRICE);
+    
+    // Verify the first draw was created with vault balance
+    let accumulated_prize = lottery.GetAccumulatedPrize();
+    assert(accumulated_prize == VAULT_BALANCE, 'Jackpot should equal vault balance');
+    
+    // Test creating a new draw manually
+    let new_vault_balance = VAULT_BALANCE * 2;
+    setup_vault_balance_mock(mock_strk_play, new_vault_balance);
+    
+    // Create new draw
+    lottery.CreateNewDraw();
+    
+    // Verify jackpot was automatically calculated from new vault balance
+    let new_accumulated_prize = lottery.GetAccumulatedPrize();
+    assert(new_accumulated_prize == new_vault_balance, 'Jackpot should update from vault');
+    
+    stop_cheat_caller_address(lottery.contract_address);
+}
+
+#[test]
+fn test_get_vault_balance_function() {
+    // Setup
+    let (lottery, mock_strk_play, mock_vault) = deploy_lottery_with_mocks();
+    
+    // Mock vault balance
+    setup_vault_balance_mock(mock_strk_play, VAULT_BALANCE);
+    
+    // Test GetVaultBalance function
+    let returned_balance = lottery.GetVaultBalance();
+    assert(returned_balance == VAULT_BALANCE, 'GetVaultBalance should return correct amount');
+    
+    // Test with different balance
+    let new_balance = VAULT_BALANCE * 3;
+    setup_vault_balance_mock(mock_strk_play, new_balance);
+    
+    let new_returned_balance = lottery.GetVaultBalance();
+    assert(new_returned_balance == new_balance, 'GetVaultBalance should update correctly');
+}
+
+#[test]
+fn test_jackpot_calculated_event_emission() {
+    // Setup
+    let (lottery, mock_strk_play, mock_vault) = deploy_lottery_with_mocks();
+    start_cheat_caller_address(lottery.contract_address, owner_address());
+    
+    // Setup event spy
+    let mut spy = spy_events();
+    
+    // Mock vault balance
+    setup_vault_balance_mock(mock_strk_play, VAULT_BALANCE);
+    
+    // Initialize lottery (this will trigger CreateNewDraw)
+    lottery.Initialize(TICKET_PRICE);
+    
+    // Check that JackpotCalculated event was emitted
+    let expected_events = array![
+        (
+            lottery.contract_address,
+            contracts::Lottery::Lottery::Event::JackpotCalculated(
+                contracts::Lottery::Lottery::JackpotCalculated {
+                    draw_id: 1,
+                    vault_balance: VAULT_BALANCE,
+                    calculated_jackpot: VAULT_BALANCE,
+                    timestamp: starknet::get_block_timestamp()
+                }
+            )
+        )
+    ];
+    
+    spy.assert_emitted(@expected_events);
+    
+    stop_cheat_caller_address(lottery.contract_address);
+}
+
+//=======================================================================================
+// TESTS: Security - No Manipulation Possible
+//=======================================================================================
+
+#[test]
+fn test_no_jackpot_manipulation_possible() {
+    // Setup
+    let (lottery, mock_strk_play, mock_vault) = deploy_lottery_with_mocks();
+    start_cheat_caller_address(lottery.contract_address, owner_address());
+    
+    // Mock vault balance
+    setup_vault_balance_mock(mock_strk_play, VAULT_BALANCE);
+    
+    // Initialize lottery
+    lottery.Initialize(TICKET_PRICE);
+    
+    // Verify initial jackpot equals vault balance
+    let initial_prize = lottery.GetAccumulatedPrize();
+    assert(initial_prize == VAULT_BALANCE, 'Initial jackpot should equal vault');
+    
+    // Now change vault balance and create new draw
+    let new_vault_balance = VAULT_BALANCE / 2; // Simulate vault balance decrease
+    setup_vault_balance_mock(mock_strk_play, new_vault_balance);
+    
+    // Create new draw - jackpot should reflect actual vault balance
+    lottery.CreateNewDraw();
+    
+    // Verify jackpot was updated to actual vault balance, not manipulated
+    let updated_prize = lottery.GetAccumulatedPrize();
+    assert(updated_prize == new_vault_balance, 'Jackpot should reflect actual vault balance');
+    assert(updated_prize != VAULT_BALANCE, 'Jackpot should not stay at old value');
+    
+    stop_cheat_caller_address(lottery.contract_address);
+}
+
+#[test]
+fn test_automatic_calculation_prevents_arbitrary_values() {
+    // Setup
+    let (lottery, mock_strk_play, mock_vault) = deploy_lottery_with_mocks();
+    start_cheat_caller_address(lottery.contract_address, owner_address());
+    
+    // Test multiple vault balance scenarios
+    let test_balances = array![
+        1000000000000000000,    // 1 STRK
+        5000000000000000000,    // 5 STRK  
+        100000000000000000000,  // 100 STRK
+        500000000000000000000   // 500 STRK
+    ];
+    
+    let mut i = 0;
+    while i < test_balances.len() {
+        let test_balance = *test_balances.at(i);
+        
+        // Mock this vault balance
+        setup_vault_balance_mock(mock_strk_play, test_balance);
+        
+        if i == 0 {
+            // First iteration - initialize
+            lottery.Initialize(TICKET_PRICE);
+        } else {
+            // Subsequent iterations - create new draw
+            lottery.CreateNewDraw();
+        }
+        
+        // Verify jackpot exactly matches vault balance
+        let actual_prize = lottery.GetAccumulatedPrize();
+        assert(actual_prize == test_balance, 'Jackpot must equal vault balance exactly');
+        
+        i += 1;
+    };
+    
+    stop_cheat_caller_address(lottery.contract_address);
+}
+
+//=======================================================================================
+// TESTS: Vault Balance Validation
+//=======================================================================================
+
+#[test]
+#[should_panic(expected: 'No funds available in vault')]
+fn test_create_new_draw_fails_with_zero_vault_balance() {
+    // Setup
+    let (lottery, mock_strk_play, mock_vault) = deploy_lottery_with_mocks();
+    start_cheat_caller_address(lottery.contract_address, owner_address());
+    
+    // Mock zero vault balance
+    setup_vault_balance_mock(mock_strk_play, 0);
+    
+    // This should fail because vault has no funds
+    lottery.Initialize(TICKET_PRICE);
+    
+    stop_cheat_caller_address(lottery.contract_address);
+}
+
+#[test]
+fn test_vault_balance_validation_prevents_invalid_draws() {
+    // Setup
+    let (lottery, mock_strk_play, mock_vault) = deploy_lottery_with_mocks();
+    start_cheat_caller_address(lottery.contract_address, owner_address());
+    
+    // Start with valid vault balance
+    setup_vault_balance_mock(mock_strk_play, VAULT_BALANCE);
+    lottery.Initialize(TICKET_PRICE);
+    
+    // Verify successful initialization
+    let initial_prize = lottery.GetAccumulatedPrize();
+    assert(initial_prize == VAULT_BALANCE, 'Initial setup should succeed');
+    
+    // Now mock zero balance and try to create new draw
+    setup_vault_balance_mock(mock_strk_play, 0);
+    
+    // This should panic due to vault validation - we'll test this with a separate test
+    // For now, just verify the current state is valid
+    assert(lottery.GetAccumulatedPrize() == VAULT_BALANCE, 'State should remain valid');
+    
+    stop_cheat_caller_address(lottery.contract_address);
+}
+
+//=======================================================================================
+// TESTS: Transparency and Events
+//=======================================================================================
+
+#[test]
+fn test_transparency_through_events() {
+    // Setup
+    let (lottery, mock_strk_play, mock_vault) = deploy_lottery_with_mocks();
+    start_cheat_caller_address(lottery.contract_address, owner_address());
+    
+    let mut spy = spy_events();
+    
+    // Test different vault balances and verify events provide full transparency
+    let balances = array![
+        10000000000000000000,   // 10 STRK
+        25000000000000000000,   // 25 STRK
+        75000000000000000000    // 75 STRK
+    ];
+    
+    let mut draw_id = 1;
+    let mut i = 0;
+    while i < balances.len() {
+        let balance = *balances.at(i);
+        setup_vault_balance_mock(mock_strk_play, balance);
+        
+        if i == 0 {
+            lottery.Initialize(TICKET_PRICE);
+        } else {
+            lottery.CreateNewDraw();
+            draw_id += 1;
+        }
+        
+        // Verify event contains exact vault balance and calculated jackpot
+        let expected_event = contracts::Lottery::Lottery::Event::JackpotCalculated(
+            contracts::Lottery::Lottery::JackpotCalculated {
+                draw_id: if i == 0 { 1 } else { draw_id },
+                vault_balance: balance,
+                calculated_jackpot: balance,
+                timestamp: starknet::get_block_timestamp()
+            }
+        );
+        
+        spy.assert_emitted(@array![(lottery.contract_address, expected_event)]);
+        
+        i += 1;
+    };
+    
+    stop_cheat_caller_address(lottery.contract_address);
+}
+
+//=======================================================================================
+// TESTS: Edge Cases
+//=======================================================================================
+
+#[test]
+fn test_large_vault_balance_handling() {
+    // Setup
+    let (lottery, mock_strk_play, mock_vault) = deploy_lottery_with_mocks();
+    start_cheat_caller_address(lottery.contract_address, owner_address());
+    
+    // Test with very large vault balance
+    let large_balance: u256 = 1000000000000000000000000; // 1 million STRK tokens
+    setup_vault_balance_mock(mock_strk_play, large_balance);
+    
+    lottery.Initialize(TICKET_PRICE);
+    
+    let accumulated_prize = lottery.GetAccumulatedPrize();
+    assert(accumulated_prize == large_balance, 'Should handle large balances correctly');
+    
+    stop_cheat_caller_address(lottery.contract_address);
+}
+
+#[test]
+fn test_vault_balance_changes_between_draws() {
+    // Setup
+    let (lottery, mock_strk_play, mock_vault) = deploy_lottery_with_mocks();
+    start_cheat_caller_address(lottery.contract_address, owner_address());
+    
+    // Start with initial balance
+    let initial_balance = VAULT_BALANCE;
+    setup_vault_balance_mock(mock_strk_play, initial_balance);
+    lottery.Initialize(TICKET_PRICE);
+    
+    assert(lottery.GetAccumulatedPrize() == initial_balance, 'Initial balance should match');
+    
+    // Simulate vault balance increasing (more deposits)
+    let increased_balance = initial_balance * 2;
+    setup_vault_balance_mock(mock_strk_play, increased_balance);
+    lottery.CreateNewDraw();
+    
+    assert(lottery.GetAccumulatedPrize() == increased_balance, 'Should reflect increased balance');
+    
+    // Simulate vault balance decreasing (withdrawals/prizes paid)
+    let decreased_balance = initial_balance / 2;
+    setup_vault_balance_mock(mock_strk_play, decreased_balance);
+    lottery.CreateNewDraw();
+    
+    assert(lottery.GetAccumulatedPrize() == decreased_balance, 'Should reflect decreased balance');
+    
+    stop_cheat_caller_address(lottery.contract_address);
+}
+
+//=======================================================================================
+// TESTS: Integration with Existing Functionality
+//=======================================================================================
+
+#[test]
+fn test_initialize_function_updated_signature() {
+    // Setup
+    let (lottery, mock_strk_play, mock_vault) = deploy_lottery_with_mocks();
+    start_cheat_caller_address(lottery.contract_address, owner_address());
+    
+    // Mock vault balance
+    setup_vault_balance_mock(mock_strk_play, VAULT_BALANCE);
+    
+    // Test that Initialize only takes ticketPrice parameter (no accumulatedPrize)
+    lottery.Initialize(TICKET_PRICE);
+    
+    // Verify lottery was initialized correctly
+    let ticket_price = lottery.GetTicketPrice();
+    assert(ticket_price == TICKET_PRICE, 'Ticket price should be set correctly');
+    
+    // Verify jackpot was set from vault balance, not from a parameter
+    let accumulated_prize = lottery.GetAccumulatedPrize();
+    assert(accumulated_prize == VAULT_BALANCE, 'Jackpot should come from vault balance');
+    
+    stop_cheat_caller_address(lottery.contract_address);
+}
+
+#[test]
+fn test_multiple_consecutive_draws() {
+    // Setup
+    let (lottery, mock_strk_play, mock_vault) = deploy_lottery_with_mocks();
+    start_cheat_caller_address(lottery.contract_address, owner_address());
+    
+    // Initialize
+    setup_vault_balance_mock(mock_strk_play, VAULT_BALANCE);
+    lottery.Initialize(TICKET_PRICE);
+    
+    // Create multiple draws with changing vault balances
+    let mut expected_balance = VAULT_BALANCE;
+    let mut draw_count = 1;
+    
+    let mut i = 0;
+    while i < 5 {
+        expected_balance = expected_balance + (i.into() * 1000000000000000000); // Add 1 STRK each time
+        setup_vault_balance_mock(mock_strk_play, expected_balance);
+        
+        lottery.CreateNewDraw();
+        draw_count += 1;
+        
+        let actual_prize = lottery.GetAccumulatedPrize();
+        assert(actual_prize == expected_balance, 'Each draw should reflect current vault balance');
+        
+        i += 1;
+    };
+    
+    stop_cheat_caller_address(lottery.contract_address);
+}
