@@ -2145,22 +2145,22 @@ const deployedContracts = {
           type: "interface",
           name: "contracts::Lottery::ILottery",
           items: [
+                    {
+          type: "function",
+          name: "Initialize",
+          inputs: [
             {
-              type: "function",
-              name: "Initialize",
-              inputs: [
-                {
-                  name: "ticketPrice",
-                  type: "core::integer::u256",
-                },
-                {
-                  name: "accumulatedPrize",
-                  type: "core::integer::u256",
-                },
-              ],
-              outputs: [],
-              state_mutability: "external",
+              name: "ticketPrice",
+              type: "core::integer::u256",
             },
+            {
+              name: "accumulatedPrize",
+              type: "core::integer::u256",
+            },
+          ],
+          outputs: [],
+          state_mutability: "external",
+        },
             {
               type: "function",
               name: "BuyTicket",
@@ -2248,12 +2248,7 @@ const deployedContracts = {
             {
               type: "function",
               name: "CreateNewDraw",
-              inputs: [
-                {
-                  name: "accumulatedPrize",
-                  type: "core::integer::u256",
-                },
-              ],
+              inputs: [],
               outputs: [],
               state_mutability: "external",
             },
@@ -2283,6 +2278,17 @@ const deployedContracts = {
             {
               type: "function",
               name: "GetAccumulatedPrize",
+              inputs: [],
+              outputs: [
+                {
+                  type: "core::integer::u256",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "GetVaultBalance",
               inputs: [],
               outputs: [
                 {
@@ -2912,6 +2918,33 @@ const deployedContracts = {
         },
         {
           type: "event",
+          name: "contracts::Lottery::Lottery::JackpotCalculated",
+          kind: "struct",
+          members: [
+            {
+              name: "draw_id",
+              type: "core::integer::u64",
+              kind: "key",
+            },
+            {
+              name: "vault_balance",
+              type: "core::integer::u256",
+              kind: "key",
+            },
+            {
+              name: "calculated_jackpot",
+              type: "core::integer::u256",
+              kind: "key",
+            },
+            {
+              name: "timestamp",
+              type: "core::integer::u64",
+              kind: "key",
+            },
+          ],
+        },
+        {
+          type: "event",
           name: "contracts::Lottery::Lottery::Event",
           kind: "enum",
           variants: [
@@ -2943,6 +2976,11 @@ const deployedContracts = {
             {
               name: "JackpotIncreased",
               type: "contracts::Lottery::Lottery::JackpotIncreased",
+              kind: "nested",
+            },
+            {
+              name: "JackpotCalculated",
+              type: "contracts::Lottery::Lottery::JackpotCalculated",
               kind: "nested",
             },
           ],
