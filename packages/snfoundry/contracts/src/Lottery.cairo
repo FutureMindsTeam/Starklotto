@@ -66,13 +66,14 @@ pub trait ILottery<TContractState> {
         number4: u16,
         number5: u16,
     ) -> u8;
-    fn CreateNewDraw(ref self: TContractState, accumulatedPrize: u256);
+    fn CreateNewDraw(ref self: TContractState);
     fn SetTicketPrice(ref self: TContractState, price: u256);
     
     //=======================================================================================
     //get functions
     fn GetTicketPrice(self: @TContractState) -> u256;
     fn GetAccumulatedPrize(self: @TContractState) -> u256;
+    fn GetVaultBalance(self: @TContractState) -> u256;
     fn GetFixedPrize(self: @TContractState, matches: u8) -> u256;
     fn GetDrawStatus(self: @TContractState, drawId: u64) -> bool;
     fn GetUserTicketIds(
@@ -170,6 +171,7 @@ pub mod Lottery {
         JackpotIncreased: JackpotIncreased,
         InvalidDrawIdAttempted: InvalidDrawIdAttempted,
         DrawValidationFailed: DrawValidationFailed,
+        JackpotCalculated: JackpotCalculated,
     }
 
     #[derive(Drop, starknet::Event)]
@@ -244,6 +246,18 @@ pub mod Lottery {
         caller: ContractAddress,
     }
 
+    #[derive(Drop, starknet::Event)]
+    struct JackpotCalculated {
+        #[key]
+        draw_id: u64,
+        #[key]
+        vault_balance: u256,
+        #[key]
+        calculated_jackpot: u256,
+        #[key]
+        timestamp: u64,
+    }
+
     //=======================================================================================
     //storage
     //=======================================================================================
@@ -313,8 +327,10 @@ pub mod Lottery {
         fn Initialize(ref self: ContractState, ticketPrice: u256, accumulatedPrize: u256) {
             self.ownable.assert_only_owner();
             self.ticketPrice.write(ticketPrice);
+            // Set initial accumulated prize for backward compatibility
             self.accumulatedPrize.write(accumulatedPrize);
-            self.CreateNewDraw(accumulatedPrize);
+            // Create first draw automatically (for backward compatibility)
+            self.CreateNewDraw();
         }
 
         //=======================================================================================
@@ -577,15 +593,27 @@ pub mod Lottery {
 
         //=======================================================================================
         //OK
-        fn CreateNewDraw(ref self: ContractState, accumulatedPrize: u256) {
-            // Validate that the accumulated prize is not negative
-            assert(accumulatedPrize >= 0, 'Invalid accumulated prize');
+        fn CreateNewDraw(ref self: ContractState) {
+            // ✅ Automatically calculate jackpot from vault
+            let vault_address = self.strkPlayVaultContractAddress.read();
+            let token_dispatcher = IERC20Dispatcher { 
+                contract_address: self.strkPlayContractAddress.read() 
+            };
+            
+            let vault_balance = token_dispatcher.balance_of(vault_address);
+            let accumulated_prize = vault_balance;
+            
+            // ✅ Allow zero vault balance for first draw (bootstrap case)
 
             let drawId = self.currentDrawId.read() + 1;
             let previousAmount = self.accumulatedPrize.read();
+            
+            // ✅ Update accumulated prize
+            self.accumulatedPrize.write(accumulated_prize);
+            
             let newDraw = Draw {
                 drawId,
-                accumulatedPrize: accumulatedPrize,
+                accumulatedPrize: accumulated_prize,
                 winningNumber1: 0,
                 winningNumber2: 0,
                 winningNumber3: 0,
@@ -599,12 +627,13 @@ pub mod Lottery {
             self.draws.entry(drawId).write(newDraw);
             self.currentDrawId.write(drawId);
 
+            // ✅ Emit event with automatically calculated jackpot
             self
                 .emit(
-                    JackpotIncreased {
-                        drawId,
-                        previousAmount,
-                        newAmount: accumulatedPrize,
+                    JackpotCalculated {
+                        draw_id: drawId,
+                        vault_balance: vault_balance,
+                        calculated_jackpot: accumulated_prize,
                         timestamp: get_block_timestamp(),
                     },
                 );
@@ -818,6 +847,15 @@ pub mod Lottery {
 
         fn GetStarkPlayVaultContractAddress(self: @ContractState) -> ContractAddress {
             self.strkPlayVaultContractAddress.read()
+        }
+
+        fn GetVaultBalance(self: @ContractState) -> u256 {
+            let vault_address = self.strkPlayVaultContractAddress.read();
+            let token_dispatcher = IERC20Dispatcher { 
+                contract_address: self.strkPlayContractAddress.read() 
+            };
+            
+            token_dispatcher.balance_of(vault_address)
         }
     }
 
