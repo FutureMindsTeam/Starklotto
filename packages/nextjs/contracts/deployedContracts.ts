@@ -2291,12 +2291,7 @@ const deployedContracts = {
             {
               type: "function",
               name: "CreateNewDraw",
-              inputs: [
-                {
-                  name: "accumulatedPrize",
-                  type: "core::integer::u256",
-                },
-              ],
+              inputs: [],
               outputs: [],
               state_mutability: "external",
             },
@@ -2326,6 +2321,17 @@ const deployedContracts = {
             {
               type: "function",
               name: "GetAccumulatedPrize",
+              inputs: [],
+              outputs: [
+                {
+                  type: "core::integer::u256",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "GetVaultBalance",
               inputs: [],
               outputs: [
                 {
@@ -2987,6 +2993,33 @@ const deployedContracts = {
         },
         {
           type: "event",
+          name: "contracts::Lottery::Lottery::JackpotCalculated",
+          kind: "struct",
+          members: [
+            {
+              name: "draw_id",
+              type: "core::integer::u64",
+              kind: "key",
+            },
+            {
+              name: "vault_balance",
+              type: "core::integer::u256",
+              kind: "key",
+            },
+            {
+              name: "calculated_jackpot",
+              type: "core::integer::u256",
+              kind: "key",
+            },
+            {
+              name: "timestamp",
+              type: "core::integer::u64",
+              kind: "key",
+            },
+          ],
+        },
+        {
+          type: "event",
           name: "contracts::Lottery::Lottery::InvalidDrawIdAttempted",
           kind: "struct",
           members: [
@@ -3082,6 +3115,11 @@ const deployedContracts = {
             {
               name: "DrawValidationFailed",
               type: "contracts::Lottery::Lottery::DrawValidationFailed",
+              kind: "nested",
+            },
+            {
+              name: "JackpotCalculated",
+              type: "contracts::Lottery::Lottery::JackpotCalculated",
               kind: "nested",
             },
           ],
