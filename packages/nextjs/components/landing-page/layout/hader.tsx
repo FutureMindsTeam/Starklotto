@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, ChevronRight } from "lucide-react";
-import { Button } from "../../ui/button";   
+import { Button } from "../../ui/button";
 import { useRouter } from "next/navigation";
 
 const navLinks = [
@@ -52,8 +52,16 @@ export default function Header() {
             onClick={() => goTo("#hero")}
             className="absolute left-6 flex items-center space-x-2"
           >
-            <img src="/Logo-sin-texto.png" alt="Icono StarkLotto" className="h-14 w-auto lg:h-16" />
-            <img src="/Logo_Sin_Texto_Transparente.png" alt="StarkLotto Logo" className="h-14 w-auto lg:h-16" />
+            <img
+              src="/Logo-sin-texto.png"
+              alt="Icono StarkLotto"
+              className="h-14 w-auto lg:h-16"
+            />
+            <img
+              src="/Logo_Sin_Texto_Transparente.png"
+              alt="StarkLotto Logo"
+              className="h-14 w-auto lg:h-16"
+            />
           </button>
 
           {/* Desktop Nav */}
@@ -84,7 +92,11 @@ export default function Header() {
             onClick={() => setOpen(!open)}
             className="absolute right-6 p-2 rounded-md hover:bg-white/10 transition lg:hidden"
           >
-            {open ? <X className="h-6 w-6 text-white" /> : <Menu className="h-6 w-6 text-white" />}
+            {open ? (
+              <X className="h-6 w-6 text-white" />
+            ) : (
+              <Menu className="h-6 w-6 text-white" />
+            )}
           </button>
         </div>
       </header>
