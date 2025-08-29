@@ -73,8 +73,7 @@ fn deploy_contract_lottery() -> ContractAddress {
     // Deploy Lottery with the mock contracts
     let lottery_contract = declare("Lottery").unwrap().contract_class();
     let lottery_constructor_calldata = array![
-        owner_address().into(),
-        starkplay_token.contract_address.into(),
+        owner_address().into(), starkplay_token.contract_address.into(),
         vault.contract_address.into(),
     ];
     let (lottery_address, _) = lottery_contract.deploy(@lottery_constructor_calldata).unwrap();

@@ -115,8 +115,7 @@ fn test_multiple_cumulative_purchases() {
     let token_disp = IERC20Dispatcher { contract_address: erc20_addr };
     let mut total = 0_u256;
     let amounts = array![
-        100_000_000_000_000_000_000_u256,
-        200_000_000_000_000_000_000_u256,
+        100_000_000_000_000_000_000_u256, 200_000_000_000_000_000_000_u256,
         50_000_000_000_000_000_000_u256,
     ];
     let mut i = 0;

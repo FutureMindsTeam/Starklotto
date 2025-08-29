@@ -553,21 +553,21 @@ pub mod Lottery {
         fn CreateNewDraw(ref self: ContractState) {
             // ✅ Automatically calculate jackpot from vault
             let vault_address = self.strkPlayVaultContractAddress.read();
-            let token_dispatcher = IERC20Dispatcher { 
-                contract_address: self.strkPlayContractAddress.read() 
+            let token_dispatcher = IERC20Dispatcher {
+                contract_address: self.strkPlayContractAddress.read(),
             };
-            
+
             let vault_balance = token_dispatcher.balance_of(vault_address);
             let accumulated_prize = vault_balance;
-            
+
             // ✅ Allow zero vault balance for first draw (bootstrap case)
 
             let drawId = self.currentDrawId.read() + 1;
             let previousAmount = self.accumulatedPrize.read();
-            
+
             // ✅ Update accumulated prize
             self.accumulatedPrize.write(accumulated_prize);
-            
+
             let newDraw = Draw {
                 drawId,
                 accumulatedPrize: accumulated_prize,
@@ -802,10 +802,10 @@ pub mod Lottery {
 
         fn GetVaultBalance(self: @ContractState) -> u256 {
             let vault_address = self.strkPlayVaultContractAddress.read();
-            let token_dispatcher = IERC20Dispatcher { 
-                contract_address: self.strkPlayContractAddress.read() 
+            let token_dispatcher = IERC20Dispatcher {
+                contract_address: self.strkPlayContractAddress.read(),
             };
-            
+
             token_dispatcher.balance_of(vault_address)
         }
     }

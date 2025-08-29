@@ -2145,22 +2145,22 @@ const deployedContracts = {
           type: "interface",
           name: "contracts::Lottery::ILottery",
           items: [
-                    {
-          type: "function",
-          name: "Initialize",
-          inputs: [
             {
-              name: "ticketPrice",
-              type: "core::integer::u256",
+              type: "function",
+              name: "Initialize",
+              inputs: [
+                {
+                  name: "ticketPrice",
+                  type: "core::integer::u256",
+                },
+                {
+                  name: "accumulatedPrize",
+                  type: "core::integer::u256",
+                },
+              ],
+              outputs: [],
+              state_mutability: "external",
             },
-            {
-              name: "accumulatedPrize",
-              type: "core::integer::u256",
-            },
-          ],
-          outputs: [],
-          state_mutability: "external",
-        },
             {
               type: "function",
               name: "BuyTicket",
