@@ -1,7 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ChevronRight } from "lucide-react";
+import { Button } from "../../ui/button";
+import { useRouter } from "next/navigation";
 
 const navLinks = [
   { href: "#hero", label: "Home" },
@@ -16,6 +18,7 @@ const navLinks = [
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const navigation = useRouter();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -29,6 +32,11 @@ export default function Header() {
     document.querySelector(hash)?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const goToDapp = () => {
+    setOpen(false);
+    navigation.push("/dapp");
+  };
+
   return (
     <>
       <header
@@ -39,6 +47,7 @@ export default function Header() {
         `}
       >
         <div className="container mx-auto relative flex h-20 items-center justify-center px-6 lg:px-8">
+          {/* Logo */}
           <button
             onClick={() => goTo("#hero")}
             className="absolute left-6 flex items-center space-x-2"
@@ -48,7 +57,6 @@ export default function Header() {
               alt="Icono StarkLotto"
               className="h-14 w-auto lg:h-16"
             />
-
             <img
               src="/Logo_Sin_Texto_Transparente.png"
               alt="StarkLotto Logo"
@@ -56,7 +64,8 @@ export default function Header() {
             />
           </button>
 
-          <nav className="hidden lg:flex lg:space-x-10">
+          {/* Desktop Nav */}
+          <nav className="hidden lg:flex lg:items-center lg:space-x-10">
             {navLinks.map(({ href, label }) => (
               <button
                 key={href}
@@ -64,16 +73,18 @@ export default function Header() {
                 className="relative px-2 py-1 text-sm font-medium text-white hover:text-starkYellow transition-colors duration-200"
               >
                 {label}
-                <span
-                  className="
-                    absolute left-0 bottom-0 h-0.5 w-full
-                    bg-starkYellow scale-x-0 origin-left
-                    transition-transform duration-300
-                    hover:scale-x-100
-                  "
-                />
+                <span className="absolute left-0 bottom-0 h-0.5 w-full bg-starkYellow scale-x-0 origin-left transition-transform duration-300 hover:scale-x-100" />
               </button>
             ))}
+
+            {/* Play Now Button - Desktop */}
+            <Button
+              size="lg"
+              className="px-6 py-3 text-base bg-starkYellow hover:bg-starkYellow-light text-black"
+              onClick={goToDapp}
+            >
+              Play now <ChevronRight className="ml-2 h-5 w-5 shrink-0" />
+            </Button>
           </nav>
 
           {/* Mobile Toggle */}
@@ -111,6 +122,17 @@ export default function Header() {
                   </button>
                 </li>
               ))}
+
+              {/* Play Now Button - Mobile */}
+              <li>
+                <Button
+                  size="lg"
+                  className="w-full px-8 py-6 text-lg bg-starkYellow hover:bg-starkYellow-light text-black flex justify-center"
+                  onClick={goToDapp}
+                >
+                  Play now <ChevronRight className="ml-2 h-5 w-5 shrink-0" />
+                </Button>
+              </li>
             </ul>
           </motion.nav>
         )}
