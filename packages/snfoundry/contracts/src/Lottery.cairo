@@ -69,6 +69,7 @@ pub trait ILottery<TContractState> {
     fn CreateNewDraw(ref self: TContractState, accumulatedPrize: u256);
     fn SetTicketPrice(ref self: TContractState, price: u256);
     fn GetTicketPrice(self: @TContractState) -> u256;
+    fn EmergencyResetReentrancyGuard(ref self: TContractState);
     //=======================================================================================
     //get functions
     fn GetAccumulatedPrize(self: @TContractState) -> u256;
@@ -167,6 +168,7 @@ pub mod Lottery {
         JackpotIncreased: JackpotIncreased,
         #[flat]
         ReentrancyGuardEvent: ReentrancyGuardComponent::Event,
+        ReentrancyGuardReset: ReentrancyGuardReset,
     }
 
     #[derive(Drop, starknet::Event)]
@@ -213,6 +215,11 @@ pub mod Lottery {
         previousAmount: u256,
         newAmount: u256,
         timestamp: u64,
+    }
+
+    #[derive(Drop, starknet::Event)]
+    struct ReentrancyGuardReset {
+        caller: ContractAddress,
     }
 
     //=======================================================================================
@@ -411,6 +418,13 @@ pub mod Lottery {
 
             // Release reentrancy guard
             self.reentrancy_guard.end();
+        }
+
+        fn EmergencyResetReentrancyGuard (ref self: ContractState) {
+            self.ownable.assert_only_owner();
+            self.reentrancy_guard.end();
+
+            self.emit(ReentrancyGuardReset { caller: get_caller_address() });
         }
         //=======================================================================================
         fn GetUserTicketsCount(self: @ContractState, drawId: u64, player: ContractAddress) -> u32 {
