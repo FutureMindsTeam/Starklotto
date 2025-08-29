@@ -1,10 +1,11 @@
-use contracts::Lottery::{ILotteryDispatcher, ILotteryDispatcherTrait};
+use contracts::Lottery::{Lottery, ILotteryDispatcher, ILotteryDispatcherTrait};
 use contracts::StarkPlayERC20::{IMintableDispatcher, IMintableDispatcherTrait};
 use openzeppelin_token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
 use openzeppelin_utils::serde::SerializedAppend;
 use snforge_std::{
     ContractClassTrait, DeclareResultTrait, declare, start_cheat_caller_address,
-    stop_cheat_caller_address, spy_events, EventSpyTrait,
+    stop_cheat_caller_address, start_cheat_block_timestamp, stop_cheat_block_timestamp,
+    spy_events, EventSpyTrait, EventSpyAssertionsTrait,
 };
 use starknet::ContractAddress;
 
@@ -586,4 +587,201 @@ fn test_data_integrity_across_operations() {
     let ticket_ids_after_draw = lottery_dispatcher.GetUserTicketIds(1, user1_address());
     assert(ticket_ids_after_draw.len() == 1, 'Should have 1 ticket ID');
     assert(*ticket_ids_after_draw.at(0) == ticket_id, 'Ticket ID same');
+}
+
+#[test]
+fn test_ticket_purchase_token_transfer() {
+    // --- 1. SETUP ---
+    // Initialize the test environment and contracts.
+    let (token_address, vault_address, lottery_address) = setup_test_environment();
+    let erc20_dispatcher = IERC20Dispatcher { contract_address: token_address };
+    let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_address };
+
+    // Define constants for the test to improve readability and maintainability.
+    let TICKET_PRICE = lottery_dispatcher.GetTicketPrice();
+    let INITIAL_ALLOWANCE = INITIAL_USER_BALANCE;
+    let POST_PURCHASE_BALANCE = INITIAL_USER_BALANCE - TICKET_PRICE;
+    let POST_PURCHASE_ALLOWANCE = INITIAL_ALLOWANCE - TICKET_PRICE;
+
+    // --- 2. PRE-STATE ASSERTIONS ---
+    // Assert the state before the ticket purchase.
+    assert(erc20_dispatcher.balance_of(user1_address()) == INITIAL_USER_BALANCE, 'pre-buy balance mismatch');
+    assert(erc20_dispatcher.balance_of(vault_address) == 0_u256, 'balance pre-buy not zero');
+    assert(erc20_dispatcher.allowance(user1_address(), lottery_address) == INITIAL_ALLOWANCE, 'Allowance pre-buy mismatch');
+
+    // --- 3. ACTION ---
+    start_cheat_caller_address(lottery_address, user1_address());
+    lottery_dispatcher.BuyTicket(1, create_valid_numbers(), 1);
+    stop_cheat_caller_address(lottery_address);
+
+    // --- 4. POST-STATE ASSERTIONS ---
+    // Verify the state after the ticket purchase.
+    assert(erc20_dispatcher.balance_of(user1_address()) == POST_PURCHASE_BALANCE, 'post-buy balance mismatch');
+    assert(erc20_dispatcher.balance_of(vault_address) == TICKET_PRICE, 'post-buy balance mismatch');
+    assert(erc20_dispatcher.allowance(user1_address(), lottery_address) == POST_PURCHASE_ALLOWANCE, 'Allowance post-buy mismatch');
+}
+
+#[should_panic(expected: 'Insufficient balance')]
+#[test]
+fn test_buy_token_insufficient_user_balance() {
+    // --- 1. SETUP ---
+    // Initialize the test environment and contracts.
+    let (token_address, vault_address, lottery_address) = setup_test_environment();
+    let erc20_dispatcher = IERC20Dispatcher { contract_address: token_address };
+    let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_address };
+
+    // Define constants for the test.
+    let TICKET_PRICE = lottery_dispatcher.GetTicketPrice();
+    let POST_PURCHASE_BALANCE = INITIAL_USER_BALANCE - TICKET_PRICE;
+
+    // --- 2. PRE-STATE ASSERTIONS ---
+    // Assert the initial user and vault balances are as expected.
+    assert(erc20_dispatcher.balance_of(user1_address()) == INITIAL_USER_BALANCE, 'pre-buy balance mismatch');
+    assert(erc20_dispatcher.balance_of(vault_address) == 0_u256, 'balance pre-buy not zero');
+
+    // --- 3. ACTION: Successful Purchase ---
+    // Simulate a successful ticket purchase and check the post-state.
+    start_cheat_caller_address(lottery_address, user1_address());
+    lottery_dispatcher.BuyTicket(1, create_valid_numbers(), 1);
+    stop_cheat_caller_address(lottery_address);
+
+    // --- 4. POST-STATE ASSERTIONS: Successful Purchase ---
+    // Verify user and vault balances were updated correctly.
+    assert(erc20_dispatcher.balance_of(user1_address()) == POST_PURCHASE_BALANCE, 'post-buy balance mismatch');
+    assert(erc20_dispatcher.balance_of(vault_address) == TICKET_PRICE, 'post-buy balance mismatch');
+
+    // --- 5. ACTION: Insufficient Balance (Expected to Fail) ---
+    // Set a new, lower user balance to simulate an insufficient funds scenario.
+    start_cheat_caller_address(token_address, user1_address());
+    erc20_dispatcher.transfer(user2_address(), (erc20_dispatcher.balance_of(user1_address()) - 1_u256));
+    stop_cheat_caller_address(token_address);
+    
+    // Attempt to buy another ticket; this should revert.
+    start_cheat_caller_address(lottery_address, user1_address());
+    lottery_dispatcher.BuyTicket(1, create_valid_numbers(), 1);
+}
+
+#[test]
+fn test_vault_balance_accumulated_prize() {
+    // --- 1. SETUP ---
+    // Initialize the test environment and contracts.
+    let (token_address, vault_address, lottery_address) = setup_test_environment();
+    let erc20_dispatcher = IERC20Dispatcher { contract_address: token_address };
+    let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_address };
+    let user_address = user1_address();
+
+    // Define constants for the test.
+    let INITIAL_VAULT_BALANCE = 0_u256;
+    let SINGLE_TICKET_VAULT_BALANCE = TICKET_PRICE;
+    let TWO_TICKET_VAULT_BALANCE = TICKET_PRICE * 2_u256;
+
+    // --- 2. PRE-STATE ASSERTIONS ---
+    // Assert the initial vault balance is as expected (zero).
+    assert(erc20_dispatcher.balance_of(vault_address) == INITIAL_VAULT_BALANCE, 'vault balance not zero');
+
+    // --- 3. ACTION: First Ticket Purchase ---
+    // Simulate a successful ticket purchase and check the post-state.
+    start_cheat_caller_address(lottery_address, user_address);
+    lottery_dispatcher.BuyTicket(1, create_valid_numbers(), 1);
+    stop_cheat_caller_address(lottery_address);
+
+    // --- 4. POST-STATE ASSERTIONS: First Purchase ---
+    // Verify the vault received exactly the ticket price.
+    assert(erc20_dispatcher.balance_of(vault_address) == SINGLE_TICKET_VAULT_BALANCE, 'Vault balance after one');
+
+    // --- 5. ACTION: Second Ticket Purchase (to test accumulation) ---
+    // Simulate another ticket purchase from the same user.
+    start_cheat_caller_address(lottery_address, user_address);
+    lottery_dispatcher.BuyTicket(1, create_valid_numbers(), 1);
+    stop_cheat_caller_address(lottery_address);
+
+    // --- 6. POST-STATE ASSERTIONS: Second Purchase ---
+    // Verify the vault's balance has correctly accumulated the second ticket's price.
+    assert(erc20_dispatcher.balance_of(vault_address) == TWO_TICKET_VAULT_BALANCE, 'Vault balance did not');
+}
+
+#[should_panic(expected: 'Insufficient allowance')]
+#[test]
+fn test_buy_ticket_insufficient_lottery_allowance() {
+    // --- 1. SETUP ---
+    // Initialize the test environment and contracts.
+    let (token_address, _, lottery_address) = setup_test_environment();
+    let erc20_dispatcher = IERC20Dispatcher { contract_address: token_address };
+    let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_address };
+    let user_address = user1_address();
+
+    // Define constants for the test.
+    let POST_PURCHASE_ALLOWANCE = INITIAL_USER_BALANCE - TICKET_PRICE;
+
+    // --- 2. PRE-STATE ASSERTIONS ---
+    // Assert the initial allowance is as expected.
+    assert(erc20_dispatcher.allowance(user_address, lottery_address) == INITIAL_USER_BALANCE, 'pre allowance mismatch');
+
+    // --- 3. ACTION: First Ticket Purchase ---
+    // Simulate a successful ticket purchase.
+    start_cheat_caller_address(lottery_address, user_address);
+    lottery_dispatcher.BuyTicket(1, create_valid_numbers(), 1);
+    stop_cheat_caller_address(lottery_address);
+
+    // --- 4. POST-STATE ASSERTIONS: First Purchase ---
+    // Verify the allowance was reduced by exactly one ticket price.
+    assert(erc20_dispatcher.allowance(user_address, lottery_address) == POST_PURCHASE_ALLOWANCE, 'Allowance not reduced correctly');
+
+    // --- 5. ACTION: Insufficient Allowance (Expected to Fail) ---
+    // Set a new, lower allowance to simulate an insufficient allowance scenario.
+    start_cheat_caller_address(token_address, user_address);
+    erc20_dispatcher.approve(lottery_address, TICKET_PRICE / 2_u256);
+    stop_cheat_caller_address(token_address);
+
+    // --- 6. ACTION: Attempt to buy another ticket
+    start_cheat_caller_address(lottery_address, user_address);
+    lottery_dispatcher.BuyTicket(1, create_valid_numbers(), 1);
+    stop_cheat_caller_address(lottery_address);
+}
+
+#[test]
+fn test_buy_ticket_assert_event_emission() {
+    // --- 1. SETUP ---
+    // Initialize the test environment and contracts.
+    let (_token_address, _vault_address, lottery_address) = setup_test_environment();
+    let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_address };
+
+    // Setup spy_events cheatcode to listen for events.
+    let mut spy = spy_events();
+
+    // --- 2. ACTION ---
+    // Execute BuyTicket and "cheat" the block timestamp.
+    start_cheat_caller_address(lottery_address, user1_address());
+    start_cheat_block_timestamp(lottery_address, 0x2137_u64);
+    lottery_dispatcher.BuyTicket(1, create_valid_numbers(), 1);
+    stop_cheat_caller_address(lottery_address);
+
+    // --- 3. POST-STATE ASSERTIONS ---
+    // Get the newly purchased ticket ID and numbers to verify the event.
+    let events = spy.get_events();
+    assert(events.events.len() >= 2, 'Should emit events');
+
+    let ticketId = *lottery_dispatcher.GetUserTicketIds(1, user1_address()).at(0);
+    let event_numbers = lottery_dispatcher.GetTicketNumbers(1, ticketId);
+    let count = lottery_dispatcher.GetUserTicketsCount(1, user1_address());
+
+    // Assert that the specific event was emitted with the correct data.
+    spy
+        .assert_emitted(
+            @array![
+                (
+                    lottery_address,
+                    Lottery::Event::TicketPurchased(
+                        Lottery::TicketPurchased{
+                            drawId: 1,
+                            player: user1_address(),
+                            ticketId,
+                            numbers: event_numbers,
+                            ticketCount: count,
+                            timestamp: 0x2137_u64,
+                        }
+                    )               
+                )
+            ]
+        );
 }
