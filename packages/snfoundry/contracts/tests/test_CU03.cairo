@@ -1654,3 +1654,29 @@ fn test_buy_ticket_should_panic_on_draw_not_active() {
 
     feign_buy_ticket(lottery, USER2);
 }
+
+#[test]
+fn test_emergency_reset_reentrancy_guard_only_owner() {
+    let (_, lottery) = default_context();
+
+    let mut spy = spy_events();
+    cheat_caller_address(lottery.contract_address, owner_address(), CheatSpan::TargetCalls(1));
+    lottery.EmergencyResetReentrancyGuard();
+
+    let events = spy.get_events();
+    assert(events.events.len() == 1, 'Must emit ReentrancyGuardReset');
+}
+
+#[test]
+#[should_panic(expected: 'Caller is not the owner')]
+fn test_emergency_reset_reentrancy_guard_non_owner_fails() {
+    let (_, lottery) = default_context();
+
+    cheat_caller_address(lottery.contract_address, USER1, CheatSpan::TargetCalls(1));
+    lottery.EmergencyResetReentrancyGuard();
+}
+
+#[test]
+fn test_reentrancy_guard_is_reset_after_function_execution() {
+
+}

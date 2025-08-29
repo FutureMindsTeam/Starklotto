@@ -69,6 +69,7 @@ pub trait ILottery<TContractState> {
     fn CreateNewDraw(ref self: TContractState, accumulatedPrize: u256);
     fn SetTicketPrice(ref self: TContractState, price: u256);
     fn GetTicketPrice(self: @TContractState) -> u256;
+    fn EmergencyResetReentrancyGuard(ref self: TContractState);
     //=======================================================================================
     //get functions
     fn GetAccumulatedPrize(self: @TContractState) -> u256;
@@ -121,6 +122,7 @@ pub mod Lottery {
     use starknet::storage::{
         Map, StoragePathEntry, StoragePointerReadAccess, StoragePointerWriteAccess,
     };
+    use openzeppelin_security::ReentrancyGuardComponent;
     use starknet::{
         ContractAddress, contract_address_const, get_block_timestamp, get_caller_address,
         get_contract_address,
@@ -129,9 +131,16 @@ pub mod Lottery {
 
     // ownable component by openzeppelin
     component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
+    // reentrancy guard component by openzeppelin
+    component!(
+        path: ReentrancyGuardComponent, storage: reentrancy_guard, event: ReentrancyGuardEvent
+    );
+
+    
+    impl InternalImpl = ReentrancyGuardComponent::InternalImpl<ContractState>;
 
     //ownable component by openzeppelin
-    #[abi(embed_v0)]
+    #[abi(embed_v0)]                                    
     impl OwnableImpl = OwnableComponent::OwnableImpl<ContractState>;
     impl OwnableInternalImpl = OwnableComponent::InternalImpl<ContractState>;
 
@@ -157,6 +166,9 @@ pub mod Lottery {
         PrizeClaimed: PrizeClaimed,
         UserTicketsInfo: UserTicketsInfo,
         JackpotIncreased: JackpotIncreased,
+        #[flat]
+        ReentrancyGuardEvent: ReentrancyGuardComponent::Event,
+        ReentrancyGuardReset: ReentrancyGuardReset,
     }
 
     #[derive(Drop, starknet::Event)]
@@ -205,6 +217,11 @@ pub mod Lottery {
         timestamp: u64,
     }
 
+    #[derive(Drop, starknet::Event)]
+    struct ReentrancyGuardReset {
+        caller: ContractAddress,
+    }
+
     //=======================================================================================
     //storage
     //=======================================================================================
@@ -232,7 +249,9 @@ pub mod Lottery {
         #[substorage(v0)]
         ownable: OwnableComponent::Storage,
         // Reentrancy guard
-        reentrancy_guard: bool,
+        // reentrancy_guard: bool,
+        #[substorage(v0)]
+        reentrancy_guard: ReentrancyGuardComponent::Storage
     }
     //=======================================================================================
     //constructor
@@ -257,7 +276,6 @@ pub mod Lottery {
         self.fixedPrize2Matches.write(2000000000000000000);
         self.currentDrawId.write(0);
         self.currentTicketId.write(0);
-        self.reentrancy_guard.write(false);
 
         // Store dynamic contract addresses
         self.strkPlayContractAddress.write(strkPlayContractAddress);
@@ -281,8 +299,7 @@ pub mod Lottery {
         //OK
         fn BuyTicket(ref self: ContractState, drawId: u64, numbers: Array<u16>, quantity: u8) {
             // Reentrancy guard at the very beginning
-            assert(!self.reentrancy_guard.read(), 'ReentrancyGuard: reentrant call');
-            self.reentrancy_guard.write(true);
+            self.reentrancy_guard.start();
 
             // Input validation
             assert(self.ValidateNumbers(@numbers), 'Invalid numbers');
@@ -400,7 +417,14 @@ pub mod Lottery {
             }
 
             // Release reentrancy guard
-            self.reentrancy_guard.write(false);
+            self.reentrancy_guard.end();
+        }
+
+        fn EmergencyResetReentrancyGuard (ref self: ContractState) {
+            self.ownable.assert_only_owner();
+            self.reentrancy_guard.end();
+
+            self.emit(ReentrancyGuardReset { caller: get_caller_address() });
         }
         //=======================================================================================
         fn GetUserTicketsCount(self: @ContractState, drawId: u64, player: ContractAddress) -> u32 {
