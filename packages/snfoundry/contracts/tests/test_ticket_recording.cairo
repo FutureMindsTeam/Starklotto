@@ -1,13 +1,15 @@
-use contracts::Lottery::{Lottery, ILotteryDispatcher, ILotteryDispatcherTrait};
+use contracts::Lottery::{Lottery, ILotteryDispatcher, ILotteryDispatcherTrait, ILotterySafeDispatcher, ILotterySafeDispatcherTrait};
 use contracts::StarkPlayERC20::{IMintableDispatcher, IMintableDispatcherTrait};
+use openzeppelin_token::erc20::{ERC20Component, ERC20HooksEmptyImpl};
 use openzeppelin_token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
 use openzeppelin_utils::serde::SerializedAppend;
 use snforge_std::{
     ContractClassTrait, DeclareResultTrait, declare, start_cheat_caller_address,
     stop_cheat_caller_address, start_cheat_block_timestamp, stop_cheat_block_timestamp,
-    spy_events, EventSpyTrait, EventSpyAssertionsTrait,
+    spy_events, EventSpyTrait, EventSpyAssertionsTrait, Event,
 };
 use starknet::ContractAddress;
+use core::result::{Result, ResultTrait};
 
 // Test addresses
 const OWNER: ContractAddress = 0x02dA5254690b46B9C4059C25366D1778839BE63C142d899F0306fd5c312A5918
@@ -743,7 +745,7 @@ fn test_buy_ticket_insufficient_lottery_allowance() {
 fn test_buy_ticket_assert_event_emission() {
     // --- 1. SETUP ---
     // Initialize the test environment and contracts.
-    let (_token_address, _vault_address, lottery_address) = setup_test_environment();
+    let (token_address, vault_address, lottery_address) = setup_test_environment();
     let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_address };
 
     // Setup spy_events cheatcode to listen for events.
@@ -784,4 +786,90 @@ fn test_buy_ticket_assert_event_emission() {
                 )
             ]
         );
+
+    // Assert the transfer event was emmited
+    // Imperatively    
+    let mut transfer_keys = array![];
+    // Event Name: `Transfer`
+    transfer_keys.append(selector!("Transfer"));
+    // Transfer Event `from` key
+    transfer_keys.append_serde(user1_address());
+    // Transfer Event `to` key
+    transfer_keys.append_serde(vault_address);
+    let mut transfer_data = array![];
+    // Transfer Event `value` data
+    transfer_data.append_serde(TICKET_PRICE);
+        
+    let transfer_event = Event {keys: transfer_keys, data: transfer_data};
+    spy.assert_emitted(@array![(token_address, transfer_event)]);
+    
+    // Declaratively
+    spy
+        .assert_emitted(
+            @array![
+                (
+                    token_address,
+                    ERC20Component::Event::Transfer(
+                        ERC20Component::Transfer{
+                            from: user1_address(),
+                            to: vault_address,
+                            value: TICKET_PRICE,
+                        }
+                    )
+                )
+            ]
+    );
+}
+
+#[test]
+#[feature("safe_dispatcher")]
+fn test_buy_ticket_failed_transfer_no_state_change() {
+    // --- 1. SETUP ---
+    // Initialize the test environment and contracts.
+    let (token_address, vault_address, lottery_address) = setup_test_environment();
+    let erc20_dispatcher = IERC20Dispatcher { contract_address: token_address };
+    let lottery_dispatcher = ILotterySafeDispatcher { contract_address: lottery_address };
+    
+    // --- 2. ACTION: Set User Balance to Insufficient Balance (Expected to Fail) ---
+    // Set a new, lower user balance to simulate an insufficient funds scenario.
+    start_cheat_caller_address(token_address, user1_address());
+    erc20_dispatcher.transfer(user2_address(), (erc20_dispatcher.balance_of(user1_address()) - 1_u256));
+    stop_cheat_caller_address(token_address);
+
+    // --- 3. PRE-STATE ERC20 Tokens ASSERTIONS
+    // Assert the initial user and vault balances, allowance are as expected.
+    assert(erc20_dispatcher.balance_of(vault_address) == 0_u256, 'balance pre-buy not zero');
+    assert(erc20_dispatcher.balance_of(user1_address()) == 1_u256, 'balance pre-buy not zero');
+    assert(erc20_dispatcher.allowance(user1_address(), lottery_address) == INITIAL_USER_BALANCE, 'pre allowance mismatch');
+
+    // Verify ticket records are zero
+    let ticket_count = lottery_dispatcher.GetUserTicketsCount(1, user1_address()).unwrap();
+    let ticket_ids = lottery_dispatcher.GetUserTicketIds(1, user1_address()).unwrap();
+    assert(ticket_count == 0, 'Ticket count should be 1');
+    assert(ticket_ids.len() == 0, 'Should have 1 ticket ID');
+
+    // --- 4. ACTION: Insufficient Balance (Expected to Fail) ---
+    // Set a new, lower user balance to simulate an insufficient funds scenario.
+    start_cheat_caller_address(lottery_address, user1_address());
+    match lottery_dispatcher.BuyTicket(1, create_valid_numbers(), 1) {
+        Result::Ok(_) => panic!("Should fail"),
+        Result::Err(panic_data) => {
+            let mut expected_message = ArrayTrait::new();
+            expected_message.append_serde('Insufficient balance');
+            assert(panic_data == expected_message, 'Should fail with');
+        },
+    };
+    stop_cheat_caller_address(lottery_address);
+
+    // --- 5. POST-STATE ASSERTIONS
+    // Assert user and vault balances and allowance didn't change.
+    assert(erc20_dispatcher.balance_of(vault_address) == 0_u256, 'balance post-buy not zero');
+    assert(erc20_dispatcher.balance_of(user1_address()) == 1_u256, 'balance post-buy not zero');
+    assert(erc20_dispatcher.allowance(user1_address(), lottery_address) == INITIAL_USER_BALANCE, 'post allowance mismatch');
+
+    // Verify ticket records didn't change
+    let ticket_count = lottery_dispatcher.GetUserTicketsCount(1, user1_address()).unwrap();
+    let ticket_ids = lottery_dispatcher.GetUserTicketIds(1, user1_address()).unwrap();
+    assert(ticket_count == 0, 'Ticket count should be 1');
+    assert(ticket_ids.len() == 0, 'Should have 1 ticket ID');
 }
