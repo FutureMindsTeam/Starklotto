@@ -207,10 +207,8 @@ fn test_ticket_purchase_records_ticket_details() {
     let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_address };
 
     // Purchase ticket
-    let numbers = create_valid_numbers();
-    let numbers_array = create_single_ticket_numbers_array(numbers.clone());
     start_cheat_caller_address(lottery_address, user1_address());
-    lottery_dispatcher.BuyTicket(1, numbers_array, 1);
+    lottery_dispatcher.BuyTicket(1, create_single_ticket_numbers_array(create_valid_numbers()), 1);
     stop_cheat_caller_address(lottery_address);
 
     // Verify ticket is recorded correctly
@@ -248,10 +246,8 @@ fn test_ticket_purchased_event_emission() {
     // Start spying events
     let mut spy = spy_events();
     // Purchase ticket
-    let numbers = create_valid_numbers();
-    let numbers_array = create_single_ticket_numbers_array(numbers.clone());
     start_cheat_caller_address(lottery_address, user1_address());
-    lottery_dispatcher.BuyTicket(1, numbers_array, 1);
+    lottery_dispatcher.BuyTicket(1, create_single_ticket_numbers_array(create_valid_numbers()), 1);
     stop_cheat_caller_address(lottery_address);
     // Verify ticket was actually purchased (this confirms the function worked)
     let ticket_count = lottery_dispatcher.GetUserTicketsCount(1, user1_address());
@@ -290,15 +286,11 @@ fn test_multiple_tickets_same_user() {
     let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_address };
 
     // Purchase first ticket
-    let numbers1 = create_valid_numbers();
-    let numbers_array1 = create_single_ticket_numbers_array(numbers1.clone());
     start_cheat_caller_address(lottery_address, user1_address());
-    lottery_dispatcher.BuyTicket(1, numbers_array1, 1);
+    lottery_dispatcher.BuyTicket(1, create_single_ticket_numbers_array(create_valid_numbers()), 1);
 
     // Purchase second ticket
-    let numbers2 = create_another_valid_numbers();
-    let numbers_array2 = create_single_ticket_numbers_array(numbers2.clone());
-    lottery_dispatcher.BuyTicket(1, numbers_array2, 1);
+    lottery_dispatcher.BuyTicket(1, create_single_ticket_numbers_array(create_another_valid_numbers()), 1);
     stop_cheat_caller_address(lottery_address);
 
     // Verify ticket count
@@ -336,10 +328,8 @@ fn test_tickets_across_different_draws() {
     let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_address };
 
     // Purchase ticket in draw 1
-    let numbers1 = create_valid_numbers();
-    let numbers_array1 = create_single_ticket_numbers_array(numbers1.clone());
     start_cheat_caller_address(lottery_address, user1_address());
-    lottery_dispatcher.BuyTicket(1, numbers_array1, 1);
+    lottery_dispatcher.BuyTicket(1, create_single_ticket_numbers_array(create_valid_numbers()), 1);
 
     // Complete draw 1 and create draw 2
     start_cheat_caller_address(lottery_address, owner_address());
@@ -348,10 +338,8 @@ fn test_tickets_across_different_draws() {
     stop_cheat_caller_address(lottery_address);
 
     // Purchase ticket in draw 2
-    let numbers2 = create_another_valid_numbers();
-    let numbers_array2 = create_single_ticket_numbers_array(numbers2.clone());
     start_cheat_caller_address(lottery_address, user1_address());
-    lottery_dispatcher.BuyTicket(2, numbers_array2, 1);
+    lottery_dispatcher.BuyTicket(2, create_single_ticket_numbers_array(create_another_valid_numbers()), 1);
     stop_cheat_caller_address(lottery_address);
 
     // Verify tickets are stored separately for each draw
@@ -384,24 +372,18 @@ fn test_multiple_users_ticket_recording() {
     let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_address };
 
     // User1 purchases ticket
-    let numbers1 = create_valid_numbers();
-    let numbers_array1 = create_single_ticket_numbers_array(numbers1.clone());
     start_cheat_caller_address(lottery_address, user1_address());
-    lottery_dispatcher.BuyTicket(1, numbers_array1, 1);
+    lottery_dispatcher.BuyTicket(1, create_single_ticket_numbers_array(create_valid_numbers()), 1);
     stop_cheat_caller_address(lottery_address);
 
     // User2 purchases ticket
-    let numbers2 = create_another_valid_numbers();
-    let numbers_array2 = create_single_ticket_numbers_array(numbers2.clone());
     start_cheat_caller_address(lottery_address, user2_address());
-    lottery_dispatcher.BuyTicket(1, numbers_array2, 1);
+    lottery_dispatcher.BuyTicket(1, create_single_ticket_numbers_array(create_another_valid_numbers()), 1);
     stop_cheat_caller_address(lottery_address);
 
     // User3 purchases ticket
-    let numbers3 = create_valid_numbers();
-    let numbers_array3 = create_single_ticket_numbers_array(numbers3.clone());
     start_cheat_caller_address(lottery_address, user3_address());
-    lottery_dispatcher.BuyTicket(1, numbers_array3, 1);
+    lottery_dispatcher.BuyTicket(1, create_single_ticket_numbers_array(create_valid_numbers()), 1);
     stop_cheat_caller_address(lottery_address);
 
     // Verify each user has their ticket recorded
@@ -442,12 +424,9 @@ fn test_get_user_tickets_function() {
     let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_address };
 
     // Purchase multiple tickets
-    let numbers1 = create_valid_numbers();
-    let numbers2 = create_another_valid_numbers();
-
     start_cheat_caller_address(lottery_address, user1_address());
-    lottery_dispatcher.BuyTicket(1, create_single_ticket_numbers_array(numbers1.clone()), 1);
-    lottery_dispatcher.BuyTicket(1, create_single_ticket_numbers_array(numbers2.clone()), 1);
+    lottery_dispatcher.BuyTicket(1, create_single_ticket_numbers_array(create_valid_numbers()), 1);
+    lottery_dispatcher.BuyTicket(1, create_single_ticket_numbers_array(create_another_valid_numbers()), 1);
     stop_cheat_caller_address(lottery_address);
 
     // Get user ticket IDs (using the working pattern from other tests)
@@ -481,15 +460,11 @@ fn test_ticket_id_generation_increments() {
     let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_address };
 
     // Purchase first ticket
-    let numbers1 = create_valid_numbers();
-    let numbers_array1 = create_single_ticket_numbers_array(numbers1.clone());
     start_cheat_caller_address(lottery_address, user1_address());
-    lottery_dispatcher.BuyTicket(1, numbers_array1, 1);
+    lottery_dispatcher.BuyTicket(1, create_single_ticket_numbers_array(create_valid_numbers()), 1);
 
     // Purchase second ticket
-    let numbers2 = create_another_valid_numbers();
-    let numbers_array2 = create_single_ticket_numbers_array(numbers2.clone());
-    lottery_dispatcher.BuyTicket(1, numbers_array2, 1);
+    lottery_dispatcher.BuyTicket(1, create_single_ticket_numbers_array(create_another_valid_numbers()), 1);
     stop_cheat_caller_address(lottery_address);
 
     // Get ticket IDs
@@ -510,10 +485,8 @@ fn test_ticket_timestamp_recording() {
     let (_token_address, _vault_address, lottery_address) = setup_test_environment();
     let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_address };
     // Purchase ticket
-    let numbers = create_valid_numbers();
-    let numbers_array = create_single_ticket_numbers_array(numbers.clone());
     start_cheat_caller_address(lottery_address, user1_address());
-    lottery_dispatcher.BuyTicket(1, numbers_array, 1);
+    lottery_dispatcher.BuyTicket(1, create_single_ticket_numbers_array(create_valid_numbers()), 1);
     stop_cheat_caller_address(lottery_address);
     // Get ticket info
     let ticket_ids = lottery_dispatcher.GetUserTicketIds(1, user1_address());
@@ -547,10 +520,8 @@ fn test_ticket_numbers_retrieval() {
     let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_address };
 
     // Purchase ticket
-    let numbers = create_valid_numbers();
-    let numbers_array = create_single_ticket_numbers_array(numbers.clone());
     start_cheat_caller_address(lottery_address, user1_address());
-    lottery_dispatcher.BuyTicket(1, numbers_array, 1);
+    lottery_dispatcher.BuyTicket(1, create_single_ticket_numbers_array(create_valid_numbers()), 1);
     stop_cheat_caller_address(lottery_address);
 
     // Get ticket info - use a defensive approach for CI environment
@@ -584,10 +555,8 @@ fn test_data_integrity_across_operations() {
     let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_address };
 
     // Purchase ticket
-    let numbers = create_valid_numbers();
-    let numbers_array = create_single_ticket_numbers_array(numbers.clone());
     start_cheat_caller_address(lottery_address, user1_address());
-    lottery_dispatcher.BuyTicket(1, numbers_array, 1);
+    lottery_dispatcher.BuyTicket(1, create_single_ticket_numbers_array(create_valid_numbers()), 1);
     stop_cheat_caller_address(lottery_address);
 
     // Get initial ticket info
@@ -743,7 +712,7 @@ fn test_ticket_purchase_token_transfer() {
 
     // --- 3. ACTION ---
     start_cheat_caller_address(lottery_address, user1_address());
-    lottery_dispatcher.BuyTicket(1, create_valid_numbers(), 1);
+    lottery_dispatcher.BuyTicket(1, create_single_ticket_numbers_array(create_valid_numbers()), 1);
     stop_cheat_caller_address(lottery_address);
 
     // --- 4. POST-STATE ASSERTIONS ---
@@ -774,7 +743,7 @@ fn test_buy_token_insufficient_user_balance() {
     // --- 3. ACTION: Successful Purchase ---
     // Simulate a successful ticket purchase and check the post-state.
     start_cheat_caller_address(lottery_address, user1_address());
-    lottery_dispatcher.BuyTicket(1, create_valid_numbers(), 1);
+    lottery_dispatcher.BuyTicket(1, create_single_ticket_numbers_array(create_valid_numbers()), 1);
     stop_cheat_caller_address(lottery_address);
 
     // --- 4. POST-STATE ASSERTIONS: Successful Purchase ---
@@ -790,7 +759,7 @@ fn test_buy_token_insufficient_user_balance() {
     
     // Attempt to buy another ticket; this should revert.
     start_cheat_caller_address(lottery_address, user1_address());
-    lottery_dispatcher.BuyTicket(1, create_valid_numbers(), 1);
+    lottery_dispatcher.BuyTicket(1, create_single_ticket_numbers_array(create_valid_numbers()), 1);
 }
 
 #[test]
@@ -814,7 +783,7 @@ fn test_vault_balance_accumulated_prize() {
     // --- 3. ACTION: First Ticket Purchase ---
     // Simulate a successful ticket purchase and check the post-state.
     start_cheat_caller_address(lottery_address, user_address);
-    lottery_dispatcher.BuyTicket(1, create_valid_numbers(), 1);
+    lottery_dispatcher.BuyTicket(1, create_single_ticket_numbers_array(create_valid_numbers()), 1);
     stop_cheat_caller_address(lottery_address);
 
     // --- 4. POST-STATE ASSERTIONS: First Purchase ---
@@ -824,7 +793,7 @@ fn test_vault_balance_accumulated_prize() {
     // --- 5. ACTION: Second Ticket Purchase (to test accumulation) ---
     // Simulate another ticket purchase from the same user.
     start_cheat_caller_address(lottery_address, user_address);
-    lottery_dispatcher.BuyTicket(1, create_valid_numbers(), 1);
+    lottery_dispatcher.BuyTicket(1, create_single_ticket_numbers_array(create_valid_numbers()), 1);
     stop_cheat_caller_address(lottery_address);
 
     // --- 6. POST-STATE ASSERTIONS: Second Purchase ---
@@ -852,7 +821,7 @@ fn test_buy_ticket_insufficient_lottery_allowance() {
     // --- 3. ACTION: First Ticket Purchase ---
     // Simulate a successful ticket purchase.
     start_cheat_caller_address(lottery_address, user_address);
-    lottery_dispatcher.BuyTicket(1, create_valid_numbers(), 1);
+    lottery_dispatcher.BuyTicket(1, create_single_ticket_numbers_array(create_valid_numbers()), 1);
     stop_cheat_caller_address(lottery_address);
 
     // --- 4. POST-STATE ASSERTIONS: First Purchase ---
@@ -867,7 +836,7 @@ fn test_buy_ticket_insufficient_lottery_allowance() {
 
     // --- 6. ACTION: Attempt to buy another ticket
     start_cheat_caller_address(lottery_address, user_address);
-    lottery_dispatcher.BuyTicket(1, create_valid_numbers(), 1);
+    lottery_dispatcher.BuyTicket(1, create_single_ticket_numbers_array(create_valid_numbers()), 1);
     stop_cheat_caller_address(lottery_address);
 }
 
@@ -885,7 +854,7 @@ fn test_buy_ticket_assert_event_emission() {
     // Execute BuyTicket and "cheat" the block timestamp.
     start_cheat_caller_address(lottery_address, user1_address());
     start_cheat_block_timestamp(lottery_address, 0x2137_u64);
-    lottery_dispatcher.BuyTicket(1, create_valid_numbers(), 1);
+    lottery_dispatcher.BuyTicket(1, create_single_ticket_numbers_array(create_valid_numbers()), 1);
     stop_cheat_caller_address(lottery_address);
 
     // --- 3. POST-STATE ASSERTIONS ---
@@ -981,7 +950,7 @@ fn test_buy_ticket_failed_transfer_no_state_change() {
     // --- 4. ACTION: Insufficient Balance (Expected to Fail) ---
     // Set a new, lower user balance to simulate an insufficient funds scenario.
     start_cheat_caller_address(lottery_address, user1_address());
-    match lottery_dispatcher.BuyTicket(1, create_valid_numbers(), 1) {
+    match lottery_dispatcher.BuyTicket(1, create_single_ticket_numbers_array(create_valid_numbers()), 1) {
         Result::Ok(_) => panic!("Should fail"),
         Result::Err(panic_data) => {
             let mut expected_message = ArrayTrait::new();
