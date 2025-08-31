@@ -972,3 +972,60 @@ fn test_buy_ticket_failed_transfer_no_state_change() {
     assert(ticket_count == 0, 'Ticket count should be 1');
     assert(ticket_ids.len() == 0, 'Should have 1 ticket ID');
 }
+
+#[test]
+fn test_multiple_tickets_token_transfer() {
+    // --- 1. SETUP ---
+    // Initialize the test environment and contracts.
+    let (token_address, vault_address, lottery_address) = setup_test_environment();
+    let erc20_dispatcher = IERC20Dispatcher { contract_address: token_address };
+    let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_address };
+    let user_address = user1_address();
+
+    // Define constants for the test.
+    let TICKET_PRICE = lottery_dispatcher.GetTicketPrice();
+    let QUANTITY = 3_u8;
+    let TOTAL_PRICE = TICKET_PRICE * QUANTITY.into();
+    let INITIAL_USER_BALANCE = INITIAL_USER_BALANCE;
+    let EXPECTED_USER_BALANCE_AFTER = INITIAL_USER_BALANCE - TOTAL_PRICE;
+    let EXPECTED_VAULT_BALANCE_AFTER = TOTAL_PRICE;
+
+    // --- 2. PRE-STATE ASSERTIONS ---
+    // Assert the initial user and vault balances are as expected.
+    assert(erc20_dispatcher.balance_of(user_address) == INITIAL_USER_BALANCE, 'pre-buy user balance mismatch');
+    assert(erc20_dispatcher.balance_of(vault_address) == 0_u256, 'pre-buy vault balance not zero');
+
+    // --- 3. ACTION: Buy Multiple Tickets ---
+    // Create array of arrays for 3 tickets with different numbers
+    let numbers_array = create_valid_numbers_array(QUANTITY);
+
+    // Buy 3 tickets in a single transaction
+    start_cheat_caller_address(lottery_address, user_address);
+    lottery_dispatcher.BuyTicket(1, numbers_array, QUANTITY);
+    stop_cheat_caller_address(lottery_address);
+
+    // --- 4. POST-STATE ASSERTIONS ---
+    // Verify user balance decreased by exactly the total price for 3 tickets
+    assert(erc20_dispatcher.balance_of(user_address) == EXPECTED_USER_BALANCE_AFTER, 'user balance not decreased');
+
+    // Verify vault balance increased by exactly the total price for 3 tickets
+    assert(erc20_dispatcher.balance_of(vault_address) == EXPECTED_VAULT_BALANCE_AFTER, 'vault balance not increased');
+
+    // --- 5. ADDITIONAL VERIFICATIONS ---
+    // Verify that exactly 3 tickets were created
+    let ticket_count = lottery_dispatcher.GetUserTicketsCount(1, user_address);
+    assert(ticket_count == QUANTITY.into(), 'ticket count should be 3');
+
+    // Verify that all tickets belong to the user
+    let ticket_ids = lottery_dispatcher.GetUserTicketIds(1, user_address);
+    assert(ticket_ids.len() == QUANTITY.into(), 'should have 3 ticket IDs');
+
+    // Verify that tickets have different numbers (first numbers should be 2, 9, 16)
+    let ticket1_numbers = lottery_dispatcher.GetTicketNumbers(1, *ticket_ids.at(0));
+    let ticket2_numbers = lottery_dispatcher.GetTicketNumbers(1, *ticket_ids.at(1));
+    let ticket3_numbers = lottery_dispatcher.GetTicketNumbers(1, *ticket_ids.at(2));
+
+    assert(*ticket1_numbers.at(0) == 2, 'Ticket 1 first num should be 2');
+    assert(*ticket2_numbers.at(0) == 9, 'Ticket 2 first num should be 9');
+    assert(*ticket3_numbers.at(0) == 16, 'Ticket 3 first num should be 16');
+}
