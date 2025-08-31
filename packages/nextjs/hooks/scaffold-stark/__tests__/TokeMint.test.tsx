@@ -28,6 +28,62 @@ vi.mock("~~/hooks/scaffold-stark/useStarkPlayFee", () => ({
   }),
 }));
 
+vi.mock("~~/hooks/useStrkContract", () => ({
+  useStrkContract: () => ({
+    approveStrk: vi.fn(),
+    strkAddress:
+      "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
+    isReady: true,
+  }),
+}));
+
+vi.mock("~~/hooks/scaffold-stark/useScaffoldWriteContract", () => ({
+  useScaffoldWriteContract: () => ({
+    writeContractAsync: vi.fn(),
+    isPending: false,
+  }),
+}));
+
+vi.mock("~~/hooks/scaffold-stark/useScaffoldReadContract", () => ({
+  useScaffoldReadContract: () => ({
+    data: BigInt("1000000000000000000000"), // 1000 TRKP balance
+    isLoading: false,
+  }),
+}));
+
+vi.mock("~~/hooks/scaffold-stark/useScaffoldEventHistory", () => ({
+  useScaffoldEventHistory: () => ({
+    data: [],
+    isLoading: false,
+  }),
+}));
+
+vi.mock("~~/hooks/useContractAddresses", () => ({
+  useContractAddresses: () => ({
+    StarkPlayVault: "0xVAULT",
+    StarkPlayERC20: "0xTRKP",
+    Strk: "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
+    isValid: true,
+  }),
+}));
+
+// Mock react-hot-toast
+vi.mock("react-hot-toast", () => ({
+  default: {
+    success: vi.fn(),
+    error: vi.fn(),
+    loading: vi.fn(),
+    dismiss: vi.fn(),
+  },
+}));
+
+// Mock Starknet React hooks that may be used indirectly
+vi.mock("@starknet-react/core", () => ({
+  useAccount: () => ({ address: "0xUSER", account: {} }),
+  useNetwork: () => ({ chain: { id: "0x534e5f4d41494e" } }),
+  useContract: () => ({}),
+}));
+
 describe("<TokenMint />", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -46,7 +102,7 @@ describe("<TokenMint />", () => {
     fireEvent.change(input, { target: { value: "10" } });
 
     // 3) Verify that the button is now enabled
-    const button = screen.getByRole("button", { name: /Mint STRKP/i });
+    const button = screen.getByRole("button", { name: /Mint \$TRKP/i });
     expect(button).not.toBeDisabled();
 
     // 4) Calculate manually:

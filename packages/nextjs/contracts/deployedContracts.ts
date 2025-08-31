@@ -7,7 +7,7 @@ const deployedContracts = {
   devnet: {
     StarkPlayERC20: {
       address:
-        "0x20bc4c8eda453956975632eec08585be5702d7046f1c5a5e906116b9b77a1bd",
+        "0x13c7fdf96e73e598e407c7a6ca98ed407eb333611f114f52540e355e1fd6aed",
       abi: [
         {
           type: "impl",
@@ -1189,7 +1189,7 @@ const deployedContracts = {
     },
     StarkPlayVault: {
       address:
-        "0x75e8bd3f04b4c98bb7246836bacc8ca9469e5cd6f155cff09c6c0dc5aed233c",
+        "0x16da081084d9e7f3ed0edcd7e0a05dc39889fb075080230cc759dde826338a4",
       abi: [
         {
           type: "impl",
@@ -2034,7 +2034,7 @@ const deployedContracts = {
     },
     Lottery: {
       address:
-        "0x1596dedf8117e6c693b7cc647fd9265582f40929e97ec4cf4b72dd04c2df010",
+        "0x3708e589b168fbf7c97275293d77a1131dc78982c458342dd4fa213b3ec2415",
       abi: [
         {
           type: "impl",
@@ -2145,22 +2145,22 @@ const deployedContracts = {
           type: "interface",
           name: "contracts::Lottery::ILottery",
           items: [
+                    {
+          type: "function",
+          name: "Initialize",
+          inputs: [
             {
-              type: "function",
-              name: "Initialize",
-              inputs: [
-                {
-                  name: "ticketPrice",
-                  type: "core::integer::u256",
-                },
-                {
-                  name: "accumulatedPrize",
-                  type: "core::integer::u256",
-                },
-              ],
-              outputs: [],
-              state_mutability: "external",
+              name: "ticketPrice",
+              type: "core::integer::u256",
             },
+            {
+              name: "accumulatedPrize",
+              type: "core::integer::u256",
+            },
+          ],
+          outputs: [],
+          state_mutability: "external",
+        },
             {
               type: "function",
               name: "BuyTicket",
@@ -2248,12 +2248,7 @@ const deployedContracts = {
             {
               type: "function",
               name: "CreateNewDraw",
-              inputs: [
-                {
-                  name: "accumulatedPrize",
-                  type: "core::integer::u256",
-                },
-              ],
+              inputs: [],
               outputs: [],
               state_mutability: "external",
             },
@@ -2283,6 +2278,17 @@ const deployedContracts = {
             {
               type: "function",
               name: "GetAccumulatedPrize",
+              inputs: [],
+              outputs: [
+                {
+                  type: "core::integer::u256",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "GetVaultBalance",
               inputs: [],
               outputs: [
                 {
@@ -2912,6 +2918,33 @@ const deployedContracts = {
         },
         {
           type: "event",
+          name: "contracts::Lottery::Lottery::JackpotCalculated",
+          kind: "struct",
+          members: [
+            {
+              name: "draw_id",
+              type: "core::integer::u64",
+              kind: "key",
+            },
+            {
+              name: "vault_balance",
+              type: "core::integer::u256",
+              kind: "key",
+            },
+            {
+              name: "calculated_jackpot",
+              type: "core::integer::u256",
+              kind: "key",
+            },
+            {
+              name: "timestamp",
+              type: "core::integer::u64",
+              kind: "key",
+            },
+          ],
+        },
+        {
+          type: "event",
           name: "contracts::Lottery::Lottery::Event",
           kind: "enum",
           variants: [
@@ -2945,6 +2978,11 @@ const deployedContracts = {
               type: "contracts::Lottery::Lottery::JackpotIncreased",
               kind: "nested",
             },
+            {
+              name: "JackpotCalculated",
+              type: "contracts::Lottery::Lottery::JackpotCalculated",
+              kind: "nested",
+            },
           ],
         },
       ],
@@ -2953,7 +2991,7 @@ const deployedContracts = {
     },
     LottoTicketNFT: {
       address:
-        "0x1af2a65b6ed985b150ce8f6d998911fbe38e92054713dacd7a1dc7e20434078",
+        "0x3194fbfdb756558fce9cadbbf02e04549fe40fc88551f2e37b2c72d44d5dd7b",
       abi: [
         {
           type: "impl",

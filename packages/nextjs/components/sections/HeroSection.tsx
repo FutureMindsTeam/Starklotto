@@ -37,47 +37,9 @@ export function HeroSection({
   return (
     <motion.section
       style={{ y: heroY }}
-      className="relative min-h-screen flex items-center justify-center px-4 py-20"
+      className="relative min-h-screen flex items-center justify-center px-8 py-5"
     >
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-        {/* Left Column - Main Content */}
-        <div className="space-y-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <h1 className="text-4xl md:text-6xl font-bold text-purple-400 mb-4">
-              {t("home.hero.title")}
-            </h1>
-            <p className="text-gray-300 text-lg mb-8">
-              {t("home.hero.subtitle")}
-            </p>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-            className="flex gap-4"
-          >
-            <GlowingButton
-              onClick={onBuyTicket}
-              className="px-8 py-4 text-lg"
-              glowColor="rgba(139, 92, 246, 0.5)"
-            >
-              {t("home.hero.playNow")}
-            </GlowingButton>
-            <Button
-              variant="outline"
-              className="px-8 py-4 text-lg border-white/10 hover:bg-white/5"
-              onClick={onToggleSecurityInfo}
-            >
-              {t("home.hero.learnMore")}
-            </Button>
-          </motion.div>
-        </div>
-
+      <div className="w-full mx-auto grid grid-cols-1 gap-12 items-center">
         {/* Right Column - Next Draw */}
         <motion.div
           initial={{ opacity: 0, x: 20 }}

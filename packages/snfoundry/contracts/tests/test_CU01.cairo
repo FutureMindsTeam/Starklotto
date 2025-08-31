@@ -4,6 +4,7 @@ use contracts::StarkPlayERC20::{
 };
 use contracts::StarkPlayVault::StarkPlayVault::FELT_STRK_CONTRACT;
 use contracts::StarkPlayVault::{IStarkPlayVaultDispatcher, IStarkPlayVaultDispatcherTrait};
+use openzeppelin_access::ownable::interface::{IOwnableDispatcher, IOwnableDispatcherTrait};
 use openzeppelin_testing::declare_and_deploy;
 use openzeppelin_token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
 use openzeppelin_utils::serde::SerializedAppend;
@@ -103,7 +104,9 @@ fn deploy_mock_strk_token() -> IMintableDispatcher {
     // Grant MINTER_ROLE to OWNER so we can mint tokens
     strk_token.grant_minter_role(owner_address());
     strk_token
-        .set_minter_allowance(owner_address(), EXCEEDS_MINT_LIMIT().into() * 10); // Large allowance
+        .set_minter_allowance(
+            owner_address(), EXCEEDS_MINT_LIMIT().into() * 10,
+        ); // Large allowance
 
     strk_token.mint(USER1(), EXCEEDS_MINT_LIMIT().into() * 3); // Mint plenty for testing
 
@@ -302,7 +305,11 @@ fn test_set_fee_zero_like_negative_value() {
     let vault_address = deploy_contract_starkplayvault_with_Lottery();
     let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
     let new_fee = 0_u64;
+
+    let ownable = IOwnableDispatcher { contract_address: vault_address };
+    start_cheat_caller_address(vault_address, ownable.owner());
     let _ = vault_dispatcher.setFeePercentage(new_fee);
+    stop_cheat_caller_address(vault_address);
 }
 
 //tests have to fail
@@ -312,7 +319,11 @@ fn test_set_fee_max_like_501() {
     let vault_address = deploy_contract_starkplayvault_with_Lottery();
     let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
     let new_fee = 501_u64;
+
+    let ownable = IOwnableDispatcher { contract_address: vault_address };
+    start_cheat_caller_address(vault_address, ownable.owner());
     let _result = vault_dispatcher.setFeePercentage(new_fee);
+    stop_cheat_caller_address(vault_address);
 }
 
 #[test]
@@ -329,7 +340,12 @@ fn test_set_fee_min() {
     let vault_address = deploy_contract_starkplayvault_with_Lottery();
     let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
     let new_fee = 10_u64;
+
+    let ownable = IOwnableDispatcher { contract_address: vault_address };
+    start_cheat_caller_address(vault_address, ownable.owner());
     let result = vault_dispatcher.setFeePercentage(new_fee);
+    stop_cheat_caller_address(vault_address);
+
     assert(result, 'Fee should be set');
     assert(vault_dispatcher.GetFeePercentage() == new_fee, 'Fee is not 10_u64');
 }
@@ -339,7 +355,12 @@ fn test_set_fee_max() {
     let vault_address = deploy_contract_starkplayvault_with_Lottery();
     let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
     let new_fee = 500_u64;
+
+    let ownable = IOwnableDispatcher { contract_address: vault_address };
+    start_cheat_caller_address(vault_address, ownable.owner());
     let result = vault_dispatcher.setFeePercentage(new_fee);
+    stop_cheat_caller_address(vault_address);
+
     assert(result, 'Fee should be set');
     assert(vault_dispatcher.GetFeePercentage() == new_fee, 'Fee is not 500_u64');
 }
@@ -349,7 +370,12 @@ fn test_set_fee_middle() {
     let vault_address = deploy_contract_starkplayvault_with_Lottery();
     let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
     let new_fee = 250_u64;
+
+    let ownable = IOwnableDispatcher { contract_address: vault_address };
+    start_cheat_caller_address(vault_address, ownable.owner());
     let result = vault_dispatcher.setFeePercentage(new_fee);
+    stop_cheat_caller_address(vault_address);
+
     assert(result, 'Fee should be set');
     assert(vault_dispatcher.GetFeePercentage() == new_fee, 'Fee is not 250_u64');
 }
@@ -361,7 +387,10 @@ fn test_event_set_fee_percentage() {
     let new_fee = 250_u64;
     let mut spy = spy_events();
 
+    let ownable = IOwnableDispatcher { contract_address: vault_address };
+    start_cheat_caller_address(vault_address, ownable.owner());
     let _ = vault_dispatcher.setFeePercentage(new_fee);
+    stop_cheat_caller_address(vault_address);
 
     let events = spy.get_events();
 
@@ -704,7 +733,12 @@ fn test_set_fee_percentage_prizes_converted() {
 
     //test set fee percentage prizes converted
     let new_fee = 500_u64;
+
+    let ownable = IOwnableDispatcher { contract_address: vault_address };
+    start_cheat_caller_address(vault_address, ownable.owner());
     let result = vault_dispatcher.setFeePercentagePrizesConverted(new_fee);
+    stop_cheat_caller_address(vault_address);
+
     assert!(result, "Set fee should return true");
 
     //test get fee percentage prizes converted
@@ -719,7 +753,12 @@ fn test_set_fee_percentage_prizes_converted_invalid_fee() {
     let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault_address };
     //test set fee percentage prizes converted with invalid fee
     let new_fee = 501_u64;
+
+    let ownable = IOwnableDispatcher { contract_address: vault_address };
+    start_cheat_caller_address(vault_address, ownable.owner());
     let result = vault_dispatcher.setFeePercentagePrizesConverted(new_fee);
+    stop_cheat_caller_address(vault_address);
+
     assert!(!result, "Set fee should return false");
 }
 #[test]

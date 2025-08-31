@@ -1,5 +1,6 @@
 use contracts::StarkPlayERC20::{IMintableDispatcher, IMintableDispatcherTrait};
 use contracts::StarkPlayVault::{IStarkPlayVaultDispatcher, IStarkPlayVaultDispatcherTrait};
+use openzeppelin_access::ownable::interface::{IOwnableDispatcher, IOwnableDispatcherTrait};
 use openzeppelin_testing::declare_and_deploy;
 use openzeppelin_token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
 use openzeppelin_utils::serde::SerializedAppend;
@@ -208,7 +209,11 @@ fn test_fee_percentage_management() {
     let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault };
 
     let new_fee = 100_u64;
+
+    let ownable = IOwnableDispatcher { contract_address: vault };
+    start_cheat_caller_address(vault, ownable.owner());
     let result = vault_dispatcher.setFeePercentage(new_fee);
+    stop_cheat_caller_address(vault);
 
     assert(result == true, 'Fee percentage not set');
 
@@ -225,7 +230,11 @@ fn test_fee_percentage_too_low() {
     let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault };
 
     let low_fee = 5_u64;
+
+    let ownable = IOwnableDispatcher { contract_address: vault };
+    start_cheat_caller_address(vault, ownable.owner());
     vault_dispatcher.setFeePercentage(low_fee);
+    stop_cheat_caller_address(vault);
 }
 
 
@@ -237,5 +246,9 @@ fn test_fee_percentage_too_high() {
     let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault };
 
     let high_fee = 600_u64;
+
+    let ownable = IOwnableDispatcher { contract_address: vault };
+    start_cheat_caller_address(vault, ownable.owner());
     vault_dispatcher.setFeePercentage(high_fee);
+    stop_cheat_caller_address(vault);
 }

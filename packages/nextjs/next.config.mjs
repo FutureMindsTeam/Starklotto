@@ -27,6 +27,16 @@ const nextConfig = {
         hostname: "img.starkurabu.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "starknet.id",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "*.starknet.id",
+        pathname: "/**",
+      },
     ],
   },
   typescript: {
