@@ -54,7 +54,7 @@ pub trait ILottery<TContractState> {
     //=======================================================================================
     //set functions
     fn Initialize(ref self: TContractState, ticketPrice: u256, accumulatedPrize: u256);
-    fn BuyTicket(ref self: TContractState, drawId: u64, numbers: Array<u16>, quantity: u8);
+    fn BuyTicket(ref self: TContractState, drawId: u64, numbers_array: Array<Array<u16>>, quantity: u8);
     fn DrawNumbers(ref self: TContractState, drawId: u64);
     fn ClaimPrize(ref self: TContractState, drawId: u64, ticketId: felt252);
     fn CheckMatches(
@@ -153,6 +153,7 @@ pub mod Lottery {
         #[flat]
         OwnableEvent: OwnableComponent::Event,
         TicketPurchased: TicketPurchased,
+        BulkTicketPurchase: BulkTicketPurchase,
         DrawCompleted: DrawCompleted,
         PrizeClaimed: PrizeClaimed,
         UserTicketsInfo: UserTicketsInfo,
@@ -170,6 +171,17 @@ pub mod Lottery {
         pub ticketId: felt252,
         pub numbers: Array<u16>,
         pub ticketCount: u32,
+        pub timestamp: u64,
+    }
+
+    #[derive(Drop, starknet::Event)]
+    pub struct BulkTicketPurchase {
+        #[key]
+        pub drawId: u64,
+        #[key]
+        pub player: ContractAddress,
+        pub quantity: u8,
+        pub totalPrice: u256,
         pub timestamp: u64,
     }
 
@@ -296,18 +308,17 @@ pub mod Lottery {
 
         //=======================================================================================
         //OK
-        fn BuyTicket(ref self: ContractState, drawId: u64, numbers: Array<u16>, quantity: u8) {
+        fn BuyTicket(ref self: ContractState, drawId: u64, numbers_array: Array<Array<u16>>, quantity: u8) {
             // Reentrancy guard at the very beginning
             assert(!self.reentrancy_guard.read(), 'ReentrancyGuard: reentrant call');
             self.reentrancy_guard.write(true);
 
-            // Input validation
-            assert(self.ValidateNumbers(@numbers), 'Invalid numbers');
-            assert(numbers.len() == 5, 'Invalid numbers length');
-
-            // Validate quantity limits (1-10 tickets)
+            // Validate quantity limits first (1-10 tickets)
             assert(quantity >= 1, 'Quantity too low');
             assert(quantity <= 10, 'Quantity too high');
+
+            // Input validation for numbers array
+            assert(self.ValidateNumbersArray(@numbers_array, quantity), 'Invalid array');
 
             // Validate that draw exists
             self.AssertDrawExists(drawId, 'BuyTicket');
@@ -323,59 +334,55 @@ pub mod Lottery {
                 contract_address: self.strkPlayContractAddress.read(),
             };
 
-            // --- Balance validation and deduction logic ---
-            // 1. Get ticket price and user/vault addresses
+            // --- CORREGIDO: Calculate total price for all tickets ---
             let ticket_price = self.ticketPrice.read();
+            let total_price = ticket_price * quantity.into();
             let user = get_caller_address();
             let vault_address: ContractAddress = self.strkPlayVaultContractAddress.read();
 
-            // 2. Validate user has sufficient token balance
+            // Validate user has sufficient token balance for total price
             let user_balance = token_dispatcher.balance_of(user);
             assert(user_balance > 0, 'No token balance');
-            assert(user_balance >= ticket_price, 'Insufficient balance');
+            assert(user_balance >= total_price, 'Insufficient balance');
 
-            // 3. Validate user has approved lottery contract for token transfer
+            // Validate user has approved lottery contract for total price
             let allowance = token_dispatcher.allowance(user, get_contract_address());
-            assert(allowance >= ticket_price, 'Insufficient allowance');
+            assert(allowance >= total_price, 'Insufficient allowance');
 
-            // 4. Execute token transfer from user to vault
+            // Execute token transfer for total price
             let transfer_success = token_dispatcher
-                .transfer_from(user, vault_address, ticket_price);
+                .transfer_from(user, vault_address, total_price);
             assert(transfer_success, 'Transfer failed');
-            // --- End balance validation and deduction logic ---
+            // --- End corrected payment logic ---
 
-            // TODO: Mint the NFT here, for now it is simulated
-            let minted = true;
-            assert(minted, 'NFT minting failed');
-
-            // Debug del array antes de crear el ticket
-            let n1 = *numbers.at(0);
-            let n2 = *numbers.at(1);
-            let n3 = *numbers.at(2);
-            let n4 = *numbers.at(3);
-            let n5 = *numbers.at(4);
-
-            let ticketNew = Ticket {
-                player: get_caller_address(),
-                number1: n1,
-                number2: n2,
-                number3: n3,
-                number4: n4,
-                number5: n5,
-                claimed: false,
-                drawId: drawId,
-                timestamp: current_timestamp,
-            };
+            // Emit bulk purchase event for auditing
+            self.emit(
+                BulkTicketPurchase {
+                    drawId,
+                    player: user,
+                    quantity,
+                    totalPrice: total_price,
+                    timestamp: current_timestamp,
+                },
+            );
 
             let caller = get_caller_address();
             let mut count = self.userTicketCount.entry((caller, drawId)).read();
 
-            // Generate multiple tickets in a loop
+            // CORREGIDO: Generate multiple tickets with unique numbers
             let mut i: u8 = 0;
             while i < quantity {
                 // TODO: Mint the NFT here, for now it is simulated
                 let minted = true;
                 assert(minted, 'NFT minting failed');
+
+                // Get numbers for this specific ticket
+                let ticket_numbers = numbers_array.at(i.into());
+                let n1 = *ticket_numbers.at(0);
+                let n2 = *ticket_numbers.at(1);
+                let n3 = *ticket_numbers.at(2);
+                let n4 = *ticket_numbers.at(3);
+                let n5 = *ticket_numbers.at(4);
 
                 let ticketNew = Ticket {
                     player: caller,
@@ -397,7 +404,7 @@ pub mod Lottery {
                 self.userTicketCount.entry((caller, drawId)).write(count);
                 self.userTicketIds.entry((caller, drawId, count)).write(ticketId);
 
-                // Emit event for each generated ticket
+                // Emit event for each generated ticket with its specific numbers
                 let mut event_numbers = ArrayTrait::new();
                 event_numbers.append(n1);
                 event_numbers.append(n2);
@@ -849,6 +856,41 @@ pub mod Lottery {
                 }
 
                 usedNumbers.insert(number.into(), true);
+                i += 1;
+            }
+
+            valid
+        }
+
+        // NEW: Validate array of number arrays for multiple tickets
+        fn ValidateNumbersArray(self: @ContractState, numbers_array: @Array<Array<u16>>, quantity: u8) -> bool {
+            // If quantity is 0, the array should also be empty
+            if quantity == 0 {
+                return numbers_array.len() == 0;
+            }
+
+            // Verify that the array length matches the quantity
+            if numbers_array.len() != quantity.into() {
+                return false;
+            }
+
+            // Verify each array of numbers
+            let mut i: usize = 0;
+            let mut valid = true;
+
+            loop {
+                if i >= numbers_array.len() {
+                    break;
+                }
+
+                let numbers = numbers_array.at(i);
+                
+                // Validate each individual array of numbers
+                if !self.ValidateNumbers(numbers) {
+                    valid = false;
+                    break;
+                }
+
                 i += 1;
             }
 
