@@ -4303,6 +4303,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tsparticles/engine@npm:3.9.1":
+  version: 3.9.1
+  resolution: "@tsparticles/engine@npm:3.9.1"
+  checksum: 4e9fcc8ed08651da2279c93f58dcbcede9a9d410e0b487f61caa5ab7b92b8a2c0f7814f587904daf23859ee7176694a848411b3ef3526700bad28ad3fcc58937
+  languageName: node
+  linkType: hard
+
 "@tsparticles/interaction-external-attract@npm:3.8.1":
   version: 3.8.1
   resolution: "@tsparticles/interaction-external-attract@npm:3.8.1"
@@ -4447,12 +4454,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tsparticles/path-curves@npm:^3.8.1":
-  version: 3.8.1
-  resolution: "@tsparticles/path-curves@npm:3.8.1"
+"@tsparticles/path-curves@npm:^3.9.1":
+  version: 3.9.1
+  resolution: "@tsparticles/path-curves@npm:3.9.1"
   dependencies:
-    "@tsparticles/engine": 3.8.1
-  checksum: 739df8c174e73871e61234e9070e3591be9defe461b5ed60d9ec10391f877dc12206a78cc6cf8b701762fbc43bc83214c5acdef1de9db60b9a38755296061ca6
+    "@tsparticles/engine": 3.9.1
+  checksum: 1f6da287b39a5f19438539f092e8ebec40f3e56d6b49f6c4a6e3ea17fca03b09adc7c29a741981b0cb7add8260edcaa5956d8ce666671a88fca7763e286699a1
   languageName: node
   linkType: hard
 
@@ -13364,7 +13371,7 @@ __metadata:
     "@heroicons/react": ^2.2.0
     "@next/swc-linux-x64-gnu": ^15.3.1
     "@next/swc-linux-x64-musl": ^15.3.1
-    "@tsparticles/path-curves": ^3.8.1
+    "@tsparticles/path-curves": ^3.9.1
     daisyui: ^4.7.3
     framer-motion: ^12.5.0
     husky: ^9.0.11
