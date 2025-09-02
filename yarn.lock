@@ -4025,7 +4025,7 @@ __metadata:
     react-dom: ^18.0.0 || ^19.0.0
     react-hook-form: ^7.54.2
     react-hot-toast: ^2.4.1
-    react-i18next: ^15.5.3
+    react-i18next: ^15.7.3
     react-icons: ^5.5.0
     react-type-animation: ^3.2.0
     recharts: ^2.15.3
@@ -12205,14 +12205,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-i18next@npm:^15.5.3, react-i18next@npm:^15.6.0":
-  version: 15.6.0
-  resolution: "react-i18next@npm:15.6.0"
+"react-i18next@npm:^15.7.3":
+  version: 15.7.3
+  resolution: "react-i18next@npm:15.7.3"
   dependencies:
     "@babel/runtime": ^7.27.6
     html-parse-stringify: ^3.0.1
   peerDependencies:
-    i18next: ">= 23.2.3"
+    i18next: ">= 25.4.1"
     react: ">= 16.8.0"
     typescript: ^5
   peerDependenciesMeta:
@@ -12222,7 +12222,7 @@ __metadata:
       optional: true
     typescript:
       optional: true
-  checksum: e18b0827adfe1521b3e640c83f4ffcec6e452413879ff0620913f03506b36d35d7f69e3a13bc5b767264d565467cd0048e02c728f79509d8d38bf84640eb3016
+  checksum: f669eb48f1b15ae043f2aaf218d4f4c08c73d77358531cd6b7776b73a996791c5df7b766c4a1f5c9d974a1aa519a8501c4c242908592285b12b14a861a0765e4
   languageName: node
   linkType: hard
 
@@ -13373,7 +13373,7 @@ __metadata:
     pinst: ^3.0.0
     postcss: ^8.4.38
     prettier: ^3.2.5
-    react-i18next: ^15.6.0
+    react-i18next: ^15.7.3
     react-tsparticles: ^2.12.2
     tsparticles: ^3.8.1
   languageName: unknown
