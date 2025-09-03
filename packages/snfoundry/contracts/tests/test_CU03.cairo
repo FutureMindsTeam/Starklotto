@@ -1745,8 +1745,8 @@ fn test_buy_ticket_on_same_draw_id_success() {
     assert(player1_ticket.len() == 1 && player2_ticket.len() == 1, 'MULTIPLE BUY FAILED.');
 }
 
-#[test]
 #[should_panic(expected: 'Draw is not active')]
+#[test]
 fn test_buy_ticket_should_panic_on_draw_not_active() {
     let (erc, lottery) = default_context();
     feign_buy_ticket(lottery, USER1);
