@@ -143,6 +143,7 @@ const deployScript = async (): Promise<void> => {
   }
 
   // Deploy Lottery with dynamic addresses
+  const INITIAL_TICKET_PRICE = 10n * 10n ** 18n; // 10 * 10^18
   await deployContract({
     contract: "Lottery",
     contractName: "Lottery",
@@ -150,6 +151,7 @@ const deployScript = async (): Promise<void> => {
       owner: deployer.address,
       strkPlayContractAddress: starkPlayERC20Address,
       strkPlayVaultContractAddress: starkPlayVaultAddress,
+      initial_ticket_price: INITIAL_TICKET_PRICE,
     },
   });
 
