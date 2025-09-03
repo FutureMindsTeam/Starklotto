@@ -873,7 +873,7 @@ pub mod Lottery {
             let mut i: usize = 0;
             let mut valid = true;
 
-            while i < numbers_array.len() {
+            while i != numbers_array.len() {
                 let numbers = numbers_array.at(i);
                 
                 // Validate each individual array of numbers
