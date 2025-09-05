@@ -6,7 +6,7 @@ const rpcUrlDevnet =
 const mainnetFork = {
   id: BigInt("0x534e5f4d41494e"),
   network: "devnet",
-  name: "Starknet Devnet",
+  name: "devnet",
   nativeCurrency: {
     address:
       "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",

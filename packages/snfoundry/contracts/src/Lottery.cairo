@@ -54,7 +54,7 @@ pub trait ILottery<TContractState> {
     //=======================================================================================
     //set functions
     fn Initialize(ref self: TContractState, ticketPrice: u256, accumulatedPrize: u256);
-    fn BuyTicket(ref self: TContractState, drawId: u64, numbers: Array<u16>, quantity: u8);
+    fn BuyTicket(ref self: TContractState, drawId: u64, numbers_array: Array<Array<u16>>, quantity: u8);
     fn DrawNumbers(ref self: TContractState, drawId: u64);
     fn ClaimPrize(ref self: TContractState, drawId: u64, ticketId: felt252);
     fn CheckMatches(
@@ -153,10 +153,13 @@ pub mod Lottery {
         #[flat]
         OwnableEvent: OwnableComponent::Event,
         TicketPurchased: TicketPurchased,
+        BulkTicketPurchase: BulkTicketPurchase,
         DrawCompleted: DrawCompleted,
         PrizeClaimed: PrizeClaimed,
         UserTicketsInfo: UserTicketsInfo,
         JackpotIncreased: JackpotIncreased,
+        InvalidDrawIdAttempted: InvalidDrawIdAttempted,
+        DrawValidationFailed: DrawValidationFailed,
     }
 
     #[derive(Drop, starknet::Event)]
@@ -168,6 +171,17 @@ pub mod Lottery {
         pub ticketId: felt252,
         pub numbers: Array<u16>,
         pub ticketCount: u32,
+        pub timestamp: u64,
+    }
+
+    #[derive(Drop, starknet::Event)]
+    pub struct BulkTicketPurchase {
+        #[key]
+        pub drawId: u64,
+        #[key]
+        pub player: ContractAddress,
+        pub quantity: u8,
+        pub totalPrice: u256,
         pub timestamp: u64,
     }
 
@@ -203,6 +217,21 @@ pub mod Lottery {
         previousAmount: u256,
         newAmount: u256,
         timestamp: u64,
+    }
+
+    #[derive(Drop, starknet::Event)]
+    struct InvalidDrawIdAttempted {
+        caller: ContractAddress,
+        attempted_draw_id: u64,
+        current_draw_id: u64,
+        function_name: felt252,
+    }
+
+    #[derive(Drop, starknet::Event)]
+    struct DrawValidationFailed {
+        draw_id: u64,
+        reason: felt252,
+        caller: ContractAddress,
     }
 
     //=======================================================================================
@@ -279,19 +308,22 @@ pub mod Lottery {
 
         //=======================================================================================
         //OK
-        fn BuyTicket(ref self: ContractState, drawId: u64, numbers: Array<u16>, quantity: u8) {
+        fn BuyTicket(ref self: ContractState, drawId: u64, numbers_array: Array<Array<u16>>, quantity: u8) {
             // Reentrancy guard at the very beginning
             assert(!self.reentrancy_guard.read(), 'ReentrancyGuard: reentrant call');
             self.reentrancy_guard.write(true);
 
-            // Input validation
-            assert(self.ValidateNumbers(@numbers), 'Invalid numbers');
-            assert(numbers.len() == 5, 'Invalid numbers length');
-
-            // Validate quantity limits (1-10 tickets)
+            // Validate quantity limits first (1-10 tickets)
             assert(quantity >= 1, 'Quantity too low');
             assert(quantity <= 10, 'Quantity too high');
 
+            // Input validation for numbers array
+            assert(self.ValidateNumbersArray(@numbers_array, quantity), 'Invalid array');
+
+            // Validate that draw exists
+            self.AssertDrawExists(drawId, 'BuyTicket');
+
+            // Validate that draw is active
             let draw = self.draws.entry(drawId).read();
             assert(draw.isActive, 'Draw is not active');
 
@@ -302,59 +334,55 @@ pub mod Lottery {
                 contract_address: self.strkPlayContractAddress.read(),
             };
 
-            // --- Balance validation and deduction logic ---
-            // 1. Get ticket price and user/vault addresses
+            // --- CORREGIDO: Calculate total price for all tickets ---
             let ticket_price = self.ticketPrice.read();
+            let total_price = ticket_price * quantity.into();
             let user = get_caller_address();
             let vault_address: ContractAddress = self.strkPlayVaultContractAddress.read();
 
-            // 2. Validate user has sufficient token balance
+            // Validate user has sufficient token balance for total price
             let user_balance = token_dispatcher.balance_of(user);
             assert(user_balance > 0, 'No token balance');
-            assert(user_balance >= ticket_price, 'Insufficient balance');
+            assert(user_balance >= total_price, 'Insufficient balance');
 
-            // 3. Validate user has approved lottery contract for token transfer
+            // Validate user has approved lottery contract for total price
             let allowance = token_dispatcher.allowance(user, get_contract_address());
-            assert(allowance >= ticket_price, 'Insufficient allowance');
+            assert(allowance >= total_price, 'Insufficient allowance');
 
-            // 4. Execute token transfer from user to vault
+            // Execute token transfer for total price
             let transfer_success = token_dispatcher
-                .transfer_from(user, vault_address, ticket_price);
+                .transfer_from(user, vault_address, total_price);
             assert(transfer_success, 'Transfer failed');
-            // --- End balance validation and deduction logic ---
+            // --- End corrected payment logic ---
 
-            // TODO: Mint the NFT here, for now it is simulated
-            let minted = true;
-            assert(minted, 'NFT minting failed');
-
-            // Debug del array antes de crear el ticket
-            let n1 = *numbers.at(0);
-            let n2 = *numbers.at(1);
-            let n3 = *numbers.at(2);
-            let n4 = *numbers.at(3);
-            let n5 = *numbers.at(4);
-
-            let ticketNew = Ticket {
-                player: get_caller_address(),
-                number1: n1,
-                number2: n2,
-                number3: n3,
-                number4: n4,
-                number5: n5,
-                claimed: false,
-                drawId: drawId,
-                timestamp: current_timestamp,
-            };
+            // Emit bulk purchase event for auditing
+            self.emit(
+                BulkTicketPurchase {
+                    drawId,
+                    player: user,
+                    quantity,
+                    totalPrice: total_price,
+                    timestamp: current_timestamp,
+                },
+            );
 
             let caller = get_caller_address();
             let mut count = self.userTicketCount.entry((caller, drawId)).read();
 
-            // Generate multiple tickets in a loop
+            // CORREGIDO: Generate multiple tickets with unique numbers
             let mut i: u8 = 0;
             while i < quantity {
                 // TODO: Mint the NFT here, for now it is simulated
                 let minted = true;
                 assert(minted, 'NFT minting failed');
+
+                // Get numbers for this specific ticket
+                let ticket_numbers = numbers_array.at(i.into());
+                let n1 = *ticket_numbers.at(0);
+                let n2 = *ticket_numbers.at(1);
+                let n3 = *ticket_numbers.at(2);
+                let n4 = *ticket_numbers.at(3);
+                let n5 = *ticket_numbers.at(4);
 
                 let ticketNew = Ticket {
                     player: caller,
@@ -376,7 +404,7 @@ pub mod Lottery {
                 self.userTicketCount.entry((caller, drawId)).write(count);
                 self.userTicketIds.entry((caller, drawId, count)).write(ticketId);
 
-                // Emit event for each generated ticket
+                // Emit event for each generated ticket with its specific numbers
                 let mut event_numbers = ArrayTrait::new();
                 event_numbers.append(n1);
                 event_numbers.append(n2);
@@ -433,6 +461,9 @@ pub mod Lottery {
         //=======================================================================================
         //OK
         fn ClaimPrize(ref self: ContractState, drawId: u64, ticketId: felt252) {
+            // Validate that draw exists
+            self.AssertDrawExists(drawId, 'ClaimPrize');
+            
             let draw = self.draws.entry(drawId).read();
             let ticket = self.tickets.entry((drawId, ticketId)).read();
             assert(!ticket.claimed, 'Prize already claimed');
@@ -569,6 +600,9 @@ pub mod Lottery {
 
         //OK
         fn GetDrawStatus(self: @ContractState, drawId: u64) -> bool {
+            if !self.DrawExists(drawId) {
+                return false;
+            }
             self.draws.entry(drawId).read().isActive
         }
 
@@ -593,6 +627,9 @@ pub mod Lottery {
         fn GetUserTickets(
             ref self: ContractState, drawId: u64, player: ContractAddress,
         ) -> Array<Ticket> {
+            // Validate that draw exists
+            self.AssertDrawExists(drawId, 'GetUserTickets');
+
             let ticket_ids = self.GetUserTicketIds(drawId, player);
             let mut user_tickets_data = ArrayTrait::new();
             let mut i: usize = 0;
@@ -625,6 +662,9 @@ pub mod Lottery {
 
         //=======================================================================================
         fn GetWinningNumbers(self: @ContractState, drawId: u64) -> Array<u16> {
+            // Validate that draw exists
+            assert(self.DrawExists(drawId), 'Draw does not exist');
+            
             let draw = self.draws.entry(drawId).read();
             assert(!draw.isActive, 'Draw must be completed');
 
@@ -820,6 +860,76 @@ pub mod Lottery {
             }
 
             valid
+        }
+
+        // NEW: Validate array of number arrays for multiple tickets
+        fn ValidateNumbersArray(self: @ContractState, numbers_array: @Array<Array<u16>>, quantity: u8) -> bool {
+            // If quantity is 0, the array should also be empty
+            if quantity == 0 {
+                return numbers_array.len() == 0;
+            }
+
+            // Verify that the array length matches the quantity
+            if numbers_array.len() != quantity.into() {
+                return false;
+            }
+
+            // Verify each array of numbers
+            let mut i: usize = 0;
+            let mut valid = true;
+
+            loop {
+                if i >= numbers_array.len() {
+                    break;
+                }
+
+                let numbers = numbers_array.at(i);
+                
+                // Validate each individual array of numbers
+                if !self.ValidateNumbers(numbers) {
+                    valid = false;
+                    break;
+                }
+
+                i += 1;
+            }
+
+            valid
+        }
+
+        fn DrawExists(self: @ContractState, drawId: u64) -> bool {
+            drawId > 0 && drawId <= self.currentDrawId.read()
+        }
+
+        fn ValidateDrawExists(ref self: ContractState, drawId: u64, function_name: felt252) -> bool {
+            if !self.DrawExists(drawId) {
+                self
+                    .emit(
+                        InvalidDrawIdAttempted {
+                            caller: get_caller_address(),
+                            attempted_draw_id: drawId,
+                            current_draw_id: self.currentDrawId.read(),
+                            function_name,
+                        },
+                    );
+                return false;
+            }
+
+            let draw = self.draws.entry(drawId).read();
+            if !(draw.drawId == drawId && draw.isActive) {
+                self.emit( DrawValidationFailed {
+                    draw_id: drawId,
+                    reason: 'Draw is not active',
+                    caller: get_caller_address(),
+                });
+                return false;
+            }
+
+            true
+        }
+
+        fn AssertDrawExists(ref self: ContractState, drawId: u64, function_name: felt252) {
+            assert(self.ValidateDrawExists(drawId, function_name), 'Draw is not active');
         }
     }
 

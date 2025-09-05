@@ -1,174 +1,305 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import { AlertCircle, ChevronRight, Trophy } from "lucide-react";
+import { useState, useCallback, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  ChevronRight,
+  Trophy,
+  RefreshCw,
+  Wifi,
+  Clock,
+  CheckCircle,
+  AlertCircle,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "next/navigation";
-
-// Types for our draw data
-interface DrawResult {
-  id: string;
-  drawDate: Date;
-  winningNumbers: number[];
-  jackpotAmount: number;
-  winnerCount: number;
-}
-
-async function fetchLatestDraw(): Promise<DrawResult> {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        id: "draw-123456",
-        drawDate: new Date("2025-10-02T18:00:00Z"),
-        winningNumbers: [3, 7, 12, 24, 31],
-        jackpotAmount: 1250000,
-        winnerCount: 0,
-      });
-    }, 1500);
-  });
-}
-
-// Format currency with proper separators
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
-
-// Format date in a user-friendly way
-function formatDrawDate(date: Date): string {
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZoneName: "short",
-  }).format(date);
-}
+import { useLatestDraw } from "~~/hooks/useLatestDraw";
+import {
+  DrawResult,
+  formatCurrency,
+  formatDrawDate,
+} from "~~/services/draw.service.simple";
+import { ErrorMessage } from "~~/components/ui/ErrorMessage";
+import { DrawResultsSkeleton } from "~~/components/ui/LoadingSkeleton";
+import toast from "react-hot-toast";
 
 export function LastDrawResults() {
   const { t } = useTranslation();
   const router = useRouter();
-  const [drawResult, setDrawResult] = useState<DrawResult | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [showNewDrawNotification, setShowNewDrawNotification] = useState(false);
 
-  useEffect(() => {
-    const loadDrawData = async () => {
-      try {
-        setIsLoading(true);
-        const data = await fetchLatestDraw();
-        setDrawResult(data);
-        setError(null);
-      } catch (err) {
-        setError(
-          "Unable to load the latest draw results. Please try again later.",
-        );
-        console.error("Error fetching draw results:", err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  // Ref para evitar notificaciones duplicadas
+  const lastNotifiedDrawRef = useRef<string | null>(null);
+  const notificationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-    loadDrawData();
+  // Callbacks estables para evitar re-renders
+  const handleNewDraw = useCallback((newDraw: DrawResult) => {
+    // Evitar notificaciones duplicadas
+    if (lastNotifiedDrawRef.current === newDraw.id) {
+      return;
+    }
+
+    lastNotifiedDrawRef.current = newDraw.id;
+    setShowNewDrawNotification(true);
+
+    toast.success(t("notifications.newDrawAvailable"), {
+      duration: 4000,
+      icon: "🎉",
+    });
+
+    // Limpiar timeout anterior si existe
+    if (notificationTimeoutRef.current) {
+      clearTimeout(notificationTimeoutRef.current);
+    }
+
+    // Hide notification after 5 seconds
+    notificationTimeoutRef.current = setTimeout(() => {
+      setShowNewDrawNotification(false);
+    }, 5000);
   }, []);
 
-  if (error) {
+  const handleError = useCallback(
+    (error: any) => {
+      if (error.code === "NETWORK_ERROR") {
+        toast.error(t("notifications.connectionLost"));
+      }
+    },
+    [t],
+  );
+
+  // Cleanup timeouts cuando el componente se desmonta
+  useEffect(() => {
+    return () => {
+      if (notificationTimeoutRef.current) {
+        clearTimeout(notificationTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const {
+    data: drawResult,
+    isLoading,
+    error,
+    isRefreshing,
+    isPolling,
+    refresh,
+    startPolling,
+    stopPolling,
+    clearError,
+    lastFetch,
+  } = useLatestDraw({
+    pollingInterval: 10000, // 10 seconds para testing
+    enabled: true,
+    onNewDraw: handleNewDraw,
+    onError: handleError,
+  });
+
+  // Manual refresh handler
+  const handleManualRefresh = async () => {
+    clearError();
+    await refresh();
+  };
+
+  // Error state with retry option
+  if (error && !drawResult) {
     return (
-      <div className="my-6 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950">
-        <div className="flex">
-          <div className="flex-shrink-0">
-            <AlertCircle className="h-5 w-5 text-red-400" />
+      <section aria-labelledby="last-draw-title" className="my-12">
+        <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-950">
+          <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-6 text-white">
+            <h2
+              id="last-draw-title"
+              className="flex items-center gap-2 text-2xl font-semibold tracking-tight md:text-3xl"
+            >
+              <Trophy className="h-6 w-6" />
+              {t("lastDraw.title")}
+            </h2>
           </div>
-          <div className="ml-3">
-            <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
-              Error
-            </h3>
-            <div className="mt-2 text-sm text-red-700 dark:text-red-300">
-              <p>{error}</p>
-            </div>
+          <div className="p-6">
+            <ErrorMessage
+              error={error}
+              onRetry={handleManualRefresh}
+              showRetryButton={true}
+            />
           </div>
         </div>
-      </div>
+      </section>
     );
   }
 
   return (
-    <section aria-labelledby="last-draw-title" className="my-12">
+    <section aria-labelledby="last-draw-title" className="my-0">
       <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-950">
+        {/* New Draw Notification */}
+        <AnimatePresence>
+          {showNewDrawNotification && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="bg-green-500 px-6 py-3 text-white"
+            >
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-5 w-5" />
+                <span className="text-sm font-medium">
+                  {t("notifications.newDrawLoaded")}
+                </span>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Header */}
         <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-6 text-white">
-          <h2
-            id="last-draw-title"
-            className="flex items-center gap-2 text-2xl font-semibold tracking-tight md:text-3xl"
-          >
-            <Trophy className="h-6 w-6" />
-            {t("lastDraw.title")}
-          </h2>
-          {!isLoading && drawResult && (
-            <p className="mt-1 text-sm text-white/90">
-              {formatDrawDate(drawResult.drawDate)}
-            </p>
-          )}
+          <div className="flex items-center justify-between">
+            <div>
+              <h2
+                id="last-draw-title"
+                className="flex items-center gap-2 text-2xl font-semibold tracking-tight md:text-3xl"
+              >
+                <Trophy className="h-6 w-6" />
+                {t("lastDraw.title")}
+              </h2>
+              {drawResult && (
+                <p className="mt-1 text-sm text-white/90">
+                  {formatDrawDate(drawResult.drawDate)}
+                </p>
+              )}
+            </div>
+
+            {/* Status indicators */}
+            <div className="flex items-center gap-2">
+              {isRefreshing && (
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  className="text-white/80"
+                >
+                  <RefreshCw className="h-5 w-5" />
+                </motion.div>
+              )}
+              {isPolling && !isRefreshing && (
+                <div className="flex items-center gap-1 text-white/80">
+                  <motion.div
+                    animate={{ opacity: [0.5, 1, 0.5] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  >
+                    <Wifi className="h-5 w-5" />
+                  </motion.div>
+                  <span className="text-xs">{t("status.live")}</span>
+                </div>
+              )}
+              {lastFetch && (
+                <div className="text-xs text-white/60">
+                  {t("status.updated")}{" "}
+                  {new Date(lastFetch).toLocaleTimeString()}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Content */}
         <div className="p-6">
           {isLoading ? (
-            <LoadingState />
-          ) : (
-            drawResult && (
-              <div className="space-y-6">
-                <div className="space-y-3">
-                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                    {t("lastDraw.winningNumbers")}
-                  </h3>
-                  <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
-                    {drawResult.winningNumbers.map((number, index) => (
-                      <motion.div
-                        key={index}
-                        initial={{ scale: 0.8, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ delay: index * 0.1 }}
-                        className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-lg font-bold text-white shadow-md"
-                      >
-                        {number.toString().padStart(2, "0")}
-                      </motion.div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 gap-4 pt-2 md:grid-cols-2">
-                  <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-900">
-                    <h3 className="mb-1 text-sm font-medium text-gray-500 dark:text-gray-400">
-                      {t("lastDraw.jackpotAmount")}
-                    </h3>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                      {formatCurrency(drawResult.jackpotAmount)}
-                    </p>
-                  </div>
-                  <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-900">
-                    <h3 className="mb-1 text-sm font-medium text-gray-500 dark:text-gray-400">
-                      {t("lastDraw.winners")}
-                    </h3>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                      {drawResult.winnerCount > 0
-                        ? `${drawResult.winnerCount} ${t("lastDraw.winners")}`
-                        : t("lastDraw.noWinners")}
-                    </p>
-                  </div>
+            <DrawResultsSkeleton />
+          ) : drawResult ? (
+            <motion.div
+              key={drawResult.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="space-y-6"
+            >
+              <div className="space-y-3">
+                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                  {t("lastDraw.winningNumbers")}
+                </h3>
+                <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
+                  {drawResult.winningNumbers.map((number, index) => (
+                    <motion.div
+                      key={`${drawResult.id}-${index}`}
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-lg font-bold text-white shadow-md"
+                    >
+                      {number.toString().padStart(2, "0")}
+                    </motion.div>
+                  ))}
                 </div>
               </div>
-            )
+
+              <div className="grid grid-cols-1 gap-4 pt-2 md:grid-cols-2">
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="rounded-lg bg-gray-50 p-4 dark:bg-gray-900"
+                >
+                  <h3 className="mb-1 text-sm font-medium text-gray-500 dark:text-gray-400">
+                    {t("lastDraw.jackpotAmount")}
+                  </h3>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                    {formatCurrency(drawResult.jackpotAmount)}
+                  </p>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="rounded-lg bg-gray-50 p-4 dark:bg-gray-900"
+                >
+                  <h3 className="mb-1 text-sm font-medium text-gray-500 dark:text-gray-400">
+                    {t("lastDraw.results")}
+                  </h3>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                    {`${drawResult.winnerCount} ${drawResult.winnerCount === 1 ? t("lastDraw.winner") : t("lastDraw.winners")}`}
+                  </p>
+                </motion.div>
+              </div>
+
+              {/* Draw Status */}
+              <div className="pt-2">
+                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                  <Clock className="h-4 w-4" />
+                  <span>
+                    Draw #{drawResult.drawNumber} • Status: {drawResult.status}
+                  </span>
+                </div>
+              </div>
+            </motion.div>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-500 dark:text-gray-400">
+                {t("status.noResults")}
+              </p>
+            </div>
+          )}
+
+          {/* Inline error display if there's an error but we still have data */}
+          {error && drawResult && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg dark:bg-yellow-950 dark:border-yellow-800"
+            >
+              <div className="flex items-center gap-2 text-sm text-yellow-800 dark:text-yellow-200">
+                <AlertCircle className="h-4 w-4" />
+                <span>{t("notifications.unableToFetch")}</span>
+                <button
+                  onClick={handleManualRefresh}
+                  className="ml-auto text-yellow-600 hover:text-yellow-500 dark:text-yellow-400"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                </button>
+              </div>
+            </motion.div>
           )}
         </div>
 
         {/* Footer */}
-        <div className="flex justify-between border-t border-gray-200 bg-gray-50/30 px-6 py-4 dark:border-gray-800 dark:bg-gray-900/30">
+        <div className="flex justify-between items-center border-t border-gray-200 bg-gray-50/30 px-6 py-4 dark:border-gray-800 dark:bg-gray-900/30">
           <button
             onClick={() => router.push("/results")}
             className="inline-flex items-center text-sm font-medium text-indigo-600 transition-colors hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
@@ -176,45 +307,41 @@ export function LastDrawResults() {
             {t("lastDraw.viewPrevious")}
             <ChevronRight className="ml-1 h-4 w-4" />
           </button>
+
+          <div className="flex items-center gap-2">
+            {/* Manual refresh button */}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleManualRefresh}
+              disabled={isLoading || isRefreshing}
+              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700"
+            >
+              <RefreshCw
+                className={`h-3 w-3 ${isRefreshing ? "animate-spin" : ""}`}
+              />
+              {t("status.refresh")}
+            </motion.button>
+
+            {/* Polling control */}
+            <button
+              onClick={isPolling ? stopPolling : startPolling}
+              className={`inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                isPolling
+                  ? "text-green-700 bg-green-100 hover:bg-green-200 dark:text-green-400 dark:bg-green-900 dark:hover:bg-green-800"
+                  : "text-gray-600 bg-gray-100 hover:bg-gray-200 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700"
+              }`}
+            >
+              <div
+                className={`h-2 w-2 rounded-full ${isPolling ? "bg-green-500" : "bg-gray-400"}`}
+              />
+              {isPolling
+                ? t("status.autoRefreshOn")
+                : t("status.autoRefreshOff")}
+            </button>
+          </div>
         </div>
       </div>
     </section>
-  );
-}
-
-function LoadingState() {
-  return (
-    <div className="space-y-6">
-      <div className="space-y-3">
-        {/* Skeleton for "Winning Numbers" label */}
-        <div className="h-4 w-32 animate-pulse rounded bg-gray-200 dark:bg-gray-700"></div>
-
-        {/* Skeleton for lottery balls */}
-        <div className="flex flex-wrap gap-2">
-          {Array(6)
-            .fill(0)
-            .map((_, i) => (
-              <div
-                key={i}
-                className="h-12 w-12 animate-pulse rounded-full bg-gray-200 dark:bg-gray-700"
-              ></div>
-            ))}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 pt-2 md:grid-cols-2">
-        {/* Skeleton for Jackpot Amount */}
-        <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-900">
-          <div className="mb-2 h-4 w-24 animate-pulse rounded bg-gray-200 dark:bg-gray-700"></div>
-          <div className="h-8 w-32 animate-pulse rounded bg-gray-200 dark:bg-gray-700"></div>
-        </div>
-
-        {/* Skeleton for Winners */}
-        <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-900">
-          <div className="mb-2 h-4 w-24 animate-pulse rounded bg-gray-200 dark:bg-gray-700"></div>
-          <div className="h-8 w-32 animate-pulse rounded bg-gray-200 dark:bg-gray-700"></div>
-        </div>
-      </div>
-    </div>
   );
 }

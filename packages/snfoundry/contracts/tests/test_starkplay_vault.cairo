@@ -2,10 +2,11 @@ use contracts::StarkPlayERC20::{
     IBurnableDispatcher, IBurnableDispatcherTrait, IMintableDispatcher, IMintableDispatcherTrait,
 };
 use contracts::StarkPlayVault::{IStarkPlayVaultDispatcher, IStarkPlayVaultDispatcherTrait};
+use openzeppelin_access::ownable::interface::{IOwnableDispatcher, IOwnableDispatcherTrait};
 use openzeppelin_token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
 use snforge_std::{
-    ContractClassTrait, DeclareResultTrait, EventSpyTrait, declare, load,
-    spy_events, start_cheat_caller_address, stop_cheat_caller_address, store,
+    ContractClassTrait, DeclareResultTrait, EventSpyTrait, declare, load, spy_events,
+    start_cheat_caller_address, stop_cheat_caller_address, store,
 };
 #[feature("deprecated-starknet-consts")]
 use starknet::{ContractAddress, contract_address_const};
@@ -354,14 +355,15 @@ fn test_fee_consistency_after_pause_unpause() {
     assert(fee_before_pause == expected_fee, 'Fee before pause incorrect');
 
     // Pause the contract
-    start_cheat_caller_address(vault.contract_address, vault.get_owner());
+    let ownable = IOwnableDispatcher { contract_address: vault.contract_address };
+    start_cheat_caller_address(vault.contract_address, ownable.owner());
     vault.pause();
     stop_cheat_caller_address(vault.contract_address);
 
     assert(vault.is_paused(), 'Contract should be paused');
 
     // Unpause the contract
-    start_cheat_caller_address(vault.contract_address, vault.get_owner());
+    start_cheat_caller_address(vault.contract_address, ownable.owner());
     vault.unpause();
     stop_cheat_caller_address(vault.contract_address);
 
@@ -397,7 +399,8 @@ fn test_transaction_fails_when_paused() {
     setup_user_balance(strk_token, USER1(), LARGE_AMOUNT(), vault.contract_address);
 
     // Pause the contract
-    start_cheat_caller_address(vault.contract_address, vault.get_owner());
+    let ownable = IOwnableDispatcher { contract_address: vault.contract_address };
+    start_cheat_caller_address(vault.contract_address, ownable.owner());
     vault.pause();
     stop_cheat_caller_address(vault.contract_address);
 
@@ -519,7 +522,8 @@ fn test_complete_flow_integration() {
     assert(vault.get_accumulated_fee() == expected_fee * 2, 'Fee after second transaction');
 
     // Pause and unpause
-    start_cheat_caller_address(vault.contract_address, vault.get_owner());
+    let ownable = IOwnableDispatcher { contract_address: vault.contract_address };
+    start_cheat_caller_address(vault.contract_address, ownable.owner());
     vault.pause();
     vault.unpause();
     stop_cheat_caller_address(vault.contract_address);
@@ -556,7 +560,8 @@ fn test_withdraw_general_fees_success() {
     stop_cheat_caller_address(vault.contract_address);
     assert(vault.get_accumulated_fee() == expected_fee, 'Fee not accumulated');
     // Owner withdraws fee
-    let owner = vault.get_owner();
+    let ownable = IOwnableDispatcher { contract_address: vault.contract_address };
+    let owner = ownable.owner();
     let recipient = USER2();
     let erc20 = IERC20Dispatcher { contract_address: strk_token.contract_address };
     let initial_recipient_balance = erc20.balance_of(recipient);
@@ -611,7 +616,8 @@ fn test_withdraw_general_fees_exceeds_accumulated() {
     vault.buySTRKP(USER1(), purchase_amount);
     stop_cheat_caller_address(vault.contract_address);
     // Owner tries to withdraw more than accumulated
-    let owner = vault.get_owner();
+    let ownable = IOwnableDispatcher { contract_address: vault.contract_address };
+    let owner = ownable.owner();
     start_cheat_caller_address(vault.contract_address, owner);
     vault.withdrawGeneralFees(USER2(), expected_fee + 1_u256);
     stop_cheat_caller_address(vault.contract_address);
@@ -621,7 +627,8 @@ fn test_withdraw_general_fees_exceeds_accumulated() {
 #[test]
 fn test_withdraw_general_fees_zero_amount() {
     let (vault, _) = deploy_vault_contract();
-    let owner = vault.get_owner();
+    let ownable = IOwnableDispatcher { contract_address: vault.contract_address };
+    let owner = ownable.owner();
     start_cheat_caller_address(vault.contract_address, owner);
     vault.withdrawGeneralFees(USER2(), 0_u256);
     stop_cheat_caller_address(vault.contract_address);
@@ -631,7 +638,8 @@ fn test_withdraw_general_fees_zero_amount() {
 #[test]
 fn test_withdraw_general_fees_insufficient_vault_balance() {
     let (vault, _) = deploy_vault_contract();
-    let owner = vault.get_owner();
+    let ownable = IOwnableDispatcher { contract_address: vault.contract_address };
+    let owner = ownable.owner();
 
     // Manually increment accumulatedFee without STRK in vault
 
@@ -650,7 +658,9 @@ fn test_withdraw_general_fees_insufficient_vault_balance() {
 
     store(
         vault.contract_address, // storage owner
-        selector!("accumulatedFee"), // field marking the start of the memory chunk being written to
+        selector!(
+            "accumulatedFee",
+        ), // field marking the start of the memory chunk being written to
         array![5000].span() // array of felts to write
     );
 
@@ -680,7 +690,8 @@ fn test_withdraw_prize_conversion_fees_success() {
     let prizeFeeAmount = (convert_amount * INITIAL_FEE_PERCENTAGE().into()) / 10000;
 
     // Manually increment accumulatedPrizeConversionFees to simulate conversion
-    let owner = vault.get_owner();
+    let ownable = IOwnableDispatcher { contract_address: vault.contract_address };
+    let owner = ownable.owner();
     start_cheat_caller_address(vault.contract_address, owner);
 
     // Use storage manipulation to set accumulated prize conversion fees
@@ -738,7 +749,8 @@ fn test_withdraw_prize_conversion_fees_not_owner() {
 #[test]
 fn test_withdraw_prize_conversion_fees_exceeds_accumulated() {
     let (vault, _) = deploy_vault_contract();
-    let owner = vault.get_owner();
+    let ownable = IOwnableDispatcher { contract_address: vault.contract_address };
+    let owner = ownable.owner();
 
     // Use storage manipulation to set accumulated prize conversion fees
     let fee_amount = 50_u256;
@@ -757,7 +769,8 @@ fn test_withdraw_prize_conversion_fees_exceeds_accumulated() {
 #[test]
 fn test_withdraw_prize_conversion_fees_zero_amount() {
     let (vault, _) = deploy_vault_contract();
-    let owner = vault.get_owner();
+    let ownable = IOwnableDispatcher { contract_address: vault.contract_address };
+    let owner = ownable.owner();
     start_cheat_caller_address(vault.contract_address, owner);
     vault.withdrawPrizeConversionFees(USER2(), 0_u256);
     stop_cheat_caller_address(vault.contract_address);
@@ -767,7 +780,8 @@ fn test_withdraw_prize_conversion_fees_zero_amount() {
 #[test]
 fn test_withdraw_prize_conversion_fees_insufficient_vault_balance() {
     let (vault, _) = deploy_vault_contract();
-    let owner = vault.get_owner();
+    let ownable = IOwnableDispatcher { contract_address: vault.contract_address };
+    let owner = ownable.owner();
 
     // Use storage manipulation to set accumulated prize conversion fees
     let fee_amount = 100_u256;
@@ -1264,7 +1278,8 @@ fn test_events_after_pause_unpause() {
     setup_user_balance(strk_token, USER1(), LARGE_AMOUNT(), vault.contract_address);
 
     // Pause and unpause the contract
-    start_cheat_caller_address(vault.contract_address, vault.get_owner());
+    let ownable = IOwnableDispatcher { contract_address: vault.contract_address };
+    start_cheat_caller_address(vault.contract_address, ownable.owner());
     vault.pause();
     vault.unpause();
     stop_cheat_caller_address(vault.contract_address);
