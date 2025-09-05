@@ -273,7 +273,6 @@ pub mod Lottery {
         owner: ContractAddress,
         strkPlayContractAddress: ContractAddress,
         strkPlayVaultContractAddress: ContractAddress,
-        initial_ticket_price: u256, //  nuevo parámetro
     ) {
         // Validate that addresses are not zero address
         assert(strkPlayContractAddress != contract_address_const::<0>(), 'Invalid STRKP contract');
@@ -292,8 +291,8 @@ pub mod Lottery {
         // Store dynamic contract addresses
         self.strkPlayContractAddress.write(strkPlayContractAddress);
         self.strkPlayVaultContractAddress.write(strkPlayVaultContractAddress);
+
         self.ticketPrice.write(TicketPriceInitial);
-        self.ticketPrice.write(initial_ticket_price);
     }
     //=======================================================================================
     //impl
