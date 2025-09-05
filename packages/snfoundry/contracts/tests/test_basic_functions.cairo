@@ -1,4 +1,5 @@
 use contracts::Lottery::{ILotteryDispatcher, ILotteryDispatcherTrait};
+use core::array::ArrayTrait;
 use contracts::StarkPlayERC20::{IMintableDispatcher, IMintableDispatcherTrait};
 use openzeppelin_testing::declare_and_deploy;
 use openzeppelin_token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
@@ -69,6 +70,13 @@ fn create_valid_numbers() -> Array<u16> {
     array![1, 15, 25, 35, 40]
 }
 
+// Helper: wrap a single ticket numbers array into Array<Array<u16>>
+fn create_single_ticket_numbers_array(numbers: Array<u16>) -> Array<Array<u16>> {
+    let mut numbers_array = ArrayTrait::new();
+    numbers_array.append(numbers);
+    numbers_array
+}
+
 fn setup_mocks_for_buy_ticket(
     strk_play_address: ContractAddress,
     user: ContractAddress,
@@ -133,11 +141,13 @@ fn start(
     erc
 }
 
-fn feign_buy_ticket(lottery: ILotteryDispatcher, buyer: ContractAddress) -> Array<u16> {
+fn feign_buy_ticket(lottery: ILotteryDispatcher, buyer: ContractAddress) -> Array<Array<u16>> {
     let numbers = array![1, 2, 3, 4, 5];
+    let numbers_array = array![numbers];
     cheat_caller_address(lottery.contract_address, buyer, CheatSpan::Indefinite);
     cheat_block_timestamp(lottery.contract_address, 1, CheatSpan::TargetCalls(1));
-    lottery.BuyTicket(DEFAULT_ID, numbers.clone(), 1);
+    let numbers_array = create_single_ticket_numbers_array(numbers.clone());
+    lottery.BuyTicket(DEFAULT_ID, numbers_array, 1);
     numbers
 }
 
@@ -298,13 +308,14 @@ fn test_get_ticket_current_id_initial_value() {
 
 #[test]
 fn test_get_ticket_current_id_after_ticket_purchase() {
-    let (erc, lottery) = default_context();
+    let (_erc, lottery) = default_context();
     
     // Purchase a ticket
-    let numbers = create_valid_numbers();
+    let numbers = array![create_valid_numbers()];
     start_cheat_caller_address(lottery.contract_address, USER1);
     cheat_block_timestamp(lottery.contract_address, 1, CheatSpan::TargetCalls(1));
-    lottery.BuyTicket(DEFAULT_ID, numbers, 1);
+    let numbers_array = create_single_ticket_numbers_array(numbers.clone());
+    lottery.BuyTicket(DEFAULT_ID, numbers_array, 1);
     stop_cheat_caller_address(lottery.contract_address);
 
     let current_id = lottery.GetTicketCurrentId();
@@ -555,8 +566,8 @@ fn test_set_ticket_price_ownership_validation_owner_can_set() {
     stop_cheat_caller_address(lottery_dispatcher.contract_address);
 }
 
-#[test]
 #[should_panic(expected: ('Caller is not the owner',))]
+#[test]
 fn test_set_ticket_price_ownership_validation_non_owner_cannot_set() {
     let (lottery_addr, _, _) = deploy_lottery();
     let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_addr };
