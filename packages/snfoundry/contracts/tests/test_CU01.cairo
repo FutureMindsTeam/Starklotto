@@ -1,6 +1,5 @@
 use contracts::StarkPlayERC20::{
     IBurnableDispatcher, IBurnableDispatcherTrait, IMintableDispatcher, IMintableDispatcherTrait,
-    IPrizeTokenDispatcher, IPrizeTokenDispatcherTrait,
 };
 use contracts::StarkPlayVault::StarkPlayVault::FELT_STRK_CONTRACT;
 use contracts::StarkPlayVault::{IStarkPlayVaultDispatcher, IStarkPlayVaultDispatcherTrait};
@@ -9,14 +8,11 @@ use openzeppelin_testing::declare_and_deploy;
 use openzeppelin_token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
 use openzeppelin_utils::serde::SerializedAppend;
 use snforge_std::{
-    CheatSpan, cheat_caller_address, EventSpy, start_cheat_caller_address,
+    start_cheat_caller_address,
     stop_cheat_caller_address, declare, ContractClassTrait, DeclareResultTrait, spy_events,
-    EventSpyAssertionsTrait, EventSpyTrait, // Add for fetching events directly
-    Event, // A structure describing a raw `Event`
-    IsEmitted // Trait for checking if a given event was ever emitted
+    EventSpyTrait // Add for fetching events directly
 };
 use starknet::ContractAddress;
-use starknet::contract_address::contract_address_const;
 
 const STRK_TOKEN_CONTRACT_ADDRESS: ContractAddress = FELT_STRK_CONTRACT.try_into().unwrap();
 // Direcciones de prueba
@@ -39,16 +35,16 @@ fn user_address_Sepolia() -> ContractAddress {
     USER
 }
 fn owner_address() -> ContractAddress {
-    contract_address_const::<0x123>()
+    0x123.try_into().unwrap()
 }
 
 fn user_address() -> ContractAddress {
-    contract_address_const::<0x456>()
+    0x456.try_into().unwrap()
 }
 
 
 fn USER1() -> ContractAddress {
-    contract_address_const::<0x456>()
+    0x456.try_into().unwrap()
 }
 
 

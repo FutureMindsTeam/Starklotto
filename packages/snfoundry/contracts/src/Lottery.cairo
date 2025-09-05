@@ -122,7 +122,7 @@ pub mod Lottery {
         Map, StoragePathEntry, StoragePointerReadAccess, StoragePointerWriteAccess,
     };
     use starknet::{
-        ContractAddress, contract_address_const, get_block_timestamp, get_caller_address,
+        ContractAddress, get_block_timestamp, get_caller_address,
         get_contract_address,
     };
     use super::{Draw, ILottery, JackpotEntry, Ticket};
@@ -275,9 +275,9 @@ pub mod Lottery {
         strkPlayVaultContractAddress: ContractAddress,
     ) {
         // Validate that addresses are not zero address
-        assert(strkPlayContractAddress != contract_address_const::<0>(), 'Invalid STRKP contract');
+        assert(strkPlayContractAddress != 0.try_into().unwrap(), 'Invalid STRKP contract');
         assert(
-            strkPlayVaultContractAddress != contract_address_const::<0>(), 'Invalid Vault contract',
+            strkPlayVaultContractAddress != 0.try_into().unwrap(), 'Invalid Vault contract',
         );
 
         self.ownable.initializer(owner);
@@ -353,6 +353,7 @@ pub mod Lottery {
             let transfer_success = token_dispatcher
                 .transfer_from(user, vault_address, total_price);
             assert(transfer_success, 'Transfer failed');
+
             // --- End corrected payment logic ---
 
             // Emit bulk purchase event for auditing
@@ -371,7 +372,7 @@ pub mod Lottery {
 
             // CORREGIDO: Generate multiple tickets with unique numbers
             let mut i: u8 = 0;
-            while i < quantity {
+            while i != quantity {
                 // TODO: Mint the NFT here, for now it is simulated
                 let minted = true;
                 assert(minted, 'NFT minting failed');
@@ -614,7 +615,7 @@ pub mod Lottery {
             let count = self.userTicketCount.entry((player, drawId)).read();
 
             let mut i: u32 = 1;
-            while i <= count {
+            while i != (count + 1) {
                 let ticketId = self.userTicketIds.entry((player, drawId, i)).read();
                 userTicket_ids.append(ticketId);
                 i += 1;
@@ -706,10 +707,7 @@ pub mod Lottery {
 
             // Iterate through all draws from 1 to currentDrawId
             let mut drawId: u64 = 1;
-            loop {
-                if drawId > currentDrawId {
-                    break;
-                }
+            while drawId != (currentDrawId + 1) {
 
                 let draw = self.draws.entry(drawId).read();
                 let jackpotEntry = JackpotEntry {
@@ -836,10 +834,7 @@ pub mod Lottery {
             let mut i: usize = 0;
             let mut valid = true;
 
-            loop {
-                if i >= numbers.len() {
-                    break;
-                }
+            while i != numbers.len() {
 
                 let number = *numbers.at(i);
 
@@ -850,7 +845,7 @@ pub mod Lottery {
                 }
 
                 // Verify duplicates
-                if usedNumbers.get(number.into()) == true {
+                if usedNumbers.get(number.into()) {
                     valid = false;
                     break;
                 }
@@ -878,11 +873,7 @@ pub mod Lottery {
             let mut i: usize = 0;
             let mut valid = true;
 
-            loop {
-                if i >= numbers_array.len() {
-                    break;
-                }
-
+            while i != numbers_array.len() {
                 let numbers = numbers_array.at(i);
                 
                 // Validate each individual array of numbers
@@ -956,7 +947,7 @@ pub mod Lottery {
                 + MinNumber.into();
             let number_u16: u16 = number.try_into().unwrap();
 
-            if usedNumbers.get(number.into()) != true {
+            if !usedNumbers.get(number.into()) {
                 numbers.append(number_u16);
                 usedNumbers.insert(number.into(), true);
                 count += 1;

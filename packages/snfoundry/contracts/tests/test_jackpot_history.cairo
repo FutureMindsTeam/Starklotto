@@ -1,6 +1,6 @@
 use contracts::Lottery::{ILotteryDispatcher, ILotteryDispatcherTrait};
-use contracts::StarkPlayERC20::{IMintableDispatcher, IMintableDispatcherTrait};
-use contracts::StarkPlayVault::{IStarkPlayVaultDispatcher, IStarkPlayVaultDispatcherTrait};
+use contracts::StarkPlayERC20::IMintableDispatcher;
+use contracts::StarkPlayVault::IStarkPlayVaultDispatcher;
 use core::array::ArrayTrait;
 use snforge_std::{
     ContractClassTrait, DeclareResultTrait, declare, start_cheat_caller_address,

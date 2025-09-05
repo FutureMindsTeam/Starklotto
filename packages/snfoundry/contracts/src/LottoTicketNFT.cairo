@@ -1,6 +1,4 @@
-use core::serde::Serde;
 use starknet::ContractAddress;
-use starknet::storage::Map;
 
 /// Enum representing the status of a lottery ticket
 #[derive(Drop, Copy, Serde, starknet::Store)]
@@ -70,11 +68,11 @@ mod LottoTicketNFT {
     use openzeppelin_token::erc721::interface::{IERC721, IERC721Metadata};
     use openzeppelin_token::erc721::{ERC721Component, ERC721HooksEmptyImpl};
     use starknet::storage::{
-        Map, StorageMapReadAccess, StorageMapWriteAccess, StoragePathEntry,
+        Map, StorageMapReadAccess, StorageMapWriteAccess,
         StoragePointerReadAccess, StoragePointerWriteAccess,
     };
     use starknet::{
-        ContractAddress, contract_address_const, get_block_timestamp, get_caller_address,
+        ContractAddress, get_block_timestamp, get_caller_address,
     };
     use super::{ILottoTicketNFT, LottoStatus, TicketDetails};
 
@@ -162,7 +160,7 @@ mod LottoTicketNFT {
             ref self: ContractState, from: ContractAddress, to: ContractAddress, token_id: u256,
         ) -> bool {
             // Allow minting (from zero address)
-            if from == contract_address_const::<0>() {
+            if from == 0.try_into().unwrap() {
                 return true;
             }
 

@@ -46,7 +46,6 @@ pub trait IPrizeToken<TContractState> {
 #[starknet::contract]
 pub mod StarkPlayERC20 {
     use openzeppelin_access::accesscontrol::{AccessControlComponent, DEFAULT_ADMIN_ROLE};
-    use openzeppelin_introspection::interface::{ISRC5Dispatcher, ISRC5DispatcherTrait};
     use openzeppelin_introspection::src5::SRC5Component;
     use openzeppelin_security::PausableComponent;
     use openzeppelin_token::erc20::{ERC20Component, ERC20HooksEmptyImpl};
@@ -237,7 +236,7 @@ pub mod StarkPlayERC20 {
             let mut minters = ArrayTrait::new();
             let count = self.minters_count.read();
             let mut i = 0;
-            while i < count {
+            while i != count {
                 minters.append(self.minters.entry(i).read());
                 i += 1;
             }
@@ -319,7 +318,7 @@ pub mod StarkPlayERC20 {
             let mut burners = ArrayTrait::new();
             let count = self.burners_count.read();
             let mut i = 0;
-            while i < count {
+            while i != count {
                 burners.append(self.burners.read(i));
                 i += 1;
             }
