@@ -7,7 +7,7 @@ const deployedContracts = {
   devnet: {
     StarkPlayERC20: {
       address:
-        "0x577a512768760a60822efb6fe81243cb06bf916c08d158ac7c93bcd08cf43f6",
+        "0xe3d5667ffbea4b4727f299c2014dd7ce029c52e07c8e5e69de8ddd7362799a",
       abi: [
         {
           type: "impl",
@@ -1189,7 +1189,7 @@ const deployedContracts = {
     },
     StarkPlayVault: {
       address:
-        "0x76930ff3818d6b0ccc33771ab5429d51347ace92a0b76332d926ca40763601",
+        "0x74dad73edd4c3485817814776e2717a6bbcdbc84adc62f44cc31baafa3d1c8",
       abi: [
         {
           type: "impl",
@@ -2077,7 +2077,7 @@ const deployedContracts = {
     },
     Lottery: {
       address:
-        "0x73d1e1da63a4741a324a8f875d61c7c8e3e3aaa720eb9c63986d2b448e100",
+        "0x1f552bbe5421bb5a8564cb806e264b9e4153a968a5f8c43b5090649c451f7ba",
       abi: [
         {
           type: "impl",
@@ -2765,10 +2765,6 @@ const deployedContracts = {
               name: "strkPlayVaultContractAddress",
               type: "core::starknet::contract_address::ContractAddress",
             },
-            {
-              name: "initial_ticket_price",
-              type: "core::integer::u256",
-            },
           ],
         },
         {
@@ -3092,11 +3088,11 @@ const deployedContracts = {
         },
       ],
       classHash:
-        "0x6afd56596e0376784603c84e4e7f3b98df47863f91769b6f1ec4984194b20f0",
+        "0x2596ddeeb6d045b81526ca175741cb3d3c00f743ac3c76a699d562bee869480",
     },
     LottoTicketNFT: {
       address:
-        "0x2bab08ec4f6af8af4583d9ecd937337b1f5d067f4c923a6b0e94355050e0296",
+        "0x10d43be2ecb8cb07a5427b25afa14049fcf0062c261a14db6eaf1d415d32771",
       abi: [
         {
           type: "impl",
