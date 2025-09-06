@@ -15,11 +15,18 @@ type ContractType =
   | "Strk";
 
 // ✅ Añadido: subconjunto que acepta ContractPlayUI
-type ReadableContract = "Lottery" | "StarkPlayERC20" | "StarkPlayVault" | "Strk";
+type ReadableContract =
+  | "Lottery"
+  | "StarkPlayERC20"
+  | "StarkPlayVault"
+  | "Strk";
 
 // ✅ Añadido: guard para acotar ContractType → ReadableContract
 const isReadableContract = (x: ContractType): x is ReadableContract =>
-  x === "Lottery" || x === "StarkPlayERC20" || x === "StarkPlayVault" || x === "Strk";
+  x === "Lottery" ||
+  x === "StarkPlayERC20" ||
+  x === "StarkPlayVault" ||
+  x === "Strk";
 
 // Asegurar que LOTT_CONTRACT_NAME sea del tipo correcto
 const contractName: ContractType = LOTT_CONTRACT_NAME as ContractType;
@@ -173,7 +180,6 @@ const NumberSelectionPage = () => {
         </div>
       </div>
 
-     
       <ContractPlayUI contractName={uiContractName} />
 
       {/* Go Back Button */}
