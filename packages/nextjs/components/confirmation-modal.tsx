@@ -180,14 +180,14 @@ export function ConfirmationModal({
                       <div className="flex justify-between items-center">
                         <span className="text-white">Total payment:</span>
                         <span className="font-bold text-green-400">
-                          ${totalPrice} $tarkPlay
+                          ${totalPrice} $TRKP
                         </span>
                       </div>
 
                       <div className="flex justify-between items-center mt-1">
                         <span className="text-white">Current balance:</span>
                         <span className="text-white">
-                          ${currentBalance} $tarkPlay
+                          ${currentBalance} $TRKP
                         </span>
                       </div>
 
@@ -196,7 +196,7 @@ export function ConfirmationModal({
                           Balance after purchase:
                         </span>
                         <span className="text-white">
-                          ${balanceAfterPurchase} $tarkPlay
+                          ${balanceAfterPurchase} $TRKP
                         </span>
                       </div>
                     </motion.div>

@@ -68,9 +68,10 @@ pub trait ILottery<TContractState> {
     ) -> u8;
     fn CreateNewDraw(ref self: TContractState, accumulatedPrize: u256);
     fn SetTicketPrice(ref self: TContractState, price: u256);
-    fn GetTicketPrice(self: @TContractState) -> u256;
+    
     //=======================================================================================
     //get functions
+    fn GetTicketPrice(self: @TContractState) -> u256;
     fn GetAccumulatedPrize(self: @TContractState) -> u256;
     fn GetFixedPrize(self: @TContractState, matches: u8) -> u256;
     fn GetDrawStatus(self: @TContractState, drawId: u64) -> bool;
@@ -129,6 +130,15 @@ pub mod Lottery {
 
     // ownable component by openzeppelin
     component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
+
+     //=======================================================================================
+    //constants
+    //=======================================================================================
+    const MinNumber: u16 = 1; // min number
+    const MaxNumber: u16 = 40; // max number
+    const RequiredNumbers: usize = 5; // amount of numbers per ticket
+    // Precio inicial de ticket: 5 STARKP (18 decimales)
+    const TicketPriceInitial: u256 = 5000000000000000000;
 
     //ownable component by openzeppelin
     #[abi(embed_v0)]
@@ -272,7 +282,7 @@ pub mod Lottery {
         ref self: ContractState,
         owner: ContractAddress,
         strkPlayContractAddress: ContractAddress,
-        strkPlayVaultContractAddress: ContractAddress,
+        strkPlayVaultContractAddress: ContractAddress
     ) {
         // Validate that addresses are not zero address
         assert(strkPlayContractAddress != contract_address_const::<0>(), 'Invalid STRKP contract');
@@ -291,6 +301,7 @@ pub mod Lottery {
         // Store dynamic contract addresses
         self.strkPlayContractAddress.write(strkPlayContractAddress);
         self.strkPlayVaultContractAddress.write(strkPlayVaultContractAddress);
+        self.ticketPrice.write(TicketPriceInitial);
     }
     //=======================================================================================
     //impl
@@ -812,12 +823,7 @@ pub mod Lottery {
         }
     }
 
-    //=======================================================================================
-    //constants
-    //=======================================================================================
-    const MinNumber: u16 = 1; // min number
-    const MaxNumber: u16 = 40; // max number
-    const RequiredNumbers: usize = 5; // amount of numbers per ticket
+   
 
     //=======================================================================================
     //internal functions
