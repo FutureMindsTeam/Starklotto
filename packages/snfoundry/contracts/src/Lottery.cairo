@@ -291,6 +291,8 @@ pub mod Lottery {
         // Store dynamic contract addresses
         self.strkPlayContractAddress.write(strkPlayContractAddress);
         self.strkPlayVaultContractAddress.write(strkPlayVaultContractAddress);
+
+        self.ticketPrice.write(TicketPriceInitial);
     }
     //=======================================================================================
     //impl
@@ -818,6 +820,8 @@ pub mod Lottery {
     const MinNumber: u16 = 1; // min number
     const MaxNumber: u16 = 40; // max number
     const RequiredNumbers: usize = 5; // amount of numbers per ticket
+    // Precio inicial de ticket: 10 STARKP (18 decimales)
+    const TicketPriceInitial: u256 = 10000000000000000000;
 
     //=======================================================================================
     //internal functions

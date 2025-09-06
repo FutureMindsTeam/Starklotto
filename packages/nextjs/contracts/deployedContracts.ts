@@ -7,7 +7,7 @@ const deployedContracts = {
   devnet: {
     StarkPlayERC20: {
       address:
-        "0x13c7fdf96e73e598e407c7a6ca98ed407eb333611f114f52540e355e1fd6aed",
+        "0xe3d5667ffbea4b4727f299c2014dd7ce029c52e07c8e5e69de8ddd7362799a",
       abi: [
         {
           type: "impl",
@@ -1185,11 +1185,11 @@ const deployedContracts = {
         },
       ],
       classHash:
-        "0x66aad4d8cd3a8859dc4917b6f03641f81ce64a58d0a3d5280639ca159f0038",
+        "0x1575d4786f1515350b484dd67fcc517ea9c014693127871cc2676ea58e86d52",
     },
     StarkPlayVault: {
       address:
-        "0x16da081084d9e7f3ed0edcd7e0a05dc39889fb075080230cc759dde826338a4",
+        "0x74dad73edd4c3485817814776e2717a6bbcdbc84adc62f44cc31baafa3d1c8",
       abi: [
         {
           type: "impl",
@@ -1290,17 +1290,6 @@ const deployedContracts = {
               outputs: [
                 {
                   type: "core::integer::u256",
-                },
-              ],
-              state_mutability: "view",
-            },
-            {
-              type: "function",
-              name: "get_owner",
-              inputs: [],
-              outputs: [
-                {
-                  type: "core::starknet::contract_address::ContractAddress",
                 },
               ],
               state_mutability: "view",
@@ -1534,6 +1523,33 @@ const deployedContracts = {
                 },
               ],
               state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "set_treasury_address",
+              inputs: [
+                {
+                  name: "treasury",
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::bool",
+                },
+              ],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "get_treasury_address",
+              inputs: [],
+              outputs: [
+                {
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              state_mutability: "view",
             },
             {
               type: "function",
@@ -1938,6 +1954,28 @@ const deployedContracts = {
         },
         {
           type: "event",
+          name: "contracts::StarkPlayVault::StarkPlayVault::TreasuryFeeTransferred",
+          kind: "struct",
+          members: [
+            {
+              name: "user",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+            {
+              name: "amount",
+              type: "core::integer::u256",
+              kind: "key",
+            },
+            {
+              name: "treasury",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
           name: "contracts::StarkPlayVault::StarkPlayVault::Event",
           kind: "enum",
           variants: [
@@ -2026,15 +2064,20 @@ const deployedContracts = {
               type: "contracts::StarkPlayVault::StarkPlayVault::PrizeConversionFeesWithdrawn",
               kind: "nested",
             },
+            {
+              name: "TreasuryFeeTransferred",
+              type: "contracts::StarkPlayVault::StarkPlayVault::TreasuryFeeTransferred",
+              kind: "nested",
+            },
           ],
         },
       ],
       classHash:
-        "0x7e725c6512bb59f61327cdfef2cb15a5c3e899e279590ec4130444c7abb220d",
+        "0xb7d9dbef4d78349c9704dfebb13c7401d7fa000d0c6b7cb09b8b7c3fe24a53",
     },
     Lottery: {
       address:
-        "0x3708e589b168fbf7c97275293d77a1131dc78982c458342dd4fa213b3ec2415",
+        "0x1f552bbe5421bb5a8564cb806e264b9e4153a968a5f8c43b5090649c451f7ba",
       abi: [
         {
           type: "impl",
@@ -2170,8 +2213,8 @@ const deployedContracts = {
                   type: "core::integer::u64",
                 },
                 {
-                  name: "numbers",
-                  type: "core::array::Array::<core::integer::u16>",
+                  name: "numbers_array",
+                  type: "core::array::Array::<core::array::Array::<core::integer::u16>>",
                 },
                 {
                   name: "quantity",
@@ -2814,6 +2857,38 @@ const deployedContracts = {
         },
         {
           type: "event",
+          name: "contracts::Lottery::Lottery::BulkTicketPurchase",
+          kind: "struct",
+          members: [
+            {
+              name: "drawId",
+              type: "core::integer::u64",
+              kind: "key",
+            },
+            {
+              name: "player",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+            {
+              name: "quantity",
+              type: "core::integer::u8",
+              kind: "data",
+            },
+            {
+              name: "totalPrice",
+              type: "core::integer::u256",
+              kind: "data",
+            },
+            {
+              name: "timestamp",
+              type: "core::integer::u64",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
           name: "contracts::Lottery::Lottery::DrawCompleted",
           kind: "struct",
           members: [
@@ -2912,6 +2987,55 @@ const deployedContracts = {
         },
         {
           type: "event",
+          name: "contracts::Lottery::Lottery::InvalidDrawIdAttempted",
+          kind: "struct",
+          members: [
+            {
+              name: "caller",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "data",
+            },
+            {
+              name: "attempted_draw_id",
+              type: "core::integer::u64",
+              kind: "data",
+            },
+            {
+              name: "current_draw_id",
+              type: "core::integer::u64",
+              kind: "data",
+            },
+            {
+              name: "function_name",
+              type: "core::felt252",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "contracts::Lottery::Lottery::DrawValidationFailed",
+          kind: "struct",
+          members: [
+            {
+              name: "draw_id",
+              type: "core::integer::u64",
+              kind: "data",
+            },
+            {
+              name: "reason",
+              type: "core::felt252",
+              kind: "data",
+            },
+            {
+              name: "caller",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
           name: "contracts::Lottery::Lottery::Event",
           kind: "enum",
           variants: [
@@ -2923,6 +3047,11 @@ const deployedContracts = {
             {
               name: "TicketPurchased",
               type: "contracts::Lottery::Lottery::TicketPurchased",
+              kind: "nested",
+            },
+            {
+              name: "BulkTicketPurchase",
+              type: "contracts::Lottery::Lottery::BulkTicketPurchase",
               kind: "nested",
             },
             {
@@ -2945,15 +3074,25 @@ const deployedContracts = {
               type: "contracts::Lottery::Lottery::JackpotIncreased",
               kind: "nested",
             },
+            {
+              name: "InvalidDrawIdAttempted",
+              type: "contracts::Lottery::Lottery::InvalidDrawIdAttempted",
+              kind: "nested",
+            },
+            {
+              name: "DrawValidationFailed",
+              type: "contracts::Lottery::Lottery::DrawValidationFailed",
+              kind: "nested",
+            },
           ],
         },
       ],
       classHash:
-        "0x388e79016c5480d5664655a9f3bfc686a83a69434284a3666a905531c7dd7fe",
+        "0x2596ddeeb6d045b81526ca175741cb3d3c00f743ac3c76a699d562bee869480",
     },
     LottoTicketNFT: {
       address:
-        "0x3194fbfdb756558fce9cadbbf02e04549fe40fc88551f2e37b2c72d44d5dd7b",
+        "0x10d43be2ecb8cb07a5427b25afa14049fcf0062c261a14db6eaf1d415d32771",
       abi: [
         {
           type: "impl",
