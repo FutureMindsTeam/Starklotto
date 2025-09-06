@@ -8,7 +8,6 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Abi, useContract } from "@starknet-react/core";
 import { useTransactor } from "~~/hooks/scaffold-stark/useTransactor";
-import deployedContracts from "~~/contracts/deployedContracts";
 import { LOTT_CONTRACT_NAME } from "~~/utils/Constants";
 import { useTranslation } from "react-i18next";
 import TicketControls from "~~/components/buy-tickets/TicketControls";
@@ -16,6 +15,7 @@ import TicketSelector from "~~/components/buy-tickets/TicketSelector";
 import PurchaseSummary from "~~/components/buy-tickets/PurchaseSummary";
 // Importar el hook para obtener el precio del ticket
 import { useTicketPrice } from "~~/hooks/scaffold-stark/useTicketPrice";
+import { useDeployedContractInfo } from "~~/hooks/scaffold-stark/useDeployedContractInfo";
 
 
 export default function BuyTicketsPage() {
@@ -240,9 +240,11 @@ export default function BuyTicketsPage() {
     setSelectedNumbers(newSelections);
   };
 
-  const contractInfo = deployedContracts.devnet[LOTT_CONTRACT_NAME];
-  const abi = contractInfo.abi as Abi;
-  const contractAddress = contractInfo.address;
+  const { data: deployedLottery } = useDeployedContractInfo(
+    LOTT_CONTRACT_NAME as any,
+  );
+  const abi = (deployedLottery?.abi || []) as Abi;
+  const contractAddress = deployedLottery?.address;
 
   const { contract: contractInstance } = useContract({
     abi,

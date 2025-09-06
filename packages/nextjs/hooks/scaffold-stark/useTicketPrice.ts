@@ -3,6 +3,11 @@
 import { useMemo } from "react";
 import { useScaffoldReadContract } from "~~/hooks/scaffold-stark/useScaffoldReadContract";
 import { LOTT_CONTRACT_NAME } from "~~/utils/Constants";
+import { useReadContract } from "@starknet-react/core";
+import deployedContracts from "~~/contracts/deployedContracts";
+import scaffoldConfig from "~~/scaffold.config";
+import { useContractAddresses } from "~~/hooks/useContractAddresses";
+import { useDeployedContractInfo } from "~~/hooks/scaffold-stark/useDeployedContractInfo";
 
 export function useTicketPrice(opts?: {
   contractName?: string;
@@ -13,19 +18,44 @@ export function useTicketPrice(opts?: {
   const decimals = opts?.decimals ?? 18;
   const watch = opts?.watch ?? true;
 
-
-
+  // Preferir direcciones validadas por UI y verificación de despliegue
+  const { Lottery: lotteryAddress } = useContractAddresses();
+  const { data: deployedLottery } = useDeployedContractInfo(
+    contractName as any,
+  );
   const { data, isLoading, isFetching, error, refetch } =
     useScaffoldReadContract({
       contractName: contractName as "Lottery",
       functionName: "GetTicketPrice",
       args: [],
       watch,
+      // Forzar lectura en funciones sin argumentos
+      enabled: true,
     });
+
+  // Fallback directo usando deployedContracts si el hook anterior no entrega data (p. ej. devnet reiniciado)
+  const network = scaffoldConfig.targetNetworks[0].network as keyof typeof deployedContracts;
+  const fallback = (deployedContracts as any)?.[network]?.[contractName];
+
+  const {
+    data: fallbackData,
+    isLoading: fallbackLoading,
+    isFetching: fallbackFetching,
+    error: fallbackError,
+  } = useReadContract({
+    functionName: "GetTicketPrice",
+    address: (deployedLottery as any)?.address || lotteryAddress || fallback?.address,
+    abi: (deployedLottery as any)?.abi || fallback?.abi,
+    args: [],
+    watch,
+    enabled:
+      (!!(deployedLottery as any)?.address && !!(deployedLottery as any)?.abi) ||
+      (!!(lotteryAddress || fallback?.address) && !!fallback?.abi),
+  });
 
   // Convert the returned u256-like value into a bigint.
   const priceWei: bigint = useMemo(() => {
-    const value: any = data;
+    const value: any = data ?? fallbackData;
     if (value === undefined || value === null) return 0n;
     if (typeof value === "bigint") return value;
     if (typeof value === "number") return BigInt(value);
@@ -45,7 +75,7 @@ export function useTicketPrice(opts?: {
     } catch {
       return 0n;
     }
-  }, [data]);
+  }, [data, fallbackData]);
 
   // Format the price for display
   const formatted = useMemo(() => {
@@ -63,8 +93,8 @@ export function useTicketPrice(opts?: {
   return {
     priceWei,
     formatted,
-    isLoading: isLoading || isFetching,
-    error,
+    isLoading: isLoading || isFetching || fallbackLoading || fallbackFetching,
+    error: error ?? (fallbackError as any),
     refetch,
   };
 }

@@ -96,6 +96,34 @@ const deployScript = async (): Promise<void> => {
     );
   }
 
+  // Deploy Lottery with dynamic addresses before executing calls
+  console.log("Deploying Lottery contract...");
+  const lotteryDeploymentResult = await deployContract({
+    contract: "Lottery",
+    contractName: "Lottery",
+    constructorArgs: {
+      owner: deployer.address,
+      strkPlayContractAddress: starkPlayERC20Address,
+      strkPlayVaultContractAddress: starkPlayVaultAddress
+    },
+  });
+  const lotteryAddress = lotteryDeploymentResult.address;
+
+  // Basic check for a valid address
+  if (
+    !lotteryAddress ||
+    lotteryAddress === "" ||
+    lotteryAddress.startsWith(
+      "0x0000000000000000000000000000000000000000000000000000000000000000"
+    )
+  ) {
+    throw new Error(
+      `Failed to deploy Lottery or address is invalid: ${lotteryAddress}`
+    );
+  }
+
+  console.log(`Lottery deployed successfully at address: ${lotteryAddress}`);
+
   // Execute pending deploy calls and wait for confirmation
   console.log("Executing deployment calls and waiting for confirmation...");
   await executeDeployCalls();
@@ -142,29 +170,7 @@ const deployScript = async (): Promise<void> => {
     throw new Error(`Vault role assignment failed: ${error}`);
   }
 
-  // Deploy Lottery with dynamic addresses
-  const INITIAL_TICKET_PRICE = 10n * 10n ** 18n; // 10 * 10^18
-  await deployContract({
-    contract: "Lottery",
-    contractName: "Lottery",
-    constructorArgs: {
-      owner: deployer.address,
-      strkPlayContractAddress: starkPlayERC20Address,
-      strkPlayVaultContractAddress: starkPlayVaultAddress,
-      initial_ticket_price: INITIAL_TICKET_PRICE,
-    },
-  });
-
-  await deployContract({
-    contract: "LottoTicketNFT",
-    contractName: "LottoTicketNFT",
-    constructorArgs: {
-      owner: deployer.address,
-      name: "LottoTicket", // Example name
-      symbol: "LTT", // Example symbol
-      base_uri: "https://api.example.com/nft/", // Example base URI
-    },
-  });
+  // Note: LottoTicketNFT deployment removed as it's not needed currently
 };
 
 const main = async (): Promise<void> => {
