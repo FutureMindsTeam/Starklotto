@@ -31,7 +31,7 @@ export default function PurchaseSummary({
         <div className="flex justify-between items-center">
           <p className="text-white font-medium">{t("buyTickets.totalCost")}</p>
           <p className="text-[#4ade80] font-medium">
-            {isPriceLoading ? "Loading…" : `${totalCostFormatted} $tarkPlay`}
+            {isPriceLoading ? "Loading…" : `${totalCostFormatted} $TRKP`}
           </p>
         </div>
         {priceError && (

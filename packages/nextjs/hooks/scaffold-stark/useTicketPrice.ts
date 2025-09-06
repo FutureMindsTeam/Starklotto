@@ -90,10 +90,14 @@ export function useTicketPrice(opts?: {
       : intPart.toString();
   }, [priceWei, decimals]);
 
+  // Only show loading if we're actually loading and don't have data yet
+  const actuallyLoading = (isLoading || isFetching || fallbackLoading || fallbackFetching) && 
+                         !data && !fallbackData;
+
   return {
     priceWei,
     formatted,
-    isLoading: isLoading || isFetching || fallbackLoading || fallbackFetching,
+    isLoading: actuallyLoading,
     error: error ?? (fallbackError as any),
     refetch,
   };

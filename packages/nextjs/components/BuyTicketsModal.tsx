@@ -519,7 +519,7 @@ export default function BuyTicketsModal({
                     {t("buyTickets.totalCost")}
                   </p>
                   <p className="text-[#4ade80] font-medium">
-                    ${totalCost} $tarkPlay
+                    ${totalCost} $TRKP
                   </p>
                 </motion.div>
 
