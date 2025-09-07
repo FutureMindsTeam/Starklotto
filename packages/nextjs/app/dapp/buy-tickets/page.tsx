@@ -8,12 +8,14 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Abi, useContract } from "@starknet-react/core";
 import { useTransactor } from "~~/hooks/scaffold-stark/useTransactor";
-import deployedContracts from "~~/contracts/deployedContracts";
 import { LOTT_CONTRACT_NAME } from "~~/utils/Constants";
 import { useTranslation } from "react-i18next";
 import TicketControls from "~~/components/buy-tickets/TicketControls";
 import TicketSelector from "~~/components/buy-tickets/TicketSelector";
 import PurchaseSummary from "~~/components/buy-tickets/PurchaseSummary";
+// Importar el hook para obtener el precio del ticket
+import { useTicketPrice } from "~~/hooks/scaffold-stark/useTicketPrice";
+import { useDeployedContractInfo } from "~~/hooks/scaffold-stark/useDeployedContractInfo";
 
 export default function BuyTicketsPage() {
   const { t } = useTranslation();
@@ -44,8 +46,27 @@ export default function BuyTicketsPage() {
   // Mock data - in real app, this would come from props or API
   const jackpotAmount = "$250,295 USDC";
   const countdown = { days: "00", hours: "23", minutes: "57", seconds: "46" };
+
   const balance = 1000;
-  const ticketPrice = 10;
+
+  const {
+    priceWei,
+    formatted: unitPriceFormatted,
+    isLoading: priceLoading,
+    error: priceError,
+  } = useTicketPrice({ decimals: 18, watch: true });
+
+  // Helper local para formatear BigInt -> string con decimales
+  const formatAmount = (wei: bigint, decimals = 18) => {
+    const base = 10n ** BigInt(decimals);
+    const intPart = wei / base;
+    const fracPart = wei % base;
+    let fracStr = fracPart
+      .toString()
+      .padStart(decimals, "0")
+      .replace(/0+$/, "");
+    return fracStr.length > 0 ? `${intPart}.${fracStr}` : intPart.toString();
+  };
 
   const increaseTickets = () => {
     if (ticketCount < 10) {
@@ -219,9 +240,11 @@ export default function BuyTicketsPage() {
     setSelectedNumbers(newSelections);
   };
 
-  const contractInfo = deployedContracts.devnet[LOTT_CONTRACT_NAME];
-  const abi = contractInfo.abi as Abi;
-  const contractAddress = contractInfo.address;
+  const { data: deployedLottery } = useDeployedContractInfo(
+    LOTT_CONTRACT_NAME as any,
+  );
+  const abi = (deployedLottery?.abi || []) as Abi;
+  const contractAddress = deployedLottery?.address;
 
   const { contract: contractInstance } = useContract({
     abi,
@@ -230,7 +253,9 @@ export default function BuyTicketsPage() {
 
   const writeTxn = useTransactor();
 
-  const totalCost = ticketCount * ticketPrice;
+  // total on-chain: priceWei * cantidad
+  const totalWei = priceWei * BigInt(ticketCount);
+  const totalFormatted = formatAmount(totalWei, 18);
 
   const handlePurchase = async () => {
     setTxError(null);
@@ -422,9 +447,12 @@ export default function BuyTicketsPage() {
                 })}
               </div>
 
-              {/* Purchase Summary */}
+              {/* Purchase Summary (usa precio on-chain) */}
               <PurchaseSummary
-                totalCost={totalCost}
+                unitPriceFormatted={unitPriceFormatted}
+                totalCostFormatted={totalFormatted}
+                isPriceLoading={priceLoading}
+                priceError={priceError?.message ?? null}
                 isLoading={isLoading}
                 txError={txError}
                 txSuccess={txSuccess}

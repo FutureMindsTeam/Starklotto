@@ -14,6 +14,20 @@ type ContractType =
   | "LottoTicketNFT"
   | "Strk";
 
+// ✅ Añadido: subconjunto que acepta ContractPlayUI
+type ReadableContract =
+  | "Lottery"
+  | "StarkPlayERC20"
+  | "StarkPlayVault"
+  | "Strk";
+
+// ✅ Añadido: guard para acotar ContractType → ReadableContract
+const isReadableContract = (x: ContractType): x is ReadableContract =>
+  x === "Lottery" ||
+  x === "StarkPlayERC20" ||
+  x === "StarkPlayVault" ||
+  x === "Strk";
+
 // Asegurar que LOTT_CONTRACT_NAME sea del tipo correcto
 const contractName: ContractType = LOTT_CONTRACT_NAME as ContractType;
 
@@ -26,6 +40,11 @@ const NumberSelectionPage = () => {
     useState<number>(0);
 
   const router = useRouter();
+
+  // ✅ Añadido: variable acotada para pasar a <ContractPlayUI />
+  const uiContractName: ReadableContract = isReadableContract(contractName)
+    ? contractName
+    : "Lottery"; // fallback seguro
 
   // Manual number selection
   const handleNumberClick = (num: number) => {
@@ -161,8 +180,7 @@ const NumberSelectionPage = () => {
         </div>
       </div>
 
-      {/* Confirmation Button */}
-      <ContractPlayUI contractName={contractName} />
+      <ContractPlayUI contractName={uiContractName} />
 
       {/* Go Back Button */}
       <button

@@ -25,7 +25,7 @@ const USER2: ContractAddress = 0x04dA5254690b46B9C4059C25366D1778839BE63C142d899
 // Constants
 const TICKET_PRICE: u256 = 1000000000000000000; // 1 STRK token
 const INITIAL_JACKPOT: u256 = 10000000000000000000; // 10 STRK tokens
-
+const TicketPriceInitial: u256 = 5000000000000000000;
 // Hardcoded addresses from Lottery contract
 const STRK_PLAY_CONTRACT_ADDRESS: ContractAddress =
     0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
@@ -1550,7 +1550,7 @@ fn test_initial_ticket_price() {
     let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_addr };
 
     let initial_price = lottery_dispatcher.GetTicketPrice();
-    assert!(initial_price == 0, "Initial ticket price should be 0");
+    assert!(initial_price == TicketPriceInitial, "Initial ticket price should be 5");
 }
 
 #[test]
