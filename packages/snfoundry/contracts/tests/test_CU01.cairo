@@ -10,9 +10,14 @@ use openzeppelin_utils::serde::SerializedAppend;
 use snforge_std::{
     start_cheat_caller_address,
     stop_cheat_caller_address, declare, ContractClassTrait, DeclareResultTrait, spy_events,
-    EventSpyTrait // Add for fetching events directly
+    EventSpyAssertionsTrait, EventSpyTrait, // Add for fetching events directly
+    Event, // A structure describing a raw `Event`
+    IsEmitted, // Trait for checking if a given event was ever emitted
+    load, store
 };
 use starknet::ContractAddress;
+use starknet::contract_address::contract_address_const;
+use starknet::storage::StorableStoragePointerReadAccess;
 
 const STRK_TOKEN_CONTRACT_ADDRESS: ContractAddress = FELT_STRK_CONTRACT.try_into().unwrap();
 // Direcciones de prueba
@@ -47,6 +52,14 @@ fn USER1() -> ContractAddress {
     0x456.try_into().unwrap()
 }
 
+fn USER2() -> ContractAddress {
+    contract_address_const::<0x789>()
+}
+
+fn USER3() -> ContractAddress {
+    contract_address_const::<0xABC>()
+}
+
 
 fn LARGE_AMOUNT() -> u256 {
     1000000000000000000000000_u256 // 1 million tokens (within mint limit)
@@ -60,6 +73,13 @@ fn MAX_MINT_LIMIT() -> u256 {
 fn EXCEEDS_MINT_LIMIT() -> u256 {
     // Cantidad que excede el límite para provocar panic
     2000000000000000000000000_u256 // 2 million tokens (exceeds limit)
+<<<<<<< HEAD
+=======
+}
+
+fn PURCHASE_AMOUNT() -> u256 {
+    1000000000000000000_u256 // 1 STRK
+>>>>>>> 8f68df9 (Integrate and organize CU01 test files - consolidate tests and remove duplicates)
 }
 
 fn deploy_contract_lottery() -> ContractAddress {
@@ -1823,4 +1843,295 @@ fn test_multiple_authorized_contracts() {
     start_cheat_caller_address(token_mint.contract_address, USER1());
     token_mint.mint(owner_address(), 1000_u256);
     stop_cheat_caller_address(token_mint.contract_address);
+}
+
+// ============================================================================================
+// ADMIN WITHDRAWAL TESTS (integrated)
+// ============================================================================================
+
+#[test]
+fn test_withdraw_general_fees_success() {
+    let (vault, _) = deploy_vault_contract();
+    let strk_token = IMintableDispatcher {
+        contract_address: 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
+            .try_into()
+            .unwrap(),
+    };
+    setup_user_balance(strk_token, USER1(), LARGE_AMOUNT(), vault.contract_address);
+    let purchase_amount = PURCHASE_AMOUNT();
+    let expected_fee = (purchase_amount * Initial_Fee_Percentage.into()) / 10000_u256;
+    start_cheat_caller_address(vault.contract_address, USER1());
+    vault.buySTRKP(USER1(), purchase_amount);
+    stop_cheat_caller_address(vault.contract_address);
+    assert(vault.get_accumulated_fee() == expected_fee, 'Fee not accumulated');
+
+    let ownable = IOwnableDispatcher { contract_address: vault.contract_address };
+    let owner = ownable.owner();
+    let recipient = USER2();
+    let erc20 = IERC20Dispatcher { contract_address: strk_token.contract_address };
+    let initial_recipient_balance = erc20.balance_of(recipient);
+
+    start_cheat_caller_address(vault.contract_address, owner);
+    let success = vault.withdrawGeneralFees(recipient, expected_fee);
+    stop_cheat_caller_address(vault.contract_address);
+    assert(success, 'Withdraw should succeed');
+    assert(vault.get_accumulated_fee() == 0, 'Fee not decremented');
+    let new_recipient_balance = erc20.balance_of(recipient);
+    assert(
+        new_recipient_balance - initial_recipient_balance == expected_fee, 'STRK not transferred',
+    );
+}
+
+#[should_panic(expected: 'Caller is not the owner')]
+#[test]
+fn test_withdraw_general_fees_not_owner() {
+    let (vault, starkplay) = deploy_vault_contract();
+    let strk_token = IMintableDispatcher {
+        contract_address: 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
+            .try_into()
+            .unwrap(),
+    };
+    setup_user_balance(strk_token, USER1(), LARGE_AMOUNT(), vault.contract_address);
+    setup_user_balance(starkplay, USER1(), LARGE_AMOUNT(), vault.contract_address);
+
+    let purchase_amount = PURCHASE_AMOUNT();
+    let expected_fee = (purchase_amount * Initial_Fee_Percentage.into()) / 10000_u256;
+    start_cheat_caller_address(vault.contract_address, USER1());
+    vault.buySTRKP(USER1(), purchase_amount);
+    stop_cheat_caller_address(vault.contract_address);
+
+    start_cheat_caller_address(vault.contract_address, USER1());
+    vault.withdrawGeneralFees(USER2(), expected_fee);
+    stop_cheat_caller_address(vault.contract_address);
+}
+
+#[should_panic(expected: 'Withdraw amount exceeds fees')]
+#[test]
+fn test_withdraw_general_fees_exceeds_accumulated() {
+    let (vault, _) = deploy_vault_contract();
+    let strk_token = IMintableDispatcher {
+        contract_address: 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
+            .try_into()
+            .unwrap(),
+    };
+    setup_user_balance(strk_token, USER1(), LARGE_AMOUNT(), vault.contract_address);
+    let purchase_amount = PURCHASE_AMOUNT();
+    let expected_fee = (purchase_amount * Initial_Fee_Percentage.into()) / 10000_u256;
+    start_cheat_caller_address(vault.contract_address, USER1());
+    vault.buySTRKP(USER1(), purchase_amount);
+    stop_cheat_caller_address(vault.contract_address);
+
+    let ownable = IOwnableDispatcher { contract_address: vault.contract_address };
+    let owner = ownable.owner();
+    start_cheat_caller_address(vault.contract_address, owner);
+    vault.withdrawGeneralFees(USER2(), expected_fee + 1_u256);
+    stop_cheat_caller_address(vault.contract_address);
+}
+
+#[should_panic(expected: 'Amount must be > 0')]
+#[test]
+fn test_withdraw_general_fees_zero_amount() {
+    let (vault, _) = deploy_vault_contract();
+    let ownable = IOwnableDispatcher { contract_address: vault.contract_address };
+    let owner = ownable.owner();
+    start_cheat_caller_address(vault.contract_address, owner);
+    vault.withdrawGeneralFees(USER2(), 0_u256);
+    stop_cheat_caller_address(vault.contract_address);
+}
+
+#[should_panic(expected: 'Insufficient STRK in vault')]
+#[test]
+fn test_withdraw_general_fees_insufficient_vault_balance() {
+    let (vault, _) = deploy_vault_contract();
+    let ownable = IOwnableDispatcher { contract_address: vault.contract_address };
+    let owner = ownable.owner();
+
+    start_cheat_caller_address(vault.contract_address, owner);
+    let loaded = load(vault.contract_address, selector!("accumulatedFee"), 1);
+    assert_eq!(loaded, array![0_felt252], "Initial accumulatedFee should be 0");
+    store(
+        vault.contract_address,
+        selector!("accumulatedFee"),
+        array![5000].span(),
+    );
+    let loaded = load(vault.contract_address, selector!("accumulatedFee"), 1);
+    assert_eq!(loaded, array![5000]);
+    vault.withdrawGeneralFees(USER2(), 100_u256);
+    stop_cheat_caller_address(vault.contract_address);
+}
+
+#[test]
+fn test_withdraw_prize_conversion_fees_success() {
+    let (vault, _starkplay_token) = deploy_vault_contract();
+    let strk_token = IMintableDispatcher {
+        contract_address: 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
+            .try_into()
+            .unwrap(),
+    };
+
+    setup_user_balance(strk_token, USER1(), LARGE_AMOUNT(), vault.contract_address);
+    let convert_amount = PURCHASE_AMOUNT();
+    let prizeFeeAmount = (convert_amount * Initial_Fee_Percentage.into()) / 10000_u256;
+
+    let ownable = IOwnableDispatcher { contract_address: vault.contract_address };
+    let owner = ownable.owner();
+    start_cheat_caller_address(vault.contract_address, owner);
+    store(
+        vault.contract_address,
+        selector!("accumulatedPrizeConversionFees"),
+        array![prizeFeeAmount.low.into(), prizeFeeAmount.high.into()].span(),
+    );
+    stop_cheat_caller_address(vault.contract_address);
+
+    start_cheat_caller_address(strk_token.contract_address, owner);
+    strk_token.mint(vault.contract_address, LARGE_AMOUNT());
+    stop_cheat_caller_address(strk_token.contract_address);
+
+    assert(
+        vault.GetAccumulatedPrizeConversionFees() == prizeFeeAmount, 'Fee not set',
+    );
+
+    let recipient = USER2();
+    let erc20 = IERC20Dispatcher { contract_address: strk_token.contract_address };
+    let initial_recipient_balance = erc20.balance_of(recipient);
+
+    start_cheat_caller_address(vault.contract_address, owner);
+    let success = vault.withdrawPrizeConversionFees(recipient, prizeFeeAmount);
+    stop_cheat_caller_address(vault.contract_address);
+
+    assert(success, 'Withdraw should succeed');
+    assert(vault.GetAccumulatedPrizeConversionFees() == 0, 'Prize fee not decremented');
+    let new_recipient_balance = erc20.balance_of(recipient);
+    assert(
+        new_recipient_balance - initial_recipient_balance == prizeFeeAmount, 'STRK not transferred',
+    );
+}
+
+#[should_panic(expected: 'Caller is not the owner')]
+#[test]
+fn test_withdraw_prize_conversion_fees_not_owner() {
+    let (vault, _) = deploy_vault_contract();
+    let fee_amount = 100_u256;
+    store(
+        vault.contract_address,
+        selector!("accumulatedPrizeConversionFees"),
+        array![fee_amount.low.into(), fee_amount.high.into()].span(),
+    );
+    start_cheat_caller_address(vault.contract_address, USER1());
+    vault.withdrawPrizeConversionFees(USER2(), fee_amount);
+    stop_cheat_caller_address(vault.contract_address);
+}
+
+#[should_panic(expected: 'Withdraw amount exceeds fees')]
+#[test]
+fn test_withdraw_prize_conversion_fees_exceeds_accumulated() {
+    let (vault, _) = deploy_vault_contract();
+    let ownable = IOwnableDispatcher { contract_address: vault.contract_address };
+    let owner = ownable.owner();
+    let fee_amount = 50_u256;
+    store(
+        vault.contract_address,
+        selector!("accumulatedPrizeConversionFees"),
+        array![fee_amount.low.into(), fee_amount.high.into()].span(),
+    );
+    start_cheat_caller_address(vault.contract_address, owner);
+    vault.withdrawPrizeConversionFees(USER2(), 51_u256);
+    stop_cheat_caller_address(vault.contract_address);
+}
+
+#[should_panic(expected: 'Amount must be > 0')]
+#[test]
+fn test_withdraw_prize_conversion_fees_zero_amount() {
+    let (vault, _) = deploy_vault_contract();
+    let ownable = IOwnableDispatcher { contract_address: vault.contract_address };
+    let owner = ownable.owner();
+    start_cheat_caller_address(vault.contract_address, owner);
+    vault.withdrawPrizeConversionFees(USER2(), 0_u256);
+    stop_cheat_caller_address(vault.contract_address);
+}
+
+#[should_panic(expected: 'Insufficient STRK in vault')]
+#[test]
+fn test_withdraw_prize_conversion_fees_insufficient_vault_balance() {
+    let (vault, _) = deploy_vault_contract();
+    let ownable = IOwnableDispatcher { contract_address: vault.contract_address };
+    let owner = ownable.owner();
+    let fee_amount = 100_u256;
+    store(
+        vault.contract_address,
+        selector!("accumulatedPrizeConversionFees"),
+        array![fee_amount.low.into(), fee_amount.high.into()].span(),
+    );
+    start_cheat_caller_address(vault.contract_address, owner);
+    vault.withdrawPrizeConversionFees(USER2(), fee_amount);
+    stop_cheat_caller_address(vault.contract_address);
+}
+
+// ============================================================================================
+// MINT LIMIT UPDATED EVENT TESTS (integrated)
+// ============================================================================================
+
+#[test]
+fn test_mint_limit_updated_event_emission() {
+    let (vault, _) = deploy_vault_contract();
+    let new_mint_limit = 1000000000000000000000_u256;
+    let mut spy = spy_events();
+    let ownable = IOwnableDispatcher { contract_address: vault.contract_address };
+    let owner = ownable.owner();
+    start_cheat_caller_address(vault.contract_address, owner);
+    vault.setMintLimit(new_mint_limit);
+    stop_cheat_caller_address(vault.contract_address);
+    let events = spy.get_events();
+    assert(events.events.len() >= 1, 'Should emit event');
+    assert(vault.get_mint_limit() == new_mint_limit, 'Mint limit should be updated');
+}
+
+#[test]
+fn test_mint_limit_updated_event_parameters() {
+    let (vault, _) = deploy_vault_contract();
+    let new_mint_limit = 500000000000000000000_u256;
+    let mut spy = spy_events();
+    let ownable = IOwnableDispatcher { contract_address: vault.contract_address };
+    let owner = ownable.owner();
+    start_cheat_caller_address(vault.contract_address, owner);
+    vault.setMintLimit(new_mint_limit);
+    stop_cheat_caller_address(vault.contract_address);
+    let events = spy.get_events();
+    assert(events.events.len() >= 1, 'Should emit event');
+    assert(vault.get_mint_limit() == new_mint_limit, 'Mint limit should match');
+}
+
+#[test]
+fn test_multiple_mint_limit_updates() {
+    let (vault, _) = deploy_vault_contract();
+    let limits = array![
+        100000000000000000000_u256, 200000000000000000000_u256, 300000000000000000000_u256
+    ];
+    let mut spy = spy_events();
+    let ownable = IOwnableDispatcher { contract_address: vault.contract_address };
+    let owner = ownable.owner();
+    let mut i = 0;
+    while i != limits.len() {
+        let new_limit = *limits.at(i);
+        start_cheat_caller_address(vault.contract_address, owner);
+        vault.setMintLimit(new_limit);
+        stop_cheat_caller_address(vault.contract_address);
+        assert(vault.get_mint_limit() == new_limit, 'Mint limit should update');
+        i += 1;
+    }
+    let events = spy.get_events();
+    assert(events.events.len() >= limits.len(), 'Should emit events');
+    let final_limit = *limits.at(limits.len() - 1);
+    assert(vault.get_mint_limit() == final_limit, 'Final limit should be correct');
+}
+
+#[should_panic(expected: 'Invalid Mint limit')]
+#[test]
+fn test_mint_limit_updated_event_zero_limit() {
+    let (vault, _) = deploy_vault_contract();
+    let ownable = IOwnableDispatcher { contract_address: vault.contract_address };
+    let owner = ownable.owner();
+    start_cheat_caller_address(vault.contract_address, owner);
+    vault.setMintLimit(0_u256);
+    stop_cheat_caller_address(vault.contract_address);
 }
