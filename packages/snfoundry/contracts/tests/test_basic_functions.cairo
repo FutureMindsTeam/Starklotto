@@ -29,7 +29,7 @@ const INITIAL_JACKPOT: u256 = 10000000000000000000; // 10 STRK tokens
 const DEFAULT_PRICE: u256 = 500;
 const DEFAULT_ACCUMULATED_PRIZE: u256 = 1000;
 const DEFAULT_ID: u64 = 1;
-
+const TicketPriceInitial: u256 = 5000000000000000000;
 //=======================================================================================
 // Helper functions - following existing patterns
 //=======================================================================================
@@ -160,7 +160,7 @@ fn test_get_ticket_price_default_value() {
     let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_addr };
 
     let initial_price = lottery_dispatcher.GetTicketPrice();
-    assert!(initial_price == 0, "Initial ticket price should be 0");
+    assert!(initial_price == TicketPriceInitial, "Initial ticket price should be 5");
 }
 
 #[test]
