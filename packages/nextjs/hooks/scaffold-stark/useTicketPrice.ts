@@ -34,7 +34,8 @@ export function useTicketPrice(opts?: {
     });
 
   // Fallback directo usando deployedContracts si el hook anterior no entrega data (p. ej. devnet reiniciado)
-  const network = scaffoldConfig.targetNetworks[0].network as keyof typeof deployedContracts;
+  const network = scaffoldConfig.targetNetworks[0]
+    .network as keyof typeof deployedContracts;
   const fallback = (deployedContracts as any)?.[network]?.[contractName];
 
   const {
@@ -44,12 +45,14 @@ export function useTicketPrice(opts?: {
     error: fallbackError,
   } = useReadContract({
     functionName: "GetTicketPrice",
-    address: (deployedLottery as any)?.address || lotteryAddress || fallback?.address,
+    address:
+      (deployedLottery as any)?.address || lotteryAddress || fallback?.address,
     abi: (deployedLottery as any)?.abi || fallback?.abi,
     args: [],
     watch,
     enabled:
-      (!!(deployedLottery as any)?.address && !!(deployedLottery as any)?.abi) ||
+      (!!(deployedLottery as any)?.address &&
+        !!(deployedLottery as any)?.abi) ||
       (!!(lotteryAddress || fallback?.address) && !!fallback?.abi),
   });
 
@@ -91,8 +94,10 @@ export function useTicketPrice(opts?: {
   }, [priceWei, decimals]);
 
   // Only show loading if we're actually loading and don't have data yet
-  const actuallyLoading = (isLoading || isFetching || fallbackLoading || fallbackFetching) && 
-                         !data && !fallbackData;
+  const actuallyLoading =
+    (isLoading || isFetching || fallbackLoading || fallbackFetching) &&
+    !data &&
+    !fallbackData;
 
   return {
     priceWei,

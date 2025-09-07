@@ -17,7 +17,6 @@ import PurchaseSummary from "~~/components/buy-tickets/PurchaseSummary";
 import { useTicketPrice } from "~~/hooks/scaffold-stark/useTicketPrice";
 import { useDeployedContractInfo } from "~~/hooks/scaffold-stark/useDeployedContractInfo";
 
-
 export default function BuyTicketsPage() {
   const { t } = useTranslation();
   const router = useRouter();
@@ -48,13 +47,11 @@ export default function BuyTicketsPage() {
   const jackpotAmount = "$250,295 USDC";
   const countdown = { days: "00", hours: "23", minutes: "57", seconds: "46" };
 
+  const balance = 1000;
 
-
-  const balance = 1000; 
-  
   const {
-    priceWei,           
-    formatted: unitPriceFormatted, 
+    priceWei,
+    formatted: unitPriceFormatted,
     isLoading: priceLoading,
     error: priceError,
   } = useTicketPrice({ decimals: 18, watch: true });
@@ -64,7 +61,10 @@ export default function BuyTicketsPage() {
     const base = 10n ** BigInt(decimals);
     const intPart = wei / base;
     const fracPart = wei % base;
-    let fracStr = fracPart.toString().padStart(decimals, "0").replace(/0+$/, "");
+    let fracStr = fracPart
+      .toString()
+      .padStart(decimals, "0")
+      .replace(/0+$/, "");
     return fracStr.length > 0 ? `${intPart}.${fracStr}` : intPart.toString();
   };
 
@@ -256,7 +256,6 @@ export default function BuyTicketsPage() {
   // total on-chain: priceWei * cantidad
   const totalWei = priceWei * BigInt(ticketCount);
   const totalFormatted = formatAmount(totalWei, 18);
-
 
   const handlePurchase = async () => {
     setTxError(null);
@@ -451,7 +450,7 @@ export default function BuyTicketsPage() {
               {/* Purchase Summary (usa precio on-chain) */}
               <PurchaseSummary
                 unitPriceFormatted={unitPriceFormatted}
-                totalCostFormatted={totalFormatted}  
+                totalCostFormatted={totalFormatted}
                 isPriceLoading={priceLoading}
                 priceError={priceError?.message ?? null}
                 isLoading={isLoading}
