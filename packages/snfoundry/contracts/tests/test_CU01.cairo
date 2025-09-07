@@ -534,7 +534,7 @@ fn test_multiple_prize_conversions_accumulate_fees() {
     total_accumulated_fees += first_fee;
 
     // Second conversion: 2000 tokens with 5% fee = 100 tokens fee
-    let second_amount = 2000_u256;
+    let second_amount = 2000_u256;s 
     let second_fee = get_fee_amount(fee_percentage, second_amount);
     total_accumulated_fees += second_fee;
 
@@ -1843,6 +1843,330 @@ fn test_multiple_authorized_contracts() {
     start_cheat_caller_address(token_mint.contract_address, USER1());
     token_mint.mint(owner_address(), 1000_u256);
     stop_cheat_caller_address(token_mint.contract_address);
+}
+
+// ============================================================================================
+// MINTING TESTS (integrated from test_mint_strk_play.cairo)
+// ============================================================================================
+
+const MAX_MINT_AMOUNT: u256 = 1_000_000 * 1_000_000_000_000_000_000;
+const INITIAL_FEE_PERCENTAGE: u64 = 50;
+
+fn setup_contracts() -> (ContractAddress, ContractAddress) {
+    let (vault, starkplay_token) = deploy_vault_contract();
+    (vault, starkplay_token)
+}
+
+fn setup_minting_permissions(vault: ContractAddress, starkplay_token: ContractAddress) {
+    let token_mint = IMintableDispatcher { contract_address: starkplay_token };
+    start_cheat_caller_address(starkplay_token, owner_address());
+    token_mint.grant_minter_role(vault);
+    token_mint.set_minter_allowance(vault, MAX_MINT_AMOUNT);
+    stop_cheat_caller_address(starkplay_token);
+}
+
+#[test]
+fn test_contract_deployment() {
+    let (vault, _starkplay_token) = setup_contracts();
+
+    let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault };
+
+    let fee_percentage = vault_dispatcher.GetFeePercentage();
+    assert(fee_percentage == INITIAL_FEE_PERCENTAGE, 'Fee percentage incorrect');
+}
+
+#[test]
+fn test_imintable_dispatcher_integration() {
+    let (vault, starkplay_token) = setup_contracts();
+    setup_minting_permissions(vault, starkplay_token);
+    let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault };
+    let token_dispatcher = IMintableDispatcher { contract_address: starkplay_token };
+
+    let authorized_minters = token_dispatcher.get_authorized_minters();
+    assert(authorized_minters.len() > 0, 'Should have authorized minters');
+
+    let vault_allowance = token_dispatcher.get_minter_allowance(vault);
+    assert(vault_allowance > 0, 'Vault should have allowance');
+
+    let mint_amount = 500_u256;
+    start_cheat_caller_address(starkplay_token, vault);
+    vault_dispatcher.mint_strk_play(user_address(), mint_amount);
+    stop_cheat_caller_address(starkplay_token);
+
+    let erc20_dispatcher = IERC20Dispatcher { contract_address: starkplay_token };
+    let total_supply = erc20_dispatcher.total_supply();
+    assert(total_supply >= mint_amount, 'Total supply incorrect');
+}
+
+#[test]
+fn test_minting_limits() {
+    let (vault, starkplay_token) = setup_contracts();
+    setup_minting_permissions(vault, starkplay_token);
+
+    let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault };
+
+    start_cheat_caller_address(starkplay_token, vault);
+    vault_dispatcher.mint_strk_play(user_address(), MAX_MINT_AMOUNT);
+    stop_cheat_caller_address(starkplay_token);
+
+    let erc20_dispatcher = IERC20Dispatcher { contract_address: starkplay_token };
+    let total_supply = erc20_dispatcher.total_supply();
+    assert(total_supply >= MAX_MINT_AMOUNT, 'Total supply incorrect');
+}
+
+#[should_panic(expected: ('Insufficient minter allowance',))]
+#[test]
+fn test_minting_limits_exceeded() {
+    let (vault, starkplay_token) = setup_contracts();
+    setup_minting_permissions(vault, starkplay_token);
+
+    let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault };
+
+    let excessive_amount = MAX_MINT_AMOUNT + 1_u256;
+
+    start_cheat_caller_address(starkplay_token, vault);
+    vault_dispatcher.mint_strk_play(user_address(), excessive_amount);
+    stop_cheat_caller_address(starkplay_token);
+}
+
+#[should_panic(expected: 'Caller is missing role')]
+#[test]
+fn test_unauthorized_minting() {
+    let (vault, starkplay_token) = setup_contracts();
+    setup_minting_permissions(vault, starkplay_token);
+
+    let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault };
+
+    start_cheat_caller_address(starkplay_token, user_address());
+    vault_dispatcher.mint_strk_play(user_address(), 1000_u256);
+    stop_cheat_caller_address(starkplay_token);
+}
+
+#[test]
+fn test_multiple_minting_operations() {
+    let (vault, starkplay_token) = setup_contracts();
+    setup_minting_permissions(vault, starkplay_token);
+
+    let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault };
+
+    let erc20_dispatcher = IERC20Dispatcher { contract_address: starkplay_token };
+    let initial_supply = erc20_dispatcher.total_supply();
+    let mut total_minted = 0_u256;
+
+    let mint_amounts = array![100_u256, 200_u256, 300_u256, 400_u256, 500_u256];
+
+    for mint_amount in mint_amounts {
+        start_cheat_caller_address(starkplay_token, vault);
+        vault_dispatcher.mint_strk_play(user_address(), mint_amount);
+        stop_cheat_caller_address(starkplay_token);
+
+        total_minted += mint_amount;
+    }
+
+    let final_supply = erc20_dispatcher.total_supply();
+    assert(final_supply >= initial_supply + total_minted, 'Total supply incorrect');
+}
+
+#[test]
+fn test_zero_amount_minting() {
+    let (vault, starkplay_token) = setup_contracts();
+    setup_minting_permissions(vault, starkplay_token);
+
+    let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault };
+
+    let erc20_dispatcher = IERC20Dispatcher { contract_address: starkplay_token };
+    let initial_supply = erc20_dispatcher.total_supply();
+
+    start_cheat_caller_address(starkplay_token, vault);
+    vault_dispatcher.mint_strk_play(user_address(), 0_u256);
+    stop_cheat_caller_address(starkplay_token);
+
+    let final_supply = erc20_dispatcher.total_supply();
+    assert(final_supply == initial_supply, 'Supply should remain unchanged');
+}
+
+#[test]
+fn test_minting_event_emission() {
+    let (vault, starkplay_token) = setup_contracts();
+    setup_minting_permissions(vault, starkplay_token);
+
+    let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault };
+
+    let mut spy = spy_events();
+
+    let mint_amount = 1000_u256;
+    start_cheat_caller_address(starkplay_token, vault);
+    vault_dispatcher.mint_strk_play(user_address(), mint_amount);
+    stop_cheat_caller_address(starkplay_token);
+
+    let events = spy.get_events();
+    assert(events.events.len() > 0, 'Should emit events');
+}
+
+#[test]
+fn test_fee_percentage_management() {
+    let (vault, _starkplay_token) = setup_contracts();
+
+    let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault };
+
+    let new_fee = 100_u64;
+
+    let ownable = IOwnableDispatcher { contract_address: vault };
+    start_cheat_caller_address(vault, ownable.owner());
+    let result = vault_dispatcher.setFeePercentage(new_fee);
+    stop_cheat_caller_address(vault);
+
+    assert(result == true, 'Fee percentage not set');
+
+    let updated_fee = vault_dispatcher.GetFeePercentage();
+    assert(updated_fee == new_fee, 'Fee percentage not updated');
+}
+
+#[should_panic(expected: 'Fee percentage is too low')]
+#[test]
+fn test_fee_percentage_too_low() {
+    let (vault, _starkplay_token) = setup_contracts();
+
+    let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault };
+
+    let low_fee = 5_u64;
+
+    let ownable = IOwnableDispatcher { contract_address: vault };
+    start_cheat_caller_address(vault, ownable.owner());
+    vault_dispatcher.setFeePercentage(low_fee);
+    stop_cheat_caller_address(vault);
+}
+
+#[should_panic(expected: 'Fee percentage is too high')]
+#[test]
+fn test_fee_percentage_too_high() {
+    let (vault, _starkplay_token) = setup_contracts();
+
+    let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault };
+
+    let high_fee = 600_u64;
+
+    let ownable = IOwnableDispatcher { contract_address: vault };
+    start_cheat_caller_address(vault, ownable.owner());
+    vault_dispatcher.setFeePercentage(high_fee);
+    stop_cheat_caller_address(vault);
+}
+
+// ============================================================================================
+// BALANCE TESTS (integrated from test_starkplay_balance.cairo)
+// ============================================================================================
+
+fn deploy_vault() -> (ContractAddress, ContractAddress) {
+    let (vault_addr, erc20_addr) = deploy_vault_contract();
+    (vault_addr, erc20_addr)
+}
+
+// Helper: Calculate expected minted amount after fee (5%)
+fn expected_minted(strk_amount: u256, fee_percent: u256) -> u256 {
+    let fee = (strk_amount * fee_percent) / 100_u256;
+    strk_amount - fee
+}
+
+#[test]
+fn test_basic_balance_increment() {
+    let (vault_addr, erc20_addr) = deploy_vault();
+
+    // Grant minter role and allowance to vault
+    // Need to impersonate the OWNER to call admin functions
+    start_cheat_caller_address(erc20_addr, OWNER());
+    let erc20_disp = IMintableDispatcher { contract_address: erc20_addr };
+
+    erc20_disp.grant_minter_role(vault_addr);
+    erc20_disp.set_minter_allowance(vault_addr, 1000_000_000_000_000_000_000_000_u256);
+    stop_cheat_caller_address(erc20_addr);
+
+    // Initial balance
+    let token_disp = IERC20Dispatcher {
+        contract_address: erc20_addr,
+    };
+    let initial = token_disp.balance_of(USER());
+    assert(initial == 0, 'Initial balance should be 0');
+
+    // Mint via vault (simulate buySTRKP)
+    let amount = 100_000_000_000_000_000_000_u256; // 100 STRK
+    let minted = expected_minted(amount, FEE_PERCENT());
+    // Simulate: vault calls mint on ERC20 to user with calculated amount
+    // This test directly calls mint on the ERC20 dispatcher for simplicity,
+    // assuming the vault would perform a similar call internally.
+
+    start_cheat_caller_address(erc20_addr, vault_addr);
+    erc20_disp.mint(USER(), minted);
+    stop_cheat_caller_address(erc20_addr);
+
+    let after = token_disp.balance_of(USER());
+    assert!(after == minted, "Final balance should match minted");
+}
+
+#[test]
+fn test_multiple_cumulative_purchases() {
+    let (vault_addr, erc20_addr) = deploy_vault();
+
+    start_cheat_caller_address(erc20_addr, OWNER());
+    // Grant minter role and allowance to vault
+    let erc20_disp = IMintableDispatcher { contract_address: erc20_addr };
+    erc20_disp.grant_minter_role(vault_addr);
+    erc20_disp.set_minter_allowance(vault_addr, 1000_000_000_000_000_000_000_000_u256);
+    stop_cheat_caller_address(erc20_addr);
+
+    let token_disp = IERC20Dispatcher { contract_address: erc20_addr };
+    let mut total = 0_u256;
+    let amounts = array![
+        100_000_000_000_000_000_000_u256,
+        200_000_000_000_000_000_000_u256,
+        50_000_000_000_000_000_000_u256,
+    ];
+    let mut i = 0;
+    loop {
+        if i >= amounts.len() {
+            break;
+        }
+        let amt = *amounts.at(i);
+        let minted = expected_minted(amt, FEE_PERCENT());
+        start_cheat_caller_address(erc20_addr, vault_addr);
+        erc20_disp.mint(USER(), minted); // Simulate minting to user
+        total += minted;
+        let bal = token_disp.balance_of(USER());
+        assert(bal == total, 'Cumulative balance should match');
+        i += 1;
+        stop_cheat_caller_address(erc20_addr);
+    }
+}
+
+#[test]
+fn test_data_integrity_multiple_users() {
+    let (vault_addr, erc20_addr) = deploy_vault();
+
+    start_cheat_caller_address(erc20_addr, OWNER());
+    // Grant minter role and allowance to vault
+    let erc20_disp = IMintableDispatcher { contract_address: erc20_addr };
+    erc20_disp.grant_minter_role(vault_addr);
+    erc20_disp.set_minter_allowance(vault_addr, 1000_000_000_000_000_000_000_000_u256);
+    stop_cheat_caller_address(erc20_addr);
+
+    start_cheat_caller_address(erc20_addr, vault_addr);
+    let token_disp = IERC20Dispatcher { contract_address: erc20_addr };
+    let amt1 = 100_000_000_000_000_000_000_u256;
+    let amt2 = 50_000_000_000_000_000_000_u256;
+
+    // Mint to different users
+    erc20_disp.mint(USER(), expected_minted(amt1, FEE_PERCENT())); // Simulate minting to user1
+    erc20_disp.mint(USER2(), expected_minted(amt2, FEE_PERCENT())); // Simulate minting to user2
+    stop_cheat_caller_address(erc20_addr);
+
+    // Check individual balances
+    let bal1 = token_disp.balance_of(USER());
+    let bal2 = token_disp.balance_of(USER2());
+
+    // Expected minted for amt1: 100 * 0.95 = 95
+    assert(bal1 == 95_000_000_000_000_000_000_u256, 'User1 should have 95');
+
+    // Expected minted for amt2: 50 * 0.95 = 47.5
+    assert(bal2 == 47_500_000_000_000_000_000_u256, 'User2 should have 47.5');
 }
 
 // ============================================================================================
