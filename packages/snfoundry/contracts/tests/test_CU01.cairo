@@ -530,7 +530,7 @@ fn test_multiple_prize_conversions_accumulate_fees() {
 
     // First conversion: 1000 tokens with 5% fee = 50 tokens fee
     let first_amount = 1000_u256;
-    let first_fee = get_fee_amount(fee_percentage, first_amount);nece
+    let first_fee = get_fee_amount(fee_percentage, first_amount);
     total_accumulated_fees += first_fee;
 
     // Second conversion: 2000 tokens with 5% fee = 100 tokens fee
