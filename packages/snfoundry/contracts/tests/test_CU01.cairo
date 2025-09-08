@@ -73,13 +73,27 @@ fn MAX_MINT_LIMIT() -> u256 {
 fn EXCEEDS_MINT_LIMIT() -> u256 {
     // Cantidad que excede el límite para provocar panic
     2000000000000000000000000_u256 // 2 million tokens (exceeds limit)
-<<<<<<< HEAD
-=======
 }
 
 fn PURCHASE_AMOUNT() -> u256 {
     1000000000000000000_u256 // 1 STRK
->>>>>>> 8f68df9 (Integrate and organize CU01 test files - consolidate tests and remove duplicates)
+}
+
+// Helper functions for balance tests
+fn OWNER() -> ContractAddress {
+    'OWNER'.try_into().unwrap()
+}
+
+fn USER() -> ContractAddress {
+    'USER'.try_into().unwrap()
+}
+
+fn USER2() -> ContractAddress {
+    'USER2'.try_into().unwrap()
+}
+
+fn FEE_PERCENT() -> u256 {
+    5_u256
 }
 
 fn deploy_contract_lottery() -> ContractAddress {
@@ -534,7 +548,7 @@ fn test_multiple_prize_conversions_accumulate_fees() {
     total_accumulated_fees += first_fee;
 
     // Second conversion: 2000 tokens with 5% fee = 100 tokens fee
-    let second_amount = 2000_u256;s 
+    let second_amount = 2000_u256; 
     let second_fee = get_fee_amount(fee_percentage, second_amount);
     total_accumulated_fees += second_fee;
 
@@ -1853,8 +1867,8 @@ const MAX_MINT_AMOUNT: u256 = 1_000_000 * 1_000_000_000_000_000_000;
 const INITIAL_FEE_PERCENTAGE: u64 = 50;
 
 fn setup_contracts() -> (ContractAddress, ContractAddress) {
-    let (vault, starkplay_token) = deploy_vault_contract();
-    (vault, starkplay_token)
+    let (vault_disp, starkplay_token_disp) = deploy_vault_contract();
+    (vault_disp.contract_address, starkplay_token_disp.contract_address)
 }
 
 fn setup_minting_permissions(vault: ContractAddress, starkplay_token: ContractAddress) {
@@ -2057,8 +2071,8 @@ fn test_fee_percentage_too_high() {
 // ============================================================================================
 
 fn deploy_vault() -> (ContractAddress, ContractAddress) {
-    let (vault_addr, erc20_addr) = deploy_vault_contract();
-    (vault_addr, erc20_addr)
+    let (vault_disp, erc20_disp) = deploy_vault_contract();
+    (vault_disp.contract_address, erc20_disp.contract_address)
 }
 
 // Helper: Calculate expected minted amount after fee (5%)
