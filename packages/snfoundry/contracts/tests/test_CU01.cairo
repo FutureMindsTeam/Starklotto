@@ -10,9 +10,7 @@ use openzeppelin_utils::serde::SerializedAppend;
 use snforge_std::{
     start_cheat_caller_address,
     stop_cheat_caller_address, declare, ContractClassTrait, DeclareResultTrait, spy_events,
-    EventSpyAssertionsTrait, EventSpyTrait, // Add for fetching events directly
-    Event, // A structure describing a raw `Event`
-    IsEmitted, // Trait for checking if a given event was ever emitted
+    EventSpyTrait, // Add for fetching events directly
     load, store
 };
 use starknet::ContractAddress;
@@ -26,6 +24,10 @@ const OWNER: ContractAddress = 0x02dA5254690b46B9C4059C25366D1778839BE63C142d899
     .unwrap();
 
 const USER: ContractAddress = 0x02dA5254690b46B9C4059C25366D1778839BE63C142d899F0306fd5c312A5918
+    .try_into()
+    .unwrap();
+
+const USER2: ContractAddress = 0x03dA5254690b46B9C4059C25366D1778839BE63C142d899F0306fd5c312A5918
     .try_into()
     .unwrap();
 
@@ -80,18 +82,6 @@ fn PURCHASE_AMOUNT() -> u256 {
 }
 
 // Helper functions for balance tests
-fn OWNER() -> ContractAddress {
-    'OWNER'.try_into().unwrap()
-}
-
-fn USER() -> ContractAddress {
-    'USER'.try_into().unwrap()
-}
-
-fn USER2() -> ContractAddress {
-    'USER2'.try_into().unwrap()
-}
-
 fn FEE_PERCENT() -> u256 {
     5_u256
 }
@@ -548,7 +538,7 @@ fn test_multiple_prize_conversions_accumulate_fees() {
     total_accumulated_fees += first_fee;
 
     // Second conversion: 2000 tokens with 5% fee = 100 tokens fee
-    let second_amount = 2000_u256; 
+    let second_amount = 2000_u256;
     let second_fee = get_fee_amount(fee_percentage, second_amount);
     total_accumulated_fees += second_fee;
 
