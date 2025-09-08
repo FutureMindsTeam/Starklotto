@@ -36,7 +36,7 @@ const BASIS_POINTS_DENOMINATOR: u256 = 10000_u256; // 10000 basis points = 100%
 
 //helper function
 fn owner_address_Sepolia() -> ContractAddress {
-    OWNER
+    owner_address()
 }
 fn user_address_Sepolia() -> ContractAddress {
     USER
@@ -2074,7 +2074,7 @@ fn test_basic_balance_increment() {
 
     // Grant minter role and allowance to vault
     // Need to impersonate the OWNER to call admin functions
-    start_cheat_caller_address(erc20_addr, OWNER);
+    start_cheat_caller_address(erc20_addr, owner_address());
     let erc20_disp = IMintableDispatcher { contract_address: erc20_addr };
 
     erc20_disp.grant_minter_role(vault_addr);
@@ -2107,7 +2107,7 @@ fn test_basic_balance_increment() {
 fn test_multiple_cumulative_purchases() {
     let (vault_addr, erc20_addr) = deploy_vault();
 
-    start_cheat_caller_address(erc20_addr, OWNER);
+    start_cheat_caller_address(erc20_addr, owner_address());
     // Grant minter role and allowance to vault
     let erc20_disp = IMintableDispatcher { contract_address: erc20_addr };
     erc20_disp.grant_minter_role(vault_addr);
@@ -2142,7 +2142,7 @@ fn test_multiple_cumulative_purchases() {
 fn test_data_integrity_multiple_users() {
     let (vault_addr, erc20_addr) = deploy_vault();
 
-    start_cheat_caller_address(erc20_addr, OWNER);
+    start_cheat_caller_address(erc20_addr, owner_address());
     // Grant minter role and allowance to vault
     let erc20_disp = IMintableDispatcher { contract_address: erc20_addr };
     erc20_disp.grant_minter_role(vault_addr);
