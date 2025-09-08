@@ -54,9 +54,6 @@ fn USER1() -> ContractAddress {
     0x456.try_into().unwrap()
 }
 
-fn USER2() -> ContractAddress {
-    contract_address_const::<0x789>()
-}
 
 fn USER3() -> ContractAddress {
     contract_address_const::<0xABC>()
@@ -2077,7 +2074,7 @@ fn test_basic_balance_increment() {
 
     // Grant minter role and allowance to vault
     // Need to impersonate the OWNER to call admin functions
-    start_cheat_caller_address(erc20_addr, OWNER());
+    start_cheat_caller_address(erc20_addr, OWNER);
     let erc20_disp = IMintableDispatcher { contract_address: erc20_addr };
 
     erc20_disp.grant_minter_role(vault_addr);
@@ -2088,7 +2085,7 @@ fn test_basic_balance_increment() {
     let token_disp = IERC20Dispatcher {
         contract_address: erc20_addr,
     };
-    let initial = token_disp.balance_of(USER());
+    let initial = token_disp.balance_of(USER);
     assert(initial == 0, 'Initial balance should be 0');
 
     // Mint via vault (simulate buySTRKP)
@@ -2099,10 +2096,10 @@ fn test_basic_balance_increment() {
     // assuming the vault would perform a similar call internally.
 
     start_cheat_caller_address(erc20_addr, vault_addr);
-    erc20_disp.mint(USER(), minted);
+    erc20_disp.mint(USER, minted);
     stop_cheat_caller_address(erc20_addr);
 
-    let after = token_disp.balance_of(USER());
+    let after = token_disp.balance_of(USER);
     assert!(after == minted, "Final balance should match minted");
 }
 
@@ -2110,7 +2107,7 @@ fn test_basic_balance_increment() {
 fn test_multiple_cumulative_purchases() {
     let (vault_addr, erc20_addr) = deploy_vault();
 
-    start_cheat_caller_address(erc20_addr, OWNER());
+    start_cheat_caller_address(erc20_addr, OWNER);
     // Grant minter role and allowance to vault
     let erc20_disp = IMintableDispatcher { contract_address: erc20_addr };
     erc20_disp.grant_minter_role(vault_addr);
@@ -2132,9 +2129,9 @@ fn test_multiple_cumulative_purchases() {
         let amt = *amounts.at(i);
         let minted = expected_minted(amt, FEE_PERCENT());
         start_cheat_caller_address(erc20_addr, vault_addr);
-        erc20_disp.mint(USER(), minted); // Simulate minting to user
+        erc20_disp.mint(USER, minted); // Simulate minting to user
         total += minted;
-        let bal = token_disp.balance_of(USER());
+        let bal = token_disp.balance_of(USER);
         assert(bal == total, 'Cumulative balance should match');
         i += 1;
         stop_cheat_caller_address(erc20_addr);
@@ -2145,7 +2142,7 @@ fn test_multiple_cumulative_purchases() {
 fn test_data_integrity_multiple_users() {
     let (vault_addr, erc20_addr) = deploy_vault();
 
-    start_cheat_caller_address(erc20_addr, OWNER());
+    start_cheat_caller_address(erc20_addr, OWNER);
     // Grant minter role and allowance to vault
     let erc20_disp = IMintableDispatcher { contract_address: erc20_addr };
     erc20_disp.grant_minter_role(vault_addr);
@@ -2158,13 +2155,13 @@ fn test_data_integrity_multiple_users() {
     let amt2 = 50_000_000_000_000_000_000_u256;
 
     // Mint to different users
-    erc20_disp.mint(USER(), expected_minted(amt1, FEE_PERCENT())); // Simulate minting to user1
-    erc20_disp.mint(USER2(), expected_minted(amt2, FEE_PERCENT())); // Simulate minting to user2
+    erc20_disp.mint(USER, expected_minted(amt1, FEE_PERCENT())); // Simulate minting to user1
+    erc20_disp.mint(USER2, expected_minted(amt2, FEE_PERCENT())); // Simulate minting to user2
     stop_cheat_caller_address(erc20_addr);
 
     // Check individual balances
-    let bal1 = token_disp.balance_of(USER());
-    let bal2 = token_disp.balance_of(USER2());
+    let bal1 = token_disp.balance_of(USER);
+    let bal2 = token_disp.balance_of(USER2);
 
     // Expected minted for amt1: 100 * 0.95 = 95
     assert(bal1 == 95_000_000_000_000_000_000_u256, 'User1 should have 95');
@@ -2195,7 +2192,7 @@ fn test_withdraw_general_fees_success() {
 
     let ownable = IOwnableDispatcher { contract_address: vault.contract_address };
     let owner = ownable.owner();
-    let recipient = USER2();
+    let recipient = USER2;
     let erc20 = IERC20Dispatcher { contract_address: strk_token.contract_address };
     let initial_recipient_balance = erc20.balance_of(recipient);
 
@@ -2229,7 +2226,7 @@ fn test_withdraw_general_fees_not_owner() {
     stop_cheat_caller_address(vault.contract_address);
 
     start_cheat_caller_address(vault.contract_address, USER1());
-    vault.withdrawGeneralFees(USER2(), expected_fee);
+    vault.withdrawGeneralFees(USER2, expected_fee);
     stop_cheat_caller_address(vault.contract_address);
 }
 
@@ -2252,7 +2249,7 @@ fn test_withdraw_general_fees_exceeds_accumulated() {
     let ownable = IOwnableDispatcher { contract_address: vault.contract_address };
     let owner = ownable.owner();
     start_cheat_caller_address(vault.contract_address, owner);
-    vault.withdrawGeneralFees(USER2(), expected_fee + 1_u256);
+    vault.withdrawGeneralFees(USER2, expected_fee + 1_u256);
     stop_cheat_caller_address(vault.contract_address);
 }
 
@@ -2263,7 +2260,7 @@ fn test_withdraw_general_fees_zero_amount() {
     let ownable = IOwnableDispatcher { contract_address: vault.contract_address };
     let owner = ownable.owner();
     start_cheat_caller_address(vault.contract_address, owner);
-    vault.withdrawGeneralFees(USER2(), 0_u256);
+    vault.withdrawGeneralFees(USER2, 0_u256);
     stop_cheat_caller_address(vault.contract_address);
 }
 
@@ -2284,7 +2281,7 @@ fn test_withdraw_general_fees_insufficient_vault_balance() {
     );
     let loaded = load(vault.contract_address, selector!("accumulatedFee"), 1);
     assert_eq!(loaded, array![5000]);
-    vault.withdrawGeneralFees(USER2(), 100_u256);
+    vault.withdrawGeneralFees(USER2, 100_u256);
     stop_cheat_caller_address(vault.contract_address);
 }
 
@@ -2319,7 +2316,7 @@ fn test_withdraw_prize_conversion_fees_success() {
         vault.GetAccumulatedPrizeConversionFees() == prizeFeeAmount, 'Fee not set',
     );
 
-    let recipient = USER2();
+    let recipient = USER2;
     let erc20 = IERC20Dispatcher { contract_address: strk_token.contract_address };
     let initial_recipient_balance = erc20.balance_of(recipient);
 
@@ -2346,7 +2343,7 @@ fn test_withdraw_prize_conversion_fees_not_owner() {
         array![fee_amount.low.into(), fee_amount.high.into()].span(),
     );
     start_cheat_caller_address(vault.contract_address, USER1());
-    vault.withdrawPrizeConversionFees(USER2(), fee_amount);
+    vault.withdrawPrizeConversionFees(USER2, fee_amount);
     stop_cheat_caller_address(vault.contract_address);
 }
 
@@ -2363,7 +2360,7 @@ fn test_withdraw_prize_conversion_fees_exceeds_accumulated() {
         array![fee_amount.low.into(), fee_amount.high.into()].span(),
     );
     start_cheat_caller_address(vault.contract_address, owner);
-    vault.withdrawPrizeConversionFees(USER2(), 51_u256);
+    vault.withdrawPrizeConversionFees(USER2, 51_u256);
     stop_cheat_caller_address(vault.contract_address);
 }
 
@@ -2374,7 +2371,7 @@ fn test_withdraw_prize_conversion_fees_zero_amount() {
     let ownable = IOwnableDispatcher { contract_address: vault.contract_address };
     let owner = ownable.owner();
     start_cheat_caller_address(vault.contract_address, owner);
-    vault.withdrawPrizeConversionFees(USER2(), 0_u256);
+    vault.withdrawPrizeConversionFees(USER2, 0_u256);
     stop_cheat_caller_address(vault.contract_address);
 }
 
@@ -2391,7 +2388,7 @@ fn test_withdraw_prize_conversion_fees_insufficient_vault_balance() {
         array![fee_amount.low.into(), fee_amount.high.into()].span(),
     );
     start_cheat_caller_address(vault.contract_address, owner);
-    vault.withdrawPrizeConversionFees(USER2(), fee_amount);
+    vault.withdrawPrizeConversionFees(USER2, fee_amount);
     stop_cheat_caller_address(vault.contract_address);
 }
 
