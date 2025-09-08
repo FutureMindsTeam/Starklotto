@@ -1401,7 +1401,7 @@ fn test_buy_ticket_event_ticketpurchased_structure() {
     assert(events.events.len() >= 1, 'Should emit TicketPurchased');
 
     // Verify the event is from the correct contract
-    let (event_contract, event_data) = events.events.at(0);
+    let (event_contract, _event_data) = events.events.at(0);
     assert(event_contract == @lottery_address, 'Event from lottery contract');
 
     // Verify state consistency after event
@@ -1745,8 +1745,8 @@ fn test_buy_ticket_on_same_draw_id_success() {
     assert(player1_ticket.len() == 1 && player2_ticket.len() == 1, 'MULTIPLE BUY FAILED.');
 }
 
-#[test]
 #[should_panic(expected: 'Draw is not active')]
+#[test]
 fn test_buy_ticket_should_panic_on_draw_not_active() {
     let (erc, lottery) = default_context();
     feign_buy_ticket(lottery, USER1);

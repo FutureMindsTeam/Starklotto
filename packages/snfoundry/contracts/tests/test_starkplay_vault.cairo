@@ -1197,7 +1197,7 @@ fn test_events_in_error_cases() {
     let (vault, _) = deploy_vault_contract();
 
     // Get the deployed STRK token
-    let strk_token = IMintableDispatcher {
+    let _strk_token = IMintableDispatcher {
         contract_address: 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
             .try_into()
             .unwrap(),
@@ -1205,7 +1205,7 @@ fn test_events_in_error_cases() {
 
     // Don't setup user balance - this will cause insufficient balance error
 
-    let mut spy = spy_events();
+    let mut _spy = spy_events();
 
     // Try to make a transaction that will fail
     start_cheat_caller_address(vault.contract_address, USER1());

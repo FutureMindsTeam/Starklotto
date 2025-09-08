@@ -141,13 +141,13 @@ fn start(
     erc
 }
 
-fn feign_buy_ticket(lottery: ILotteryDispatcher, buyer: ContractAddress) -> Array<u16> {
-    let numbers = array![1, 2, 3, 4, 5];
+fn feign_buy_ticket(lottery: ILotteryDispatcher, buyer: ContractAddress) -> Array<Array<u16>> {
+    let numbers = array![1_u16, 2_u16, 3_u16, 4_u16, 5_u16];
     cheat_caller_address(lottery.contract_address, buyer, CheatSpan::Indefinite);
     cheat_block_timestamp(lottery.contract_address, 1, CheatSpan::TargetCalls(1));
     let numbers_array = create_single_ticket_numbers_array(numbers.clone());
-    lottery.BuyTicket(DEFAULT_ID, numbers_array, 1);
-    numbers
+    lottery.BuyTicket(DEFAULT_ID, numbers_array.clone(), 1);
+    numbers_array
 }
 
 //=======================================================================================
@@ -307,7 +307,7 @@ fn test_get_ticket_current_id_initial_value() {
 
 #[test]
 fn test_get_ticket_current_id_after_ticket_purchase() {
-    let (erc, lottery) = default_context();
+    let (_erc, lottery) = default_context();
     
     // Purchase a ticket
     let numbers = create_valid_numbers();
@@ -565,8 +565,8 @@ fn test_set_ticket_price_ownership_validation_owner_can_set() {
     stop_cheat_caller_address(lottery_dispatcher.contract_address);
 }
 
-#[test]
 #[should_panic(expected: ('Caller is not the owner',))]
+#[test]
 fn test_set_ticket_price_ownership_validation_non_owner_cannot_set() {
     let (lottery_addr, _, _) = deploy_lottery();
     let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_addr };
