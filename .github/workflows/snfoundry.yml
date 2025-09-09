@@ -11,8 +11,6 @@ on:
       - "packages/snfoundry/contracts/**"
       - ".github/workflows/**"
 
-
-
 jobs:
   build-and-test-contracts:
     runs-on: ubuntu-latest
@@ -32,10 +30,20 @@ jobs:
         with:
           tool-versions: ./.tool-versions
 
-      - name: Compile contracts
-        run: scarb build
+      - name: Compile contracts (treat warnings as errors)
+        run: |
+          export RUSTFLAGS="-D warnings"
+          scarb build
         working-directory: ./packages/snfoundry/contracts
 
-      - name: Run snfoundry tests
-        run: snforge test
+      - name: List tests
+        run: snforge test -- --list
+        working-directory: ./packages/snfoundry/contracts
+
+      - name: Run snfoundry tests (verbose + logs, warnings as errors)
+        env:
+          RUST_BACKTRACE: 1
+          SNFORGE_FORMAT: pretty
+          RUSTFLAGS: "-D warnings"
+        run: snforge test -- -v --print-logs
         working-directory: ./packages/snfoundry/contracts
