@@ -30,20 +30,20 @@ jobs:
         with:
           tool-versions: ./.tool-versions
 
-      - name: Compile contracts
-        run: scarb build
+      - name: Compile contracts (treat warnings as errors)
+        run: |
+          export RUSTFLAGS="-D warnings"
+          scarb build
         working-directory: ./packages/snfoundry/contracts
 
-      # Diagnóstico previo: lista todos los tests detectados
       - name: List tests
         run: snforge test -- --list
         working-directory: ./packages/snfoundry/contracts
 
-      # Ejecuta tests en modo verbose, imprime logs y stacktrace si algo falla.
-      # SNFORGE_FORMAT=pretty fuerza salida legible (no JSON), evitando parsers aguas abajo.
-      - name: Run snfoundry tests (verbose + logs)
+      - name: Run snfoundry tests (verbose + logs, warnings as errors)
         env:
           RUST_BACKTRACE: 1
           SNFORGE_FORMAT: pretty
+          RUSTFLAGS: "-D warnings"
         run: snforge test -- -v --print-logs
         working-directory: ./packages/snfoundry/contracts
