@@ -1,3 +1,4 @@
+#[feature("deprecated-starknet-consts")]
 use contracts::StarkPlayERC20::{
     IBurnableDispatcher, IBurnableDispatcherTrait, IMintableDispatcher, IMintableDispatcherTrait,
 };
@@ -2459,4 +2460,757 @@ fn test_mint_limit_updated_event_zero_limit() {
     start_cheat_caller_address(vault.contract_address, owner);
     vault.setMintLimit(0_u256);
     stop_cheat_caller_address(vault.contract_address);
+}
+
+// ============================================================================================
+// TESTS FROM test_starkplay_vault.cairo (SEQUENTIAL CONSISTENCY TESTS)
+// ============================================================================================
+
+#[test]
+fn test_sequential_fee_consistency() {
+    let (vault, _) = deploy_vault_contract();
+    let purchase_amount = PURCHASE_AMOUNT();
+    let expected_fee = (purchase_amount * Initial_Fee_Percentage.into()) / 10000; // basis points
+
+    // Get the deployed STRK token for user balance setup
+    let strk_token = IMintableDispatcher {
+        contract_address: 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
+            .try_into()
+            .unwrap(),
+    };
+
+    // Setup user balance using the deployed STRK token
+    setup_user_balance(strk_token, USER1(), LARGE_AMOUNT(), vault.contract_address);
+
+    // Execute 10 consecutive transactions
+    let mut i = 0;
+    let mut expected_accumulated_fee = 0;
+
+    while i != 10_u64 {
+        let initial_accumulated_fee = vault.get_accumulated_fee();
+
+        // Execute transaction - don't cheat caller address, let vault be the caller to mint
+        let success = vault.buySTRKP(USER1(), purchase_amount);
+
+        assert(success, 'Transaction should succeed');
+
+        // Verify fee consistency
+        let new_accumulated_fee = vault.get_accumulated_fee();
+        let actual_fee = new_accumulated_fee - initial_accumulated_fee;
+
+        assert(actual_fee == expected_fee, 'Fee should be consistent');
+
+        expected_accumulated_fee += expected_fee;
+        assert(new_accumulated_fee == expected_accumulated_fee, 'Accumulated fee incorrect');
+
+        i += 1;
+    }
+
+    // Final verification
+    assert(vault.get_accumulated_fee() == expected_fee * 10, 'Final accumulated fee incorrect');
+}
+
+#[test]
+fn test_fee_calculation_accuracy() {
+    let (vault, _) = deploy_vault_contract();
+
+    // Get the deployed STRK token
+    let strk_token = IMintableDispatcher {
+        contract_address: 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
+            .try_into()
+            .unwrap(),
+    };
+
+    // Test different amounts
+    let amounts = array![
+        1000000000000000000_u256, // 1 STRK
+        5000000000000000000_u256, // 5 STRK
+        10000000000000000000_u256, // 10 STRK
+        100000000000000000000_u256 // 100 STRK
+    ];
+
+    setup_user_balance(
+        strk_token, USER1(), 1000000000000000000000_u256, vault.contract_address,
+    ); // 1000 STRK
+
+    let mut i = 0;
+    let mut total_expected_fee = 0;
+
+    while i != amounts.len() {
+        let amount = *amounts.at(i);
+        let expected_fee = (amount * Initial_Fee_Percentage.into()) / 10000;
+
+        let initial_accumulated_fee = vault.get_accumulated_fee();
+
+        let success = vault.buySTRKP(USER1(), amount);
+        assert(success, 'Transaction should succeed');
+
+        let actual_fee = vault.get_accumulated_fee() - initial_accumulated_fee;
+        assert(actual_fee == expected_fee, 'Fee calculation incorrect');
+
+        total_expected_fee += expected_fee;
+        i += 1;
+    }
+
+    assert(vault.get_accumulated_fee() == total_expected_fee, 'fee accumulation incorrect');
+}
+
+// ============================================================================================
+// MULTIPLE USERS TESTS
+// ============================================================================================
+
+#[test]
+fn test_multiple_users_fee_consistency() {
+    let (vault, _) = deploy_vault_contract();
+
+    // Get the deployed STRK token
+    let strk_token = IMintableDispatcher {
+        contract_address: 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
+            .try_into()
+            .unwrap(),
+    };
+
+    let purchase_amount = PURCHASE_AMOUNT();
+    let expected_fee = (purchase_amount * Initial_Fee_Percentage.into()) / 10000;
+
+    // Setup balances for multiple users
+    setup_user_balance(strk_token, USER1(), LARGE_AMOUNT(), vault.contract_address);
+    setup_user_balance(strk_token, USER2, LARGE_AMOUNT(), vault.contract_address);
+    setup_user_balance(strk_token, USER3(), LARGE_AMOUNT(), vault.contract_address);
+
+    let users = array![USER1(), USER2, USER3()];
+    let mut i = 0;
+    let mut expected_accumulated_fee = 0;
+
+    while i != users.len() {
+        let user = *users.at(i);
+        let initial_accumulated_fee = vault.get_accumulated_fee();
+
+        // Each user makes a purchase
+        let success = vault.buySTRKP(user, purchase_amount);
+
+        assert(success, 'Transaction should succeed');
+
+        // Verify fee is consistent for each user
+        let actual_fee = vault.get_accumulated_fee() - initial_accumulated_fee;
+        assert(actual_fee == expected_fee, 'Fee should be same for all');
+
+        expected_accumulated_fee += expected_fee;
+        assert(
+            vault.get_accumulated_fee() == expected_accumulated_fee, 'Accumulated fee incorrect',
+        );
+
+        i += 1;
+    }
+}
+
+#[test]
+fn test_concurrent_transactions_simulation() {
+    let (vault, _) = deploy_vault_contract();
+
+    // Get the deployed STRK token
+    let strk_token = IMintableDispatcher {
+        contract_address: 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
+            .try_into()
+            .unwrap(),
+    };
+    let purchase_amount = PURCHASE_AMOUNT();
+    let expected_fee = (purchase_amount * Initial_Fee_Percentage.into()) / 10000;
+
+    // Setup balances
+    setup_user_balance(strk_token, USER1(), LARGE_AMOUNT(), vault.contract_address);
+    setup_user_balance(strk_token, USER2, LARGE_AMOUNT(), vault.contract_address);
+    setup_user_balance(strk_token, USER3(), LARGE_AMOUNT(), vault.contract_address);
+
+    let users = array![USER1(), USER2, USER3()];
+    let mut fees_collected = ArrayTrait::new();
+
+    // Simulate concurrent transactions by executing them in rapid succession
+    let mut i = 0;
+    while i != users.len() {
+        let user = *users.at(i);
+        let initial_fee = vault.get_accumulated_fee();
+
+        start_cheat_caller_address(vault.contract_address, user);
+        vault.buySTRKP(user, purchase_amount);
+        stop_cheat_caller_address(vault.contract_address);
+
+        let fee_collected = vault.get_accumulated_fee() - initial_fee;
+        fees_collected.append(fee_collected);
+
+        i += 1;
+    }
+
+    // Verify all fees are identical
+    let first_fee = *fees_collected.at(0);
+    let mut j = 1;
+    while j != fees_collected.len() {
+        assert(*fees_collected.at(j) == first_fee, 'Fees should be identical');
+        j += 1;
+    }
+
+    assert(first_fee == expected_fee, 'Fee must be consistent');
+}
+
+// ============================================================================================
+// PAUSE/UNPAUSE TESTS
+// ============================================================================================
+
+#[test]
+fn test_fee_consistency_after_pause_unpause() {
+    let (vault, _) = deploy_vault_contract();
+
+    // Get the deployed STRK token
+    let strk_token = IMintableDispatcher {
+        contract_address: 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
+            .try_into()
+            .unwrap(),
+    };
+    let purchase_amount = PURCHASE_AMOUNT();
+    let expected_fee = (purchase_amount * Initial_Fee_Percentage.into()) / 10000;
+
+    setup_user_balance(strk_token, USER1(), LARGE_AMOUNT(), vault.contract_address);
+
+    // First transaction before pause
+    start_cheat_caller_address(vault.contract_address, USER1());
+    vault.buySTRKP(USER1(), purchase_amount);
+    stop_cheat_caller_address(vault.contract_address);
+
+    let fee_before_pause = vault.get_accumulated_fee();
+    assert(fee_before_pause == expected_fee, 'Fee before pause incorrect');
+
+    // Pause the contract
+    let ownable = IOwnableDispatcher { contract_address: vault.contract_address };
+    start_cheat_caller_address(vault.contract_address, ownable.owner());
+    vault.pause();
+    stop_cheat_caller_address(vault.contract_address);
+
+    assert(vault.is_paused(), 'Contract should be paused');
+
+    // Unpause the contract
+    start_cheat_caller_address(vault.contract_address, ownable.owner());
+    vault.unpause();
+    stop_cheat_caller_address(vault.contract_address);
+
+    assert(!vault.is_paused(), 'Contract must be unpaused');
+
+    let fee_after_unpause = vault.get_accumulated_fee();
+    assert(fee_after_unpause == expected_fee, 'Fee after unpause incorrect');
+
+    // Transaction after unpause
+    start_cheat_caller_address(vault.contract_address, USER1());
+    vault.buySTRKP(USER1(), purchase_amount);
+    stop_cheat_caller_address(vault.contract_address);
+
+    let fee_after_unpause = vault.get_accumulated_fee();
+    assert(fee_after_unpause == expected_fee * 2, 'Fee must be consistent');
+
+    // Verify fee percentage remains the same
+    assert(vault.GetFeePercentage() == Initial_Fee_Percentage, 'percentage changed');
+}
+
+#[should_panic(expected: 'Contract is paused')]
+#[test]
+fn test_transaction_fails_when_paused() {
+    let (vault, _) = deploy_vault_contract();
+
+    // Get the deployed STRK token
+    let strk_token = IMintableDispatcher {
+        contract_address: 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
+            .try_into()
+            .unwrap(),
+    };
+
+    setup_user_balance(strk_token, USER1(), LARGE_AMOUNT(), vault.contract_address);
+
+    // Pause the contract
+    let ownable = IOwnableDispatcher { contract_address: vault.contract_address };
+    start_cheat_caller_address(vault.contract_address, ownable.owner());
+    vault.pause();
+    stop_cheat_caller_address(vault.contract_address);
+
+    assert(vault.is_paused(), 'Contract must be paused');
+
+    // Try to make a transaction - should fail
+    start_cheat_caller_address(vault.contract_address, USER1());
+    vault.buySTRKP(USER1(), PURCHASE_AMOUNT());
+    stop_cheat_caller_address(vault.contract_address);
+}
+
+#[test]
+fn test_fee_accumulation_multiple_users() {
+    let (vault, _) = deploy_vault_contract();
+
+    // Get the deployed STRK token
+    let strk_token = IMintableDispatcher {
+        contract_address: 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
+            .try_into()
+            .unwrap(),
+    };
+    let purchase_amount = PURCHASE_AMOUNT();
+    let expected_fee_per_tx = (purchase_amount * Initial_Fee_Percentage.into()) / 10000;
+
+    // Setup balances
+    setup_user_balance(strk_token, USER1(), LARGE_AMOUNT(), vault.contract_address);
+    setup_user_balance(strk_token, USER2, LARGE_AMOUNT(), vault.contract_address);
+    setup_user_balance(strk_token, USER3(), LARGE_AMOUNT(), vault.contract_address);
+
+    let users = array![USER1(), USER2, USER3()];
+    let transactions_per_user = 3;
+
+    let mut total_expected_fee = 0;
+    let mut user_index = 0;
+
+    while user_index != users.len() {
+        let user = *users.at(user_index);
+        let mut tx_count = 0;
+
+        while tx_count != transactions_per_user {
+            start_cheat_caller_address(vault.contract_address, user);
+            vault.buySTRKP(user, purchase_amount);
+            stop_cheat_caller_address(vault.contract_address);
+
+            total_expected_fee += expected_fee_per_tx;
+            assert(vault.get_accumulated_fee() == total_expected_fee, 'Fee must be consistent');
+
+            tx_count += 1;
+        }
+
+        user_index += 1;
+    }
+
+    // Verify total fees collected
+    let total_transactions = users.len() * transactions_per_user;
+    let expected_total_fee = expected_fee_per_tx * total_transactions.into();
+    assert(vault.get_accumulated_fee() == expected_total_fee, 'fee accumulation incorrect');
+}
+
+// ============================================================================================
+// ERROR HANDLING TESTS
+// ============================================================================================
+
+#[should_panic(expected: 'Amount must be greater than 0')]
+#[test]
+fn test_zero_amount_transaction() {
+    let (vault, _) = deploy_vault_contract();
+
+    // Get the deployed STRK token
+    let strk_token = IMintableDispatcher {
+        contract_address: 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
+            .try_into()
+            .unwrap(),
+    };
+
+    setup_user_balance(strk_token, USER1(), LARGE_AMOUNT(), vault.contract_address);
+
+    start_cheat_caller_address(vault.contract_address, USER1());
+    vault.buySTRKP(USER1(), 0_u256);
+    stop_cheat_caller_address(vault.contract_address);
+}
+
+// ============================================================================================
+// INTEGRATION TESTS
+// ============================================================================================
+
+#[test]
+fn test_complete_flow_integration() {
+    let (vault, _) = deploy_vault_contract();
+
+    // Get the deployed STRK token
+    let strk_token = IMintableDispatcher {
+        contract_address: 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
+            .try_into()
+            .unwrap(),
+    };
+    // Setup multiple users
+    setup_user_balance(strk_token, USER1(), LARGE_AMOUNT(), vault.contract_address);
+    setup_user_balance(strk_token, USER2, LARGE_AMOUNT(), vault.contract_address);
+
+    let expected_fee = (PURCHASE_AMOUNT() * Initial_Fee_Percentage.into()) / 10000;
+
+    // Initial state
+    assert(vault.get_accumulated_fee() == 0, 'Initial fee must be 0');
+    assert(vault.GetFeePercentage() == Initial_Fee_Percentage, 'percentage must be initial');
+
+    // Multiple transactions
+    start_cheat_caller_address(vault.contract_address, USER1());
+    vault.buySTRKP(USER1(), PURCHASE_AMOUNT());
+    stop_cheat_caller_address(vault.contract_address);
+
+    assert(vault.get_accumulated_fee() == expected_fee, 'Fee after first transaction');
+
+    start_cheat_caller_address(vault.contract_address, USER2);
+    vault.buySTRKP(USER2, PURCHASE_AMOUNT());
+    stop_cheat_caller_address(vault.contract_address);
+
+    assert(vault.get_accumulated_fee() == expected_fee * 2, 'Fee after second transaction');
+
+    // Pause and unpause
+    let ownable = IOwnableDispatcher { contract_address: vault.contract_address };
+    start_cheat_caller_address(vault.contract_address, ownable.owner());
+    vault.pause();
+    vault.unpause();
+    stop_cheat_caller_address(vault.contract_address);
+
+    // Transaction after pause/unpause
+    start_cheat_caller_address(vault.contract_address, USER1());
+    vault.buySTRKP(USER1(), PURCHASE_AMOUNT());
+    stop_cheat_caller_address(vault.contract_address);
+
+    assert(vault.get_accumulated_fee() == expected_fee * 3, 'Fee after pause/unpause');
+
+    // Verify fee percentage remains consistent
+    assert(vault.GetFeePercentage() == Initial_Fee_Percentage, 'percentage changed');
+}
+
+#[test]
+fn test_total_starkplay_minted_updates() {
+    let (vault, _) = deploy_vault_contract();
+    let strk_token = IMintableDispatcher {
+        contract_address: 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
+            .try_into()
+            .unwrap(),
+    };
+
+    setup_user_balance(
+        strk_token, USER1(), LARGE_AMOUNT() + 200000000000000000000_u256, vault.contract_address,
+    );
+
+    assert(vault.get_total_starkplay_minted() == 0, 'Initial minted should be 0');
+
+    let amount1 = LARGE_AMOUNT();
+    let expected_minted1 = amount1 - (amount1 * Initial_Fee_Percentage.into()) / 10000;
+
+    vault.buySTRKP(USER1(), amount1);
+    assert(vault.get_total_starkplay_minted() == expected_minted1, 'First minting incorrect');
+
+    let amount2 = 200000000000000000000_u256;
+    let expected_minted2 = amount2 - (amount2 * Initial_Fee_Percentage.into()) / 10000;
+    let expected_total = expected_minted1 + expected_minted2;
+
+    vault.buySTRKP(USER1(), amount2);
+    assert(vault.get_total_starkplay_minted() == expected_total, 'Total minted incorrect');
+}
+
+#[test]
+fn test_total_strk_stored_updates() {
+    let (vault, _) = deploy_vault_contract();
+    let strk_token = IMintableDispatcher {
+        contract_address: 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
+            .try_into()
+            .unwrap(),
+    };
+
+    setup_user_balance(
+        strk_token, USER1(), LARGE_AMOUNT() + 500000000000000000000_u256, vault.contract_address,
+    );
+
+    assert(vault.get_total_strk_stored() == 0, 'Initial stored should be 0');
+
+    let amount1 = 100000000000000000000_u256;
+    vault.buySTRKP(USER1(), amount1);
+    assert(vault.get_total_strk_stored() == amount1, 'First storage incorrect');
+
+    let amount2 = 200000000000000000000_u256;
+    let expected_total = amount1 + amount2;
+
+    vault.buySTRKP(USER1(), amount2);
+    assert(vault.get_total_strk_stored() == expected_total, 'Total stored incorrect');
+}
+
+#[test]
+fn test_counter_consistency() {
+    let (vault, _) = deploy_vault_contract();
+    let strk_token = IMintableDispatcher {
+        contract_address: 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
+            .try_into()
+            .unwrap(),
+    };
+
+    setup_user_balance(
+        strk_token, USER1(), LARGE_AMOUNT() + 500000000000000000000_u256, vault.contract_address,
+    );
+
+    let amounts = array![
+        100000000000000000000_u256, 250000000000000000000_u256, 75000000000000000000_u256,
+    ];
+
+    let mut i = 0;
+    while i != amounts.len() {
+        let amount = *amounts.at(i);
+        vault.buySTRKP(USER1(), amount);
+
+        let total_stored = vault.get_total_strk_stored();
+        let total_minted = vault.get_total_starkplay_minted();
+        let accumulated_fee = vault.get_accumulated_fee();
+
+        assert(total_stored == total_minted + accumulated_fee, 'Counter consistency failed');
+        i += 1;
+    }
+}
+
+#[test]
+fn test_counters_multiple_users() {
+    let (vault, _) = deploy_vault_contract();
+    let strk_token = IMintableDispatcher {
+        contract_address: 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
+            .try_into()
+            .unwrap(),
+    };
+
+    setup_user_balance(
+        strk_token, USER1(), LARGE_AMOUNT() + 500000000000000000000_u256, vault.contract_address,
+    );
+    setup_user_balance(
+        strk_token, USER2, LARGE_AMOUNT() + 500000000000000000000_u256, vault.contract_address,
+    );
+    setup_user_balance(
+        strk_token, USER3(), LARGE_AMOUNT() + 500000000000000000000_u256, vault.contract_address,
+    );
+
+    let users = array![USER1(), USER2, USER3()];
+    let purchase_amount = PURCHASE_AMOUNT();
+
+    let mut expected_total_stored = 0;
+    let mut expected_total_minted = 0;
+    let mut expected_total_fee = 0;
+
+    let mut i = 0;
+    while i != users.len() {
+        let user = *users.at(i);
+
+        vault.buySTRKP(user, purchase_amount);
+
+        expected_total_stored += purchase_amount;
+        expected_total_minted += purchase_amount
+            - (purchase_amount * Initial_Fee_Percentage.into()) / 10000;
+        expected_total_fee += (purchase_amount * Initial_Fee_Percentage.into()) / 10000;
+
+        assert(vault.get_total_strk_stored() == expected_total_stored, 'Global stored incorrect');
+        assert(
+            vault.get_total_starkplay_minted() == expected_total_minted, 'Global minted incorrect',
+        );
+        assert(vault.get_accumulated_fee() == expected_total_fee, 'Global fee incorrect');
+
+        i += 1;
+    }
+}
+
+// ============================================================================================
+// EVENT TESTING
+// ============================================================================================
+
+// Helper function to get the expected minted amount (amount after fee deduction)
+fn get_expected_minted_amount(amount_strk: u256, fee_percentage: u64) -> u256 {
+    let fee = (amount_strk * fee_percentage.into()) / 10000;
+    amount_strk - fee
+}
+
+// Helper function to get the expected fee amount
+fn get_expected_fee_amount(amount_strk: u256, fee_percentage: u64) -> u256 {
+    (amount_strk * fee_percentage.into()) / 10000
+}
+
+#[test]
+fn test_starkplay_minted_event_emission() {
+    let (vault, _) = deploy_vault_contract();
+
+    // Get the deployed STRK token
+    let strk_token = IMintableDispatcher {
+        contract_address: 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
+            .try_into()
+            .unwrap(),
+    };
+
+    let purchase_amount = 100000000000000000000_u256; // 100 STRK
+
+    setup_user_balance(strk_token, USER1(), LARGE_AMOUNT(), vault.contract_address);
+
+    // Start event spy before transaction
+    let mut spy = spy_events();
+
+    // Execute buySTRKP transaction
+    start_cheat_caller_address(vault.contract_address, USER1());
+    let success = vault.buySTRKP(USER1(), purchase_amount);
+    stop_cheat_caller_address(vault.contract_address);
+
+    assert(success, 'Transaction should succeed');
+
+    // Get events and verify that events are emitted
+    let events = spy.get_events();
+    assert(events.events.len() >= 2, 'Should emit at least 2 events');
+
+    // Verify that the transaction was successful by checking state
+    let expected_fee = get_expected_fee_amount(purchase_amount, Initial_Fee_Percentage);
+    assert(vault.get_accumulated_fee() == expected_fee, 'Fee should be correct');
+}
+
+#[test]
+fn test_basic_event_emission() {
+    let (vault, _) = deploy_vault_contract();
+
+    // Get the deployed STRK token
+    let strk_token = IMintableDispatcher {
+        contract_address: 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
+            .try_into()
+            .unwrap(),
+    };
+
+    setup_user_balance(strk_token, USER1(), LARGE_AMOUNT(), vault.contract_address);
+
+    // Start event spy before transaction
+    let mut spy = spy_events();
+
+    // Execute buySTRKP transaction
+    start_cheat_caller_address(vault.contract_address, USER1());
+    let success = vault.buySTRKP(USER1(), PURCHASE_AMOUNT());
+    stop_cheat_caller_address(vault.contract_address);
+
+    assert(success, 'Transaction should succeed');
+
+    // Get events and verify that events are emitted
+    let events = spy.get_events();
+
+    // Simple assertion - just check that some events were emitted
+    assert(events.events.len() > 0, 'Should emit events');
+
+    // Verify that the transaction was successful by checking state
+    assert(vault.get_accumulated_fee() > 0, 'Fee should be accumulated');
+}
+
+#[test]
+fn test_events_with_different_users() {
+    let (vault, _) = deploy_vault_contract();
+
+    // Get the deployed STRK token
+    let strk_token = IMintableDispatcher {
+        contract_address: 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
+            .try_into()
+            .unwrap(),
+    };
+
+    setup_user_balance(strk_token, USER1(), LARGE_AMOUNT(), vault.contract_address);
+    setup_user_balance(strk_token, USER2, LARGE_AMOUNT(), vault.contract_address);
+
+    let mut spy = spy_events();
+
+    // USER1 makes a purchase
+    start_cheat_caller_address(vault.contract_address, USER1());
+    vault.buySTRKP(USER1(), PURCHASE_AMOUNT());
+    stop_cheat_caller_address(vault.contract_address);
+
+    // USER2 makes a purchase
+    start_cheat_caller_address(vault.contract_address, USER2);
+    vault.buySTRKP(USER2, PURCHASE_AMOUNT());
+    stop_cheat_caller_address(vault.contract_address);
+
+    let events = spy.get_events();
+
+    // Verify that 4 events are emitted (2 users * 2 events each)
+    assert(events.events.len() >= 4, 'Should emit 4 events');
+
+    // Verify that both users' transactions were processed
+    let expected_fee_per_tx = get_expected_fee_amount(PURCHASE_AMOUNT(), Initial_Fee_Percentage);
+    let expected_total_fee = expected_fee_per_tx * 2;
+    assert(vault.get_accumulated_fee() == expected_total_fee, 'Fee should match');
+}
+
+#[test]
+fn test_events_after_pause_unpause() {
+    let (vault, _) = deploy_vault_contract();
+
+    // Get the deployed STRK token
+    let strk_token = IMintableDispatcher {
+        contract_address: 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
+            .try_into()
+            .unwrap(),
+    };
+
+    setup_user_balance(strk_token, USER1(), LARGE_AMOUNT(), vault.contract_address);
+
+    // Pause and unpause the contract
+    let ownable = IOwnableDispatcher { contract_address: vault.contract_address };
+    start_cheat_caller_address(vault.contract_address, ownable.owner());
+    vault.pause();
+    vault.unpause();
+    stop_cheat_caller_address(vault.contract_address);
+
+    let mut spy = spy_events();
+
+    // Make a transaction after pause/unpause
+    start_cheat_caller_address(vault.contract_address, USER1());
+    vault.buySTRKP(USER1(), PURCHASE_AMOUNT());
+    stop_cheat_caller_address(vault.contract_address);
+
+    let events = spy.get_events();
+
+    // Verify events are still emitted correctly after pause/unpause
+    assert(events.events.len() >= 2, 'Should emit events after pause');
+
+    // Verify that the transaction was successful
+    let expected_fee = get_expected_fee_amount(PURCHASE_AMOUNT(), Initial_Fee_Percentage);
+    assert(vault.get_accumulated_fee() == expected_fee, 'Fee should accumulate');
+}
+
+#[test]
+fn test_decimal_precision() {
+    // Test decimal precision in calculations
+    let (vault, _) = deploy_vault_contract();
+    let strk_token = IMintableDispatcher {
+        contract_address: 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
+            .try_into()
+            .unwrap(),
+    };
+
+    setup_user_balance(strk_token, USER1(), LARGE_AMOUNT(), vault.contract_address);
+
+    // Test with amounts that require precise decimal calculations
+    let test_amounts = array![
+        1000000000000000000_u256, // 1 STRK
+        100000000000000000_u256,  // 0.1 STRK
+        10000000000000000_u256,   // 0.01 STRK
+        1000000000000000_u256,    // 0.001 STRK
+        100000000000000_u256,     // 0.0001 STRK
+    ];
+
+    let fee_percentage = vault.GetFeePercentage();
+    let mut total_expected_fee = 0_u256;
+
+    let mut i = 0;
+    while i < test_amounts.len() {
+        let amount = *test_amounts.at(i);
+        let expected_fee = (amount * fee_percentage.into()) / 10000_u256;
+        let expected_minted = amount - expected_fee;
+
+        let initial_balance = vault.get_accumulated_fee();
+        
+        start_cheat_caller_address(vault.contract_address, USER1());
+        let success = vault.buySTRKP(USER1(), amount);
+        stop_cheat_caller_address(vault.contract_address);
+
+        assert(success, 'Transaction should succeed');
+
+        let actual_fee = vault.get_accumulated_fee() - initial_balance;
+        assert(actual_fee == expected_fee, 'Fee calculation should be precise');
+
+        total_expected_fee += expected_fee;
+        i += 1;
+    }
+
+    // Verify total accumulated fee is precise
+    assert(vault.get_accumulated_fee() == total_expected_fee, 'Total fee should be precise');
+
+    // Test with very small amounts to ensure no precision loss
+    let small_amount = 1000000000000000_u256; // 0.001 STRK
+    let small_fee = (small_amount * fee_percentage.into()) / 10000_u256;
+    
+    let initial_fee = vault.get_accumulated_fee();
+    start_cheat_caller_address(vault.contract_address, USER1());
+    vault.buySTRKP(USER1(), small_amount);
+    stop_cheat_caller_address(vault.contract_address);
+    
+    let final_fee = vault.get_accumulated_fee();
+    let actual_small_fee = final_fee - initial_fee;
+    
+    assert(actual_small_fee == small_fee, 'Small amount fee should be precise');
 }
