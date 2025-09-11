@@ -34,7 +34,7 @@ const AdminLotteryPage = () => {
   }, [price]);
 
   const { address, isConnected } = useAccount();
-  
+
   const { data: ownerAddress } = useScaffoldReadContract({
     contractName: "Lottery",
     functionName: "owner",
@@ -44,9 +44,11 @@ const AdminLotteryPage = () => {
 
   // Admin override via env for testing/demo
   const adminOverride = useMemo(() => {
-    const overrideFlag = process.env.NEXT_PUBLIC_ADMIN_OVERRIDE === 'true';
-    const overrideAddress = (process.env.NEXT_PUBLIC_ADMIN_ADDRESS || '').toLowerCase();
-    const userAddr = (address || '').toLowerCase();
+    const overrideFlag = process.env.NEXT_PUBLIC_ADMIN_OVERRIDE === "true";
+    const overrideAddress = (
+      process.env.NEXT_PUBLIC_ADMIN_ADDRESS || ""
+    ).toLowerCase();
+    const userAddr = (address || "").toLowerCase();
     return overrideFlag || (overrideAddress && overrideAddress === userAddr);
   }, [address]);
 
@@ -80,7 +82,6 @@ const AdminLotteryPage = () => {
           setIsAdmin(true);
           return;
         }
-        
 
         if (!isConnected || !address) {
           setIsAdmin(false);
@@ -92,10 +93,11 @@ const AdminLotteryPage = () => {
           return;
         }
 
-        const isOwner = ownerAddress.toString().toLowerCase() === address.toLowerCase();
+        const isOwner =
+          ownerAddress.toString().toLowerCase() === address.toLowerCase();
         setIsAdmin(isOwner);
       } catch (error) {
-        console.error('Error checking admin status:', error);
+        console.error("Error checking admin status:", error);
         setIsAdmin(false);
       } finally {
         setIsCheckingAdmin(false);
@@ -118,42 +120,42 @@ const AdminLotteryPage = () => {
 
   const handleAction = async (action: string) => {
     if (!isConnected || !address) return;
-    
+
     try {
       setIsLoading(true);
-      
+
       switch (action) {
-        case 'setDuration':
+        case "setDuration":
           if (!durationValid) {
             notification.error("Invalid");
             break;
           }
-          await sendSetDuration({ args: [BigInt(duration || '0')] } as any);
+          await sendSetDuration({ args: [BigInt(duration || "0")] } as any);
           notification.success("Success");
           setDuration("");
           break;
-          
-        case 'setPrice':
+
+        case "setPrice":
           if (!priceValid) {
             notification.error("Invalid");
             break;
           }
-          await sendSetPrice({ args: [BigInt(price || '0')] } as any);
+          await sendSetPrice({ args: [BigInt(price || "0")] } as any);
           notification.success("Success");
           setPrice("");
           break;
-          
-        case 'startLottery':
+
+        case "startLottery":
           await sendStart();
           notification.success("Success");
           break;
-          
-        case 'endLottery':
+
+        case "endLottery":
           await sendEnd();
           notification.success("Success");
           break;
       }
-      
+
       setConfirmAction(null);
     } catch (error) {
       console.error("Error executing action", error);
@@ -163,10 +165,17 @@ const AdminLotteryPage = () => {
     }
   };
 
-
-  const renderConfirmDialog = (title: string, description: string, onConfirm: () => void, onCancel: () => void) => (
+  const renderConfirmDialog = (
+    title: string,
+    description: string,
+    onConfirm: () => void,
+    onCancel: () => void,
+  ) => (
     <div className="fixed inset-0 z-50">
-      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm" onClick={onCancel} />
+      <div
+        className="fixed inset-0 bg-black/70 backdrop-blur-sm"
+        onClick={onCancel}
+      />
       <div className="fixed inset-0 flex items-center justify-center p-4">
         <div
           className="w-full max-w-md rounded-xl border border-white/10 bg-[#191c2a] text-white shadow-2xl"
@@ -197,7 +206,7 @@ const AdminLotteryPage = () => {
                 onClick={onConfirm}
                 disabled={isLoading}
               >
-                {isLoading ? 'Processing...' : 'Confirm'}
+                {isLoading ? "Processing..." : "Confirm"}
               </button>
             </div>
           </div>
@@ -208,7 +217,10 @@ const AdminLotteryPage = () => {
 
   const renderActionConfirmation = (action: string, message?: string) => (
     <div className="fixed inset-0 z-50">
-      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setConfirmAction(null)} />
+      <div
+        className="fixed inset-0 bg-black/70 backdrop-blur-sm"
+        onClick={() => setConfirmAction(null)}
+      />
       <div className="fixed inset-0 flex items-center justify-center p-4">
         <div
           className="w-full max-w-md rounded-xl border border-white/10 bg-[#191c2a] text-white shadow-2xl"
@@ -225,7 +237,9 @@ const AdminLotteryPage = () => {
                 ✕
               </button>
             </div>
-            <p className="text-white/80 mb-6">{message || 'Are you sure you want to proceed with this action?'}</p>
+            <p className="text-white/80 mb-6">
+              {message || "Are you sure you want to proceed with this action?"}
+            </p>
             <div className="flex justify-end gap-3">
               <button
                 className="px-4 py-2 rounded-md border border-white/15 text-white/90 hover:bg-white/5"
@@ -239,7 +253,7 @@ const AdminLotteryPage = () => {
                 onClick={() => handleAction(action)}
                 disabled={isLoading}
               >
-                {isLoading ? 'Processing...' : 'Confirm'}
+                {isLoading ? "Processing..." : "Confirm"}
               </button>
             </div>
           </div>
@@ -252,7 +266,9 @@ const AdminLotteryPage = () => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <h2 className="text-2xl font-bold mb-4">Please connect your wallet</h2>
+          <h2 className="text-2xl font-bold mb-4">
+            Please connect your wallet
+          </h2>
           <div className="flex justify-center">
             <CustomConnectButton />
           </div>
@@ -266,15 +282,29 @@ const AdminLotteryPage = () => {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <h2 className="text-2xl font-bold mb-2">Access Denied</h2>
-          <p className="mb-2">You don&apos;t have permission to access this page.</p>
+          <p className="mb-2">
+            You don&apos;t have permission to access this page.
+          </p>
           <div className="mt-4 text-sm opacity-80">
             <p>Connected: {address}</p>
-            <p>Owner: {ownerAddress ? ownerAddress.toString() : 'Loading...'}</p>
-            <p>Override: {adminOverride ? 'enabled' : 'disabled'}</p>
+            <p>
+              Owner: {ownerAddress ? ownerAddress.toString() : "Loading..."}
+            </p>
+            <p>Override: {adminOverride ? "enabled" : "disabled"}</p>
           </div>
           <div className="mt-6 flex items-center justify-center gap-3">
-            <Link href="/" className="px-4 py-2 rounded-md border border-white/15 text-white/90 hover:bg-white/5">Back to Home</Link>
-            <button className="px-4 py-2 rounded-md bg-starkYellow text-black hover:bg-starkYellow-light" onClick={() => disconnect()}>Disconnect</button>
+            <Link
+              href="/"
+              className="px-4 py-2 rounded-md border border-white/15 text-white/90 hover:bg-white/5"
+            >
+              Back to Home
+            </Link>
+            <button
+              className="px-4 py-2 rounded-md bg-starkYellow text-black hover:bg-starkYellow-light"
+              onClick={() => disconnect()}
+            >
+              Disconnect
+            </button>
           </div>
         </div>
       </div>
@@ -296,8 +326,18 @@ const AdminLotteryPage = () => {
         <div className="relative z-10 w-full px-6 sm:px-10 lg:px-16 py-10">
           <div className="flex flex-col items-center justify-center text-center max-w-6xl mx-auto">
             <div className="absolute top-4 right-4 flex items-center gap-3">
-              <Link href="/" className="px-4 py-2 rounded-md border border-white/15 text-white/90 hover:bg-white/5">Back to Home</Link>
-              <button className="px-4 py-2 rounded-md bg-starkYellow text-black hover:bg-starkYellow-light" onClick={() => disconnect()}>Disconnect</button>
+              <Link
+                href="/"
+                className="px-4 py-2 rounded-md border border-white/15 text-white/90 hover:bg-white/5"
+              >
+                Back to Home
+              </Link>
+              <button
+                className="px-4 py-2 rounded-md bg-starkYellow text-black hover:bg-starkYellow-light"
+                onClick={() => disconnect()}
+              >
+                Disconnect
+              </button>
             </div>
             <h1 className="text-3xl md:text-5xl font-extrabold leading-tight">
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-starkYellow via-starkYellow-light to-white bg-[length:400%_100%] animate-slower-shimmer">
@@ -305,7 +345,8 @@ const AdminLotteryPage = () => {
               </span>
             </h1>
             <p className="mt-3 text-white/80 max-w-2xl">
-              Configure parameters and control the lifecycle of on-chain lottery rounds
+              Configure parameters and control the lifecycle of on-chain lottery
+              rounds
             </p>
           </div>
         </div>
@@ -317,8 +358,13 @@ const AdminLotteryPage = () => {
         <div className="mb-8">
           <div className="rounded-xl bg-white/5 backdrop-blur-md border border-white/10 shadow-lg max-w-md">
             <div className="p-5">
-              <h2 className="text-lg font-semibold text-white">Current Owner</h2>
-              <p className="text-sm text-white/70 break-all mt-1">Current owner address: {ownerAddress ? ownerAddress.toString() : "Loading..."}</p>
+              <h2 className="text-lg font-semibold text-white">
+                Current Owner
+              </h2>
+              <p className="text-sm text-white/70 break-all mt-1">
+                Current owner address:{" "}
+                {ownerAddress ? ownerAddress.toString() : "Loading..."}
+              </p>
             </div>
           </div>
         </div>
@@ -328,8 +374,12 @@ const AdminLotteryPage = () => {
           <div className="rounded-xl bg-white/5 backdrop-blur-md border border-white/10 shadow-lg hover:shadow-xl transition-shadow duration-300">
             <div className="p-5">
               <div>
-                <h2 className="text-lg font-semibold text-white">Duration Configuration</h2>
-                <p className="text-sm text-white/60">Set the duration of each lottery in blocks</p>
+                <h2 className="text-lg font-semibold text-white">
+                  Duration Configuration
+                </h2>
+                <p className="text-sm text-white/60">
+                  Set the duration of each lottery in blocks
+                </p>
               </div>
 
               <div className="form-control w-full mt-4">
@@ -340,7 +390,7 @@ const AdminLotteryPage = () => {
                   <input
                     type="number"
                     placeholder="Enter duration"
-                    className={`input flex-1 bg-black/30 text-white placeholder:text-white/40 ${duration && !durationValid ? 'input-error' : ''}`}
+                    className={`input flex-1 bg-black/30 text-white placeholder:text-white/40 ${duration && !durationValid ? "input-error" : ""}`}
                     value={duration}
                     onChange={(e) => setDuration(e.target.value)}
                     disabled={isLoading}
@@ -348,14 +398,16 @@ const AdminLotteryPage = () => {
                   />
                   <button
                     className="btn border-0 text-black font-semibold bg-starkYellow hover:bg-starkYellow-light"
-                    onClick={() => setConfirmAction('setDuration')}
+                    onClick={() => setConfirmAction("setDuration")}
                     disabled={!durationValid || isLoading}
                   >
                     Save
                   </button>
                 </div>
                 {duration && !durationValid && (
-                  <span className="text-error text-sm mt-1">Enter a positive integer</span>
+                  <span className="text-error text-sm mt-1">
+                    Enter a positive integer
+                  </span>
                 )}
               </div>
             </div>
@@ -365,8 +417,12 @@ const AdminLotteryPage = () => {
           <div className="rounded-xl bg-white/5 backdrop-blur-md border border-white/10 shadow-lg hover:shadow-xl transition-shadow duration-300">
             <div className="p-5">
               <div>
-                <h2 className="text-lg font-semibold text-white">Price Configuration</h2>
-                <p className="text-sm text-white/60">Set the price per ticket</p>
+                <h2 className="text-lg font-semibold text-white">
+                  Price Configuration
+                </h2>
+                <p className="text-sm text-white/60">
+                  Set the price per ticket
+                </p>
               </div>
 
               <div className="form-control w-full mt-4">
@@ -377,7 +433,7 @@ const AdminLotteryPage = () => {
                   <input
                     type="number"
                     placeholder="Enter price"
-                    className={`input flex-1 bg-black/30 text-white placeholder:text-white/40 ${price && !priceValid ? 'input-error' : ''}`}
+                    className={`input flex-1 bg-black/30 text-white placeholder:text-white/40 ${price && !priceValid ? "input-error" : ""}`}
                     value={price}
                     onChange={(e) => setPrice(e.target.value)}
                     disabled={isLoading}
@@ -385,14 +441,16 @@ const AdminLotteryPage = () => {
                   />
                   <button
                     className="btn border-0 text-black font-semibold bg-starkYellow hover:bg-starkYellow-light"
-                    onClick={() => setConfirmAction('setPrice')}
+                    onClick={() => setConfirmAction("setPrice")}
                     disabled={!priceValid || isLoading}
                   >
                     Save
                   </button>
                 </div>
                 {price && !priceValid && (
-                  <span className="text-error text-sm mt-1">Enter a positive number</span>
+                  <span className="text-error text-sm mt-1">
+                    Enter a positive number
+                  </span>
                 )}
               </div>
             </div>
@@ -402,13 +460,17 @@ const AdminLotteryPage = () => {
           <div className="rounded-xl bg-white/5 backdrop-blur-md border border-white/10 shadow-lg hover:shadow-xl transition-shadow duration-300">
             <div className="p-5">
               <div>
-                <h2 className="text-lg font-semibold text-white">Lottery Control</h2>
-                <p className="text-sm text-white/60">Start a new lottery round</p>
+                <h2 className="text-lg font-semibold text-white">
+                  Lottery Control
+                </h2>
+                <p className="text-sm text-white/60">
+                  Start a new lottery round
+                </p>
               </div>
               <div className="mt-4 flex justify-center">
                 <button
                   className="btn min-w-[180px] border border-starkYellow text-starkYellow-light bg-transparent hover:bg-transparent hover:shadow-[0_0_8px_0_rgba(255,214,0,0.6)]"
-                  onClick={() => setConfirmAction('startLottery')}
+                  onClick={() => setConfirmAction("startLottery")}
                   disabled={isLoading}
                 >
                   Start New Lottery
@@ -421,13 +483,19 @@ const AdminLotteryPage = () => {
           <div className="rounded-xl bg-white/5 backdrop-blur-md border border-white/10 shadow-lg hover:shadow-xl transition-shadow duration-300">
             <div className="p-5">
               <div>
-                <h2 className="text-lg font-semibold text-white">End Current Lottery</h2>
-                <p className="text-sm text-white/60">End the current lottery round</p>
+                <h2 className="text-lg font-semibold text-white">
+                  End Current Lottery
+                </h2>
+                <p className="text-sm text-white/60">
+                  End the current lottery round
+                </p>
               </div>
 
               <div className="form-control w-full mt-4">
                 <label className="label">
-                  <span className="label-text text-white/80">Remaining Blocks</span>
+                  <span className="label-text text-white/80">
+                    Remaining Blocks
+                  </span>
                 </label>
                 <input
                   type="text"
@@ -441,7 +509,7 @@ const AdminLotteryPage = () => {
               <div className="mt-4 flex justify-center">
                 <button
                   className="btn min-w-[180px] border-0 text-white font-semibold bg-gradient-to-r from-red-500 to-rose-600 hover:opacity-90"
-                  onClick={() => setConfirmAction('endLottery')}
+                  onClick={() => setConfirmAction("endLottery")}
                   disabled={isLoading}
                 >
                   End Current Lottery
