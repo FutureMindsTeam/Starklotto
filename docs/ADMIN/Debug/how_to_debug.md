@@ -1,64 +1,64 @@
-# 🔧 Proceso de Debugging entre StarkLotto y Debug_Starklotto
+# 🔧 Debugging Process between StarkLotto and Debug_Starklotto
 
 ## 📌 Description 
-Este documento explica el proceso para sincronizar y debuguear contratos entre el proyecto principal **StarkLotto** y el proyecto de debugging **Debug_Starklotto**. El proceso permite que ambos proyectos vean y interactúen con los mismos contratos desplegados en la misma red.
+This document explains the process for synchronizing and debugging contracts between the main **StarkLotto** project and the debugging project **Debug_Starklotto**. The process allows both projects to see and interact with the same deployed contracts on the same network.
 
 ## 🎯 Motivation and Context 
-Para facilitar el desarrollo y debugging de contratos inteligentes en Starknet, necesitamos un proceso estandarizado que permita:
+To facilitate the development and debugging of smart contracts on Starknet, we need a standardized process that allows:
 
-- **Sincronización de contratos**: Ambos proyectos deben ver los mismos contratos desplegados
-- **Debugging eficiente**: Poder debuguear contratos desde el proyecto de desarrollo sin afectar el principal
-- **Consistencia de datos**: Mantener la misma información de contratos en ambos entornos
-- **Flujo de trabajo optimizado**: Proceso claro y repetible para el equipo de desarrollo
+- **Contract synchronization**: Both projects must see the same deployed contracts
+- **Efficient debugging**: Ability to debug contracts from the development project without affecting the main one
+- **Data consistency**: Maintain the same contract information in both environments
+- **Optimized workflow**: Clear and repeatable process for the development team
 
 ## 🛠️ How to Test the Change (if applicable) 
 Describe the steps to test your changes:
 
-### 🔹 Paso 1: Hacer Deploy en StarkLotto
-1. Navegar al proyecto principal **StarkLotto**
-2. Ejecutar el comando de deploy:
+### 🔹 Step 1: Deploy in StarkLotto
+1. Navigate to the main **StarkLotto** project
+2. Execute the deploy command:
    ```bash
    yarn deploy
    ```
-3. Verificar que los contratos se hayan desplegado correctamente
+3. Verify that the contracts have been deployed correctly
 
-### 🔹 Paso 2: Copiar archivo deployedContracts.ts
-1. En el proyecto **StarkLotto**, localizar el archivo generado:
+### 🔹 Step 2: Copy deployedContracts.ts file
+1. In the **StarkLotto** project, locate the generated file:
    ```
    packages/nextjs/contracts/deployedContracts.ts
    ```
-2. Copiar todo el contenido del archivo
-3. En el proyecto **Debug_Starklotto**, reemplazar el archivo:
+2. Copy the entire content of the file
+3. In the **Debug_Starklotto** project, replace the file:
    ```
    packages/nextjs/contracts/deployedContracts.ts
    ```
-4. Verificar que el archivo se haya actualizado correctamente
+4. Verify that the file has been updated correctly
 
-### 🔹 Paso 3: Levantar el sitio y debuguear
-1. En el proyecto **Debug_Starklotto**, instalar dependencias:
+### 🔹 Step 3: Start the site and debug
+1. In the **Debug_Starklotto** project, install dependencies:
    ```bash
    yarn install
    ```
-2. Levantar el servidor de desarrollo:
+2. Start the development server:
    ```bash
    yarn start
-   # o
+   # or
    yarn dev
    ```
-3. Navegar a la página de debugging:
+3. Navigate to the debugging page:
    ```
    http://localhost:3000/debug
    ```
-4. Verificar que los contratos aparezcan correctamente
-5. Probar las funciones de debugging disponibles
+4. Verify that the contracts appear correctly
+5. Test the available debugging functions
 
-### 🔹 Paso 4: Verificar sincronización
-1. Verificar que ambos proyectos apunten a la misma red (devnet/testnet)
-2. Probar una transacción desde el proyecto de debugging
-3. Confirmar que los cambios se reflejen en ambos proyectos
+### 🔹 Step 4: Verify synchronization
+1. Verify that both projects point to the same network (devnet/testnet)
+2. Test a transaction from the debugging project
+3. Confirm that changes are reflected in both projects
 
 ## 🖼️ Screenshots (if applicable) 
-Si aplica, agregar capturas de pantalla o videos de los resultados de las pruebas.
+If applicable, add screenshots or videos of test results.
 
 ## 🔍 Type of Change
 - [x] 📖 **Documentation** - Updates or creates new documentation.
@@ -77,34 +77,34 @@ Si aplica, agregar capturas de pantalla o videos de los resultados de las prueba
 
 ## 📌 Additional Notes 
 
-### Estructura de Contratos Sincronizados
-El archivo `deployedContracts.ts` contiene la información de los siguientes contratos:
+### Synchronized Contract Structure
+The `deployedContracts.ts` file contains information for the following contracts:
 
-- **StarkPlayERC20**: Token ERC20 personalizado con funcionalidades de mint, burn y premios
-- **StarkPlayVault**: Vault para manejo de fondos y conversión de tokens
-- **Lottery**: Contrato principal de la lotería con funcionalidades de tickets y sorteos
+- **StarkPlayERC20**: Custom ERC20 token with mint, burn and prize functionalities
+- **StarkPlayVault**: Vault for fund management and token conversion
+- **Lottery**: Main lottery contract with ticket and draw functionalities
 
-### Consideraciones Importantes
+### Important Considerations
 
-1. **Red de Despliegue**: Asegurarse de que ambos proyectos estén configurados para la misma red (devnet/testnet/mainnet)
+1. **Deployment Network**: Ensure that both projects are configured for the same network (devnet/testnet/mainnet)
 
-2. **Versiones de Contratos**: Los contratos deben estar en la misma versión en ambos proyectos para evitar incompatibilidades
+2. **Contract Versions**: Contracts must be in the same version in both projects to avoid incompatibilities
 
-3. **Configuración de Red**: Verificar que la configuración de red en `scaffold.config.ts` sea consistente
+3. **Network Configuration**: Verify that the network configuration in `scaffold.config.ts` is consistent
 
-### Flujo de Trabajo Recomendado
+### Recommended Workflow
 
-1. **Desarrollo**: Trabajar en el proyecto principal StarkLotto
-2. **Deploy**: Desplegar contratos cuando estén listos para testing
-3. **Sincronización**: Copiar el archivo de contratos al proyecto de debugging
-4. **Testing**: Realizar pruebas exhaustivas en el entorno de debugging
-5. **Iteración**: Repetir el proceso según sea necesario
+1. **Development**: Work on the main StarkLotto project
+2. **Deploy**: Deploy contracts when ready for testing
+3. **Synchronization**: Copy the contract file to the debugging project
+4. **Testing**: Perform exhaustive testing in the debugging environment
+5. **Iteration**: Repeat the process as needed
 
-### Herramientas de Debugging Disponibles
+### Available Debugging Tools
 
-- **Interfaz de Contratos**: Acceso directo a todas las funciones de los contratos
-- **Visualización de Eventos**: Monitoreo de eventos en tiempo real
-- **Testing de Transacciones**: Prueba de funciones sin afectar el entorno principal
-- **Análisis de Estado**: Verificación del estado actual de los contratos
+- **Contract Interface**: Direct access to all contract functions
+- **Event Visualization**: Real-time event monitoring
+- **Transaction Testing**: Test functions without affecting the main environment
+- **State Analysis**: Verification of current contract state
 
-Este proceso garantiza un flujo de trabajo eficiente y seguro para el desarrollo y debugging de contratos inteligentes en Starknet.
+This process ensures an efficient and secure workflow for the development and debugging of smart contracts on Starknet.
