@@ -334,7 +334,7 @@ fn test_tickets_across_different_draws() {
     // Complete draw 1 and create draw 2
     start_cheat_caller_address(lottery_address, owner_address());
     lottery_dispatcher.DrawNumbers(1);
-    lottery_dispatcher.CreateNewDraw(INITIAL_ACCUMULATED_PRIZE);
+    lottery_dispatcher.CreateNewDraw();
     stop_cheat_caller_address(lottery_address);
 
     // Purchase ticket in draw 2

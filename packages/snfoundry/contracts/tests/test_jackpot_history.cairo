@@ -111,8 +111,8 @@ fn test_get_jackpot_history_multiple_draws() {
     lottery_dispatcher.Initialize(1000000000000000000_u256, 1000000000000000000000_u256);
 
     // Create additional draws
-    lottery_dispatcher.CreateNewDraw(2000000000000000000000_u256);
-    lottery_dispatcher.CreateNewDraw(3000000000000000000000_u256);
+    lottery_dispatcher.CreateNewDraw();
+    lottery_dispatcher.CreateNewDraw();
     stop_cheat_caller_address(lottery_dispatcher.contract_address);
     // Get jackpot history - should return 3 entries
     let jackpot_history = lottery_dispatcher.get_jackpot_history();
@@ -129,17 +129,18 @@ fn test_get_jackpot_history_multiple_draws() {
         get_jackpot_entry_draw_id(lottery_dispatcher, 3) == 3, "Third entry should have drawId 3",
     );
 
+    // Note: CreateNewDraw() now automatically calculates jackpot from vault balance (0)
     assert!(
-        get_jackpot_entry_amount(lottery_dispatcher, 1) == 1000000000000000000000_u256,
-        "First jackpot amount incorrect",
+        get_jackpot_entry_amount(lottery_dispatcher, 1) == 0_u256,
+        "First jackpot amount should be 0 (vault balance)",
     );
     assert!(
-        get_jackpot_entry_amount(lottery_dispatcher, 2) == 2000000000000000000000_u256,
-        "Second jackpot amount incorrect",
+        get_jackpot_entry_amount(lottery_dispatcher, 2) == 0_u256,
+        "Second jackpot amount should be 0 (vault balance)",
     );
     assert!(
-        get_jackpot_entry_amount(lottery_dispatcher, 3) == 3000000000000000000000_u256,
-        "Third jackpot amount incorrect",
+        get_jackpot_entry_amount(lottery_dispatcher, 3) == 0_u256,
+        "Third jackpot amount should be 0 (vault balance)",
     );
 }
 
@@ -180,7 +181,7 @@ fn test_get_jackpot_history_performance() {
     // Create many draws to test performance
     let mut i = 0;
     while i != 10 {
-        lottery_dispatcher.CreateNewDraw((i + 2) * 1000000000000000000000_u256);
+        lottery_dispatcher.CreateNewDraw();
         i = i + 1;
     }
     stop_cheat_caller_address(lottery_dispatcher.contract_address);
@@ -192,8 +193,9 @@ fn test_get_jackpot_history_performance() {
     assert!(
         get_jackpot_entry_draw_id(lottery_dispatcher, 11) == 11, "Last entry should have drawId 11",
     );
+    // Note: CreateNewDraw() now automatically calculates jackpot from vault balance (0)
     assert!(
-        get_jackpot_entry_amount(lottery_dispatcher, 11) == 11000000000000000000000_u256,
-        "Last jackpot amount incorrect",
+        get_jackpot_entry_amount(lottery_dispatcher, 11) == 0_u256,
+        "Last jackpot amount should be 0 (vault balance)",
     );
 }

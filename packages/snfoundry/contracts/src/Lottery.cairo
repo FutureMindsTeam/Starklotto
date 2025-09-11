@@ -606,7 +606,7 @@ pub mod Lottery {
             // ✅ Allow zero vault balance for first draw (bootstrap case)
 
             let drawId = self.currentDrawId.read() + 1;
-            let previousAmount = self.accumulatedPrize.read();
+            let _previousAmount = self.accumulatedPrize.read();
             
             // ✅ Update accumulated prize
             self.accumulatedPrize.write(accumulated_prize);

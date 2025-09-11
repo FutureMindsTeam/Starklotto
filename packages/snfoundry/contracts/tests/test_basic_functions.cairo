@@ -244,7 +244,8 @@ fn test_get_accumulated_prize_after_initialize() {
     lottery_dispatcher.Initialize(ticket_price, accumulated_prize);
 
     let current_prize = lottery_dispatcher.GetAccumulatedPrize();
-    assert!(current_prize == accumulated_prize, "Accumulated prize should match initialized value");
+    // Note: Initialize() calls CreateNewDraw() which updates accumulated prize from vault balance (0)
+    assert!(current_prize == 0, "Accumulated prize should be updated from vault balance");
 
     stop_cheat_caller_address(lottery_dispatcher.contract_address);
 }
@@ -260,11 +261,12 @@ fn test_get_accumulated_prize_after_create_new_draw() {
     let initial_prize: u256 = 10000000000000000000;
     lottery_dispatcher.Initialize(ticket_price, initial_prize);
 
-    let new_prize: u256 = 20000000000000000000;
-    lottery_dispatcher.CreateNewDraw(new_prize);
+    let _new_prize: u256 = 20000000000000000000;
+    lottery_dispatcher.CreateNewDraw();
 
     let current_prize = lottery_dispatcher.GetAccumulatedPrize();
-    assert!(current_prize == initial_prize, "Accumulated prize should remain unchanged after new draw");
+    // Note: CreateNewDraw() now automatically updates accumulated prize from vault balance (0)
+    assert!(current_prize == 0, "Accumulated prize should be updated from vault balance");
 
     stop_cheat_caller_address(lottery_dispatcher.contract_address);
 }
@@ -276,8 +278,8 @@ fn test_get_accumulated_prize_public_access() {
 
     // Set prize as owner
     start_cheat_caller_address(lottery_dispatcher.contract_address, owner_address());
-    let set_prize: u256 = 15000000000000000000;
-    lottery_dispatcher.CreateNewDraw(set_prize);
+    let _set_prize: u256 = 15000000000000000000;
+    lottery_dispatcher.CreateNewDraw();
     stop_cheat_caller_address(lottery_dispatcher.contract_address);
 
     // Read prize as different users
@@ -465,7 +467,7 @@ fn test_get_draw_status_initial_draw() {
     lottery_dispatcher.Initialize(ticket_price, accumulated_prize);
     
     // Create a new draw
-    lottery_dispatcher.CreateNewDraw(accumulated_prize);
+    lottery_dispatcher.CreateNewDraw();
     
     stop_cheat_caller_address(lottery_dispatcher.contract_address);
 
@@ -485,7 +487,7 @@ fn test_get_draw_status_after_draw_completion() {
     lottery_dispatcher.Initialize(ticket_price, accumulated_prize);
     
     // Create a new draw
-    lottery_dispatcher.CreateNewDraw(accumulated_prize);
+    lottery_dispatcher.CreateNewDraw();
     
     // Complete the draw by drawing numbers
     lottery_dispatcher.DrawNumbers(1);
@@ -508,8 +510,8 @@ fn test_get_draw_status_multiple_draws() {
     lottery_dispatcher.Initialize(ticket_price, accumulated_prize);
     
     // Create multiple draws
-    lottery_dispatcher.CreateNewDraw(accumulated_prize);
-    lottery_dispatcher.CreateNewDraw(accumulated_prize * 2);
+    lottery_dispatcher.CreateNewDraw();
+    lottery_dispatcher.CreateNewDraw();
     
     stop_cheat_caller_address(lottery_dispatcher.contract_address);
 
@@ -530,7 +532,7 @@ fn test_get_draw_status_public_access() {
     let ticket_price: u256 = 500000000000000000;
     let accumulated_prize: u256 = 10000000000000000000;
     lottery_dispatcher.Initialize(ticket_price, accumulated_prize);
-    lottery_dispatcher.CreateNewDraw(accumulated_prize);
+    lottery_dispatcher.CreateNewDraw();
     stop_cheat_caller_address(lottery_dispatcher.contract_address);
 
     // Read status as different users
@@ -665,12 +667,13 @@ fn test_basic_functions_integration() {
 
     // Verify all basic functions work together
     assert!(lottery_dispatcher.GetTicketPrice() == ticket_price, "Ticket price should match initialization");
-    assert!(lottery_dispatcher.GetAccumulatedPrize() == accumulated_prize, "Accumulated prize should match initialization");
+    // Note: Initialize() calls CreateNewDraw() which updates accumulated prize from vault balance (0)
+    assert!(lottery_dispatcher.GetAccumulatedPrize() == 0, "Accumulated prize should be updated from vault balance");
     assert!(lottery_dispatcher.GetTicketCurrentId() == 0, "Initial ticket ID should be 0");
 
     // Create a new draw
-    let new_prize: u256 = 20000000000000000000;
-    lottery_dispatcher.CreateNewDraw(new_prize);
+    let _new_prize: u256 = 20000000000000000000;
+    lottery_dispatcher.CreateNewDraw();
 
     // Verify draw status
     assert!(lottery_dispatcher.GetDrawStatus(1) == true, "New draw should be active");
@@ -681,7 +684,9 @@ fn test_basic_functions_integration() {
 
     // Verify all functions still work correctly
     assert!(lottery_dispatcher.GetTicketPrice() == new_price, "Ticket price should be updated");
-    assert!(lottery_dispatcher.GetAccumulatedPrize() == accumulated_prize, "Accumulated prize should remain unchanged");
+    // Note: CreateNewDraw() now automatically updates accumulated prize from vault balance
+    // In this test, vault balance is 0, so accumulated prize becomes 0
+    assert!(lottery_dispatcher.GetAccumulatedPrize() == 0, "Accumulated prize should be updated from vault balance");
     assert!(lottery_dispatcher.GetDrawStatus(1) == true, "Draw should still be active");
 
     stop_cheat_caller_address(lottery_dispatcher.contract_address);
@@ -705,7 +710,8 @@ fn test_basic_functions_with_ticket_purchases() {
     
     // Verify other functions work correctly
     assert!(lottery_dispatcher.GetTicketPrice() == ticket_price, "Ticket price should match initialization");
-    assert!(lottery_dispatcher.GetAccumulatedPrize() == accumulated_prize, "Accumulated prize should match initialization");
+    // Note: Initialize() calls CreateNewDraw() which updates accumulated prize from vault balance (0)
+    assert!(lottery_dispatcher.GetAccumulatedPrize() == 0, "Accumulated prize should be updated from vault balance");
     assert!(lottery_dispatcher.GetDrawStatus(1) == true, "Draw should be active");
 }
 
@@ -724,17 +730,17 @@ fn test_get_fixed_prize_with_updated_accumulated_prize() {
     let initial_prize: u256 = 10000000000000000000;
     lottery_dispatcher.Initialize(ticket_price, initial_prize);
     
-    // Verify 5 matches returns initial accumulated prize
+    // Verify 5 matches returns current accumulated prize (0 after Initialize calls CreateNewDraw)
     let prize_5_matches = lottery_dispatcher.GetFixedPrize(5);
-    assert!(prize_5_matches == initial_prize, "5 matches should return initial accumulated prize");
+    assert!(prize_5_matches == 0, "5 matches should return current accumulated prize");
     
-    // Create a new draw (this doesn't update the global accumulated prize)
-    let new_prize: u256 = 20000000000000000000;
-    lottery_dispatcher.CreateNewDraw(new_prize);
+    // Create a new draw (this updates the global accumulated prize from vault balance)
+    let _new_prize: u256 = 20000000000000000000;
+    lottery_dispatcher.CreateNewDraw();
     
-    // Verify 5 matches still returns the same accumulated prize (global state unchanged)
+    // Verify 5 matches still returns the same accumulated prize (vault balance is still 0)
     let updated_prize_5_matches = lottery_dispatcher.GetFixedPrize(5);
-    assert!(updated_prize_5_matches == initial_prize, "5 matches should still return initial accumulated prize");
+    assert!(updated_prize_5_matches == 0, "5 matches should still return current accumulated prize");
     
     stop_cheat_caller_address(lottery_dispatcher.contract_address);
 }
@@ -778,9 +784,9 @@ fn test_draw_status_multiple_draws_completion() {
     lottery_dispatcher.Initialize(ticket_price, accumulated_prize);
     
     // Create multiple draws
-    lottery_dispatcher.CreateNewDraw(accumulated_prize);
-    lottery_dispatcher.CreateNewDraw(accumulated_prize * 2);
-    lottery_dispatcher.CreateNewDraw(accumulated_prize * 3);
+    lottery_dispatcher.CreateNewDraw();
+    lottery_dispatcher.CreateNewDraw();
+    lottery_dispatcher.CreateNewDraw();
     
     // Complete first draw
     lottery_dispatcher.DrawNumbers(1);
