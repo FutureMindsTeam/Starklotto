@@ -10,6 +10,8 @@ interface PurchaseSummaryProps {
   txError: string | null;
   txSuccess: string | null;
   onPurchase: () => void;
+  isDrawActive: boolean;
+  contractsReady: boolean;
 }
 
 export default function PurchaseSummary({
@@ -21,6 +23,8 @@ export default function PurchaseSummary({
   txError,
   txSuccess,
   onPurchase,
+  isDrawActive,
+  contractsReady,
 }: PurchaseSummaryProps) {
   const { t } = useTranslation();
 
@@ -40,9 +44,9 @@ export default function PurchaseSummary({
         onClick={onPurchase}
         className="w-full"
         glowColor="rgba(139, 92, 246, 0.5)"
-        disabled={isLoading || isPriceLoading || !!priceError}
+        disabled={isLoading || isPriceLoading || !!priceError || !isDrawActive || !contractsReady}
       >
-        {isLoading ? "Processing..." : t("buyTickets.buyButton")}
+        {isLoading ? t("buyTickets.processing") : t("buyTickets.buyButton")}
       </GlowingButton>
 
       {txError && <p className="text-red-500 mt-2">{txError}</p>}

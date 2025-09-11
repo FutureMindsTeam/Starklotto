@@ -22,6 +22,10 @@
     "ticketNumber": "Boleto #{{number}}",
     "totalCost": "Costo total:",
     "buyButton": "Comprar Boletos",
+    "processing": "Procesando...",
+    "yourBalance": "Tu Balance $TRKP:",
+    "drawNotActive": "El sorteo actualmente no está activo",
+    "contractsNotReady": "Contratos no listos para la red actual",
     "gameRules": {
       "title": "Reglas del Juego",
       "rules": [
