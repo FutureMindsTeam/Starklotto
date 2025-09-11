@@ -21,9 +21,6 @@ const AdminLotteryPage = () => {
 
   const { disconnect } = useDisconnect();
 
-  // Remove enable toggles - backend will handle when actions are available
-
-  // Numeric validation
   const durationValid = useMemo(() => {
     if (!duration) return false;
     const n = Number(duration);
@@ -36,10 +33,8 @@ const AdminLotteryPage = () => {
     return Number.isFinite(n) && n > 0;
   }, [price]);
 
-  // All hooks at the top level
   const { address, isConnected } = useAccount();
   
-  // Contract read hook - always call it, but use 'enabled' to control execution
   const { data: ownerAddress } = useScaffoldReadContract({
     contractName: "Lottery",
     functionName: "owner",
@@ -55,12 +50,10 @@ const AdminLotteryPage = () => {
     return overrideFlag || (overrideAddress && overrideAddress === userAddr);
   }, [address]);
 
-  // Remaining blocks (read-only) PLACEHOLDER - update function name when available
   const remainingBlocksText = useMemo(() => {
     return "N/A";
   }, []);
 
-  // Contract write hooks - configured per function
   const { sendAsync: sendSetDuration } = useScaffoldWriteContract({
     contractName: "Lottery",
     functionName: "setDurationBlocks",
@@ -78,13 +71,11 @@ const AdminLotteryPage = () => {
     functionName: "endLottery",
   } as any);
 
-  // Admin check effect
   useEffect(() => {
     const checkAdminStatus = async () => {
       try {
         setIsCheckingAdmin(true);
 
-        // Honor override first for local testing/demo
         if (adminOverride) {
           setIsAdmin(true);
           return;
@@ -114,7 +105,6 @@ const AdminLotteryPage = () => {
     checkAdminStatus();
   }, [ownerAddress, address, isConnected, adminOverride]);
 
-  // Show loading state while checking admin status
   if (isCheckingAdmin) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -294,7 +284,6 @@ const AdminLotteryPage = () => {
   return (
     <div className="flex flex-col bg-[#101326] text-white min-h-screen">
       <Header />
-      {/* Hero-like header to match home aesthetics */}
       <section className="relative flex items-center justify-center min-h-[40svh] overflow-hidden pt-20">
         <div className="absolute inset-0 -z-20 bg-gradient-to-b from-heroDarker to-heroDark" />
         <div
@@ -325,7 +314,6 @@ const AdminLotteryPage = () => {
 
       {/* Content */}
       <div className="container mx-auto px-4 py-10">
-        {/* Current Owner - moved to top */}
         <div className="mb-8">
           <div className="rounded-xl bg-white/5 backdrop-blur-md border border-white/10 shadow-lg max-w-md">
             <div className="p-5">
