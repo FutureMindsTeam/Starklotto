@@ -15,6 +15,7 @@ use snforge_std::{
     load, store
 };
 use starknet::ContractAddress;
+#[feature("deprecated-starknet-consts")]
 use starknet::contract_address::contract_address_const;
 use starknet::storage::StorableStoragePointerReadAccess;
 
@@ -2498,7 +2499,7 @@ fn test_sequential_fee_consistency() {
         let new_accumulated_fee = vault.get_accumulated_fee();
         let actual_fee = new_accumulated_fee - initial_accumulated_fee;
 
-        assert(actual_fee == expected_fee, 'Fee should be consistent');
+        assert(actual_fee == expected_fee.into(), 'Fee should be consistent');
 
         expected_accumulated_fee += expected_fee;
         assert(new_accumulated_fee == expected_accumulated_fee, 'Accumulated fee incorrect');
@@ -2546,7 +2547,7 @@ fn test_fee_calculation_accuracy() {
         assert(success, 'Transaction should succeed');
 
         let actual_fee = vault.get_accumulated_fee() - initial_accumulated_fee;
-        assert(actual_fee == expected_fee, 'Fee calculation incorrect');
+        assert(actual_fee == expected_fee.into(), 'Fee calculation incorrect');
 
         total_expected_fee += expected_fee;
         i += 1;
@@ -2593,7 +2594,7 @@ fn test_multiple_users_fee_consistency() {
 
         // Verify fee is consistent for each user
         let actual_fee = vault.get_accumulated_fee() - initial_accumulated_fee;
-        assert(actual_fee == expected_fee, 'Fee should be same for all');
+        assert(actual_fee == expected_fee.into(), 'Fee should be same for all');
 
         expected_accumulated_fee += expected_fee;
         assert(
@@ -3180,7 +3181,7 @@ fn test_decimal_precision() {
     while i < test_amounts.len() {
         let amount = *test_amounts.at(i);
         let expected_fee = (amount * fee_percentage.into()) / 10000_u256;
-        let expected_minted = amount - expected_fee;
+        let _expected_minted = amount - expected_fee;
 
         let initial_balance = vault.get_accumulated_fee();
         
@@ -3191,7 +3192,7 @@ fn test_decimal_precision() {
         assert(success, 'Transaction should succeed');
 
         let actual_fee = vault.get_accumulated_fee() - initial_balance;
-        assert(actual_fee == expected_fee, 'Fee calculation should be precise');
+        assert(actual_fee == expected_fee.into(), 'Fee calculation should be precise');
 
         total_expected_fee += expected_fee;
         i += 1;
@@ -3212,5 +3213,5 @@ fn test_decimal_precision() {
     let final_fee = vault.get_accumulated_fee();
     let actual_small_fee = final_fee - initial_fee;
     
-    assert(actual_small_fee == small_fee, 'Small amount fee should be precise');
+    assert(actual_small_fee == small_fee.into(), 'Small amount fee should be precise');
 }
