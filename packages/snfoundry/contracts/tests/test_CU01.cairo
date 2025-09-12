@@ -2499,16 +2499,16 @@ fn test_sequential_fee_consistency() {
         let new_accumulated_fee = vault.get_accumulated_fee();
         let actual_fee = new_accumulated_fee - initial_accumulated_fee;
 
-        assert(actual_fee == expected_fee, 'Fee should be consistent');
+        assert(actual_fee == expected_fee, 'Fee inconsistent');
 
         expected_accumulated_fee += expected_fee;
-        assert(new_accumulated_fee == expected_accumulated_fee, 'Accumulated fee incorrect');
+        assert(new_accumulated_fee == expected_accumulated_fee, 'Accumulated fee wrong');
 
         i += 1;
     }
 
     // Final verification
-    assert(vault.get_accumulated_fee() == expected_fee * 10, 'Final accumulated fee incorrect');
+    assert(vault.get_accumulated_fee() == expected_fee * 10, 'Final fee wrong');
 }
 
 #[test]
@@ -2547,13 +2547,13 @@ fn test_fee_calculation_accuracy() {
         assert(success, 'Transaction should succeed');
 
         let actual_fee = vault.get_accumulated_fee() - initial_accumulated_fee;
-        assert(actual_fee == expected_fee, 'Fee calculation incorrect');
+        assert(actual_fee == expected_fee, 'Fee calc wrong');
 
         total_expected_fee += expected_fee;
         i += 1;
     }
 
-    assert(vault.get_accumulated_fee() == total_expected_fee, 'fee accumulation incorrect');
+    assert(vault.get_accumulated_fee() == total_expected_fee, 'fee accumulation wrong');
 }
 
 // ============================================================================================
@@ -2594,7 +2594,7 @@ fn test_multiple_users_fee_consistency() {
 
         // Verify fee is consistent for each user
         let actual_fee = vault.get_accumulated_fee() - initial_accumulated_fee;
-        assert(actual_fee == expected_fee, 'Fee should be same for all');
+        assert(actual_fee == expected_fee, 'Fee mismatch');
 
         expected_accumulated_fee += expected_fee;
         assert(
@@ -2646,11 +2646,11 @@ fn test_concurrent_transactions_simulation() {
     let first_fee = *fees_collected.at(0);
     let mut j = 1;
     while j != fees_collected.len() {
-        assert(*fees_collected.at(j) == first_fee, 'Fees should be identical');
+        assert(*fees_collected.at(j) == first_fee, 'Fees not identical');
         j += 1;
     }
 
-    assert(first_fee == expected_fee, 'Fee must be consistent');
+    assert(first_fee == expected_fee, 'Fee inconsistent');
 }
 
 // ============================================================================================
@@ -2678,7 +2678,7 @@ fn test_fee_consistency_after_pause_unpause() {
     stop_cheat_caller_address(vault.contract_address);
 
     let fee_before_pause = vault.get_accumulated_fee();
-    assert(fee_before_pause == expected_fee, 'Fee before pause incorrect');
+    assert(fee_before_pause == expected_fee, 'Fee before pause wrong');
 
     // Pause the contract
     let ownable = IOwnableDispatcher { contract_address: vault.contract_address };
@@ -2696,7 +2696,7 @@ fn test_fee_consistency_after_pause_unpause() {
     assert(!vault.is_paused(), 'Contract must be unpaused');
 
     let fee_after_unpause = vault.get_accumulated_fee();
-    assert(fee_after_unpause == expected_fee, 'Fee after unpause incorrect');
+    assert(fee_after_unpause == expected_fee, 'Fee after unpause wrong');
 
     // Transaction after unpause
     start_cheat_caller_address(vault.contract_address, USER1());
@@ -2704,7 +2704,7 @@ fn test_fee_consistency_after_pause_unpause() {
     stop_cheat_caller_address(vault.contract_address);
 
     let fee_after_unpause = vault.get_accumulated_fee();
-    assert(fee_after_unpause == expected_fee * 2, 'Fee must be consistent');
+    assert(fee_after_unpause == expected_fee * 2, 'Fee inconsistent');
 
     // Verify fee percentage remains the same
     assert(vault.GetFeePercentage() == Initial_Fee_Percentage, 'percentage changed');
@@ -2772,7 +2772,7 @@ fn test_fee_accumulation_multiple_users() {
             stop_cheat_caller_address(vault.contract_address);
 
             total_expected_fee += expected_fee_per_tx;
-            assert(vault.get_accumulated_fee() == total_expected_fee, 'Fee must be consistent');
+            assert(vault.get_accumulated_fee() == total_expected_fee, 'Fee inconsistent');
 
             tx_count += 1;
         }
@@ -2783,7 +2783,7 @@ fn test_fee_accumulation_multiple_users() {
     // Verify total fees collected
     let total_transactions = users.len() * transactions_per_user;
     let expected_total_fee = expected_fee_per_tx * total_transactions.into();
-    assert(vault.get_accumulated_fee() == expected_total_fee, 'fee accumulation incorrect');
+    assert(vault.get_accumulated_fee() == expected_total_fee, 'fee accumulation wrong');
 }
 
 // ============================================================================================
@@ -3192,7 +3192,7 @@ fn test_decimal_precision() {
         assert(success, 'Transaction should succeed');
 
         let actual_fee = vault.get_accumulated_fee() - initial_balance;
-        assert(actual_fee == expected_fee, 'Fee calculation should be precise');
+        assert(actual_fee == expected_fee, 'Fee calc error');
 
         total_expected_fee += expected_fee;
         i += 1;
@@ -3213,5 +3213,5 @@ fn test_decimal_precision() {
     let final_fee = vault.get_accumulated_fee();
     let actual_small_fee = final_fee - initial_fee;
     
-    assert(actual_small_fee == small_fee, 'Small amount fee should be precise');
+    assert(actual_small_fee == small_fee, 'Small fee error');
 }
