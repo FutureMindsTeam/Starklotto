@@ -79,7 +79,7 @@ export function useDrawInfo({ drawId }: UseDrawInfoProps) {
     // Datos del draw
     isDrawActive: !!isDrawActive,
     jackpotAmount: jackpotAmount ? BigInt(jackpotAmount.toString()) : 0n,
-    jackpotFormatted: jackpotAmount ? `$${formatJackpot(BigInt(jackpotAmount.toString()))} USDC` : "$0 USDC",
+    jackpotFormatted: jackpotAmount ? `${formatJackpot(BigInt(jackpotAmount.toString()))} $TRKP` : "0 $TRKP",
     startTime: startTime ? Number(startTime) : 0,
     endTime: endTime ? Number(endTime) : 0,
     
