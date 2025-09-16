@@ -25,30 +25,36 @@ export function useBuyTickets({ drawId }: UseBuyTicketsProps) {
   const { StarkPlayERC20, Lottery, isValid } = useContractAddresses();
 
   // Leer balance del usuario (STRKP) - solo si las direcciones son válidas
-  const { data: userBalance, refetch: refetchBalance } = useScaffoldReadContract({
-    contractName: STRKP_CONTRACT_NAME as "StarkPlayERC20",
-    functionName: "balance_of",
-    args: userAddress ? [userAddress] : [undefined],
-    enabled: !!userAddress && isValid,
-  });
+  const { data: userBalance, refetch: refetchBalance } =
+    useScaffoldReadContract({
+      contractName: STRKP_CONTRACT_NAME as "StarkPlayERC20",
+      functionName: "balance_of",
+      args: userAddress ? [userAddress] : [undefined],
+      enabled: !!userAddress && isValid,
+    });
 
   // ✅ Usar dirección del contrato desde useContractAddresses en lugar de leerla
   const lotteryAddress = Lottery;
 
-  const { data: userAllowance, refetch: refetchAllowance } = useScaffoldReadContract({
-    contractName: STRKP_CONTRACT_NAME as "StarkPlayERC20", 
-    functionName: "allowance",
-    args: userAddress && lotteryAddress ? [userAddress, lotteryAddress] : [undefined, undefined],
-    enabled: !!(userAddress && lotteryAddress && isValid),
-  });
+  const { data: userAllowance, refetch: refetchAllowance } =
+    useScaffoldReadContract({
+      contractName: STRKP_CONTRACT_NAME as "StarkPlayERC20",
+      functionName: "allowance",
+      args:
+        userAddress && lotteryAddress
+          ? [userAddress, lotteryAddress]
+          : [undefined, undefined],
+      enabled: !!(userAddress && lotteryAddress && isValid),
+    });
 
   // Leer estado del draw - solo si las direcciones son válidas
-  const { data: isDrawActive, refetch: refetchDrawStatus } = useScaffoldReadContract({
-    contractName: LOTT_CONTRACT_NAME as "Lottery",
-    functionName: "GetDrawStatus",
-    args: [drawId],
-    enabled: !!drawId && isValid,
-  });
+  const { data: isDrawActive, refetch: refetchDrawStatus } =
+    useScaffoldReadContract({
+      contractName: LOTT_CONTRACT_NAME as "Lottery",
+      functionName: "GetDrawStatus",
+      args: [drawId],
+      enabled: !!drawId && isValid,
+    });
 
   // Hook para escribir al contrato (BuyTicket)
   const { sendAsync: buyTicket, ...buyTicketState } = useScaffoldWriteContract({
@@ -98,19 +104,19 @@ export function useBuyTickets({ drawId }: UseBuyTicketsProps) {
           const approveResult = await approveTokens({
             args: [lotteryAddress, totalCost],
           });
-          
+
           if (!approveResult) {
             throw new Error("Token approval failed");
           }
-          
+
           // Esperar un poco para que se confirme la transacción
-          await new Promise(resolve => setTimeout(resolve, 2000));
+          await new Promise((resolve) => setTimeout(resolve, 2000));
           await refetchAllowance();
         }
 
         // Preparar array de números para el contrato
-        const numbersArray = Object.values(selectedNumbers).map(numbers => 
-          numbers.map((num: number) => num)
+        const numbersArray = Object.values(selectedNumbers).map((numbers) =>
+          numbers.map((num: number) => num),
         );
         const quantity = numbersArray.length;
 
@@ -156,7 +162,7 @@ export function useBuyTickets({ drawId }: UseBuyTicketsProps) {
       refetchBalance,
       refetchAllowance,
       refetchDrawStatus,
-    ]
+    ],
   );
 
   // Función helper para convertir balance a número formateado
@@ -173,33 +179,35 @@ export function useBuyTickets({ drawId }: UseBuyTicketsProps) {
   const isProcessing = isLoading || buyTicketState.isPending;
   const isApproving = false; // Se puede agregar estado específico de aprobación
   const isValidating = !isValid;
-  
+
   const allLoadingStates = isProcessing || isApproving || isValidating;
 
   return {
     // Funciones
     buyTickets,
-    
+
     // Estados
     isLoading: allLoadingStates,
     error,
     success,
-    
+
     // Datos del contrato
     userBalance: userBalance ? BigInt(userBalance.toString()) : 0n,
-    userBalanceFormatted: userBalance ? formatBalance(BigInt(userBalance.toString())) : "0",
+    userBalanceFormatted: userBalance
+      ? formatBalance(BigInt(userBalance.toString()))
+      : "0",
     userAllowance: userAllowance ? BigInt(userAllowance.toString()) : 0n,
     isDrawActive: !!isDrawActive,
-    
+
     // ✅ Validaciones de la guía
     isValid,
     contractsReady: isValid && !!userAddress,
-    
+
     // Funciones de refetch
     refetchBalance,
     refetchAllowance,
     refetchDrawStatus,
-    
+
     // Estados adicionales
     isPending: buyTicketState.isPending,
     isSuccess: buyTicketState.isSuccess,

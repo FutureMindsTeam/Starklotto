@@ -452,7 +452,9 @@ export default function BuyTicketsPage() {
                         />
                       </svg>
                     </div>
-                    <p className="text-white font-medium">{t("buyTickets.yourBalance")}</p>
+                    <p className="text-white font-medium">
+                      {t("buyTickets.yourBalance")}
+                    </p>
                   </div>
                   <p className="text-[#4ade80] font-bold text-lg">
                     {userBalanceFormatted} $TRKP
