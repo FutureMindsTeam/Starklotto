@@ -140,6 +140,10 @@ pub mod Lottery {
     // Precio inicial de ticket: 5 STARKP (18 decimales)
     const TicketPriceInitial: u256 = 5000000000000000000;
 
+    // Constantes para el cálculo del jackpot
+    const JACKPOT_PERCENTAGE: u256 = 55; // 55% del monto de compra va al jackpot
+    const PERCENTAGE_DENOMINATOR: u256 = 100; // Para calcular porcentajes
+
     //ownable component by openzeppelin
     #[abi(embed_v0)]
     impl OwnableImpl = OwnableComponent::OwnableImpl<ContractState>;
@@ -367,6 +371,28 @@ pub mod Lottery {
 
             // --- End corrected payment logic ---
 
+            // Calculate 55% of total price to add to jackpot
+            let jackpot_contribution = (total_price * JACKPOT_PERCENTAGE) / PERCENTAGE_DENOMINATOR;
+
+            // Update global accumulated prize
+            let current_accumulated_prize = self.accumulatedPrize.read();
+            self.accumulatedPrize.write(current_accumulated_prize + jackpot_contribution);
+
+            // Update the specific draw's accumulated prize
+            let mut current_draw = self.draws.entry(drawId).read();
+            current_draw.accumulatedPrize = current_draw.accumulatedPrize + jackpot_contribution;
+            self.draws.entry(drawId).write(current_draw);
+
+            // Emit event for jackpot increase
+            self.emit(
+                JackpotIncreased {
+                    drawId,
+                    previousAmount: current_accumulated_prize,
+                    newAmount: current_accumulated_prize + jackpot_contribution,
+                    timestamp: current_timestamp,
+                },
+            );
+
             // Emit bulk purchase event for auditing
             self.emit(
                 BulkTicketPurchase {
@@ -381,7 +407,7 @@ pub mod Lottery {
             let caller = get_caller_address();
             let mut count = self.userTicketCount.entry((caller, drawId)).read();
 
-            // CORREGIDO: Generate multiple tickets with unique numbers
+            // Generate multiple tickets with unique numbers
             let mut i: u8 = 0;
             while i != quantity {
                 // TODO: Mint the NFT here, for now it is simulated
