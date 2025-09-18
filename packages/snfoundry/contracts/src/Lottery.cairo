@@ -68,6 +68,7 @@ pub trait ILottery<TContractState> {
     ) -> u8;
     fn CreateNewDraw(ref self: TContractState, accumulatedPrize: u256);
     fn SetTicketPrice(ref self: TContractState, price: u256);
+    fn EmergencyResetReentrancyGuard(ref self: TContractState);
     
     //=======================================================================================
     //get functions
@@ -118,6 +119,7 @@ pub mod Lottery {
     use core::dict::{Felt252Dict, Felt252DictTrait};
     use core::traits::TryInto;
     use openzeppelin_access::ownable::OwnableComponent;
+    use openzeppelin_security::reentrancyguard::ReentrancyGuardComponent;
     use openzeppelin_token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
     use starknet::storage::{
         Map, StoragePathEntry, StoragePointerReadAccess, StoragePointerWriteAccess,
@@ -130,6 +132,9 @@ pub mod Lottery {
 
     // ownable component by openzeppelin
     component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
+    
+    // reentrancy guard component by openzeppelin
+    component!(path: ReentrancyGuardComponent, storage: reentrancy_guard, event: ReentrancyGuardEvent);
 
      //=======================================================================================
     //constants
@@ -148,6 +153,9 @@ pub mod Lottery {
     #[abi(embed_v0)]
     impl OwnableImpl = OwnableComponent::OwnableImpl<ContractState>;
     impl OwnableInternalImpl = OwnableComponent::InternalImpl<ContractState>;
+    
+    // reentrancy guard component by openzeppelin
+    impl ReentrancyGuardInternalImpl = ReentrancyGuardComponent::InternalImpl<ContractState>;
 
     // Dynamic contract addresses - will be set in constructor
     // These constants are kept for backward compatibility but should not be used
@@ -166,6 +174,8 @@ pub mod Lottery {
     pub enum Event {
         #[flat]
         OwnableEvent: OwnableComponent::Event,
+        #[flat]
+        ReentrancyGuardEvent: ReentrancyGuardComponent::Event,
         TicketPurchased: TicketPurchased,
         BulkTicketPurchase: BulkTicketPurchase,
         DrawCompleted: DrawCompleted,
@@ -174,6 +184,7 @@ pub mod Lottery {
         JackpotIncreased: JackpotIncreased,
         InvalidDrawIdAttempted: InvalidDrawIdAttempted,
         DrawValidationFailed: DrawValidationFailed,
+        EmergencyReentrancyGuardReset: EmergencyReentrancyGuardReset,
     }
 
     #[derive(Drop, starknet::Event)]
@@ -247,6 +258,12 @@ pub mod Lottery {
         reason: felt252,
         caller: ContractAddress,
     }
+    
+    #[derive(Drop, starknet::Event)]
+    pub struct EmergencyReentrancyGuardReset {
+        pub caller: ContractAddress,
+        pub timestamp: u64,
+    }
 
     //=======================================================================================
     //storage
@@ -274,8 +291,9 @@ pub mod Lottery {
         // ownable component by openzeppelin
         #[substorage(v0)]
         ownable: OwnableComponent::Storage,
-        // Reentrancy guard
-        reentrancy_guard: bool,
+        // reentrancy guard component by openzeppelin
+        #[substorage(v0)]
+        reentrancy_guard: ReentrancyGuardComponent::Storage,
     }
     //=======================================================================================
     //constructor
@@ -300,7 +318,6 @@ pub mod Lottery {
         self.fixedPrize2Matches.write(2000000000000000000);
         self.currentDrawId.write(0);
         self.currentTicketId.write(0);
-        self.reentrancy_guard.write(false);
 
         // Store dynamic contract addresses
         self.strkPlayContractAddress.write(strkPlayContractAddress);
@@ -324,9 +341,8 @@ pub mod Lottery {
         //=======================================================================================
         //OK
         fn BuyTicket(ref self: ContractState, drawId: u64, numbers_array: Array<Array<u16>>, quantity: u8) {
-            // Reentrancy guard at the very beginning
-            assert(!self.reentrancy_guard.read(), 'ReentrancyGuard: reentrant call');
-            self.reentrancy_guard.write(true);
+            // Reentrancy guard using OpenZeppelin component
+            self.reentrancy_guard.start();
 
             // Validate quantity limits first (1-10 tickets)
             assert(quantity >= 1, 'Quantity too low');
@@ -466,7 +482,7 @@ pub mod Lottery {
             }
 
             // Release reentrancy guard
-            self.reentrancy_guard.write(false);
+            self.reentrancy_guard.end();
         }
         //=======================================================================================
         fn GetUserTicketsCount(self: @ContractState, drawId: u64, player: ContractAddress) -> u32 {
@@ -719,6 +735,24 @@ pub mod Lottery {
         fn SetTicketPrice(ref self: ContractState, price: u256) {
             self.ownable.assert_only_owner();
             self.ticketPrice.write(price);
+        }
+
+        // Emergency function to reset reentrancy guard (owner only)
+        fn EmergencyResetReentrancyGuard(ref self: ContractState) {
+            self.ownable.assert_only_owner();
+            
+            // Force reset the reentrancy guard to false
+            // This is a critical emergency function that should only be used
+            // if the guard gets permanently locked due to a failed transaction
+            self.reentrancy_guard.end();
+            
+            // Emit event for audit trail
+            self.emit(
+                EmergencyReentrancyGuardReset {
+                    caller: get_caller_address(),
+                    timestamp: get_block_timestamp(),
+                }
+            );
         }
 
         // Get the ticket price (public view)
