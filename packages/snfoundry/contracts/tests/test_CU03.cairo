@@ -124,7 +124,9 @@ fn setup_mocks_success(strk_play_address: ContractAddress, user: ContractAddress
     setup_mocks_for_buy_ticket(strk_play_address, user, TICKET_PRICE * 10, TICKET_PRICE * 10, true);
 }
 
-fn setup_mocks_for_multiple_tickets(strk_play_address: ContractAddress, user: ContractAddress, quantity: u8) {
+fn setup_mocks_for_multiple_tickets(
+    strk_play_address: ContractAddress, user: ContractAddress, quantity: u8,
+) {
     let total_price = TICKET_PRICE * quantity.into();
     setup_mocks_for_buy_ticket(strk_play_address, user, total_price * 2, total_price * 2, true);
 }
@@ -1317,6 +1319,85 @@ fn test_buy_ticket_draw_id_negative_edge() {
     lottery_dispatcher.BuyTicket(4294967295, numbers_array, 1); // Max u32
 
     cleanup_mocks(mock_strk_play);
+}
+
+//=======================================================================================
+//  Active draw control and admin closure
+//=======================================================================================
+
+#[should_panic(expected: 'Active draw exists')]
+#[test]
+fn test_prevent_multiple_active_draws() {
+    let (lottery_address, _mock_strk_play, _mock_vault) = deploy_lottery();
+    let lottery = ILotteryDispatcher { contract_address: lottery_address };
+
+    // Initialize creates drawId = 1 and sets it active
+    cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
+    lottery.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+
+    // Attempt to create a new draw without closing the current one must panic
+    cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
+    lottery.CreateNewDraw(INITIAL_JACKPOT);
+}
+
+#[test]
+fn test_get_current_active_draw_and_rotation() {
+    let (lottery_address, _mock_strk_play, _mock_vault) = deploy_lottery();
+    let lottery = ILotteryDispatcher { contract_address: lottery_address };
+
+    // Initialize -> drawId 1 active
+    cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
+    lottery.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+
+    let (id1, active1) = lottery.GetCurrentActiveDraw();
+    assert(id1 == 1, 'Current id should be 1');
+    assert(active1, 'Draw 1 should be active');
+
+    // Close via admin function, then create new draw
+    cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(2));
+    lottery.SetDrawInactive();
+    lottery.CreateNewDraw(INITIAL_JACKPOT);
+
+    let (id2, active2) = lottery.GetCurrentActiveDraw();
+    assert(id2 == 2, 'Current id should be 2');
+    assert(active2, 'Draw 2 should be active');
+}
+
+#[should_panic(expected: 'Caller is not the owner')]
+#[test]
+fn test_set_draw_inactive_only_admin() {
+    let (lottery_address, _mock_strk_play, _mock_vault) = deploy_lottery();
+    let lottery = ILotteryDispatcher { contract_address: lottery_address };
+
+    // Initialize by owner
+    cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
+    lottery.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+
+    // Non-owner tries to close -> should panic
+    cheat_caller_address(lottery_address, USER1, CheatSpan::TargetCalls(1));
+    lottery.SetDrawInactive();
+}
+
+#[test]
+fn test_set_draw_inactive_emits_event() {
+    let (lottery_address, _mock_strk_play, _mock_vault) = deploy_lottery();
+    let lottery = ILotteryDispatcher { contract_address: lottery_address };
+
+    // Initialize by owner
+    cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(2));
+    lottery.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+
+    let mut spy = spy_events();
+
+    cheat_block_timestamp(lottery_address, 42, CheatSpan::TargetCalls(1));
+
+    // Close by owner and expect DrawClosed with exact fields
+    lottery.SetDrawInactive();
+
+    let expected = Lottery::Event::DrawClosed(
+        Lottery::DrawClosed { drawId: 1, timestamp: 42, caller: OWNER },
+    );
+    spy.assert_emitted(@array![(lottery_address, expected)]);
 }
 
 // //=======================================================================================

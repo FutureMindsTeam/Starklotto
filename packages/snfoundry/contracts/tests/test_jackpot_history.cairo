@@ -2,6 +2,7 @@ use contracts::Lottery::{ILotteryDispatcher, ILotteryDispatcherTrait};
 use contracts::StarkPlayERC20::{IMintableDispatcher, IMintableDispatcherTrait};
 use contracts::StarkPlayVault::{IStarkPlayVaultDispatcher, IStarkPlayVaultDispatcherTrait};
 use core::array::ArrayTrait;
+use core::traits::TryInto;
 use snforge_std::{
     ContractClassTrait, DeclareResultTrait, declare, start_cheat_caller_address,
     stop_cheat_caller_address,
@@ -111,7 +112,11 @@ fn test_get_jackpot_history_multiple_draws() {
     lottery_dispatcher.Initialize(1000000000000000000_u256, 1000000000000000000000_u256);
 
     // Create additional draws
+    // close draw 1 then create draw 2
+    lottery_dispatcher.DrawNumbers(1);
     lottery_dispatcher.CreateNewDraw(2000000000000000000000_u256);
+    // close draw 2 then create draw 3
+    lottery_dispatcher.DrawNumbers(2);
     lottery_dispatcher.CreateNewDraw(3000000000000000000000_u256);
     stop_cheat_caller_address(lottery_dispatcher.contract_address);
     // Get jackpot history - should return 3 entries
@@ -178,9 +183,13 @@ fn test_get_jackpot_history_performance() {
     lottery_dispatcher.Initialize(1000000000000000000_u256, 1000000000000000000000_u256);
 
     // Create many draws to test performance
-    let mut i = 0;
+    let mut i: u64 = 0;
     while i != 10 {
-        lottery_dispatcher.CreateNewDraw((i + 2) * 1000000000000000000000_u256);
+        // close current active draw
+        lottery_dispatcher.DrawNumbers(i + 1);
+        // compute next prize and create the next draw
+        let base: u256 = (i + 2).try_into().unwrap();
+        lottery_dispatcher.CreateNewDraw(base * 1000000000000000000000_u256);
         i = i + 1;
     }
     stop_cheat_caller_address(lottery_dispatcher.contract_address);

@@ -54,7 +54,9 @@ pub trait ILottery<TContractState> {
     //=======================================================================================
     //set functions
     fn Initialize(ref self: TContractState, ticketPrice: u256, accumulatedPrize: u256);
-    fn BuyTicket(ref self: TContractState, drawId: u64, numbers_array: Array<Array<u16>>, quantity: u8);
+    fn BuyTicket(
+        ref self: TContractState, drawId: u64, numbers_array: Array<Array<u16>>, quantity: u8,
+    );
     fn DrawNumbers(ref self: TContractState, drawId: u64);
     fn ClaimPrize(ref self: TContractState, drawId: u64, ticketId: felt252);
     fn CheckMatches(
@@ -67,6 +69,7 @@ pub trait ILottery<TContractState> {
         number5: u16,
     ) -> u8;
     fn CreateNewDraw(ref self: TContractState, accumulatedPrize: u256);
+    fn SetDrawInactive(ref self: TContractState);
     fn SetTicketPrice(ref self: TContractState, price: u256);
     fn GetTicketPrice(self: @TContractState) -> u256;
     //=======================================================================================
@@ -74,6 +77,7 @@ pub trait ILottery<TContractState> {
     fn GetAccumulatedPrize(self: @TContractState) -> u256;
     fn GetFixedPrize(self: @TContractState, matches: u8) -> u256;
     fn GetDrawStatus(self: @TContractState, drawId: u64) -> bool;
+    fn GetCurrentActiveDraw(self: @TContractState) -> (u64, bool);
     fn GetUserTicketIds(
         self: @TContractState, drawId: u64, player: ContractAddress,
     ) -> Array<felt252>;
@@ -160,6 +164,7 @@ pub mod Lottery {
         JackpotIncreased: JackpotIncreased,
         InvalidDrawIdAttempted: InvalidDrawIdAttempted,
         DrawValidationFailed: DrawValidationFailed,
+        DrawClosed: DrawClosed,
     }
 
     #[derive(Drop, starknet::Event)]
@@ -232,6 +237,14 @@ pub mod Lottery {
         draw_id: u64,
         reason: felt252,
         caller: ContractAddress,
+    }
+
+    #[derive(Drop, starknet::Event)]
+    pub struct DrawClosed {
+        #[key]
+        pub drawId: u64,
+        pub timestamp: u64,
+        pub caller: ContractAddress,
     }
 
     //=======================================================================================
@@ -308,7 +321,9 @@ pub mod Lottery {
 
         //=======================================================================================
         //OK
-        fn BuyTicket(ref self: ContractState, drawId: u64, numbers_array: Array<Array<u16>>, quantity: u8) {
+        fn BuyTicket(
+            ref self: ContractState, drawId: u64, numbers_array: Array<Array<u16>>, quantity: u8,
+        ) {
             // Reentrancy guard at the very beginning
             assert(!self.reentrancy_guard.read(), 'ReentrancyGuard: reentrant call');
             self.reentrancy_guard.write(true);
@@ -350,21 +365,21 @@ pub mod Lottery {
             assert(allowance >= total_price, 'Insufficient allowance');
 
             // Execute token transfer for total price
-            let transfer_success = token_dispatcher
-                .transfer_from(user, vault_address, total_price);
+            let transfer_success = token_dispatcher.transfer_from(user, vault_address, total_price);
             assert(transfer_success, 'Transfer failed');
             // --- End corrected payment logic ---
 
             // Emit bulk purchase event for auditing
-            self.emit(
-                BulkTicketPurchase {
-                    drawId,
-                    player: user,
-                    quantity,
-                    totalPrice: total_price,
-                    timestamp: current_timestamp,
-                },
-            );
+            self
+                .emit(
+                    BulkTicketPurchase {
+                        drawId,
+                        player: user,
+                        quantity,
+                        totalPrice: total_price,
+                        timestamp: current_timestamp,
+                    },
+                );
 
             let caller = get_caller_address();
             let mut count = self.userTicketCount.entry((caller, drawId)).read();
@@ -463,7 +478,7 @@ pub mod Lottery {
         fn ClaimPrize(ref self: ContractState, drawId: u64, ticketId: felt252) {
             // Validate that draw exists
             self.AssertDrawExists(drawId, 'ClaimPrize');
-            
+
             let draw = self.draws.entry(drawId).read();
             let ticket = self.tickets.entry((drawId, ticketId)).read();
             assert(!ticket.claimed, 'Prize already claimed');
@@ -569,6 +584,13 @@ pub mod Lottery {
             // Validate that the accumulated prize is not negative
             assert(accumulatedPrize >= 0, 'Invalid accumulated prize');
 
+            // Ensure there is no currently active draw before creating a new one
+            let last_draw_id = self.currentDrawId.read();
+            if last_draw_id > 0 {
+                let last_draw = self.draws.entry(last_draw_id).read();
+                assert(!last_draw.isActive, 'Active draw exists');
+            }
+
             let drawId = self.currentDrawId.read() + 1;
             let previousAmount = self.accumulatedPrize.read();
             let newDraw = Draw {
@@ -596,6 +618,34 @@ pub mod Lottery {
                         timestamp: get_block_timestamp(),
                     },
                 );
+        }
+
+        // Returns the latest draw id and whether it is active
+        fn GetCurrentActiveDraw(self: @ContractState) -> (u64, bool) {
+            let id = self.currentDrawId.read();
+            if id == 0 {
+                return (0, false);
+            }
+            let draw = self.draws.entry(id).read();
+            (id, draw.isActive)
+        }
+
+        // Admin-only: mark current draw as inactive and emit DrawClosed
+        fn SetDrawInactive(ref self: ContractState) {
+            self.ownable.assert_only_owner();
+
+            let id = self.currentDrawId.read();
+            assert(id > 0, 'No draws exist');
+
+            let mut draw = self.draws.entry(id).read();
+            assert(draw.isActive, 'No active draw');
+
+            draw.isActive = false;
+            self.draws.entry(id).write(draw);
+
+            let ts = get_block_timestamp();
+            let caller = get_caller_address();
+            self.emit(DrawClosed { drawId: id, timestamp: ts, caller });
         }
 
         //OK
@@ -664,7 +714,7 @@ pub mod Lottery {
         fn GetWinningNumbers(self: @ContractState, drawId: u64) -> Array<u16> {
             // Validate that draw exists
             assert(self.DrawExists(drawId), 'Draw does not exist');
-            
+
             let draw = self.draws.entry(drawId).read();
             assert(!draw.isActive, 'Draw must be completed');
 
@@ -863,7 +913,9 @@ pub mod Lottery {
         }
 
         // NEW: Validate array of number arrays for multiple tickets
-        fn ValidateNumbersArray(self: @ContractState, numbers_array: @Array<Array<u16>>, quantity: u8) -> bool {
+        fn ValidateNumbersArray(
+            self: @ContractState, numbers_array: @Array<Array<u16>>, quantity: u8,
+        ) -> bool {
             // If quantity is 0, the array should also be empty
             if quantity == 0 {
                 return numbers_array.len() == 0;
@@ -884,7 +936,7 @@ pub mod Lottery {
                 }
 
                 let numbers = numbers_array.at(i);
-                
+
                 // Validate each individual array of numbers
                 if !self.ValidateNumbers(numbers) {
                     valid = false;
@@ -901,7 +953,9 @@ pub mod Lottery {
             drawId > 0 && drawId <= self.currentDrawId.read()
         }
 
-        fn ValidateDrawExists(ref self: ContractState, drawId: u64, function_name: felt252) -> bool {
+        fn ValidateDrawExists(
+            ref self: ContractState, drawId: u64, function_name: felt252,
+        ) -> bool {
             if !self.DrawExists(drawId) {
                 self
                     .emit(
@@ -917,11 +971,14 @@ pub mod Lottery {
 
             let draw = self.draws.entry(drawId).read();
             if !(draw.drawId == drawId && draw.isActive) {
-                self.emit( DrawValidationFailed {
-                    draw_id: drawId,
-                    reason: 'Draw is not active',
-                    caller: get_caller_address(),
-                });
+                self
+                    .emit(
+                        DrawValidationFailed {
+                            draw_id: drawId,
+                            reason: 'Draw is not active',
+                            caller: get_caller_address(),
+                        },
+                    );
                 return false;
             }
 
