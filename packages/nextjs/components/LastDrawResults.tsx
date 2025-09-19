@@ -33,30 +33,33 @@ export function LastDrawResults() {
   const notificationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Callbacks estables para evitar re-renders
-  const handleNewDraw = useCallback((newDraw: DrawResult) => {
-    // Evitar notificaciones duplicadas
-    if (lastNotifiedDrawRef.current === newDraw.id) {
-      return;
-    }
+  const handleNewDraw = useCallback(
+    (newDraw: DrawResult) => {
+      // Evitar notificaciones duplicadas
+      if (lastNotifiedDrawRef.current === newDraw.id) {
+        return;
+      }
 
-    lastNotifiedDrawRef.current = newDraw.id;
-    setShowNewDrawNotification(true);
+      lastNotifiedDrawRef.current = newDraw.id;
+      setShowNewDrawNotification(true);
 
-    toast.success(t("notifications.newDrawAvailable"), {
-      duration: 4000,
-      icon: "🎉",
-    });
+      toast.success(t("notifications.newDrawAvailable"), {
+        duration: 4000,
+        icon: "🎉",
+      });
 
-    // Limpiar timeout anterior si existe
-    if (notificationTimeoutRef.current) {
-      clearTimeout(notificationTimeoutRef.current);
-    }
+      // Limpiar timeout anterior si existe
+      if (notificationTimeoutRef.current) {
+        clearTimeout(notificationTimeoutRef.current);
+      }
 
-    // Hide notification after 5 seconds
-    notificationTimeoutRef.current = setTimeout(() => {
-      setShowNewDrawNotification(false);
-    }, 5000);
-  }, []);
+      // Hide notification after 5 seconds
+      notificationTimeoutRef.current = setTimeout(() => {
+        setShowNewDrawNotification(false);
+      }, 5000);
+    },
+    [t],
+  );
 
   const handleError = useCallback(
     (error: any) => {
@@ -107,10 +110,7 @@ export function LastDrawResults() {
         <div className="bg-[#1a2234] rounded-xl p-8">
           <div className="flex items-center gap-2 mb-6">
             <Trophy className="h-6 w-6 text-gray-300" />
-            <h2
-              id="last-draw-title"
-              className="text-xl text-gray-300"
-            >
+            <h2 id="last-draw-title" className="text-xl text-gray-300">
               {t("lastDraw.title")}
             </h2>
           </div>
@@ -189,8 +189,7 @@ export function LastDrawResults() {
             )}
             {lastFetch && (
               <div className="text-xs text-gray-500">
-                {t("status.updated")}{" "}
-                {new Date(lastFetch).toLocaleTimeString()}
+                {t("status.updated")} {new Date(lastFetch).toLocaleTimeString()}
               </div>
             )}
           </div>
@@ -270,17 +269,13 @@ export function LastDrawResults() {
               <div className="pt-2">
                 <div className="flex items-center gap-2 text-sm text-gray-400">
                   <Clock className="h-4 w-4" />
-                  <span>
-                    Draw #{drawResult.drawNumber}
-                  </span>
+                  <span>Draw #{drawResult.drawNumber}</span>
                 </div>
               </div>
             </motion.div>
           ) : (
             <div className="text-center py-8">
-              <p className="text-gray-400">
-                {t("status.noResults")}
-              </p>
+              <p className="text-gray-400">{t("status.noResults")}</p>
             </div>
           )}
 
