@@ -1595,6 +1595,8 @@ fn test_set_ticket_price_multiple_times() {
     stop_cheat_caller_address(lottery_dispatcher.contract_address);
 }
 
+
+#[should_panic(expected: 'Price must be greater than 0')]
 #[test]
 fn test_set_ticket_price_to_zero() {
     let (lottery_addr, _, _) = deploy_lottery();
@@ -1602,8 +1604,8 @@ fn test_set_ticket_price_to_zero() {
 
     start_cheat_caller_address(lottery_dispatcher.contract_address, owner_address());
 
+    // Try to set price to zero - should panic
     lottery_dispatcher.SetTicketPrice(0);
-    assert!(lottery_dispatcher.GetTicketPrice() == 0, "Zero price not set correctly");
 
     stop_cheat_caller_address(lottery_dispatcher.contract_address);
 }

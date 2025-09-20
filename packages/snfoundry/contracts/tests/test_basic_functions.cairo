@@ -603,30 +603,6 @@ fn test_set_ticket_price_success_cases() {
 }
 
 #[test]
-fn test_set_ticket_price_edge_cases() {
-    let (lottery_addr, _, _) = deploy_lottery();
-    let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_addr };
-
-    start_cheat_caller_address(lottery_dispatcher.contract_address, owner_address());
-
-    // Test zero price
-    lottery_dispatcher.SetTicketPrice(0);
-    assert!(lottery_dispatcher.GetTicketPrice() == 0, "Zero price should be set correctly");
-
-    // Test minimum price
-    let min_price: u256 = 1;
-    lottery_dispatcher.SetTicketPrice(min_price);
-    assert!(lottery_dispatcher.GetTicketPrice() == min_price, "Minimum price should be set correctly");
-
-    // Test maximum price
-    let max_price: u256 = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
-    lottery_dispatcher.SetTicketPrice(max_price);
-    assert!(lottery_dispatcher.GetTicketPrice() == max_price, "Maximum price should be set correctly");
-
-    stop_cheat_caller_address(lottery_dispatcher.contract_address);
-}
-
-#[test]
 fn test_set_ticket_price_persistence() {
     let (lottery_addr, _, _) = deploy_lottery();
     let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_addr };
