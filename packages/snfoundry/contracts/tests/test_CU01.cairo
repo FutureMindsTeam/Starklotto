@@ -16,7 +16,7 @@ use snforge_std::{
 use starknet::{ContractAddress, contract_address_const};
 
 const STRK_TOKEN_CONTRACT_ADDRESS: ContractAddress = FELT_STRK_CONTRACT.try_into().unwrap();
-// Direcciones de prueba
+// Test addresses
 const OWNER: ContractAddress = 0x02dA5254690b46B9C4059C25366D1778839BE63C142d899F0306fd5c312A5918
     .try_into()
     .unwrap();
@@ -28,7 +28,7 @@ const USER: ContractAddress = 0x02dA5254690b46B9C4059C25366D1778839BE63C142d899F
 const Initial_Fee_Percentage: u64 = 50; // 50 basis points = 0.5%
 const BASIS_POINTS_DENOMINATOR: u256 = 10000_u256; // 10000 basis points = 100%
 
-// Función específica para tests de test_starkplay_vault.cairo (equivalente a OWNER() del archivo original)
+// Specific function for test_starkplay_vault.cairo tests (equivalent to OWNER() from original file)
 fn VAULT_OWNER() -> ContractAddress {
     contract_address_const::<0x123>()
 }
@@ -67,30 +67,30 @@ fn LARGE_AMOUNT() -> u256 {
 }
 
 fn MAX_MINT_LIMIT() -> u256 {
-    // Definir el límite máximo exacto del contrato
+    // Define the exact maximum limit of the contract
     1000000000000000000000000_u256 // 1 million tokens (MAX_MINT_AMOUNT)
 }
 
 fn EXCEEDS_MINT_LIMIT() -> u256 {
-    // Cantidad que excede el límite para provocar panic
+    // Amount that exceeds the limit to trigger panic
     2000000000000000000000000_u256 // 2 million tokens (exceeds limit)
 }
 
-// Constantes de test_mint_strk_play.cairo
+// Constants from test_mint_strk_play.cairo
 const MAX_MINT_AMOUNT: u256 = 1_000_000 * 1_000_000_000_000_000_000;
 
-// Constantes de test_starkplay_balance.cairo
+// Constants from test_starkplay_balance.cairo
 const BALANCE_FEE_PERCENT: u256 = 5_u256;
 
-// Constantes de test_starkplay_vault.cairo
-const VAULT_LARGE_AMOUNT: u256 = 10000000000000000000_u256; // 10 STRK (mismo valor que en original)
-const VAULT_PURCHASE_AMOUNT: u256 = 1000000000000000000_u256; // 1 STRK (mismo valor que PURCHASE_AMOUNT en original)
+// Constants from test_starkplay_vault.cairo
+const VAULT_LARGE_AMOUNT: u256 = 10000000000000000000_u256; // 10 STRK (same value as in original)
+const VAULT_PURCHASE_AMOUNT: u256 = 1000000000000000000_u256; // 1 STRK (same value as PURCHASE_AMOUNT in original)
 
-// Constantes de test_starkplayvault.cairo
-const VAULT_MAX_MINT_AMOUNT: u256 = 1_000_000 * 1_000_000_000_000_000_000; // 1 millón de tokens
-const VAULT_MAX_BURN_AMOUNT: u256 = 1_000_000 * 1_000_000_000_000_000_000; // 1 millón de tokens
+// Constants from test_starkplayvault.cairo
+const VAULT_MAX_MINT_AMOUNT: u256 = 1_000_000 * 1_000_000_000_000_000_000; // 1 million tokens
+const VAULT_MAX_BURN_AMOUNT: u256 = 1_000_000 * 1_000_000_000_000_000_000; // 1 million tokens
 
-// Direcciones equivalentes a las usadas en test_starkplay_balance.cairo
+// Addresses equivalent to those used in test_starkplay_balance.cairo
 fn BALANCE_OWNER() -> ContractAddress {
     'OWNER'.try_into().unwrap()
 }
@@ -103,7 +103,7 @@ fn BALANCE_USER2() -> ContractAddress {
     'USER2'.try_into().unwrap()
 }
 
-// Funciones helper de test_mint_strk_play.cairo
+// Helper functions from test_mint_strk_play.cairo
 fn setup_contracts() -> (ContractAddress, ContractAddress) {
     let starkplay_token = deploy_starkplay_token();
     let vault = deploy_starkplay_vault(starkplay_token);
@@ -135,7 +135,7 @@ fn deploy_starkplay_vault(starkplay_token: ContractAddress) -> ContractAddress {
     declare_and_deploy("StarkPlayVault", calldata)
 }
 
-// Funciones helper de test_starkplay_balance.cairo
+// Helper functions from test_starkplay_balance.cairo
 fn expected_minted_balance(strk_amount: u256, fee_percent: u256) -> u256 {
     let fee = (strk_amount * fee_percent) / 100_u256;
     strk_amount - fee
@@ -345,7 +345,7 @@ fn get_expected_fee_amount(amount_strk: u256, fee_percentage: u64) -> u256 {
     (amount_strk * fee_percentage.into()) / 10000
 }
 
-// Helper functions de test_starkplayvault.cairo
+// Helper functions from test_starkplayvault.cairo
 fn deploy_vault_basic() -> IStarkPlayVaultDispatcher {
     let contract = declare("StarkPlayVault").unwrap().contract_class();
     let owner: ContractAddress = VAULT_OWNER();
@@ -1255,7 +1255,7 @@ fn test_decimal_precision_edge_cases() {
 
 #[test]
 fn test_conversion_1_1_basic() {
-    // Test básico de conversión 1:1 después del fee
+    // Basic 1:1 conversion test after fee
     let (vault, starkplay_token) = deploy_vault_contract();
     let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault.contract_address };
 
@@ -1302,7 +1302,7 @@ fn test_conversion_1_1_basic() {
 
 #[test]
 fn test_conversion_1_1_different_amounts() {
-    // Test con diferentes montos para verificar conversión 1:1
+    // Test with different amounts to verify 1:1 conversion
     let (vault, starkplay_token) = deploy_vault_contract();
     let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault.contract_address };
 
@@ -1361,7 +1361,7 @@ fn test_conversion_1_1_different_amounts() {
 
 #[test]
 fn test_conversion_1_1_precision() {
-    // Test de precisión decimal en la conversión 1:1
+    // Test decimal precision in 1:1 conversion
     let (vault, starkplay_token) = deploy_vault_contract();
     let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault.contract_address };
 
@@ -1423,7 +1423,7 @@ fn test_conversion_1_1_precision() {
 
 #[test]
 fn test_user_balance_after_conversion() {
-    // Verificar balance de $tarkPlay después de buySTRKP()
+    // Verify $tarkPlay balance after buySTRKP()
     let (vault, starkplay_token) = deploy_vault_contract();
     let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault.contract_address };
 
@@ -1483,7 +1483,7 @@ fn test_user_balance_after_conversion() {
 
 
 fn test_1_1_conversion_consistency() {
-    // Test de consistencia de conversión 1:1 en múltiples transacciones
+    // Test 1:1 conversion consistency in multiple transactions
     let (vault, starkplay_token) = deploy_vault_contract();
     let vault_dispatcher = IStarkPlayVaultDispatcher { contract_address: vault.contract_address };
 
@@ -1971,7 +1971,7 @@ fn test_multiple_authorized_contracts() {
 }
 
 // ============================================================================================
-// TESTS INTEGRADOS DE test_mint_strk_play.cairo
+// INTEGRATED TESTS FROM test_mint_strk_play.cairo
 // ============================================================================================
 
 #[test]
@@ -2168,7 +2168,7 @@ fn test_fee_percentage_too_high() {
 }
 
 // ============================================================================================
-// TESTS INTEGRADOS DE test_starkplay_balance.cairo
+// INTEGRATED TESTS FROM test_starkplay_balance.cairo
 // ============================================================================================
 
 #[test]
@@ -2307,7 +2307,7 @@ fn test_data_integrity_multiple_users() {
     assert(bal2 == 47_500_000_000_000_000_000_u256, 'User2 should have 47.5');
 }
 
-// Funciones helper de test_starkplay_vault.cairo
+// Helper functions from test_starkplay_vault.cairo
 fn get_expected_minted_amount(amount_strk: u256, fee_percentage: u64) -> u256 {
     let fee = (amount_strk * fee_percentage.into()) / 10000;
     amount_strk - fee
@@ -2379,7 +2379,7 @@ fn setup_user_balance_vault(
 }
 
 // ============================================================================================
-// TESTS INTEGRADOS DE test_starkplay_vault.cairo
+// INTEGRATED TESTS FROM test_starkplay_vault.cairo
 // ============================================================================================
 
 #[test]
@@ -3156,7 +3156,7 @@ fn test_counters_multiple_users() {
 }
 
 // ============================================================================================
-// TESTS DE EVENTOS FALTANTES DE test_starkplay_vault.cairo
+// MISSING EVENT TESTS FROM test_starkplay_vault.cairo
 // ============================================================================================
 
 #[test]
@@ -3677,7 +3677,7 @@ fn test_mint_limit_updated_event_large_values() {
 }
 
 // ============================================================================================
-// TESTS INTEGRADOS DE test_starkplayvault.cairo
+// INTEGRATED TESTS FROM test_starkplayvault.cairo
 // ============================================================================================
 
 #[test]
