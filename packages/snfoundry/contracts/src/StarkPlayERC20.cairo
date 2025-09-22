@@ -199,7 +199,7 @@ pub mod StarkPlayERC20 {
 
         fn grant_minter_role(ref self: ContractState, minter: ContractAddress) {
             self.accesscontrol.assert_only_role(DEFAULT_ADMIN_ROLE);
-            //assert(is_contract(minter), 'Minter must be a contract');
+            assert(is_contract(minter), 'Minter must be a contract');
             self.accesscontrol._grant_role(MINTER_ROLE, minter);
             let index = self.minters_count.read();
             self.minters.entry(index).write(minter);
@@ -281,7 +281,7 @@ pub mod StarkPlayERC20 {
 
         fn grant_burner_role(ref self: ContractState, burner: ContractAddress) {
             self.accesscontrol.assert_only_role(DEFAULT_ADMIN_ROLE);
-            // assert(is_contract(burner), 'Burner must be a contract');
+            assert(is_contract(burner), 'Burner must be a contract');
             self.accesscontrol._grant_role(BURNER_ROLE, burner);
             let index = self.burners_count.read();
             self.burners.entry(index).write(burner);
@@ -381,11 +381,6 @@ pub mod StarkPlayERC20 {
         if address == zero_address_const() {
             return false;
         }
-        // Check if the address supports the SRC5 interface
-        //let src5_dispatcher = ISRC5Dispatcher { contract_address: address };
-        //let src5_interface_id: felt252 =
-        //    0x3f918d17e5ee77373b56385708f855659a07f75997f365cf87748628532a055; // SRC5 interface ID 
-        //let supports_src5 = src5_dispatcher.supports_interface(src5_interface_id);
 
         true
     }
