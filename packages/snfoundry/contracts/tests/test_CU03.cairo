@@ -1542,6 +1542,97 @@ fn test_buy_ticket_event_ordering_consistency() {
 }
 
 //=======================================================================================
+// CU03: Single Active Lottery + Admin Close + Getter + Event
+//=======================================================================================
+
+#[should_panic(expected: 'Active draw exists')]
+#[test]
+fn test_prevent_multiple_active_lotteries() {
+    let (lottery_address, _mock_strk_play, _mock_vault) = deploy_lottery();
+    let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_address };
+
+    // Initialize creates draw 1 (active)
+    cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
+    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+
+    // Attempt to create new draw while previous is still active should panic
+    lottery_dispatcher.CreateNewDraw(INITIAL_JACKPOT);
+}
+
+#[test]
+fn test_get_current_active_draw_and_transition() {
+    let (lottery_address, _mock_strk_play, _mock_vault) = deploy_lottery();
+    let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_address };
+
+    // Initialize → draw 1 active
+    cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
+    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+
+    let (id1, active1) = lottery_dispatcher.GetCurrentActiveDraw();
+    assert(id1 == 1, 'Current draw should be 1');
+    assert(active1 == true, 'Current draw should be active');
+
+    // Close draw 1 as admin
+    cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
+    lottery_dispatcher.SetDrawInactive(1);
+
+    // After closing, last draw should be inactive
+    let (id1_after, active1_after) = lottery_dispatcher.GetCurrentActiveDraw();
+    assert(id1_after == 1, 'Still last draw is 1');
+    assert(active1_after == false, 'Draw 1 now inactive');
+
+    // Create new draw now that none is active
+    lottery_dispatcher.CreateNewDraw(INITIAL_JACKPOT);
+    let (id2, active2) = lottery_dispatcher.GetCurrentActiveDraw();
+    assert(id2 == 2, 'New current draw should be 2');
+    assert(active2 == true, 'New draw should be active');
+}
+
+#[should_panic]
+#[test]
+fn test_set_draw_inactive_non_admin_forbidden() {
+    let (lottery_address, _mock_strk_play, _mock_vault) = deploy_lottery();
+    let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_address };
+
+    // Initialize → draw 1 active
+    cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
+    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+
+    // Non-owner attempts to close
+    cheat_caller_address(lottery_address, USER1, CheatSpan::TargetCalls(1));
+    lottery_dispatcher.SetDrawInactive(1);
+}
+
+#[test]
+fn test_set_draw_inactive_emits_event_and_updates_status() {
+    let (lottery_address, _mock_strk_play, _mock_vault) = deploy_lottery();
+    let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_address };
+
+    // Initialize → draw 1 active
+    cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
+    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+
+    let mut spy = spy_events();
+
+    // Close as admin
+    cheat_block_timestamp(lottery_address, 777, CheatSpan::TargetCalls(1));
+    cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
+    lottery_dispatcher.SetDrawInactive(1);
+
+    // Verify status
+    let is_active = lottery_dispatcher.GetDrawStatus(1);
+    assert(!is_active, 'Draw inactive after close');
+
+    // Verify at least one event was emitted (DrawClosed among them)
+    let events = spy.get_events();
+    assert(events.events.len() >= 1, 'Should emit events on close');
+
+    // Assert specific DrawClosed event content
+    let expected = Lottery::Event::DrawClosed(Lottery::DrawClosed { drawId: 1, timestamp: 777, caller: OWNER });
+    spy.assert_emitted(@array![(lottery_address, expected)]);
+}
+
+//=======================================================================================
 // Phase 10: Ticket Price Tests
 //=======================================================================================
 #[test]

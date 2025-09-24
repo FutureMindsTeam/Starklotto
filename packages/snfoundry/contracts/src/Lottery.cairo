@@ -67,6 +67,8 @@ pub trait ILottery<TContractState> {
         number5: u16,
     ) -> u8;
     fn CreateNewDraw(ref self: TContractState, accumulatedPrize: u256);
+    fn GetCurrentActiveDraw(self: @TContractState) -> (u64, bool);
+    fn SetDrawInactive(ref self: TContractState, drawId: u64);
     fn SetTicketPrice(ref self: TContractState, price: u256);
     fn EmergencyResetReentrancyGuard(ref self: TContractState);
     
@@ -185,6 +187,7 @@ pub mod Lottery {
         InvalidDrawIdAttempted: InvalidDrawIdAttempted,
         DrawValidationFailed: DrawValidationFailed,
         EmergencyReentrancyGuardReset: EmergencyReentrancyGuardReset,
+        DrawClosed: DrawClosed,
     }
 
     #[derive(Drop, starknet::Event)]
@@ -263,6 +266,14 @@ pub mod Lottery {
     pub struct EmergencyReentrancyGuardReset {
         pub caller: ContractAddress,
         pub timestamp: u64,
+    }
+
+    #[derive(Drop, starknet::Event)]
+    pub struct DrawClosed {
+        #[key]
+        pub drawId: u64,
+        pub timestamp: u64,
+        pub caller: ContractAddress,
     }
 
     //=======================================================================================
@@ -622,6 +633,12 @@ pub mod Lottery {
         fn CreateNewDraw(ref self: ContractState, accumulatedPrize: u256) {
             // Validate that the accumulated prize is not negative
             assert(accumulatedPrize >= 0, 'Invalid accumulated prize');
+            // Only one active draw allowed at a time
+            let current_id = self.currentDrawId.read();
+            if current_id > 0 {
+                let last_draw = self.draws.entry(current_id).read();
+                assert(!last_draw.isActive, 'Active draw exists');
+            }
 
             let drawId = self.currentDrawId.read() + 1;
             let previousAmount = self.accumulatedPrize.read();
@@ -650,6 +667,29 @@ pub mod Lottery {
                         timestamp: get_block_timestamp(),
                     },
                 );
+        }
+
+        // Returns last draw id and whether it is active
+        fn GetCurrentActiveDraw(self: @ContractState) -> (u64, bool) {
+            let id = self.currentDrawId.read();
+            if id == 0 {
+                return (0, false);
+            }
+            let d = self.draws.entry(id).read();
+            (id, d.isActive)
+        }
+
+        // Admin: mark a draw inactive and emit event
+        fn SetDrawInactive(ref self: ContractState, drawId: u64) {
+            self.ownable.assert_only_owner();
+            // Validate that draw exists
+            self.AssertDrawExists(drawId, 'SetDrawInactive');
+            let mut draw = self.draws.entry(drawId).read();
+            assert(draw.isActive, 'Draw already inactive');
+            draw.isActive = false;
+            draw.endTime = get_block_timestamp();
+            self.draws.entry(drawId).write(draw);
+            self.emit(DrawClosed { drawId, timestamp: get_block_timestamp(), caller: get_caller_address() });
         }
 
         //OK

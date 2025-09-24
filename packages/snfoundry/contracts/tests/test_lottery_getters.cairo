@@ -405,12 +405,13 @@ fn test_get_winning_numbers_different_draws() {
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
     lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
 
-    // Create second draw
+    // Close draw 1, then create second draw
+    cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
+    lottery_dispatcher.DrawNumbers(1);
     lottery_dispatcher.CreateNewDraw(INITIAL_JACKPOT);
 
     // Draw numbers for both draws
-    cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(2));
-    lottery_dispatcher.DrawNumbers(1);
+    cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
     lottery_dispatcher.DrawNumbers(2);
 
     let winning_numbers_1 = lottery_dispatcher.GetWinningNumbers(1);
@@ -980,12 +981,10 @@ fn test_jackpot_entry_getters_multiple_draws() {
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
     lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
 
-    // Create second draw
-    lottery_dispatcher.CreateNewDraw(INITIAL_JACKPOT);
-
-    // Complete first draw
+    // Close draw 1, then create second draw
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
     lottery_dispatcher.DrawNumbers(1);
+    lottery_dispatcher.CreateNewDraw(INITIAL_JACKPOT);
 
     // Check both draws
     let draw1_active = lottery_dispatcher.GetJackpotEntryIsActive(1);
@@ -1038,6 +1037,8 @@ fn test_get_jackpot_history_multiple_draws() {
     lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
 
     // Create second draw
+    cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
+    lottery_dispatcher.DrawNumbers(1);
     lottery_dispatcher.CreateNewDraw(INITIAL_JACKPOT);
 
     let jackpot_history = lottery_dispatcher.get_jackpot_history();
@@ -1066,9 +1067,9 @@ fn test_get_jackpot_history_after_completing_draws() {
     lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
 
     // Create and complete second draw
-    lottery_dispatcher.CreateNewDraw(INITIAL_JACKPOT);
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
     lottery_dispatcher.DrawNumbers(1);
+    lottery_dispatcher.CreateNewDraw(INITIAL_JACKPOT);
 
     let jackpot_history = lottery_dispatcher.get_jackpot_history();
     assert(jackpot_history.len() == 2, '2 entries after complete');

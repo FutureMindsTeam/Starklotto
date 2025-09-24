@@ -261,6 +261,8 @@ fn test_get_accumulated_prize_after_create_new_draw() {
     lottery_dispatcher.Initialize(ticket_price, initial_prize);
 
     let new_prize: u256 = 20000000000000000000;
+    // Close the active draw before creating a new one
+    lottery_dispatcher.DrawNumbers(1);
     lottery_dispatcher.CreateNewDraw(new_prize);
 
     let current_prize = lottery_dispatcher.GetAccumulatedPrize();
@@ -464,13 +466,14 @@ fn test_get_draw_status_initial_draw() {
     let accumulated_prize: u256 = 10000000000000000000;
     lottery_dispatcher.Initialize(ticket_price, accumulated_prize);
     
-    // Create a new draw
+    // Create a new draw 
+    lottery_dispatcher.DrawNumbers(1);
     lottery_dispatcher.CreateNewDraw(accumulated_prize);
     
     stop_cheat_caller_address(lottery_dispatcher.contract_address);
 
-    let draw_status = lottery_dispatcher.GetDrawStatus(1);
-    assert!(draw_status == true, "Initial draw should be active");
+    let draw_status = lottery_dispatcher.GetDrawStatus(2);
+    assert!(draw_status == true, "Newly created draw should be active");
 }
 
 #[test]
@@ -485,15 +488,18 @@ fn test_get_draw_status_after_draw_completion() {
     lottery_dispatcher.Initialize(ticket_price, accumulated_prize);
     
     // Create a new draw
+    lottery_dispatcher.DrawNumbers(1);
     lottery_dispatcher.CreateNewDraw(accumulated_prize);
     
     // Complete the draw by drawing numbers
-    lottery_dispatcher.DrawNumbers(1);
+    lottery_dispatcher.DrawNumbers(2);
     
     stop_cheat_caller_address(lottery_dispatcher.contract_address);
 
-    let draw_status = lottery_dispatcher.GetDrawStatus(1);
-    assert!(draw_status == false, "Draw should be inactive after completion");
+    let draw1_status = lottery_dispatcher.GetDrawStatus(1);
+    let draw2_status = lottery_dispatcher.GetDrawStatus(2);
+    assert!(draw1_status == false, "First draw should be inactive after completion");
+    assert!(draw2_status == false, "Second draw should be inactive after completion");
 }
 
 #[test]
@@ -508,16 +514,20 @@ fn test_get_draw_status_multiple_draws() {
     lottery_dispatcher.Initialize(ticket_price, accumulated_prize);
     
     // Create multiple draws
+    lottery_dispatcher.DrawNumbers(1);
     lottery_dispatcher.CreateNewDraw(accumulated_prize);
+    lottery_dispatcher.DrawNumbers(2);
     lottery_dispatcher.CreateNewDraw(accumulated_prize * 2);
     
     stop_cheat_caller_address(lottery_dispatcher.contract_address);
 
     let draw1_status = lottery_dispatcher.GetDrawStatus(1);
     let draw2_status = lottery_dispatcher.GetDrawStatus(2);
+    let draw3_status = lottery_dispatcher.GetDrawStatus(3);
     
-    assert!(draw1_status == true, "First draw should be active");
-    assert!(draw2_status == true, "Second draw should be active");
+    assert!(draw1_status == false, "First draw should be inactive");
+    assert!(draw2_status == false, "Second draw should be inactive");
+    assert!(draw3_status == true, "Third draw should be active");
 }
 
 #[test]
@@ -530,17 +540,18 @@ fn test_get_draw_status_public_access() {
     let ticket_price: u256 = 500000000000000000;
     let accumulated_prize: u256 = 10000000000000000000;
     lottery_dispatcher.Initialize(ticket_price, accumulated_prize);
+    lottery_dispatcher.DrawNumbers(1);
     lottery_dispatcher.CreateNewDraw(accumulated_prize);
     stop_cheat_caller_address(lottery_dispatcher.contract_address);
 
     // Read status as different users
     start_cheat_caller_address(lottery_dispatcher.contract_address, USER1);
-    let read_status = lottery_dispatcher.GetDrawStatus(1);
+    let read_status = lottery_dispatcher.GetDrawStatus(2);
     assert!(read_status == true, "User1 should be able to read draw status");
     stop_cheat_caller_address(lottery_dispatcher.contract_address);
 
     start_cheat_caller_address(lottery_dispatcher.contract_address, USER2);
-    let read_status_2 = lottery_dispatcher.GetDrawStatus(1);
+    let read_status_2 = lottery_dispatcher.GetDrawStatus(2);
     assert!(read_status_2 == true, "User2 should be able to read draw status");
     stop_cheat_caller_address(lottery_dispatcher.contract_address);
 }
@@ -646,10 +657,12 @@ fn test_basic_functions_integration() {
 
     // Create a new draw
     let new_prize: u256 = 20000000000000000000;
+    // Close initial draw before creating a new one 
+    lottery_dispatcher.DrawNumbers(1);
     lottery_dispatcher.CreateNewDraw(new_prize);
 
-    // Verify draw status
-    assert!(lottery_dispatcher.GetDrawStatus(1) == true, "New draw should be active");
+    // Verify draw status (draw 2 is the new active draw)
+    assert!(lottery_dispatcher.GetDrawStatus(2) == true, "New draw should be active");
 
     // Change ticket price
     let new_price: u256 = 750000000000000000;
@@ -658,7 +671,7 @@ fn test_basic_functions_integration() {
     // Verify all functions still work correctly
     assert!(lottery_dispatcher.GetTicketPrice() == new_price, "Ticket price should be updated");
     assert!(lottery_dispatcher.GetAccumulatedPrize() == accumulated_prize, "Accumulated prize should remain unchanged");
-    assert!(lottery_dispatcher.GetDrawStatus(1) == true, "Draw should still be active");
+    assert!(lottery_dispatcher.GetDrawStatus(2) == true, "Draw should still be active");
 
     stop_cheat_caller_address(lottery_dispatcher.contract_address);
 }
@@ -704,8 +717,9 @@ fn test_get_fixed_prize_with_updated_accumulated_prize() {
     let prize_5_matches = lottery_dispatcher.GetFixedPrize(5);
     assert!(prize_5_matches == initial_prize, "5 matches should return initial accumulated prize");
     
-    // Create a new draw (this doesn't update the global accumulated prize)
+    // Close current draw, then create a new one
     let new_prize: u256 = 20000000000000000000;
+    lottery_dispatcher.DrawNumbers(1);
     lottery_dispatcher.CreateNewDraw(new_prize);
     
     // Verify 5 matches still returns the same accumulated prize (global state unchanged)
@@ -753,18 +767,19 @@ fn test_draw_status_multiple_draws_completion() {
     let accumulated_prize: u256 = 10000000000000000000;
     lottery_dispatcher.Initialize(ticket_price, accumulated_prize);
     
-    // Create multiple draws
+    // Create multiple draws with closure between
+    lottery_dispatcher.DrawNumbers(1);
     lottery_dispatcher.CreateNewDraw(accumulated_prize);
+    lottery_dispatcher.DrawNumbers(2);
     lottery_dispatcher.CreateNewDraw(accumulated_prize * 2);
+    lottery_dispatcher.DrawNumbers(3);
     lottery_dispatcher.CreateNewDraw(accumulated_prize * 3);
     
-    // Complete first draw
-    lottery_dispatcher.DrawNumbers(1);
-    
-    // Verify statuses
+    // Verify statuses: 1,2,3 completed 4 active
     assert!(lottery_dispatcher.GetDrawStatus(1) == false, "First draw should be completed");
-    assert!(lottery_dispatcher.GetDrawStatus(2) == true, "Second draw should be active");
-    assert!(lottery_dispatcher.GetDrawStatus(3) == true, "Third draw should be active");
+    assert!(lottery_dispatcher.GetDrawStatus(2) == false, "Second draw should be completed");
+    assert!(lottery_dispatcher.GetDrawStatus(3) == false, "Third draw should be completed");
+    assert!(lottery_dispatcher.GetDrawStatus(4) == true, "Fourth draw should be active");
     
     stop_cheat_caller_address(lottery_dispatcher.contract_address);
 }
