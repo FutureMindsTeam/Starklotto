@@ -3,9 +3,8 @@ use contracts::StarkPlayERC20::{IMintableDispatcher, IMintableDispatcherTrait};
 use openzeppelin_testing::declare_and_deploy;
 use openzeppelin_token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
 use snforge_std::{
-    CheatSpan, ContractClassTrait, DeclareResultTrait,
-    cheat_block_timestamp, cheat_caller_address, declare, start_cheat_caller_address,
-    start_mock_call, stop_cheat_caller_address, stop_mock_call,
+    CheatSpan, ContractClassTrait, DeclareResultTrait, cheat_block_timestamp, cheat_caller_address,
+    declare, start_cheat_caller_address, start_mock_call, stop_cheat_caller_address, stop_mock_call,
 };
 use starknet::ContractAddress;
 
@@ -124,7 +123,9 @@ fn setup_mocks_success(strk_play_address: ContractAddress, user: ContractAddress
     setup_mocks_for_buy_ticket(strk_play_address, user, TICKET_PRICE * 10, TICKET_PRICE * 10, true);
 }
 
-fn setup_mocks_for_multiple_tickets(strk_play_address: ContractAddress, user: ContractAddress, quantity: u8) {
+fn setup_mocks_for_multiple_tickets(
+    strk_play_address: ContractAddress, user: ContractAddress, quantity: u8,
+) {
     let total_price = TICKET_PRICE * quantity.into();
     setup_mocks_for_buy_ticket(strk_play_address, user, total_price * 2, total_price * 2, true);
 }
@@ -431,7 +432,7 @@ fn test_get_winning_numbers_different_draws() {
         i += 1;
     }
     // This assertion might fail if the random function generates the same numbers
-    // but it's statistically unlikely
+// but it's statistically unlikely
 }
 
 #[should_panic(expected: 'Draw does not exist')]
@@ -686,7 +687,7 @@ fn test_get_ticket_info_multiple_tickets() {
         assert(ticket_player == USER1, 'All belong to USER1');
         assert(ticket_draw_id == 1, 'All for draw 1');
         assert(!ticket_claimed, 'All not claimed');
-       // assert(ticket_timestamp > 0, 'Timestamp set');
+        // assert(ticket_timestamp > 0, 'Timestamp set');
 
         i += 1;
     }
