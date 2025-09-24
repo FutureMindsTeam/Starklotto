@@ -1588,7 +1588,7 @@ fn test_get_current_active_draw_and_transition() {
     assert(active2 == true, 'New draw should be active');
 }
 
-#[should_panic]
+#[should_panic(expected: 'Caller is not the owner')]
 #[test]
 fn test_set_draw_inactive_non_admin_forbidden() {
     let (lottery_address, _mock_strk_play, _mock_vault) = deploy_lottery();
