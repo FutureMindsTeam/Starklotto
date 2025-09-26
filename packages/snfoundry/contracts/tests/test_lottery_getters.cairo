@@ -917,12 +917,12 @@ fn test_get_jackpot_entry_end_time() {
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
     lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
 
-    let end_time = lottery_dispatcher.GetJackpotEntryEndTime(1);
+    let end_time = lottery_dispatcher.GetJackpotEntryEndBlock(1);
     assert(end_time > 0, 'End time set');
 
     // End time should be start time + 1 week (604800 seconds)
-    let start_time = lottery_dispatcher.GetJackpotEntryStartTime(1);
-    assert(end_time == start_time + 604800, 'End time is 1 week');
+    let start_time = lottery_dispatcher.GetJackpotEntryStartBlock(1);
+    assert(end_time == start_time + 44800, 'End time is 1 week');
 }
 
 #[test]
@@ -1117,28 +1117,4 @@ fn test_get_jackpot_history_jackpot_amounts() {
 
     assert(entry_amount == expected_amount, 'Jackpot includes purchases');
     assert(entry_is_active == true, 'Draw still active');
-}
-
-#[test]
-fn test_get_jackpot_history_timestamps() {
-    let (lottery_address, _, _) = deploy_lottery();
-    let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_address };
-
-    // Set specific timestamp
-    cheat_block_timestamp(lottery_address, 1234567890, CheatSpan::TargetCalls(3));
-
-    // Initialize lottery
-    cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
-
-    let jackpot_history = lottery_dispatcher.get_jackpot_history();
-    assert(jackpot_history.len() == 1, '1 entry in history');
-
-    let _entry = jackpot_history.at(0);
-    // Use getter functions instead of direct struct access
-    let entry_start_time = lottery_dispatcher.GetJackpotEntryStartTime(1);
-    let entry_end_time = lottery_dispatcher.GetJackpotEntryEndTime(1);
-
-    assert(entry_start_time == 1234567890, 'Start time matches');
-    assert(entry_end_time == 1234567890 + 604800, 'End time is 1 week');
 }

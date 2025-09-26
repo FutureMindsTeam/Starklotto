@@ -29,10 +29,14 @@ struct Draw {
     winningNumber5: u16,
     //map of ticketId to ticket
     isActive: bool,
-    //start time of the draw,timestamp unix
+    //start time of the draw,timestamp unix (legacy, retained for compatibility)
     startTime: u64,
-    //end time of the draw,timestamp unix
+    //end time of the draw,timestamp unix (legacy, retained for compatibility)
     endTime: u64,
+    //start block of the draw (primary scheduling reference)
+    startBlock: u64,
+    //end block of the draw (primary scheduling reference)
+    endBlock: u64,
 }
 
 #[derive(Drop, Copy, Serde, starknet::Store)]
@@ -42,6 +46,8 @@ struct JackpotEntry {
     jackpotAmount: u256,
     startTime: u64,
     endTime: u64,
+    startBlock: u64,
+    endBlock: u64,
     isActive: bool,
     isCompleted: bool,
 }
@@ -76,6 +82,8 @@ pub trait ILottery<TContractState> {
     fn GetAccumulatedPrize(self: @TContractState) -> u256;
     fn GetFixedPrize(self: @TContractState, matches: u8) -> u256;
     fn GetDrawStatus(self: @TContractState, drawId: u64) -> bool;
+    fn GetBlocksRemaining(self: @TContractState, drawId: u64) -> u64;
+    fn IsDrawActive(self: @TContractState, drawId: u64) -> bool;
     fn GetUserTicketIds(
         self: @TContractState, drawId: u64, player: ContractAddress,
     ) -> Array<felt252>;
@@ -101,6 +109,8 @@ pub trait ILottery<TContractState> {
     fn GetJackpotEntryAmount(self: @TContractState, drawId: u64) -> u256;
     fn GetJackpotEntryStartTime(self: @TContractState, drawId: u64) -> u64;
     fn GetJackpotEntryEndTime(self: @TContractState, drawId: u64) -> u64;
+    fn GetJackpotEntryStartBlock(self: @TContractState, drawId: u64) -> u64;
+    fn GetJackpotEntryEndBlock(self: @TContractState, drawId: u64) -> u64;
     fn GetJackpotEntryIsActive(self: @TContractState, drawId: u64) -> bool;
     fn GetJackpotEntryIsCompleted(self: @TContractState, drawId: u64) -> bool;
 
@@ -126,7 +136,7 @@ pub mod Lottery {
     };
     use starknet::{
         ContractAddress, get_block_timestamp, get_caller_address,
-        get_contract_address,
+        get_contract_address, get_block_number,
     };
     use super::{Draw, ILottery, JackpotEntry, Ticket};
 
@@ -144,6 +154,8 @@ pub mod Lottery {
     const RequiredNumbers: usize = 5; // amount of numbers per ticket
     // Precio inicial de ticket: 5 STARKP (18 decimales)
     const TicketPriceInitial: u256 = 5000000000000000000;
+    // Duración estándar estimada de un sorteo (≈ 1 semana) expresada en bloques
+    const STANDARD_DRAW_DURATION_BLOCKS: u64 = 44800;
 
     // Constantes para el cálculo del jackpot
     const JACKPOT_PERCENTAGE: u256 = 55; // 55% del monto de compra va al jackpot
@@ -625,6 +637,9 @@ pub mod Lottery {
 
             let drawId = self.currentDrawId.read() + 1;
             let previousAmount = self.accumulatedPrize.read();
+            let current_timestamp = get_block_timestamp();
+            let current_block = get_block_number();
+            let end_block = current_block + STANDARD_DRAW_DURATION_BLOCKS;
             let newDraw = Draw {
                 drawId,
                 accumulatedPrize: accumulatedPrize,
@@ -635,8 +650,10 @@ pub mod Lottery {
                 winningNumber5: 0,
                 // tickets: Map::new(),
                 isActive: true,
-                startTime: get_block_timestamp(),
-                endTime: get_block_timestamp() + 604800 // 1 Week
+                startTime: current_timestamp,
+                endTime: 0,
+                startBlock: current_block,
+                endBlock: end_block,
             };
             self.draws.entry(drawId).write(newDraw);
             self.currentDrawId.write(drawId);
@@ -647,7 +664,7 @@ pub mod Lottery {
                         drawId,
                         previousAmount,
                         newAmount: accumulatedPrize,
-                        timestamp: get_block_timestamp(),
+                        timestamp: current_timestamp,
                     },
                 );
         }
@@ -658,6 +675,22 @@ pub mod Lottery {
                 return false;
             }
             self.draws.entry(drawId).read().isActive
+        }
+
+        fn GetBlocksRemaining(self: @ContractState, drawId: u64) -> u64 {
+            if !self.DrawExists(drawId) {
+                return 0;
+            }
+            let current_block = get_block_number();
+            self.ComputeBlocksRemaining(drawId, current_block)
+        }
+
+        fn IsDrawActive(self: @ContractState, drawId: u64) -> bool {
+            if !self.DrawExists(drawId) {
+                return false;
+            }
+            let current_block = get_block_number();
+            self.EvaluateDrawActive(drawId, current_block)
         }
 
         //=======================================================================================
@@ -768,8 +801,10 @@ pub mod Lottery {
         /// and returns an array of JackpotEntry structs containing:
         /// - drawId: Unique identifier for the draw
         /// - jackpotAmount: The accumulated prize amount for this draw
-        /// - startTime: When the draw started (unix timestamp)
-        /// - endTime: When the draw ended (unix timestamp)
+        /// - startTime: When the draw started (legacy unix timestamp)
+        /// - endTime: When the draw ended (legacy unix timestamp)
+        /// - startBlock: Block where the draw started (primary reference)
+        /// - endBlock: Block where the draw ends (primary reference)
         /// - isActive: Whether the draw is currently active (true) or completed (false)
         /// - isCompleted: Whether the draw has been completed (true) or is still active (false)
         ///   Note: isCompleted is the logical inverse of isActive for clarity
@@ -787,6 +822,8 @@ pub mod Lottery {
                     jackpotAmount: draw.accumulatedPrize,
                     startTime: draw.startTime,
                     endTime: draw.endTime,
+                    startBlock: draw.startBlock,
+                    endBlock: draw.endBlock,
                     isActive: draw.isActive,
                     // isCompleted is the logical inverse of isActive for explicit clarity
                     // When isActive is true, the draw is ongoing (not completed)
@@ -858,6 +895,16 @@ pub mod Lottery {
         fn GetJackpotEntryEndTime(self: @ContractState, drawId: u64) -> u64 {
             let draw = self.draws.entry(drawId).read();
             draw.endTime
+        }
+
+        fn GetJackpotEntryStartBlock(self: @ContractState, drawId: u64) -> u64 {
+            let draw = self.draws.entry(drawId).read();
+            draw.startBlock
+        }
+
+        fn GetJackpotEntryEndBlock(self: @ContractState, drawId: u64) -> u64 {
+            let draw = self.draws.entry(drawId).read();
+            draw.endBlock
         }
 
         fn GetJackpotEntryIsActive(self: @ContractState, drawId: u64) -> bool {
@@ -989,6 +1036,40 @@ pub mod Lottery {
         fn AssertDrawExists(ref self: ContractState, drawId: u64, function_name: felt252) {
             assert(self.ValidateDrawExists(drawId, function_name), 'Draw is not active');
         }
+
+        fn ComputeBlocksRemaining(self: @ContractState, drawId: u64, current_block: u64) -> u64 {
+            let draw = self.draws.entry(drawId).read();
+            if draw.endBlock == 0 {
+                if draw.endTime == 0 {
+                    return 0;
+                }
+                let current_time = get_block_timestamp();
+                if current_time >= draw.endTime {
+                    return 0;
+                }
+                let remaining = draw.endTime - current_time;
+                return remaining;
+            }
+            if current_block >= draw.endBlock {
+                return 0;
+            }
+            draw.endBlock - current_block
+        }
+
+        fn EvaluateDrawActive(self: @ContractState, drawId: u64, current_block: u64) -> bool {
+            let draw = self.draws.entry(drawId).read();
+            if !draw.isActive {
+                return false;
+            }
+            if draw.startBlock == 0 || draw.endBlock == 0 {
+                if draw.endTime == 0 {
+                    return false;
+                }
+                let current_time = get_block_timestamp();
+                return current_time >= draw.startTime && current_time < draw.endTime;
+            }
+            current_block >= draw.startBlock && current_block < draw.endBlock
+        }
     }
 
     //=======================================================================================
@@ -1023,32 +1104,5 @@ pub mod Lottery {
 
         numbers
     }
-    // fn GenerateRandomNumbers() -> Array<u16> {
-//     TODO: We need to use VRF de Pragma Oracle to generate random numbers
-
-    //     now we are generating random numbers for testing
-//     let mut numbers = ArrayTrait::new();
-//     let blockTimestamp = get_block_timestamp();
-//     let blockHash = get_block_hash();
-
-    //     seed is the combination of the block timestamp and the block hash
-//     let seed = blockTimestamp + blockHash;
-
-    //     generate 4 unique numbers between 0-99
-//     let mut usedNumbers: Felt252Dict<bool> = Default::default();
-//     let mut count = 0;
-
-    //     while count < 4 {
-//         let number = (seed + count) % 100;
-
-    //         check if the number is already used
-//         if !usedNumbers.contains(number) {
-//             numbers.append(number);
-//             usedNumbers.insert(number, true);
-//             count += 1;
-//         }
-//     }
-
-    //     numbers
-// }
+   
 }
