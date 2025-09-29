@@ -7,7 +7,7 @@ const deployedContracts = {
   devnet: {
     StarkPlayERC20: {
       address:
-        "0x13c7fdf96e73e598e407c7a6ca98ed407eb333611f114f52540e355e1fd6aed",
+        "0x1f53f9908fe3994fcec05fdf7a1a16a53e718541de1a230437d664540dc2922",
       abi: [
         {
           type: "impl",
@@ -1185,11 +1185,11 @@ const deployedContracts = {
         },
       ],
       classHash:
-        "0x66aad4d8cd3a8859dc4917b6f03641f81ce64a58d0a3d5280639ca159f0038",
+        "0x1575d4786f1515350b484dd67fcc517ea9c014693127871cc2676ea58e86d52",
     },
     StarkPlayVault: {
       address:
-        "0x16da081084d9e7f3ed0edcd7e0a05dc39889fb075080230cc759dde826338a4",
+        "0x23ce637b7b294b5c4e00aa86771d9e09aa0bac56b0f0f68b1bfee9ed44a57bc",
       abi: [
         {
           type: "impl",
@@ -1290,17 +1290,6 @@ const deployedContracts = {
               outputs: [
                 {
                   type: "core::integer::u256",
-                },
-              ],
-              state_mutability: "view",
-            },
-            {
-              type: "function",
-              name: "get_owner",
-              inputs: [],
-              outputs: [
-                {
-                  type: "core::starknet::contract_address::ContractAddress",
                 },
               ],
               state_mutability: "view",
@@ -1534,6 +1523,33 @@ const deployedContracts = {
                 },
               ],
               state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "set_treasury_address",
+              inputs: [
+                {
+                  name: "treasury",
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::bool",
+                },
+              ],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "get_treasury_address",
+              inputs: [],
+              outputs: [
+                {
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              state_mutability: "view",
             },
             {
               type: "function",
@@ -1938,6 +1954,28 @@ const deployedContracts = {
         },
         {
           type: "event",
+          name: "contracts::StarkPlayVault::StarkPlayVault::TreasuryFeeTransferred",
+          kind: "struct",
+          members: [
+            {
+              name: "user",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+            {
+              name: "amount",
+              type: "core::integer::u256",
+              kind: "key",
+            },
+            {
+              name: "treasury",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
           name: "contracts::StarkPlayVault::StarkPlayVault::Event",
           kind: "enum",
           variants: [
@@ -2026,15 +2064,20 @@ const deployedContracts = {
               type: "contracts::StarkPlayVault::StarkPlayVault::PrizeConversionFeesWithdrawn",
               kind: "nested",
             },
+            {
+              name: "TreasuryFeeTransferred",
+              type: "contracts::StarkPlayVault::StarkPlayVault::TreasuryFeeTransferred",
+              kind: "nested",
+            },
           ],
         },
       ],
       classHash:
-        "0x7e725c6512bb59f61327cdfef2cb15a5c3e899e279590ec4130444c7abb220d",
+        "0xb7d9dbef4d78349c9704dfebb13c7401d7fa000d0c6b7cb09b8b7c3fe24a53",
     },
     Lottery: {
       address:
-        "0x3708e589b168fbf7c97275293d77a1131dc78982c458342dd4fa213b3ec2415",
+        "0x15984405bbc9d9420ff9264bcd5941ba90062f2841fca221a5a767eb6fd1d97",
       abi: [
         {
           type: "impl",
@@ -2170,8 +2213,8 @@ const deployedContracts = {
                   type: "core::integer::u64",
                 },
                 {
-                  name: "numbers",
-                  type: "core::array::Array::<core::integer::u16>",
+                  name: "numbers_array",
+                  type: "core::array::Array::<core::array::Array::<core::integer::u16>>",
                 },
                 {
                   name: "quantity",
@@ -2814,6 +2857,38 @@ const deployedContracts = {
         },
         {
           type: "event",
+          name: "contracts::Lottery::Lottery::BulkTicketPurchase",
+          kind: "struct",
+          members: [
+            {
+              name: "drawId",
+              type: "core::integer::u64",
+              kind: "key",
+            },
+            {
+              name: "player",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+            {
+              name: "quantity",
+              type: "core::integer::u8",
+              kind: "data",
+            },
+            {
+              name: "totalPrice",
+              type: "core::integer::u256",
+              kind: "data",
+            },
+            {
+              name: "timestamp",
+              type: "core::integer::u64",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
           name: "contracts::Lottery::Lottery::DrawCompleted",
           kind: "struct",
           members: [
@@ -2912,6 +2987,55 @@ const deployedContracts = {
         },
         {
           type: "event",
+          name: "contracts::Lottery::Lottery::InvalidDrawIdAttempted",
+          kind: "struct",
+          members: [
+            {
+              name: "caller",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "data",
+            },
+            {
+              name: "attempted_draw_id",
+              type: "core::integer::u64",
+              kind: "data",
+            },
+            {
+              name: "current_draw_id",
+              type: "core::integer::u64",
+              kind: "data",
+            },
+            {
+              name: "function_name",
+              type: "core::felt252",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "contracts::Lottery::Lottery::DrawValidationFailed",
+          kind: "struct",
+          members: [
+            {
+              name: "draw_id",
+              type: "core::integer::u64",
+              kind: "data",
+            },
+            {
+              name: "reason",
+              type: "core::felt252",
+              kind: "data",
+            },
+            {
+              name: "caller",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
           name: "contracts::Lottery::Lottery::Event",
           kind: "enum",
           variants: [
@@ -2923,6 +3047,11 @@ const deployedContracts = {
             {
               name: "TicketPurchased",
               type: "contracts::Lottery::Lottery::TicketPurchased",
+              kind: "nested",
+            },
+            {
+              name: "BulkTicketPurchase",
+              type: "contracts::Lottery::Lottery::BulkTicketPurchase",
               kind: "nested",
             },
             {
@@ -2945,632 +3074,21 @@ const deployedContracts = {
               type: "contracts::Lottery::Lottery::JackpotIncreased",
               kind: "nested",
             },
-          ],
-        },
-      ],
-      classHash:
-        "0x388e79016c5480d5664655a9f3bfc686a83a69434284a3666a905531c7dd7fe",
-    },
-    LottoTicketNFT: {
-      address:
-        "0x3194fbfdb756558fce9cadbbf02e04549fe40fc88551f2e37b2c72d44d5dd7b",
-      abi: [
-        {
-          type: "impl",
-          name: "LottoTicketNFTImpl",
-          interface_name: "contracts::LottoTicketNFT::ILottoTicketNFT",
-        },
-        {
-          type: "struct",
-          name: "core::byte_array::ByteArray",
-          members: [
             {
-              name: "data",
-              type: "core::array::Array::<core::bytes_31::bytes31>",
-            },
-            {
-              name: "pending_word",
-              type: "core::felt252",
-            },
-            {
-              name: "pending_word_len",
-              type: "core::integer::u32",
-            },
-          ],
-        },
-        {
-          type: "struct",
-          name: "core::integer::u256",
-          members: [
-            {
-              name: "low",
-              type: "core::integer::u128",
-            },
-            {
-              name: "high",
-              type: "core::integer::u128",
-            },
-          ],
-        },
-        {
-          type: "enum",
-          name: "core::bool",
-          variants: [
-            {
-              name: "False",
-              type: "()",
-            },
-            {
-              name: "True",
-              type: "()",
-            },
-          ],
-        },
-        {
-          type: "enum",
-          name: "contracts::LottoTicketNFT::LottoStatus",
-          variants: [
-            {
-              name: "Active",
-              type: "()",
-            },
-            {
-              name: "Completed",
-              type: "()",
-            },
-            {
-              name: "Claimed",
-              type: "()",
-            },
-          ],
-        },
-        {
-          type: "struct",
-          name: "contracts::LottoTicketNFT::TicketDetails",
-          members: [
-            {
-              name: "owner",
-              type: "core::starknet::contract_address::ContractAddress",
-            },
-            {
-              name: "lotto_id",
-              type: "core::integer::u64",
-            },
-            {
-              name: "ticket_id",
-              type: "core::integer::u256",
-            },
-            {
-              name: "chosen_numbers",
-              type: "(core::integer::u16, core::integer::u16, core::integer::u16, core::integer::u16, core::integer::u16)",
-            },
-            {
-              name: "is_winner",
-              type: "core::bool",
-            },
-            {
-              name: "prize_amount",
-              type: "core::integer::u256",
-            },
-            {
-              name: "timestamp",
-              type: "core::integer::u64",
-            },
-            {
-              name: "lotto_status",
-              type: "contracts::LottoTicketNFT::LottoStatus",
-            },
-          ],
-        },
-        {
-          type: "interface",
-          name: "contracts::LottoTicketNFT::ILottoTicketNFT",
-          items: [
-            {
-              type: "function",
-              name: "name",
-              inputs: [],
-              outputs: [
-                {
-                  type: "core::byte_array::ByteArray",
-                },
-              ],
-              state_mutability: "view",
-            },
-            {
-              type: "function",
-              name: "symbol",
-              inputs: [],
-              outputs: [
-                {
-                  type: "core::byte_array::ByteArray",
-                },
-              ],
-              state_mutability: "view",
-            },
-            {
-              type: "function",
-              name: "token_uri",
-              inputs: [
-                {
-                  name: "token_id",
-                  type: "core::integer::u256",
-                },
-              ],
-              outputs: [
-                {
-                  type: "core::byte_array::ByteArray",
-                },
-              ],
-              state_mutability: "view",
-            },
-            {
-              type: "function",
-              name: "get_ticket_metadata",
-              inputs: [
-                {
-                  name: "token_id",
-                  type: "core::integer::u256",
-                },
-              ],
-              outputs: [
-                {
-                  type: "contracts::LottoTicketNFT::TicketDetails",
-                },
-              ],
-              state_mutability: "view",
-            },
-            {
-              type: "function",
-              name: "exists",
-              inputs: [
-                {
-                  name: "token_id",
-                  type: "core::integer::u256",
-                },
-              ],
-              outputs: [
-                {
-                  type: "core::bool",
-                },
-              ],
-              state_mutability: "view",
-            },
-            {
-              type: "function",
-              name: "owner_of",
-              inputs: [
-                {
-                  name: "token_id",
-                  type: "core::integer::u256",
-                },
-              ],
-              outputs: [
-                {
-                  type: "core::starknet::contract_address::ContractAddress",
-                },
-              ],
-              state_mutability: "view",
-            },
-            {
-              type: "function",
-              name: "mint_ticket",
-              inputs: [
-                {
-                  name: "to",
-                  type: "core::starknet::contract_address::ContractAddress",
-                },
-                {
-                  name: "lotto_id",
-                  type: "core::integer::u64",
-                },
-                {
-                  name: "num1",
-                  type: "core::integer::u16",
-                },
-                {
-                  name: "num2",
-                  type: "core::integer::u16",
-                },
-                {
-                  name: "num3",
-                  type: "core::integer::u16",
-                },
-                {
-                  name: "num4",
-                  type: "core::integer::u16",
-                },
-                {
-                  name: "num5",
-                  type: "core::integer::u16",
-                },
-              ],
-              outputs: [
-                {
-                  type: "core::integer::u256",
-                },
-              ],
-              state_mutability: "external",
-            },
-            {
-              type: "function",
-              name: "update_ticket_status",
-              inputs: [
-                {
-                  name: "token_id",
-                  type: "core::integer::u256",
-                },
-                {
-                  name: "is_winner",
-                  type: "core::bool",
-                },
-                {
-                  name: "prize_amount",
-                  type: "core::integer::u256",
-                },
-                {
-                  name: "lotto_status",
-                  type: "contracts::LottoTicketNFT::LottoStatus",
-                },
-              ],
-              outputs: [],
-              state_mutability: "external",
-            },
-            {
-              type: "function",
-              name: "set_lottery_contract",
-              inputs: [
-                {
-                  name: "lottery_contract",
-                  type: "core::starknet::contract_address::ContractAddress",
-                },
-              ],
-              outputs: [],
-              state_mutability: "external",
-            },
-            {
-              type: "function",
-              name: "set_base_uri",
-              inputs: [
-                {
-                  name: "base_uri",
-                  type: "core::byte_array::ByteArray",
-                },
-              ],
-              outputs: [],
-              state_mutability: "external",
-            },
-          ],
-        },
-        {
-          type: "impl",
-          name: "OwnableImpl",
-          interface_name: "openzeppelin_access::ownable::interface::IOwnable",
-        },
-        {
-          type: "interface",
-          name: "openzeppelin_access::ownable::interface::IOwnable",
-          items: [
-            {
-              type: "function",
-              name: "owner",
-              inputs: [],
-              outputs: [
-                {
-                  type: "core::starknet::contract_address::ContractAddress",
-                },
-              ],
-              state_mutability: "view",
-            },
-            {
-              type: "function",
-              name: "transfer_ownership",
-              inputs: [
-                {
-                  name: "new_owner",
-                  type: "core::starknet::contract_address::ContractAddress",
-                },
-              ],
-              outputs: [],
-              state_mutability: "external",
-            },
-            {
-              type: "function",
-              name: "renounce_ownership",
-              inputs: [],
-              outputs: [],
-              state_mutability: "external",
-            },
-          ],
-        },
-        {
-          type: "constructor",
-          name: "constructor",
-          inputs: [
-            {
-              name: "owner",
-              type: "core::starknet::contract_address::ContractAddress",
-            },
-            {
-              name: "name",
-              type: "core::byte_array::ByteArray",
-            },
-            {
-              name: "symbol",
-              type: "core::byte_array::ByteArray",
-            },
-            {
-              name: "base_uri",
-              type: "core::byte_array::ByteArray",
-            },
-          ],
-        },
-        {
-          type: "event",
-          name: "openzeppelin_token::erc721::erc721::ERC721Component::Transfer",
-          kind: "struct",
-          members: [
-            {
-              name: "from",
-              type: "core::starknet::contract_address::ContractAddress",
-              kind: "key",
-            },
-            {
-              name: "to",
-              type: "core::starknet::contract_address::ContractAddress",
-              kind: "key",
-            },
-            {
-              name: "token_id",
-              type: "core::integer::u256",
-              kind: "key",
-            },
-          ],
-        },
-        {
-          type: "event",
-          name: "openzeppelin_token::erc721::erc721::ERC721Component::Approval",
-          kind: "struct",
-          members: [
-            {
-              name: "owner",
-              type: "core::starknet::contract_address::ContractAddress",
-              kind: "key",
-            },
-            {
-              name: "approved",
-              type: "core::starknet::contract_address::ContractAddress",
-              kind: "key",
-            },
-            {
-              name: "token_id",
-              type: "core::integer::u256",
-              kind: "key",
-            },
-          ],
-        },
-        {
-          type: "event",
-          name: "openzeppelin_token::erc721::erc721::ERC721Component::ApprovalForAll",
-          kind: "struct",
-          members: [
-            {
-              name: "owner",
-              type: "core::starknet::contract_address::ContractAddress",
-              kind: "key",
-            },
-            {
-              name: "operator",
-              type: "core::starknet::contract_address::ContractAddress",
-              kind: "key",
-            },
-            {
-              name: "approved",
-              type: "core::bool",
-              kind: "data",
-            },
-          ],
-        },
-        {
-          type: "event",
-          name: "openzeppelin_token::erc721::erc721::ERC721Component::Event",
-          kind: "enum",
-          variants: [
-            {
-              name: "Transfer",
-              type: "openzeppelin_token::erc721::erc721::ERC721Component::Transfer",
+              name: "InvalidDrawIdAttempted",
+              type: "contracts::Lottery::Lottery::InvalidDrawIdAttempted",
               kind: "nested",
             },
             {
-              name: "Approval",
-              type: "openzeppelin_token::erc721::erc721::ERC721Component::Approval",
-              kind: "nested",
-            },
-            {
-              name: "ApprovalForAll",
-              type: "openzeppelin_token::erc721::erc721::ERC721Component::ApprovalForAll",
-              kind: "nested",
-            },
-          ],
-        },
-        {
-          type: "event",
-          name: "openzeppelin_introspection::src5::SRC5Component::Event",
-          kind: "enum",
-          variants: [],
-        },
-        {
-          type: "event",
-          name: "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferred",
-          kind: "struct",
-          members: [
-            {
-              name: "previous_owner",
-              type: "core::starknet::contract_address::ContractAddress",
-              kind: "key",
-            },
-            {
-              name: "new_owner",
-              type: "core::starknet::contract_address::ContractAddress",
-              kind: "key",
-            },
-          ],
-        },
-        {
-          type: "event",
-          name: "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferStarted",
-          kind: "struct",
-          members: [
-            {
-              name: "previous_owner",
-              type: "core::starknet::contract_address::ContractAddress",
-              kind: "key",
-            },
-            {
-              name: "new_owner",
-              type: "core::starknet::contract_address::ContractAddress",
-              kind: "key",
-            },
-          ],
-        },
-        {
-          type: "event",
-          name: "openzeppelin_access::ownable::ownable::OwnableComponent::Event",
-          kind: "enum",
-          variants: [
-            {
-              name: "OwnershipTransferred",
-              type: "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferred",
-              kind: "nested",
-            },
-            {
-              name: "OwnershipTransferStarted",
-              type: "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferStarted",
-              kind: "nested",
-            },
-          ],
-        },
-        {
-          type: "event",
-          name: "contracts::LottoTicketNFT::LottoTicketNFT::TicketMinted",
-          kind: "struct",
-          members: [
-            {
-              name: "token_id",
-              type: "core::integer::u256",
-              kind: "key",
-            },
-            {
-              name: "owner",
-              type: "core::starknet::contract_address::ContractAddress",
-              kind: "key",
-            },
-            {
-              name: "lotto_id",
-              type: "core::integer::u64",
-              kind: "data",
-            },
-            {
-              name: "numbers",
-              type: "(core::integer::u16, core::integer::u16, core::integer::u16, core::integer::u16, core::integer::u16)",
-              kind: "data",
-            },
-            {
-              name: "timestamp",
-              type: "core::integer::u64",
-              kind: "data",
-            },
-          ],
-        },
-        {
-          type: "event",
-          name: "contracts::LottoTicketNFT::LottoTicketNFT::TicketStatusUpdated",
-          kind: "struct",
-          members: [
-            {
-              name: "token_id",
-              type: "core::integer::u256",
-              kind: "key",
-            },
-            {
-              name: "is_winner",
-              type: "core::bool",
-              kind: "data",
-            },
-            {
-              name: "prize_amount",
-              type: "core::integer::u256",
-              kind: "data",
-            },
-            {
-              name: "lotto_status",
-              type: "contracts::LottoTicketNFT::LottoStatus",
-              kind: "data",
-            },
-          ],
-        },
-        {
-          type: "event",
-          name: "contracts::LottoTicketNFT::LottoTicketNFT::TransferBlocked",
-          kind: "struct",
-          members: [
-            {
-              name: "token_id",
-              type: "core::integer::u256",
-              kind: "key",
-            },
-            {
-              name: "from",
-              type: "core::starknet::contract_address::ContractAddress",
-              kind: "key",
-            },
-            {
-              name: "to",
-              type: "core::starknet::contract_address::ContractAddress",
-              kind: "data",
-            },
-          ],
-        },
-        {
-          type: "event",
-          name: "contracts::LottoTicketNFT::LottoTicketNFT::Event",
-          kind: "enum",
-          variants: [
-            {
-              name: "ERC721Event",
-              type: "openzeppelin_token::erc721::erc721::ERC721Component::Event",
-              kind: "flat",
-            },
-            {
-              name: "SRC5Event",
-              type: "openzeppelin_introspection::src5::SRC5Component::Event",
-              kind: "flat",
-            },
-            {
-              name: "OwnableEvent",
-              type: "openzeppelin_access::ownable::ownable::OwnableComponent::Event",
-              kind: "flat",
-            },
-            {
-              name: "TicketMinted",
-              type: "contracts::LottoTicketNFT::LottoTicketNFT::TicketMinted",
-              kind: "nested",
-            },
-            {
-              name: "TicketStatusUpdated",
-              type: "contracts::LottoTicketNFT::LottoTicketNFT::TicketStatusUpdated",
-              kind: "nested",
-            },
-            {
-              name: "TransferBlocked",
-              type: "contracts::LottoTicketNFT::LottoTicketNFT::TransferBlocked",
+              name: "DrawValidationFailed",
+              type: "contracts::Lottery::Lottery::DrawValidationFailed",
               kind: "nested",
             },
           ],
         },
       ],
       classHash:
-        "0xb607343629eb5a4352883ba117ec8c5ee60c30cf72c204d94c9893f364b9fd",
+        "0x1cda36c1d465b09c3d17355f021ecaa11031da6ebe8448d694425140229b75f",
     },
   },
 } as const;

@@ -25,7 +25,7 @@ const USER2: ContractAddress = 0x04dA5254690b46B9C4059C25366D1778839BE63C142d899
 // Constants
 const TICKET_PRICE: u256 = 1000000000000000000; // 1 STRK token
 const INITIAL_JACKPOT: u256 = 10000000000000000000; // 10 STRK tokens
-
+const TicketPriceInitial: u256 = 5000000000000000000;
 // Hardcoded addresses from Lottery contract
 const STRK_PLAY_CONTRACT_ADDRESS: ContractAddress =
     0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
@@ -1401,7 +1401,7 @@ fn test_buy_ticket_event_ticketpurchased_structure() {
     assert(events.events.len() >= 1, 'Should emit TicketPurchased');
 
     // Verify the event is from the correct contract
-    let (event_contract, event_data) = events.events.at(0);
+    let (event_contract, _event_data) = events.events.at(0);
     assert(event_contract == @lottery_address, 'Event from lottery contract');
 
     // Verify state consistency after event
@@ -1550,7 +1550,7 @@ fn test_initial_ticket_price() {
     let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_addr };
 
     let initial_price = lottery_dispatcher.GetTicketPrice();
-    assert!(initial_price == 0, "Initial ticket price should be 0");
+    assert!(initial_price == TicketPriceInitial, "Initial ticket price should be 5");
 }
 
 #[test]
@@ -1595,6 +1595,8 @@ fn test_set_ticket_price_multiple_times() {
     stop_cheat_caller_address(lottery_dispatcher.contract_address);
 }
 
+
+#[should_panic(expected: 'Price must be greater than 0')]
 #[test]
 fn test_set_ticket_price_to_zero() {
     let (lottery_addr, _, _) = deploy_lottery();
@@ -1602,8 +1604,8 @@ fn test_set_ticket_price_to_zero() {
 
     start_cheat_caller_address(lottery_dispatcher.contract_address, owner_address());
 
+    // Try to set price to zero - should panic
     lottery_dispatcher.SetTicketPrice(0);
-    assert!(lottery_dispatcher.GetTicketPrice() == 0, "Zero price not set correctly");
 
     stop_cheat_caller_address(lottery_dispatcher.contract_address);
 }
@@ -1745,8 +1747,8 @@ fn test_buy_ticket_on_same_draw_id_success() {
     assert(player1_ticket.len() == 1 && player2_ticket.len() == 1, 'MULTIPLE BUY FAILED.');
 }
 
-#[test]
 #[should_panic(expected: 'Draw is not active')]
+#[test]
 fn test_buy_ticket_should_panic_on_draw_not_active() {
     let (erc, lottery) = default_context();
     feign_buy_ticket(lottery, USER1);

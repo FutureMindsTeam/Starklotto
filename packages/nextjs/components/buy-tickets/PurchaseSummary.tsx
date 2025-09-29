@@ -2,36 +2,57 @@ import { GlowingButton } from "~~/components/glowing-button";
 import { useTranslation } from "react-i18next";
 
 interface PurchaseSummaryProps {
-  totalCost: number;
-  isLoading: boolean;
+  unitPriceFormatted: string; // precio unitario on-chain (string)
+  totalCostFormatted: string; // total on-chain (string)
+  isPriceLoading: boolean;
+  priceError: string | null;
+  isLoading: boolean; // estado de la TX buy
   txError: string | null;
   txSuccess: string | null;
   onPurchase: () => void;
+  isDrawActive: boolean;
+  contractsReady: boolean;
 }
 
 export default function PurchaseSummary({
-  totalCost,
+  unitPriceFormatted,
+  totalCostFormatted,
+  isPriceLoading,
+  priceError,
   isLoading,
   txError,
   txSuccess,
   onPurchase,
+  isDrawActive,
+  contractsReady,
 }: PurchaseSummaryProps) {
   const { t } = useTranslation();
 
   return (
     <>
-      <div className="bg-[#232b3b] rounded-lg p-4 flex justify-between items-center mt-6">
-        <p className="text-white font-medium">{t("buyTickets.totalCost")}</p>
-        <p className="text-[#4ade80] font-medium">${totalCost} $tarkPlay</p>
+      <div className="bg-[#232b3b] rounded-lg p-4 space-y-2 mt-6">
+        <div className="flex justify-between items-center">
+          <p className="text-white font-medium">{t("buyTickets.totalCost")}</p>
+          <p className="text-[#4ade80] font-medium">
+            {isPriceLoading ? "Loading…" : `${totalCostFormatted} $TRKP`}
+          </p>
+        </div>
+        {priceError && <p className="text-red-400 text-sm">{priceError}</p>}
       </div>
 
       <GlowingButton
         onClick={onPurchase}
         className="w-full"
         glowColor="rgba(139, 92, 246, 0.5)"
-        disabled={isLoading}
+        disabled={
+          isLoading ||
+          isPriceLoading ||
+          !!priceError ||
+          !isDrawActive ||
+          !contractsReady
+        }
       >
-        {isLoading ? "Processing..." : t("buyTickets.buyButton")}
+        {isLoading ? t("buyTickets.processing") : t("buyTickets.buyButton")}
       </GlowingButton>
 
       {txError && <p className="text-red-500 mt-2">{txError}</p>}

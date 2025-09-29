@@ -74,11 +74,12 @@ export const useContractAddresses = () => {
     return {
       StarkPlayVault: contracts.StarkPlayVault?.address,
       StarkPlayERC20: contracts.StarkPlayERC20?.address,
+      Lottery: (contracts as any)?.Lottery?.address,
       // STRK is native - use network-specific address
       Strk: networkConfig?.StrkAddress,
       // Add other contracts as needed
     };
-  }, [targetNetwork.name]);
+  }, [targetNetwork.name, targetNetwork.network]);
 
   const validateAddresses = () => {
     if (!contractAddresses) return false;

@@ -22,6 +22,10 @@
     "ticketNumber": "Ticket #{{number}}",
     "totalCost": "Total cost:",
     "buyButton": "Buy Tickets",
+    "processing": "Processing...",
+    "yourBalance": "Your $TRKP Balance:",
+    "drawNotActive": "The draw is currently not active",
+    "contractsNotReady": "Contracts not ready for current network",
     "gameRules": {
       "title": "Game Rules",
       "rules": [

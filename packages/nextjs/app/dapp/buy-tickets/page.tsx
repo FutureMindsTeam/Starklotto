@@ -8,12 +8,16 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Abi, useContract } from "@starknet-react/core";
 import { useTransactor } from "~~/hooks/scaffold-stark/useTransactor";
-import deployedContracts from "~~/contracts/deployedContracts";
 import { LOTT_CONTRACT_NAME } from "~~/utils/Constants";
 import { useTranslation } from "react-i18next";
 import TicketControls from "~~/components/buy-tickets/TicketControls";
 import TicketSelector from "~~/components/buy-tickets/TicketSelector";
 import PurchaseSummary from "~~/components/buy-tickets/PurchaseSummary";
+// Importar el hook para obtener el precio del ticket
+import { useTicketPrice } from "~~/hooks/scaffold-stark/useTicketPrice";
+import { useDeployedContractInfo } from "~~/hooks/scaffold-stark/useDeployedContractInfo";
+import { useBuyTickets } from "~~/hooks/scaffold-stark/useBuyTickets";
+import { useDrawInfo } from "~~/hooks/scaffold-stark/useDrawInfo";
 
 export default function BuyTicketsPage() {
   const { t } = useTranslation();
@@ -37,15 +41,45 @@ export default function BuyTicketsPage() {
     >
   >({});
   const drawId = 1;
-  const [isLoading, setIsLoading] = useState(false);
-  const [txError, setTxError] = useState<string | null>(null);
-  const [txSuccess, setTxSuccess] = useState<string | null>(null);
 
-  // Mock data - in real app, this would come from props or API
-  const jackpotAmount = "$250,295 USDC";
-  const countdown = { days: "00", hours: "23", minutes: "57", seconds: "46" };
-  const balance = 1000;
-  const ticketPrice = 10;
+  // Usar hooks personalizados para la integración
+  const {
+    buyTickets,
+    isLoading,
+    error: buyError,
+    success: buySuccess,
+    userBalance,
+    userBalanceFormatted,
+    isDrawActive,
+    contractsReady,
+    refetchBalance,
+  } = useBuyTickets({ drawId });
+
+  // Información del draw actual
+  const {
+    jackpotFormatted: jackpotAmount,
+    timeRemaining: countdown,
+    refetchDrawStatus,
+  } = useDrawInfo({ drawId });
+
+  const {
+    priceWei,
+    formatted: unitPriceFormatted,
+    isLoading: priceLoading,
+    error: priceError,
+  } = useTicketPrice({ decimals: 18, watch: true });
+
+  // Helper local para formatear BigInt -> string con decimales
+  const formatAmount = (wei: bigint, decimals = 18) => {
+    const base = 10n ** BigInt(decimals);
+    const intPart = wei / base;
+    const fracPart = wei % base;
+    let fracStr = fracPart
+      .toString()
+      .padStart(decimals, "0")
+      .replace(/0+$/, "");
+    return fracStr.length > 0 ? `${intPart}.${fracStr}` : intPart.toString();
+  };
 
   const increaseTickets = () => {
     if (ticketCount < 10) {
@@ -219,34 +253,30 @@ export default function BuyTicketsPage() {
     setSelectedNumbers(newSelections);
   };
 
-  const contractInfo = deployedContracts.devnet[LOTT_CONTRACT_NAME];
-  const abi = contractInfo.abi as Abi;
-  const contractAddress = contractInfo.address;
+  const { data: deployedLottery } = useDeployedContractInfo(
+    LOTT_CONTRACT_NAME as any,
+  );
+  const abi = (deployedLottery?.abi || []) as Abi;
+  const contractAddress = deployedLottery?.address;
 
-  const { contract: contractInstance } = useContract({
-    abi,
-    address: contractAddress,
-  });
-
-  const writeTxn = useTransactor();
-
-  const totalCost = ticketCount * ticketPrice;
+  // total on-chain: priceWei * cantidad
+  const totalWei = priceWei * BigInt(ticketCount);
+  const totalFormatted = formatAmount(totalWei, 18);
 
   const handlePurchase = async () => {
-    setTxError(null);
-    setTxSuccess(null);
-    if (!contractInstance) return;
-    setIsLoading(true);
+    if (!isDrawActive) {
+      console.error("Draw is not active");
+      return;
+    }
+
     try {
-      const txs = Object.values(selectedNumbers).map((nums) =>
-        contractInstance.populate("BuyTicket", [drawId, nums]),
-      );
-      await writeTxn.writeTransaction(txs);
-      setTxSuccess("Tickets purchased successfully!");
+      await buyTickets(selectedNumbers, totalWei);
+      // Refrescar balances y estado del draw después de la compra
+      await refetchBalance();
+      await refetchDrawStatus();
     } catch (e: any) {
-      setTxError(e?.message || "Transaction failed");
-    } finally {
-      setIsLoading(false);
+      console.error("Purchase failed:", e);
+      // El error ya se maneja en el hook
     }
   };
 
@@ -393,6 +423,55 @@ export default function BuyTicketsPage() {
                 </div>
               </div>
 
+              {/* User Balance Display */}
+              <div className="bg-[#232b3b] rounded-lg p-4 mb-6">
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <div className="text-[#4ade80]">
+                      <svg
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <rect
+                          x="2"
+                          y="6"
+                          width="20"
+                          height="12"
+                          rx="2"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        />
+                        <path
+                          d="M6 10H10"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                    </div>
+                    <p className="text-white font-medium">
+                      {t("buyTickets.yourBalance")}
+                    </p>
+                  </div>
+                  <p className="text-[#4ade80] font-bold text-lg">
+                    {userBalanceFormatted} $TRKP
+                  </p>
+                </div>
+                {!isDrawActive && (
+                  <p className="text-red-400 text-sm mt-2">
+                    ⚠️ {t("buyTickets.drawNotActive")}
+                  </p>
+                )}
+                {!contractsReady && (
+                  <p className="text-yellow-400 text-sm mt-2">
+                    ⚠️ {t("buyTickets.contractsNotReady")}
+                  </p>
+                )}
+              </div>
+
               {/* Ticket Controls */}
               <TicketControls
                 ticketCount={ticketCount}
@@ -422,13 +501,18 @@ export default function BuyTicketsPage() {
                 })}
               </div>
 
-              {/* Purchase Summary */}
+              {/* Purchase Summary (usa precio on-chain) */}
               <PurchaseSummary
-                totalCost={totalCost}
+                unitPriceFormatted={unitPriceFormatted}
+                totalCostFormatted={totalFormatted}
+                isPriceLoading={priceLoading}
+                priceError={priceError?.message ?? null}
                 isLoading={isLoading}
-                txError={txError}
-                txSuccess={txSuccess}
+                txError={buyError}
+                txSuccess={buySuccess}
                 onPurchase={handlePurchase}
+                isDrawActive={isDrawActive}
+                contractsReady={contractsReady}
               />
             </motion.div>
           </div>

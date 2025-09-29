@@ -10,29 +10,26 @@ use openzeppelin_access::ownable::interface::{IOwnableDispatcher, IOwnableDispat
 use openzeppelin_token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
 use openzeppelin_utils::serde::SerializedAppend;
 use snforge_std::{
-    CheatSpan, cheat_caller_address, EventSpy, start_cheat_caller_address,
+    start_cheat_caller_address,
     stop_cheat_caller_address, declare, ContractClassTrait, DeclareResultTrait, spy_events,
-    EventSpyAssertionsTrait, EventSpyTrait, // Add for fetching events directly
-    Event, // A structure describing a raw `Event`
-    IsEmitted // Trait for checking if a given event was ever emitted
+    EventSpyTrait // Add for fetching events directly
 };
-#[feature("deprecated-starknet-consts")]
-use starknet::{ContractAddress, contract_address_const};
+use starknet::ContractAddress;
 
 const Initial_Fee_Percentage: u64 = 50; // 50 basis points = 0.5%
 const BASIS_POINTS_DENOMINATOR: u256 = 10000_u256; // 10000 basis points = 100%
 // Test constants
 fn OWNER() -> ContractAddress {
-    contract_address_const::<0x123>()
+    0x123.try_into().unwrap()
 }
 
 fn owner_address() -> ContractAddress {
-    contract_address_const::<0x123>()
+    0x123.try_into().unwrap()
 }
 
 
 fn USER1() -> ContractAddress {
-    contract_address_const::<0x456>()
+    0x456.try_into().unwrap()
 }
 
 
@@ -212,7 +209,7 @@ fn calculate_prize_conversion_fee(amount: u256) -> u256 {
 
 #[test]
 fn test_convert_to_strk_burn_limit_validation() {
-    let (vault, starkplay_token) = deploy_vault_contract();
+    let (vault, _starkplay_token) = deploy_vault_contract();
 
     // Set a small burn limit for testing (considering 18 decimals)
     let small_burn_limit = 100_000_000_000_000_000_000_u256; // 100 tokens with 18 decimals
@@ -272,7 +269,7 @@ fn test_convert_to_strk_burn_limit_validation() {
 #[should_panic(expected: 'Exceeds burn limit per tx')]
 #[test]
 fn test_convert_to_strk_exceeds_burn_limit() {
-    let (vault, starkplay_token) = deploy_vault_contract();
+    let (vault, _starkplay_token) = deploy_vault_contract();
 
     // Set a very small burn limit (considering 18 decimals)
     let burn_limit = 50_000_000_000_000_000_000_u256; // 50 tokens with 18 decimals
@@ -295,7 +292,7 @@ fn test_convert_to_strk_exceeds_burn_limit() {
 
 #[test]
 fn test_convert_to_strk_correct_fee_percentage() {
-    let (vault, starkplay_token) = deploy_vault_contract();
+    let (vault, _starkplay_token) = deploy_vault_contract();
 
     // Get the correct fee percentage for prize conversion
     let prize_conversion_fee = vault.GetFeePercentagePrizesConverted();
@@ -313,7 +310,7 @@ fn test_convert_to_strk_correct_fee_percentage() {
 
 #[test]
 fn test_convert_to_strk_fee_accumulation() {
-    let (vault, starkplay_token) = deploy_vault_contract();
+    let (vault, _starkplay_token) = deploy_vault_contract();
 
     // Set up vault with STRK balance using helper function (with 18 decimals)
     setup_vault_strk_balance(vault.contract_address, 1000_000_000_000_000_000_000_u256);
@@ -372,7 +369,7 @@ fn test_convert_to_strk_zero_amount() {
 #[should_panic(expected: 'Insufficient prize tokens')]
 #[test]
 fn test_convert_to_strk_insufficient_balance() {
-    let (vault, starkplay_token) = deploy_vault_contract();
+    let (vault, _starkplay_token) = deploy_vault_contract();
 
     // User has no prize tokens (they were already assigned in deploy_vault_contract)
     // But we'll try to convert more than they have
@@ -386,7 +383,7 @@ fn test_convert_to_strk_insufficient_balance() {
 
 #[test]
 fn test_convert_to_strk_events_emission() {
-    let (vault, starkplay_token) = deploy_vault_contract();
+    let (vault, _starkplay_token) = deploy_vault_contract();
 
     // Set up vault with STRK balance using helper function (with 18 decimals)
     setup_vault_strk_balance(vault.contract_address, 1000_000_000_000_000_000_000_u256);
@@ -412,7 +409,7 @@ fn test_convert_to_strk_events_emission() {
 
 #[test]
 fn test_convert_to_strk_reentrancy_protection_pattern() {
-    let (vault, starkplay_token) = deploy_vault_contract();
+    let (vault, _starkplay_token) = deploy_vault_contract();
 
     // Set up vault with STRK balance
     setup_vault_strk_balance(vault.contract_address, 1000_000_000_000_000_000_000_u256);
@@ -438,7 +435,7 @@ fn test_convert_to_strk_reentrancy_protection_pattern() {
 // Test to verify reentrancy protection exists (conceptual test)
 #[test]
 fn test_convert_to_strk_has_reentrancy_protection() {
-    let (vault, starkplay_token) = deploy_vault_contract();
+    let (vault, _starkplay_token) = deploy_vault_contract();
 
     // Set up vault with STRK balance
     setup_vault_strk_balance(vault.contract_address, 1000_000_000_000_000_000_000_u256);
@@ -474,7 +471,7 @@ fn test_convert_to_strk_has_reentrancy_protection() {
 #[should_panic(expected: 'Zero address not allowed')]
 #[test]
 fn test_convert_to_strk_zero_address_validation() {
-    let (vault, starkplay_token) = deploy_vault_contract();
+    let (vault, _starkplay_token) = deploy_vault_contract();
 
     // Set up vault with STRK balance
     setup_vault_strk_balance(vault.contract_address, 1000_000_000_000_000_000_000_u256);
@@ -493,7 +490,7 @@ fn test_convert_to_strk_zero_address_validation() {
 #[should_panic(expected: 'Insufficient STRK in vault')]
 #[test]
 fn test_convert_to_strk_insufficient_vault_balance() {
-    let (vault, starkplay_token) = deploy_vault_contract();
+    let (vault, _starkplay_token) = deploy_vault_contract();
 
     // Deliberately NOT setting up vault with sufficient STRK balance
     // Only give it a very small amount
@@ -510,7 +507,7 @@ fn test_convert_to_strk_insufficient_vault_balance() {
 
 #[test]
 fn test_convert_to_strk_security_flow_success() {
-    let (vault, starkplay_token) = deploy_vault_contract();
+    let (vault, _starkplay_token) = deploy_vault_contract();
 
     // Set up vault with sufficient STRK balance
     setup_vault_strk_balance(vault.contract_address, 1000_000_000_000_000_000_000_u256);
@@ -539,7 +536,7 @@ fn test_convert_to_strk_security_flow_success() {
 
 #[test]
 fn test_convert_to_strk_exact_vault_balance() {
-    let (vault, starkplay_token) = deploy_vault_contract();
+    let (vault, _starkplay_token) = deploy_vault_contract();
 
     let convert_amount = 100_000_000_000_000_000_000_u256; // 100 tokens
 
@@ -564,7 +561,7 @@ fn test_convert_to_strk_exact_vault_balance() {
 // ============================================================================================
 
 fn TREASURY() -> ContractAddress {
-    contract_address_const::<0x789>()
+    0x789.try_into().unwrap()
 }
 
 #[test]
@@ -586,7 +583,7 @@ fn test_treasury_basic_configuration() {
 
 #[test]
 fn test_treasury_receives_fees_simple() {
-    let (vault, starkplay_token) = deploy_vault_contract();
+    let (vault, _starkplay_token) = deploy_vault_contract();
 
     let ownable = IOwnableDispatcher { contract_address: vault.contract_address };
     let actual_owner = ownable.owner();
@@ -618,7 +615,7 @@ fn test_treasury_receives_fees_simple() {
 
 #[test]
 fn test_no_treasury_behaves_normally() {
-    let (vault, starkplay_token) = deploy_vault_contract();
+    let (vault, _starkplay_token) = deploy_vault_contract();
 
     assert(vault.get_treasury_address().into() == 0, 'Treasury should be zero');
 
@@ -641,7 +638,7 @@ fn test_no_treasury_behaves_normally() {
 
 #[test]
 fn test_treasury_events_basic() {
-    let (vault, starkplay_token) = deploy_vault_contract();
+    let (vault, _starkplay_token) = deploy_vault_contract();
 
     let ownable = IOwnableDispatcher { contract_address: vault.contract_address };
     let actual_owner = ownable.owner();

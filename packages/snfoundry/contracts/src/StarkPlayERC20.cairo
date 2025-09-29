@@ -46,7 +46,6 @@ pub trait IPrizeToken<TContractState> {
 #[starknet::contract]
 pub mod StarkPlayERC20 {
     use openzeppelin_access::accesscontrol::{AccessControlComponent, DEFAULT_ADMIN_ROLE};
-    use openzeppelin_introspection::interface::{ISRC5Dispatcher, ISRC5DispatcherTrait};
     use openzeppelin_introspection::src5::SRC5Component;
     use openzeppelin_security::PausableComponent;
     use openzeppelin_token::erc20::{ERC20Component, ERC20HooksEmptyImpl};
@@ -200,7 +199,7 @@ pub mod StarkPlayERC20 {
 
         fn grant_minter_role(ref self: ContractState, minter: ContractAddress) {
             self.accesscontrol.assert_only_role(DEFAULT_ADMIN_ROLE);
-            //assert(is_contract(minter), 'Minter must be a contract');
+            assert(is_contract(minter), 'Minter must be a contract');
             self.accesscontrol._grant_role(MINTER_ROLE, minter);
             let index = self.minters_count.read();
             self.minters.entry(index).write(minter);
@@ -237,7 +236,7 @@ pub mod StarkPlayERC20 {
             let mut minters = ArrayTrait::new();
             let count = self.minters_count.read();
             let mut i = 0;
-            while i < count {
+            while i != count {
                 minters.append(self.minters.entry(i).read());
                 i += 1;
             }
@@ -282,7 +281,7 @@ pub mod StarkPlayERC20 {
 
         fn grant_burner_role(ref self: ContractState, burner: ContractAddress) {
             self.accesscontrol.assert_only_role(DEFAULT_ADMIN_ROLE);
-            // assert(is_contract(burner), 'Burner must be a contract');
+            assert(is_contract(burner), 'Burner must be a contract');
             self.accesscontrol._grant_role(BURNER_ROLE, burner);
             let index = self.burners_count.read();
             self.burners.entry(index).write(burner);
@@ -319,7 +318,7 @@ pub mod StarkPlayERC20 {
             let mut burners = ArrayTrait::new();
             let count = self.burners_count.read();
             let mut i = 0;
-            while i < count {
+            while i != count {
                 burners.append(self.burners.read(i));
                 i += 1;
             }
@@ -382,11 +381,6 @@ pub mod StarkPlayERC20 {
         if address == zero_address_const() {
             return false;
         }
-        // Check if the address supports the SRC5 interface
-        //let src5_dispatcher = ISRC5Dispatcher { contract_address: address };
-        //let src5_interface_id: felt252 =
-        //    0x3f918d17e5ee77373b56385708f855659a07f75997f365cf87748628532a055; // SRC5 interface ID 
-        //let supports_src5 = src5_dispatcher.supports_interface(src5_interface_id);
 
         true
     }

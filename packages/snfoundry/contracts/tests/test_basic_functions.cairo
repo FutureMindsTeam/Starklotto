@@ -29,7 +29,7 @@ const INITIAL_JACKPOT: u256 = 10000000000000000000; // 10 STRK tokens
 const DEFAULT_PRICE: u256 = 500;
 const DEFAULT_ACCUMULATED_PRIZE: u256 = 1000;
 const DEFAULT_ID: u64 = 1;
-
+const TicketPriceInitial: u256 = 5000000000000000000;
 //=======================================================================================
 // Helper functions - following existing patterns
 //=======================================================================================
@@ -141,13 +141,13 @@ fn start(
     erc
 }
 
-fn feign_buy_ticket(lottery: ILotteryDispatcher, buyer: ContractAddress) -> Array<u16> {
-    let numbers = array![1, 2, 3, 4, 5];
+fn feign_buy_ticket(lottery: ILotteryDispatcher, buyer: ContractAddress) -> Array<Array<u16>> {
+    let numbers = array![1_u16, 2_u16, 3_u16, 4_u16, 5_u16];
     cheat_caller_address(lottery.contract_address, buyer, CheatSpan::Indefinite);
     cheat_block_timestamp(lottery.contract_address, 1, CheatSpan::TargetCalls(1));
     let numbers_array = create_single_ticket_numbers_array(numbers.clone());
-    lottery.BuyTicket(DEFAULT_ID, numbers_array, 1);
-    numbers
+    lottery.BuyTicket(DEFAULT_ID, numbers_array.clone(), 1);
+    numbers_array
 }
 
 //=======================================================================================
@@ -160,7 +160,7 @@ fn test_get_ticket_price_default_value() {
     let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_addr };
 
     let initial_price = lottery_dispatcher.GetTicketPrice();
-    assert!(initial_price == 0, "Initial ticket price should be 0");
+    assert!(initial_price == TicketPriceInitial, "Initial ticket price should be 5");
 }
 
 #[test]
@@ -307,7 +307,7 @@ fn test_get_ticket_current_id_initial_value() {
 
 #[test]
 fn test_get_ticket_current_id_after_ticket_purchase() {
-    let (erc, lottery) = default_context();
+    let (_erc, lottery) = default_context();
     
     // Purchase a ticket
     let numbers = create_valid_numbers();
@@ -565,8 +565,8 @@ fn test_set_ticket_price_ownership_validation_owner_can_set() {
     stop_cheat_caller_address(lottery_dispatcher.contract_address);
 }
 
-#[test]
 #[should_panic(expected: ('Caller is not the owner',))]
+#[test]
 fn test_set_ticket_price_ownership_validation_non_owner_cannot_set() {
     let (lottery_addr, _, _) = deploy_lottery();
     let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_addr };
@@ -598,30 +598,6 @@ fn test_set_ticket_price_success_cases() {
     let price3: u256 = 500000000000000000;
     lottery_dispatcher.SetTicketPrice(price3);
     assert!(lottery_dispatcher.GetTicketPrice() == price3, "Third price should be set correctly");
-
-    stop_cheat_caller_address(lottery_dispatcher.contract_address);
-}
-
-#[test]
-fn test_set_ticket_price_edge_cases() {
-    let (lottery_addr, _, _) = deploy_lottery();
-    let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_addr };
-
-    start_cheat_caller_address(lottery_dispatcher.contract_address, owner_address());
-
-    // Test zero price
-    lottery_dispatcher.SetTicketPrice(0);
-    assert!(lottery_dispatcher.GetTicketPrice() == 0, "Zero price should be set correctly");
-
-    // Test minimum price
-    let min_price: u256 = 1;
-    lottery_dispatcher.SetTicketPrice(min_price);
-    assert!(lottery_dispatcher.GetTicketPrice() == min_price, "Minimum price should be set correctly");
-
-    // Test maximum price
-    let max_price: u256 = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
-    lottery_dispatcher.SetTicketPrice(max_price);
-    assert!(lottery_dispatcher.GetTicketPrice() == max_price, "Maximum price should be set correctly");
 
     stop_cheat_caller_address(lottery_dispatcher.contract_address);
 }

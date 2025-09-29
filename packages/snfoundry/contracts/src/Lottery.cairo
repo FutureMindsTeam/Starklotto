@@ -29,10 +29,14 @@ struct Draw {
     winningNumber5: u16,
     //map of ticketId to ticket
     isActive: bool,
-    //start time of the draw,timestamp unix
+    //start time of the draw,timestamp unix (legacy, retained for compatibility)
     startTime: u64,
-    //end time of the draw,timestamp unix
+    //end time of the draw,timestamp unix (legacy, retained for compatibility)
     endTime: u64,
+    //start block of the draw (primary scheduling reference)
+    startBlock: u64,
+    //end block of the draw (primary scheduling reference)
+    endBlock: u64,
 }
 
 #[derive(Drop, Copy, Serde, starknet::Store)]
@@ -42,6 +46,8 @@ struct JackpotEntry {
     jackpotAmount: u256,
     startTime: u64,
     endTime: u64,
+    startBlock: u64,
+    endBlock: u64,
     isActive: bool,
     isCompleted: bool,
 }
@@ -68,12 +74,16 @@ pub trait ILottery<TContractState> {
     ) -> u8;
     fn CreateNewDraw(ref self: TContractState, accumulatedPrize: u256);
     fn SetTicketPrice(ref self: TContractState, price: u256);
-    fn GetTicketPrice(self: @TContractState) -> u256;
+    fn EmergencyResetReentrancyGuard(ref self: TContractState);
+    
     //=======================================================================================
     //get functions
+    fn GetTicketPrice(self: @TContractState) -> u256;
     fn GetAccumulatedPrize(self: @TContractState) -> u256;
     fn GetFixedPrize(self: @TContractState, matches: u8) -> u256;
     fn GetDrawStatus(self: @TContractState, drawId: u64) -> bool;
+    fn GetBlocksRemaining(self: @TContractState, drawId: u64) -> u64;
+    fn IsDrawActive(self: @TContractState, drawId: u64) -> bool;
     fn GetUserTicketIds(
         self: @TContractState, drawId: u64, player: ContractAddress,
     ) -> Array<felt252>;
@@ -99,6 +109,8 @@ pub trait ILottery<TContractState> {
     fn GetJackpotEntryAmount(self: @TContractState, drawId: u64) -> u256;
     fn GetJackpotEntryStartTime(self: @TContractState, drawId: u64) -> u64;
     fn GetJackpotEntryEndTime(self: @TContractState, drawId: u64) -> u64;
+    fn GetJackpotEntryStartBlock(self: @TContractState, drawId: u64) -> u64;
+    fn GetJackpotEntryEndBlock(self: @TContractState, drawId: u64) -> u64;
     fn GetJackpotEntryIsActive(self: @TContractState, drawId: u64) -> bool;
     fn GetJackpotEntryIsCompleted(self: @TContractState, drawId: u64) -> bool;
 
@@ -117,23 +129,45 @@ pub mod Lottery {
     use core::dict::{Felt252Dict, Felt252DictTrait};
     use core::traits::TryInto;
     use openzeppelin_access::ownable::OwnableComponent;
+    use openzeppelin_security::reentrancyguard::ReentrancyGuardComponent;
     use openzeppelin_token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
     use starknet::storage::{
         Map, StoragePathEntry, StoragePointerReadAccess, StoragePointerWriteAccess,
     };
     use starknet::{
-        ContractAddress, contract_address_const, get_block_timestamp, get_caller_address,
-        get_contract_address,
+        ContractAddress, get_block_timestamp, get_caller_address,
+        get_contract_address, get_block_number,
     };
     use super::{Draw, ILottery, JackpotEntry, Ticket};
 
     // ownable component by openzeppelin
     component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
+    
+    // reentrancy guard component by openzeppelin
+    component!(path: ReentrancyGuardComponent, storage: reentrancy_guard, event: ReentrancyGuardEvent);
+
+     //=======================================================================================
+    //constants
+    //=======================================================================================
+    const MinNumber: u16 = 1; // min number
+    const MaxNumber: u16 = 40; // max number
+    const RequiredNumbers: usize = 5; // amount of numbers per ticket
+    // Precio inicial de ticket: 5 STARKP (18 decimales)
+    const TicketPriceInitial: u256 = 5000000000000000000;
+    // Duración estándar estimada de un sorteo (≈ 1 semana) expresada en bloques
+    const STANDARD_DRAW_DURATION_BLOCKS: u64 = 44800;
+
+    // Constantes para el cálculo del jackpot
+    const JACKPOT_PERCENTAGE: u256 = 55; // 55% del monto de compra va al jackpot
+    const PERCENTAGE_DENOMINATOR: u256 = 100; // Para calcular porcentajes
 
     //ownable component by openzeppelin
     #[abi(embed_v0)]
     impl OwnableImpl = OwnableComponent::OwnableImpl<ContractState>;
     impl OwnableInternalImpl = OwnableComponent::InternalImpl<ContractState>;
+    
+    // reentrancy guard component by openzeppelin
+    impl ReentrancyGuardInternalImpl = ReentrancyGuardComponent::InternalImpl<ContractState>;
 
     // Dynamic contract addresses - will be set in constructor
     // These constants are kept for backward compatibility but should not be used
@@ -152,6 +186,8 @@ pub mod Lottery {
     pub enum Event {
         #[flat]
         OwnableEvent: OwnableComponent::Event,
+        #[flat]
+        ReentrancyGuardEvent: ReentrancyGuardComponent::Event,
         TicketPurchased: TicketPurchased,
         BulkTicketPurchase: BulkTicketPurchase,
         DrawCompleted: DrawCompleted,
@@ -160,6 +196,7 @@ pub mod Lottery {
         JackpotIncreased: JackpotIncreased,
         InvalidDrawIdAttempted: InvalidDrawIdAttempted,
         DrawValidationFailed: DrawValidationFailed,
+        EmergencyReentrancyGuardReset: EmergencyReentrancyGuardReset,
     }
 
     #[derive(Drop, starknet::Event)]
@@ -233,6 +270,12 @@ pub mod Lottery {
         reason: felt252,
         caller: ContractAddress,
     }
+    
+    #[derive(Drop, starknet::Event)]
+    pub struct EmergencyReentrancyGuardReset {
+        pub caller: ContractAddress,
+        pub timestamp: u64,
+    }
 
     //=======================================================================================
     //storage
@@ -260,8 +303,9 @@ pub mod Lottery {
         // ownable component by openzeppelin
         #[substorage(v0)]
         ownable: OwnableComponent::Storage,
-        // Reentrancy guard
-        reentrancy_guard: bool,
+        // reentrancy guard component by openzeppelin
+        #[substorage(v0)]
+        reentrancy_guard: ReentrancyGuardComponent::Storage,
     }
     //=======================================================================================
     //constructor
@@ -272,12 +316,12 @@ pub mod Lottery {
         ref self: ContractState,
         owner: ContractAddress,
         strkPlayContractAddress: ContractAddress,
-        strkPlayVaultContractAddress: ContractAddress,
+        strkPlayVaultContractAddress: ContractAddress
     ) {
         // Validate that addresses are not zero address
-        assert(strkPlayContractAddress != contract_address_const::<0>(), 'Invalid STRKP contract');
+        assert(strkPlayContractAddress != 0.try_into().unwrap(), 'Invalid STRKP contract');
         assert(
-            strkPlayVaultContractAddress != contract_address_const::<0>(), 'Invalid Vault contract',
+            strkPlayVaultContractAddress != 0.try_into().unwrap(), 'Invalid Vault contract',
         );
 
         self.ownable.initializer(owner);
@@ -286,11 +330,11 @@ pub mod Lottery {
         self.fixedPrize2Matches.write(2000000000000000000);
         self.currentDrawId.write(0);
         self.currentTicketId.write(0);
-        self.reentrancy_guard.write(false);
 
         // Store dynamic contract addresses
         self.strkPlayContractAddress.write(strkPlayContractAddress);
         self.strkPlayVaultContractAddress.write(strkPlayVaultContractAddress);
+        self.ticketPrice.write(TicketPriceInitial);
     }
     //=======================================================================================
     //impl
@@ -309,9 +353,8 @@ pub mod Lottery {
         //=======================================================================================
         //OK
         fn BuyTicket(ref self: ContractState, drawId: u64, numbers_array: Array<Array<u16>>, quantity: u8) {
-            // Reentrancy guard at the very beginning
-            assert(!self.reentrancy_guard.read(), 'ReentrancyGuard: reentrant call');
-            self.reentrancy_guard.write(true);
+            // Reentrancy guard using OpenZeppelin component
+            self.reentrancy_guard.start();
 
             // Validate quantity limits first (1-10 tickets)
             assert(quantity >= 1, 'Quantity too low');
@@ -353,7 +396,30 @@ pub mod Lottery {
             let transfer_success = token_dispatcher
                 .transfer_from(user, vault_address, total_price);
             assert(transfer_success, 'Transfer failed');
+
             // --- End corrected payment logic ---
+
+            // Calculate 55% of total price to add to jackpot
+            let jackpot_contribution = (total_price * JACKPOT_PERCENTAGE) / PERCENTAGE_DENOMINATOR;
+
+            // Update global accumulated prize
+            let current_accumulated_prize = self.accumulatedPrize.read();
+            self.accumulatedPrize.write(current_accumulated_prize + jackpot_contribution);
+
+            // Update the specific draw's accumulated prize
+            let mut current_draw = self.draws.entry(drawId).read();
+            current_draw.accumulatedPrize = current_draw.accumulatedPrize + jackpot_contribution;
+            self.draws.entry(drawId).write(current_draw);
+
+            // Emit event for jackpot increase
+            self.emit(
+                JackpotIncreased {
+                    drawId,
+                    previousAmount: current_accumulated_prize,
+                    newAmount: current_accumulated_prize + jackpot_contribution,
+                    timestamp: current_timestamp,
+                },
+            );
 
             // Emit bulk purchase event for auditing
             self.emit(
@@ -369,9 +435,9 @@ pub mod Lottery {
             let caller = get_caller_address();
             let mut count = self.userTicketCount.entry((caller, drawId)).read();
 
-            // CORREGIDO: Generate multiple tickets with unique numbers
+            // Generate multiple tickets with unique numbers
             let mut i: u8 = 0;
-            while i < quantity {
+            while i != quantity {
                 // TODO: Mint the NFT here, for now it is simulated
                 let minted = true;
                 assert(minted, 'NFT minting failed');
@@ -428,7 +494,7 @@ pub mod Lottery {
             }
 
             // Release reentrancy guard
-            self.reentrancy_guard.write(false);
+            self.reentrancy_guard.end();
         }
         //=======================================================================================
         fn GetUserTicketsCount(self: @ContractState, drawId: u64, player: ContractAddress) -> u32 {
@@ -571,6 +637,9 @@ pub mod Lottery {
 
             let drawId = self.currentDrawId.read() + 1;
             let previousAmount = self.accumulatedPrize.read();
+            let current_timestamp = get_block_timestamp();
+            let current_block = get_block_number();
+            let end_block = current_block + STANDARD_DRAW_DURATION_BLOCKS;
             let newDraw = Draw {
                 drawId,
                 accumulatedPrize: accumulatedPrize,
@@ -581,8 +650,10 @@ pub mod Lottery {
                 winningNumber5: 0,
                 // tickets: Map::new(),
                 isActive: true,
-                startTime: get_block_timestamp(),
-                endTime: get_block_timestamp() + 604800 // 1 Week
+                startTime: current_timestamp,
+                endTime: 0,
+                startBlock: current_block,
+                endBlock: end_block,
             };
             self.draws.entry(drawId).write(newDraw);
             self.currentDrawId.write(drawId);
@@ -593,7 +664,7 @@ pub mod Lottery {
                         drawId,
                         previousAmount,
                         newAmount: accumulatedPrize,
-                        timestamp: get_block_timestamp(),
+                        timestamp: current_timestamp,
                     },
                 );
         }
@@ -606,6 +677,22 @@ pub mod Lottery {
             self.draws.entry(drawId).read().isActive
         }
 
+        fn GetBlocksRemaining(self: @ContractState, drawId: u64) -> u64 {
+            if !self.DrawExists(drawId) {
+                return 0;
+            }
+            let current_block = get_block_number();
+            self.ComputeBlocksRemaining(drawId, current_block)
+        }
+
+        fn IsDrawActive(self: @ContractState, drawId: u64) -> bool {
+            if !self.DrawExists(drawId) {
+                return false;
+            }
+            let current_block = get_block_number();
+            self.EvaluateDrawActive(drawId, current_block)
+        }
+
         //=======================================================================================
         fn GetUserTicketIds(
             self: @ContractState, drawId: u64, player: ContractAddress,
@@ -614,7 +701,7 @@ pub mod Lottery {
             let count = self.userTicketCount.entry((player, drawId)).read();
 
             let mut i: u32 = 1;
-            while i <= count {
+            while i != (count + 1) {
                 let ticketId = self.userTicketIds.entry((player, drawId, i)).read();
                 userTicket_ids.append(ticketId);
                 i += 1;
@@ -680,7 +767,26 @@ pub mod Lottery {
         // Set the ticket price (admin only)
         fn SetTicketPrice(ref self: ContractState, price: u256) {
             self.ownable.assert_only_owner();
+            assert(price > 0, 'Price must be greater than 0');
             self.ticketPrice.write(price);
+        }
+
+        // Emergency function to reset reentrancy guard (owner only)
+        fn EmergencyResetReentrancyGuard(ref self: ContractState) {
+            self.ownable.assert_only_owner();
+            
+            // Force reset the reentrancy guard to false
+            // This is a critical emergency function that should only be used
+            // if the guard gets permanently locked due to a failed transaction
+            self.reentrancy_guard.end();
+            
+            // Emit event for audit trail
+            self.emit(
+                EmergencyReentrancyGuardReset {
+                    caller: get_caller_address(),
+                    timestamp: get_block_timestamp(),
+                }
+            );
         }
 
         // Get the ticket price (public view)
@@ -695,8 +801,10 @@ pub mod Lottery {
         /// and returns an array of JackpotEntry structs containing:
         /// - drawId: Unique identifier for the draw
         /// - jackpotAmount: The accumulated prize amount for this draw
-        /// - startTime: When the draw started (unix timestamp)
-        /// - endTime: When the draw ended (unix timestamp)
+        /// - startTime: When the draw started (legacy unix timestamp)
+        /// - endTime: When the draw ended (legacy unix timestamp)
+        /// - startBlock: Block where the draw started (primary reference)
+        /// - endBlock: Block where the draw ends (primary reference)
         /// - isActive: Whether the draw is currently active (true) or completed (false)
         /// - isCompleted: Whether the draw has been completed (true) or is still active (false)
         ///   Note: isCompleted is the logical inverse of isActive for clarity
@@ -706,10 +814,7 @@ pub mod Lottery {
 
             // Iterate through all draws from 1 to currentDrawId
             let mut drawId: u64 = 1;
-            loop {
-                if drawId > currentDrawId {
-                    break;
-                }
+            while drawId != (currentDrawId + 1) {
 
                 let draw = self.draws.entry(drawId).read();
                 let jackpotEntry = JackpotEntry {
@@ -717,6 +822,8 @@ pub mod Lottery {
                     jackpotAmount: draw.accumulatedPrize,
                     startTime: draw.startTime,
                     endTime: draw.endTime,
+                    startBlock: draw.startBlock,
+                    endBlock: draw.endBlock,
                     isActive: draw.isActive,
                     // isCompleted is the logical inverse of isActive for explicit clarity
                     // When isActive is true, the draw is ongoing (not completed)
@@ -790,6 +897,16 @@ pub mod Lottery {
             draw.endTime
         }
 
+        fn GetJackpotEntryStartBlock(self: @ContractState, drawId: u64) -> u64 {
+            let draw = self.draws.entry(drawId).read();
+            draw.startBlock
+        }
+
+        fn GetJackpotEntryEndBlock(self: @ContractState, drawId: u64) -> u64 {
+            let draw = self.draws.entry(drawId).read();
+            draw.endBlock
+        }
+
         fn GetJackpotEntryIsActive(self: @ContractState, drawId: u64) -> bool {
             let draw = self.draws.entry(drawId).read();
             draw.isActive
@@ -812,12 +929,7 @@ pub mod Lottery {
         }
     }
 
-    //=======================================================================================
-    //constants
-    //=======================================================================================
-    const MinNumber: u16 = 1; // min number
-    const MaxNumber: u16 = 40; // max number
-    const RequiredNumbers: usize = 5; // amount of numbers per ticket
+   
 
     //=======================================================================================
     //internal functions
@@ -836,10 +948,7 @@ pub mod Lottery {
             let mut i: usize = 0;
             let mut valid = true;
 
-            loop {
-                if i >= numbers.len() {
-                    break;
-                }
+            while i != numbers.len() {
 
                 let number = *numbers.at(i);
 
@@ -850,7 +959,7 @@ pub mod Lottery {
                 }
 
                 // Verify duplicates
-                if usedNumbers.get(number.into()) == true {
+                if usedNumbers.get(number.into()) {
                     valid = false;
                     break;
                 }
@@ -878,11 +987,7 @@ pub mod Lottery {
             let mut i: usize = 0;
             let mut valid = true;
 
-            loop {
-                if i >= numbers_array.len() {
-                    break;
-                }
-
+            while i != numbers_array.len() {
                 let numbers = numbers_array.at(i);
                 
                 // Validate each individual array of numbers
@@ -931,6 +1036,40 @@ pub mod Lottery {
         fn AssertDrawExists(ref self: ContractState, drawId: u64, function_name: felt252) {
             assert(self.ValidateDrawExists(drawId, function_name), 'Draw is not active');
         }
+
+        fn ComputeBlocksRemaining(self: @ContractState, drawId: u64, current_block: u64) -> u64 {
+            let draw = self.draws.entry(drawId).read();
+            if draw.endBlock == 0 {
+                if draw.endTime == 0 {
+                    return 0;
+                }
+                let current_time = get_block_timestamp();
+                if current_time >= draw.endTime {
+                    return 0;
+                }
+                let remaining = draw.endTime - current_time;
+                return remaining;
+            }
+            if current_block >= draw.endBlock {
+                return 0;
+            }
+            draw.endBlock - current_block
+        }
+
+        fn EvaluateDrawActive(self: @ContractState, drawId: u64, current_block: u64) -> bool {
+            let draw = self.draws.entry(drawId).read();
+            if !draw.isActive {
+                return false;
+            }
+            if draw.startBlock == 0 || draw.endBlock == 0 {
+                if draw.endTime == 0 {
+                    return false;
+                }
+                let current_time = get_block_timestamp();
+                return current_time >= draw.startTime && current_time < draw.endTime;
+            }
+            current_block >= draw.startBlock && current_block < draw.endBlock
+        }
     }
 
     //=======================================================================================
@@ -956,7 +1095,7 @@ pub mod Lottery {
                 + MinNumber.into();
             let number_u16: u16 = number.try_into().unwrap();
 
-            if usedNumbers.get(number.into()) != true {
+            if !usedNumbers.get(number.into()) {
                 numbers.append(number_u16);
                 usedNumbers.insert(number.into(), true);
                 count += 1;
@@ -965,32 +1104,5 @@ pub mod Lottery {
 
         numbers
     }
-    // fn GenerateRandomNumbers() -> Array<u16> {
-//     TODO: We need to use VRF de Pragma Oracle to generate random numbers
-
-    //     now we are generating random numbers for testing
-//     let mut numbers = ArrayTrait::new();
-//     let blockTimestamp = get_block_timestamp();
-//     let blockHash = get_block_hash();
-
-    //     seed is the combination of the block timestamp and the block hash
-//     let seed = blockTimestamp + blockHash;
-
-    //     generate 4 unique numbers between 0-99
-//     let mut usedNumbers: Felt252Dict<bool> = Default::default();
-//     let mut count = 0;
-
-    //     while count < 4 {
-//         let number = (seed + count) % 100;
-
-    //         check if the number is already used
-//         if !usedNumbers.contains(number) {
-//             numbers.append(number);
-//             usedNumbers.insert(number, true);
-//             count += 1;
-//         }
-//     }
-
-    //     numbers
-// }
+   
 }
