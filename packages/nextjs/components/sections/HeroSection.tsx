@@ -74,7 +74,7 @@ export function HeroSection({
           </p>
 
           {useBlockBasedCountdown && timeRemainingFromBlocks ? (
-            <BlockBasedCountdownTimer 
+            <BlockBasedCountdownTimer
               blocksRemaining={blocksRemaining}
               currentBlock={currentBlock}
               timeRemaining={timeRemainingFromBlocks}
