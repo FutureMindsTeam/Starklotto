@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 interface BlockBasedCountdownTimerProps {
   blocksRemaining: number;
@@ -17,6 +18,8 @@ export function BlockBasedCountdownTimer({
   currentBlock, 
   timeRemaining 
 }: BlockBasedCountdownTimerProps) {
+  const { t } = useTranslation();
+  
   // Valores por defecto para evitar valores undefined
   const safeTimeRemaining = useMemo(() => ({
     days: timeRemaining?.days || "00",
@@ -45,10 +48,10 @@ export function BlockBasedCountdownTimer({
     <div className="space-y-4">
       {/* Countdown principal */}
       <div className="grid grid-cols-4 gap-4 text-center">
-        <TimeUnit value={safeTimeRemaining.days} label="Days" />
-        <TimeUnit value={safeTimeRemaining.hours} label="Hours" />
-        <TimeUnit value={safeTimeRemaining.minutes} label="Minutes" />
-        <TimeUnit value={animatedSeconds} label="Seconds" />
+        <TimeUnit value={safeTimeRemaining.days} label={t("countdown.days")} />
+        <TimeUnit value={safeTimeRemaining.hours} label={t("countdown.hours")} />
+        <TimeUnit value={safeTimeRemaining.minutes} label={t("countdown.minutes")} />
+        <TimeUnit value={animatedSeconds} label={t("countdown.seconds")} />
       </div>
 
       {/* Información de bloques */}
@@ -57,7 +60,7 @@ export function BlockBasedCountdownTimer({
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
-            <span className="text-gray-300 text-sm">Blocks Remaining</span>
+            <span className="text-gray-300 text-sm">{t("countdown.blocksRemaining")}</span>
           </div>
           <motion.span 
             key={blocksRemaining}
@@ -73,7 +76,7 @@ export function BlockBasedCountdownTimer({
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-            <span className="text-gray-300 text-sm">Current Block</span>
+            <span className="text-gray-300 text-sm">{t("countdown.currentBlock")}</span>
           </div>
           <motion.span 
             key={currentBlock}
@@ -88,8 +91,8 @@ export function BlockBasedCountdownTimer({
         {/* Información adicional */}
         <div className="pt-2 border-t border-gray-600">
           <div className="flex justify-between items-center text-xs text-gray-400">
-            <span>~12s per block</span>
-            <span>Starknet Mainnet</span>
+            <span>{t("countdown.timePerBlock")}</span>
+            <span>{t("countdown.network")}</span>
           </div>
         </div>
       </div>

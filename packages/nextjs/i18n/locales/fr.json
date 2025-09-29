@@ -5,6 +5,16 @@
     "error": "Erreur",
     "success": "Succès"
   },
+  "countdown": {
+    "days": "Jours",
+    "hours": "Heures",
+    "minutes": "Minutes",
+    "seconds": "Secondes",
+    "blocksRemaining": "Blocs Restants",
+    "currentBlock": "Bloc Actuel",
+    "timePerBlock": "~12s par bloc",
+    "network": "Starknet Mainnet"
+  },
   "buyTickets": {
     "title": "Acheter des Billets",
     "nextDraw": "Prochain Tirage",
