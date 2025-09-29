@@ -23,7 +23,7 @@ export default function DappHome() {
 
   // Obtener el ID del draw actual del contrato
   const { currentDrawId } = useCurrentDrawId();
-  
+
   // Obtener información del draw actual usando bloques
   const {
     jackpotFormatted,
