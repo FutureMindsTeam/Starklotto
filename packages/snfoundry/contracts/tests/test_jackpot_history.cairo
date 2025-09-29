@@ -111,7 +111,10 @@ fn test_get_jackpot_history_multiple_draws() {
     lottery_dispatcher.Initialize(1000000000000000000_u256, 1000000000000000000000_u256);
 
     // Create additional draws
+    // close previous before next
+    lottery_dispatcher.DrawNumbers(1);
     lottery_dispatcher.CreateNewDraw(2000000000000000000000_u256);
+    lottery_dispatcher.DrawNumbers(2);
     lottery_dispatcher.CreateNewDraw(3000000000000000000000_u256);
     stop_cheat_caller_address(lottery_dispatcher.contract_address);
     // Get jackpot history - should return 3 entries
@@ -179,8 +182,12 @@ fn test_get_jackpot_history_performance() {
 
     // Create many draws to test performance
     let mut i = 0;
+    let mut next_amount: u256 = 2000000000000000000000_u256; // starts at draw 2 amount
     while i != 10 {
-        lottery_dispatcher.CreateNewDraw((i + 2) * 1000000000000000000000_u256);
+        // Close last active then create next
+        lottery_dispatcher.DrawNumbers(i + 1);
+        lottery_dispatcher.CreateNewDraw(next_amount);
+        next_amount = next_amount + 1000000000000000000000_u256; // increment 1e18 each iteration
         i = i + 1;
     }
     stop_cheat_caller_address(lottery_dispatcher.contract_address);
