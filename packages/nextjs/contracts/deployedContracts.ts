@@ -7,7 +7,7 @@ const deployedContracts = {
   devnet: {
     StarkPlayERC20: {
       address:
-        "0x1f53f9908fe3994fcec05fdf7a1a16a53e718541de1a230437d664540dc2922",
+        "0x226607a1df9bb3d0c1710ec0abb58320c601e2b4d5d467f513c53516a67d866",
       abi: [
         {
           type: "impl",
@@ -1185,11 +1185,11 @@ const deployedContracts = {
         },
       ],
       classHash:
-        "0x1575d4786f1515350b484dd67fcc517ea9c014693127871cc2676ea58e86d52",
+        "0x1db26668046de7c00fed257f34a0dad314a19a1fc8cc6816381ab7defec22b0",
     },
     StarkPlayVault: {
       address:
-        "0x23ce637b7b294b5c4e00aa86771d9e09aa0bac56b0f0f68b1bfee9ed44a57bc",
+        "0x51142ea799b634434226889fb52499463219f4a092232e2c8f3fdeb7865dc37",
       abi: [
         {
           type: "impl",
@@ -2073,11 +2073,11 @@ const deployedContracts = {
         },
       ],
       classHash:
-        "0xb7d9dbef4d78349c9704dfebb13c7401d7fa000d0c6b7cb09b8b7c3fe24a53",
+        "0x1127ea2a6241450cb7d4fa483bce8f52140a66f8262a73f7bf1db85a55bb6a3",
     },
     Lottery: {
       address:
-        "0x15984405bbc9d9420ff9264bcd5941ba90062f2841fca221a5a767eb6fd1d97",
+        "0x16064c51522e9a0da124120e839fd5c6947177c76804c308f0a447867a8cb5c",
       abi: [
         {
           type: "impl",
@@ -2172,6 +2172,14 @@ const deployedContracts = {
             },
             {
               name: "endTime",
+              type: "core::integer::u64",
+            },
+            {
+              name: "startBlock",
+              type: "core::integer::u64",
+            },
+            {
+              name: "endBlock",
               type: "core::integer::u64",
             },
             {
@@ -2314,6 +2322,13 @@ const deployedContracts = {
             },
             {
               type: "function",
+              name: "EmergencyResetReentrancyGuard",
+              inputs: [],
+              outputs: [],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
               name: "GetTicketPrice",
               inputs: [],
               outputs: [
@@ -2353,6 +2368,38 @@ const deployedContracts = {
             {
               type: "function",
               name: "GetDrawStatus",
+              inputs: [
+                {
+                  name: "drawId",
+                  type: "core::integer::u64",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::bool",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "GetBlocksRemaining",
+              inputs: [
+                {
+                  name: "drawId",
+                  type: "core::integer::u64",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::integer::u64",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "IsDrawActive",
               inputs: [
                 {
                   name: "drawId",
@@ -2654,6 +2701,38 @@ const deployedContracts = {
             },
             {
               type: "function",
+              name: "GetJackpotEntryStartBlock",
+              inputs: [
+                {
+                  name: "drawId",
+                  type: "core::integer::u64",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::integer::u64",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "GetJackpotEntryEndBlock",
+              inputs: [
+                {
+                  name: "drawId",
+                  type: "core::integer::u64",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::integer::u64",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
               name: "GetJackpotEntryIsActive",
               inputs: [
                 {
@@ -2702,6 +2781,17 @@ const deployedContracts = {
               outputs: [
                 {
                   type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "GetCurrentDrawId",
+              inputs: [],
+              outputs: [
+                {
+                  type: "core::integer::u64",
                 },
               ],
               state_mutability: "view",
@@ -2817,6 +2907,12 @@ const deployedContracts = {
               kind: "nested",
             },
           ],
+        },
+        {
+          type: "event",
+          name: "openzeppelin_security::reentrancyguard::ReentrancyGuardComponent::Event",
+          kind: "enum",
+          variants: [],
         },
         {
           type: "event",
@@ -3036,12 +3132,34 @@ const deployedContracts = {
         },
         {
           type: "event",
+          name: "contracts::Lottery::Lottery::EmergencyReentrancyGuardReset",
+          kind: "struct",
+          members: [
+            {
+              name: "caller",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "data",
+            },
+            {
+              name: "timestamp",
+              type: "core::integer::u64",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
           name: "contracts::Lottery::Lottery::Event",
           kind: "enum",
           variants: [
             {
               name: "OwnableEvent",
               type: "openzeppelin_access::ownable::ownable::OwnableComponent::Event",
+              kind: "flat",
+            },
+            {
+              name: "ReentrancyGuardEvent",
+              type: "openzeppelin_security::reentrancyguard::ReentrancyGuardComponent::Event",
               kind: "flat",
             },
             {
@@ -3084,11 +3202,16 @@ const deployedContracts = {
               type: "contracts::Lottery::Lottery::DrawValidationFailed",
               kind: "nested",
             },
+            {
+              name: "EmergencyReentrancyGuardReset",
+              type: "contracts::Lottery::Lottery::EmergencyReentrancyGuardReset",
+              kind: "nested",
+            },
           ],
         },
       ],
       classHash:
-        "0x1cda36c1d465b09c3d17355f021ecaa11031da6ebe8448d694425140229b75f",
+        "0x4b85b028aa19c75137522e318016dca1c25182c0b51364ba62b8de0b6d553de",
     },
   },
 } as const;
