@@ -52,7 +52,6 @@ export default function DappHome() {
 
   return (
     <>
-      
       <HeroSection
         heroY={heroY}
         jackpot={jackpot}
@@ -65,8 +64,7 @@ export default function DappHome() {
         onSelectNumbers={handleSelectNumbers}
         onPurchase={handlePurchase}
       />
-  
-      
+
       {!data ? (
         <div className="container mx-auto grid gap-4 p-4 lg:grid-cols-3">
           <div className="space-y-4 lg:col-span-2">
@@ -81,29 +79,24 @@ export default function DappHome() {
         </div>
       ) : (
         <div className="container mx-auto grid gap-4 p-4 lg:grid-cols-3">
-          
           <div className="space-y-4 lg:col-span-2">
             <StepsWizard {...data.wizard} />
             <DrawStatusCard {...data.draw} />
             <RecentActivityCard items={data.history} />
           </div>
-  
-          
+
           <div className="space-y-4">
             <BalancesCard {...data.balances} />
             <NotificationsCard list={data.notifications} />
           </div>
         </div>
       )}
-  
-     
+
       <div className="container mx-auto px-4 relative z-20">
         <LastDrawResults />
       </div>
-  
-      
+
       <PrizeDistributionSection prizeDistributionY={prizeDistributionY} />
     </>
   );
-  
 }
