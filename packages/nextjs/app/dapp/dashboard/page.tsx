@@ -35,14 +35,12 @@ export default function DashboardPage() {
 
   return (
     <div className="container mx-auto grid gap-4 p-4 lg:grid-cols-3">
-      
       <div className="space-y-4 lg:col-span-2">
         <StepsWizard {...data.wizard} />
         <DrawStatusCard {...data.draw} />
         <RecentActivityCard items={data.history} />
       </div>
 
-      
       <div className="space-y-4">
         <BalancesCard {...data.balances} />
         <NotificationsCard list={data.notifications} />

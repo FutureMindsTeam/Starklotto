@@ -64,7 +64,9 @@ export default function StepsWizard(_: Props) {
                   </span>
                   <span className="text-starkMagenta">{s.icon}</span>
                 </div>
-                <div className="font-semibold text-lg text-white">{s.title}</div>
+                <div className="font-semibold text-lg text-white">
+                  {s.title}
+                </div>
                 <div className="mb-4 text-sm text-white/70">{s.desc}</div>
               </div>
 
