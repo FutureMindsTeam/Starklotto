@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { motion } from "framer-motion";
 
 interface BlockBasedCountdownTimerProps {
@@ -17,20 +17,37 @@ export function BlockBasedCountdownTimer({
   currentBlock, 
   timeRemaining 
 }: BlockBasedCountdownTimerProps) {
-  const [animatedSeconds, setAnimatedSeconds] = useState(timeRemaining.seconds);
+  // Valores por defecto para evitar valores undefined
+  const safeTimeRemaining = useMemo(() => ({
+    days: timeRemaining?.days || "00",
+    hours: timeRemaining?.hours || "00", 
+    minutes: timeRemaining?.minutes || "00",
+    seconds: timeRemaining?.seconds || "00"
+  }), [timeRemaining]);
+
+  const [animatedSeconds, setAnimatedSeconds] = useState(safeTimeRemaining.seconds);
 
   // Animar el cambio de segundos
   useEffect(() => {
-    setAnimatedSeconds(timeRemaining.seconds);
-  }, [timeRemaining.seconds]);
+    setAnimatedSeconds(safeTimeRemaining.seconds);
+  }, [safeTimeRemaining.seconds]);
+
+  // Debug: mostrar valores en consola
+  useEffect(() => {
+    console.log("BlockBasedCountdownTimer props:", {
+      blocksRemaining,
+      currentBlock,
+      timeRemaining: safeTimeRemaining
+    });
+  }, [blocksRemaining, currentBlock, safeTimeRemaining]);
 
   return (
     <div className="space-y-4">
       {/* Countdown principal */}
-      <div className="grid grid-cols-4 gap-2 text-center">
-        <TimeUnit value={timeRemaining.days} label="Days" />
-        <TimeUnit value={timeRemaining.hours} label="Hours" />
-        <TimeUnit value={timeRemaining.minutes} label="Minutes" />
+      <div className="grid grid-cols-4 gap-4 text-center">
+        <TimeUnit value={safeTimeRemaining.days} label="Days" />
+        <TimeUnit value={safeTimeRemaining.hours} label="Hours" />
+        <TimeUnit value={safeTimeRemaining.minutes} label="Minutes" />
         <TimeUnit value={animatedSeconds} label="Seconds" />
       </div>
 
@@ -48,7 +65,7 @@ export function BlockBasedCountdownTimer({
             animate={{ scale: 1, color: "#e5e7eb" }}
             className="text-white font-mono font-bold"
           >
-            {blocksRemaining.toLocaleString()}
+            {(blocksRemaining || 0).toLocaleString()}
           </motion.span>
         </div>
 
@@ -64,7 +81,7 @@ export function BlockBasedCountdownTimer({
             animate={{ scale: 1, color: "#e5e7eb" }}
             className="text-white font-mono font-bold"
           >
-            #{currentBlock.toLocaleString()}
+            #{(currentBlock || 0).toLocaleString()}
           </motion.span>
         </div>
 
@@ -88,7 +105,7 @@ interface TimeUnitProps {
 function TimeUnit({ value, label }: TimeUnitProps) {
   return (
     <motion.div
-      className="flex flex-col"
+      className="flex flex-col items-center"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
@@ -97,11 +114,11 @@ function TimeUnit({ value, label }: TimeUnitProps) {
         key={value}
         initial={{ scale: 1.2, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="text-2xl font-bold text-primary"
+        className="text-3xl font-bold text-white bg-gray-800 px-3 py-2 rounded-lg shadow-lg"
       >
         {value}
       </motion.div>
-      <div className="text-xs text-gray-400">{label}</div>
+      <div className="text-sm text-gray-300 mt-1 font-medium">{label}</div>
     </motion.div>
   );
 }
