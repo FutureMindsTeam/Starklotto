@@ -39,7 +39,10 @@ export default function NotificationsCard({ list }: Props) {
               <div className="mb-3 text-sm text-white/80">{n.desc}</div>
 
               {n.cta && (
-                <motion.div whileTap={{ scale: 0.98 }} whileHover={{ scale: 1.01 }}>
+                <motion.div
+                  whileTap={{ scale: 0.98 }}
+                  whileHover={{ scale: 1.01 }}
+                >
                   <Link
                     href={n.cta.href}
                     className={`btn btn-sm w-full ${

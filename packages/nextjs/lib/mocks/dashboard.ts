@@ -22,17 +22,32 @@ export type DashboardMock = {
     pendingPrize: number;
     convertiblePrize: number;
   };
-  draw: { active: boolean; blocksRemaining: number | null; progressPct: number };
+  draw: {
+    active: boolean;
+    blocksRemaining: number | null;
+    progressPct: number;
+  };
   history: ActivityItem[];
   notifications: NotificationItem[];
 };
 
 const base: DashboardMock = {
   balances: { strkp: 123.45, strk: 0.78 },
-  wizard: { hasStrkp: true, ticketsCount: 2, pendingPrize: 12.5, convertiblePrize: 0 },
+  wizard: {
+    hasStrkp: true,
+    ticketsCount: 2,
+    pendingPrize: 12.5,
+    convertiblePrize: 0,
+  },
   draw: { active: true, blocksRemaining: 134, progressPct: 73 },
   history: [
-    { id: "a1", amount: 5, unit: "STRKP", status: "pending", when: "2 hours ago" },
+    {
+      id: "a1",
+      amount: 5,
+      unit: "STRKP",
+      status: "pending",
+      when: "2 hours ago",
+    },
     { id: "a2", amount: 12.5, unit: "STRKP", status: "won", when: "1 day ago" },
     { id: "a3", amount: 3, unit: "STRKP", status: "lost", when: "2 days ago" },
   ],
@@ -53,7 +68,6 @@ const base: DashboardMock = {
     },
   ],
 };
-
 
 export function fetchDashboardMock(): DashboardMock {
   return base;

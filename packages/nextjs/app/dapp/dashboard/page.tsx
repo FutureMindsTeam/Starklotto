@@ -38,7 +38,12 @@ export default function DashboardPage() {
 
   const {
     balances = { strkp: 0, strk: 0 },
-    wizard = { hasStrkp: false, ticketsCount: 0, pendingPrize: 0, convertiblePrize: 0 },
+    wizard = {
+      hasStrkp: false,
+      ticketsCount: 0,
+      pendingPrize: 0,
+      convertiblePrize: 0,
+    },
     draw = { active: false, blocksRemaining: 0, progressPct: 0 },
     history = [],
     notifications = [],

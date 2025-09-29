@@ -23,13 +23,14 @@ export default function DrawStatusCard({
 
       <div className="mb-3 flex items-center justify-between">
         <div className="text-sm text-white/80">Current Draw</div>
-        <div className={`text-sm font-semibold ${active ? "text-success" : "text-error"}`}>
+        <div
+          className={`text-sm font-semibold ${active ? "text-success" : "text-error"}`}
+        >
           {active ? "Active" : "Inactive"}
         </div>
       </div>
 
       <SlideUp>
-        
         <div className="mb-4 rounded-xl border border-white/10 bg-[#1E293B] p-4">
           <div className="flex items-center gap-3">
             <div className="rounded-lg bg-white/10 p-2">
@@ -37,7 +38,9 @@ export default function DrawStatusCard({
             </div>
             <div>
               <div className="text-xs text-white/80">Remaining Blocks</div>
-              <div className="text-2xl font-bold">{blocksRemaining ?? "--"}</div>
+              <div className="text-2xl font-bold">
+                {blocksRemaining ?? "--"}
+              </div>
             </div>
           </div>
         </div>
@@ -51,7 +54,9 @@ export default function DrawStatusCard({
           className={`h-2 rounded-full ${active ? "bg-starkMagenta" : "bg-white/30"}`}
         />
       </div>
-      <div className="mt-1 text-right text-xs text-white/80">{progressPct}%</div>
+      <div className="mt-1 text-right text-xs text-white/80">
+        {progressPct}%
+      </div>
     </Card>
   );
 }

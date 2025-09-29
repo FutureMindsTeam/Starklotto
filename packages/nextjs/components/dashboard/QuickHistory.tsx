@@ -37,8 +37,8 @@ export default function QuickHistory({ items }: { items: ActivityItem[] }) {
                   i.status === "won"
                     ? "text-success"
                     : i.status === "pending"
-                    ? "text-starkYellow"
-                    : "text-error/80"
+                      ? "text-starkYellow"
+                      : "text-error/80"
                 }`}
               >
                 {i.status}

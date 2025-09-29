@@ -5,7 +5,11 @@ import { Ticket } from "lucide-react";
 import type { ActivityItem } from "~~/lib/mocks/dashboard";
 import { Stagger, Item } from "~~/components/ui/motion";
 
-export default function RecentActivityCard({ items }: { items: ActivityItem[] }) {
+export default function RecentActivityCard({
+  items,
+}: {
+  items: ActivityItem[];
+}) {
   return (
     <Card className="p-6">
       <div className="mb-3 flex items-center gap-2">
@@ -41,8 +45,8 @@ export default function RecentActivityCard({ items }: { items: ActivityItem[] })
                       i.status === "won"
                         ? "text-success"
                         : i.status === "pending"
-                        ? "text-starkYellow"
-                        : "text-error/80"
+                          ? "text-starkYellow"
+                          : "text-error/80"
                     }`}
                   >
                     {i.status}
