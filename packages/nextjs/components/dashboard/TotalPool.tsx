@@ -9,7 +9,6 @@ export default function TotalPool() {
   const [usdValue, setUsdValue] = useState<number>(48230);
   const [remainingTime, setRemainingTime] = useState<string>("");
 
-  
   useEffect(() => {
     const targetDate = new Date();
     targetDate.setDate(targetDate.getDate() + 2);
@@ -28,7 +27,7 @@ export default function TotalPool() {
 
       const days = Math.floor(distance / (1000 * 60 * 60 * 24));
       const hours = Math.floor(
-        (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+        (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
       );
       const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
 
@@ -48,7 +47,6 @@ export default function TotalPool() {
                  text-center text-green-400 max-w-4xl w-full mx-auto mb-16 
                  border border-emerald-400/50"
     >
-      
       <motion.h2
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -58,7 +56,6 @@ export default function TotalPool() {
         💰 Accumulated Pool
       </motion.h2>
 
-      
       <motion.p
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -80,7 +77,6 @@ export default function TotalPool() {
         </motion.span>
       </motion.p>
 
-      
       <motion.p
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -90,7 +86,6 @@ export default function TotalPool() {
         ≈ <CountUp end={usdValue} duration={3} separator="," /> USD
       </motion.p>
 
-      
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
