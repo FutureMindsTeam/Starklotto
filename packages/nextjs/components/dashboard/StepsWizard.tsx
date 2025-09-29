@@ -52,7 +52,9 @@ export default function StepsWizard(_: Props) {
 
   return (
     <Card className="p-6 bg-gradient-to-br from-slate-900/70 via-slate-800/60 to-slate-900/70 backdrop-blur-xl rounded-2xl border border-white/10 shadow-lg">
-      <h3 className="mb-6 text-xl font-bold text-white">{t("dashboard.steps.title")}</h3>
+      <h3 className="mb-6 text-xl font-bold text-white">
+        {t("dashboard.steps.title")}
+      </h3>
       <Stagger className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 items-stretch">
         {steps.map((s) => (
           <Item key={s.id} className="h-full">

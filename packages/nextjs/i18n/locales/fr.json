@@ -200,50 +200,49 @@
     "loadingErrorMessage": "Une erreur s'est produite lors du chargement des résultats du tirage."
   },
   "dashboard": {
-  "balances": {
-    "title": "Soldes de Tokens",
-    "strkp": "STRKP",
-    "strk": "STRK"
-  },
-  "drawStatus": {
-    "title": "Statut du Tirage",
-    "current": "Tirage Actuel",
-    "active": "Actif",
-    "inactive": "Inactif",
-    "remainingBlocks": "Blocs Restants"
-  },
-  "notifications": {
-    "title": "Notifications",
-    "empty": "Vous êtes à jour."
-  },
-  "recentActivity": {
-    "title": "Activité Récente",
-    "empty": "Aucune activité récente. Achetez votre premier billet pour commencer."
-  },
-  "steps": {
-    "title": "Processus de Loterie",
-    "step": "Étape {{id}}",
-    "mint": {
-      "title": "Créer STRKP",
-      "desc": "Obtenez des tokens STRKP pour participer",
-      "action": "Aller à Créer"
+    "balances": {
+      "title": "Soldes de Tokens",
+      "strkp": "STRKP",
+      "strk": "STRK"
     },
-    "buy": {
-      "title": "Acheter des Billets",
-      "desc": "Achetez des billets de loterie avec STRKP",
-      "action": "Acheter Maintenant"
+    "drawStatus": {
+      "title": "Statut du Tirage",
+      "current": "Tirage Actuel",
+      "active": "Actif",
+      "inactive": "Inactif",
+      "remainingBlocks": "Blocs Restants"
     },
-    "claim": {
-      "title": "Réclamer le Prix",
-      "desc": "Réclamez vos gains si vous gagnez",
-      "action": "Réclamer"
+    "notifications": {
+      "title": "Notifications",
+      "empty": "Vous êtes à jour."
     },
-    "convert": {
-      "title": "Convertir en STRK",
-      "desc": "Convertir des tokens de prix en STRK",
-      "action": "Convertir"
+    "recentActivity": {
+      "title": "Activité Récente",
+      "empty": "Aucune activité récente. Achetez votre premier billet pour commencer."
+    },
+    "steps": {
+      "title": "Processus de Loterie",
+      "step": "Étape {{id}}",
+      "mint": {
+        "title": "Créer STRKP",
+        "desc": "Obtenez des tokens STRKP pour participer",
+        "action": "Aller à Créer"
+      },
+      "buy": {
+        "title": "Acheter des Billets",
+        "desc": "Achetez des billets de loterie avec STRKP",
+        "action": "Acheter Maintenant"
+      },
+      "claim": {
+        "title": "Réclamer le Prix",
+        "desc": "Réclamez vos gains si vous gagnez",
+        "action": "Réclamer"
+      },
+      "convert": {
+        "title": "Convertir en STRK",
+        "desc": "Convertir des tokens de prix en STRK",
+        "action": "Convertir"
+      }
     }
   }
-}
-
 }

@@ -10,7 +10,9 @@ export default function BalancesCard({ strkp, strk, loading = false }: Props) {
 
   return (
     <Card className="p-4 bg-[#111827] border border-white/10 rounded-2xl shadow-lg">
-      <h3 className="text-sm text-white mb-3">{t("dashboard.balances.title")}</h3>
+      <h3 className="text-sm text-white mb-3">
+        {t("dashboard.balances.title")}
+      </h3>
       <div className="space-y-3">
         {loading ? (
           <>
@@ -28,7 +30,15 @@ export default function BalancesCard({ strkp, strk, loading = false }: Props) {
   );
 }
 
-function Row({ label, value, loading }: { label: string; value?: number; loading?: boolean }) {
+function Row({
+  label,
+  value,
+  loading,
+}: {
+  label: string;
+  value?: number;
+  loading?: boolean;
+}) {
   return (
     <div className="flex items-center justify-between bg-[#1E293B] rounded-xl px-4 py-3 hover:bg-[#1F2937] transition-colors">
       <div className="text-sm text-white">{label}</div>

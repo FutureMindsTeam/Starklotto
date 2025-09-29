@@ -204,68 +204,63 @@
     "loadingErrorMessage": "An error occurred while loading draw results."
   },
   "dashboard": {
-  "balances": {
-    "title": "Token Balances",
-    "strkp": "STRKP",
-    "strk": "STRK"
-  },
-  "drawStatus": {
-    "title": "Draw Status",
-    "current": "Current Draw",
-    "active": "Active",
-    "inactive": "Inactive",
-    "remainingBlocks": "Remaining Blocks"
-  },
-  "notifications": {
-    "title": "Notifications",
-    "empty": "You’re all caught up."
-  },
-  "recentActivity": {
-    "title": "Recent Activity",
-    "empty": "No recent activity. Buy your first ticket to get started."
-  },
-  "steps": {
-    "title": "Lottery Process",
-    "step": "Step {{id}}",
-    "mint": {
-      "title": "Mint STRKP",
-      "desc": "Get STRKP tokens to participate",
-      "action": "Go to Mint"
+    "balances": {
+      "title": "Token Balances",
+      "strkp": "STRKP",
+      "strk": "STRK"
     },
-    "buy": {
-      "title": "Buy Tickets",
-      "desc": "Purchase lottery tickets with STRKP",
-      "action": "Buy Now"
-    },
-    "claim": {
-      "title": "Claim Prize",
-      "desc": "Claim your winnings if you win",
-      "action": "Claim"
-    },
-    "convert": {
-      "title": "Convert to STRK",
-      "desc": "Convert prize tokens to STRK",
-      "action": "Convert"
+    "drawStatus": {
+      "title": "Draw Status",
+      "current": "Current Draw",
+      "active": "Active",
+      "inactive": "Inactive",
+      "remainingBlocks": "Remaining Blocks"
     },
     "notifications": {
       "title": "Notifications",
-      "empty": "You’re all caught up.",
-      "pendingPrize": {
-        "title": "Pending Prize to Claim",
-        "desc": "You have {{amount}} STRKP waiting to be claimed",
-        "cta": "Claim Now"
+      "empty": "You’re all caught up."
+    },
+    "recentActivity": {
+      "title": "Recent Activity",
+      "empty": "No recent activity. Buy your first ticket to get started."
+    },
+    "steps": {
+      "title": "Lottery Process",
+      "step": "Step {{id}}",
+      "mint": {
+        "title": "Mint STRKP",
+        "desc": "Get STRKP tokens to participate",
+        "action": "Go to Mint"
       },
-      "newDraw": {
-        "title": "New Draw Starting",
-        "desc": "Draw #{{number}} will begin in {{time}}",
-        "cta": "View Details"
+      "buy": {
+        "title": "Buy Tickets",
+        "desc": "Purchase lottery tickets with STRKP",
+        "action": "Buy Now"
+      },
+      "claim": {
+        "title": "Claim Prize",
+        "desc": "Claim your winnings if you win",
+        "action": "Claim"
+      },
+      "convert": {
+        "title": "Convert to STRK",
+        "desc": "Convert prize tokens to STRK",
+        "action": "Convert"
+      },
+      "notifications": {
+        "title": "Notifications",
+        "empty": "You’re all caught up.",
+        "pendingPrize": {
+          "title": "Pending Prize to Claim",
+          "desc": "You have {{amount}} STRKP waiting to be claimed",
+          "cta": "Claim Now"
+        },
+        "newDraw": {
+          "title": "New Draw Starting",
+          "desc": "Draw #{{number}} will begin in {{time}}",
+          "cta": "View Details"
+        }
       }
     }
   }
-}
-
-
-  
-
-
 }

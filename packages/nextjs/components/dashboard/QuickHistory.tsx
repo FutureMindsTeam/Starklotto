@@ -11,7 +11,9 @@ export default function QuickHistory({ items }: { items: ActivityItem[] }) {
     <Card className="p-6">
       <div className="mb-3 flex items-center gap-2">
         <Ticket className="h-4 w-4 opacity-80" />
-        <h3 className="text-sm opacity-80">{t("dashboard.recentActivity.title")}</h3>
+        <h3 className="text-sm opacity-80">
+          {t("dashboard.recentActivity.title")}
+        </h3>
       </div>
 
       <div className="space-y-3">
@@ -41,8 +43,8 @@ export default function QuickHistory({ items }: { items: ActivityItem[] }) {
                   i.status === "won"
                     ? "text-success"
                     : i.status === "pending"
-                    ? "text-starkYellow"
-                    : "text-error/80"
+                      ? "text-starkYellow"
+                      : "text-error/80"
                 }`}
               >
                 {i.status}

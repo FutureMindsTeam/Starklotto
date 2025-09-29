@@ -15,7 +15,9 @@ export default function NotificationsCard({ list }: Props) {
     <Card className="p-6">
       <div className="mb-3 flex items-center gap-2">
         <Bell className="h-4 w-4 text-white/80" />
-        <h3 className="text-sm font-semibold">{t("dashboard.notifications.title")}</h3>
+        <h3 className="text-sm font-semibold">
+          {t("dashboard.notifications.title")}
+        </h3>
       </div>
 
       <div className="space-y-3">

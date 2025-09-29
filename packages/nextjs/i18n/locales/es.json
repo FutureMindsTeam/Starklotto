@@ -204,64 +204,63 @@
     "loadingErrorMessage": "Ocurrió un error al cargar los resultados del sorteo."
   },
   "dashboard": {
-  "balances": {
-    "title": "Balances de Tokens",
-    "strkp": "STRKP",
-    "strk": "STRK"
-  },
-  "drawStatus": {
-    "title": "Estado del Sorteo",
-    "current": "Sorteo Actual",
-    "active": "Activo",
-    "inactive": "Inactivo",
-    "remainingBlocks": "Bloques Restantes"
-  },
-  "notifications": {
-    "title": "Notificaciones",
-    "empty": "Estás al día."
-  },
-  "recentActivity": {
-    "title": "Actividad Reciente",
-    "empty": "Sin actividad reciente. Compra tu primer boleto para comenzar."
-  },
-  "steps": {
-    "title": "Proceso de la Lotería",
-    "step": "Paso {{id}}",
-    "mint": {
-      "title": "Crear STRKP",
-      "desc": "Obtén tokens STRKP para participar",
-      "action": "Ir a Crear"
+    "balances": {
+      "title": "Balances de Tokens",
+      "strkp": "STRKP",
+      "strk": "STRK"
     },
-    "buy": {
-      "title": "Comprar Boletos",
-      "desc": "Compra boletos de lotería con STRKP",
-      "action": "Comprar Ahora"
-    },
-    "claim": {
-      "title": "Reclamar Premio",
-      "desc": "Reclama tus ganancias si ganas",
-      "action": "Reclamar"
-    },
-    "convert": {
-      "title": "Convertir a STRK",
-      "desc": "Convierte tokens de premio a STRK",
-      "action": "Convertir"
+    "drawStatus": {
+      "title": "Estado del Sorteo",
+      "current": "Sorteo Actual",
+      "active": "Activo",
+      "inactive": "Inactivo",
+      "remainingBlocks": "Bloques Restantes"
     },
     "notifications": {
       "title": "Notificaciones",
-      "empty": "Estás al día.",
-      "pendingPrize": {
-        "title": "Premio pendiente por reclamar",
-        "desc": "Tienes {{amount}} STRKP esperando ser reclamados",
-        "cta": "Reclamar ahora"
+      "empty": "Estás al día."
+    },
+    "recentActivity": {
+      "title": "Actividad Reciente",
+      "empty": "Sin actividad reciente. Compra tu primer boleto para comenzar."
+    },
+    "steps": {
+      "title": "Proceso de la Lotería",
+      "step": "Paso {{id}}",
+      "mint": {
+        "title": "Crear STRKP",
+        "desc": "Obtén tokens STRKP para participar",
+        "action": "Ir a Crear"
       },
-      "newDraw": {
-        "title": "Nuevo sorteo comenzando",
-        "desc": "El sorteo #{{number}} comenzará en {{time}}",
-        "cta": "Ver detalles"
+      "buy": {
+        "title": "Comprar Boletos",
+        "desc": "Compra boletos de lotería con STRKP",
+        "action": "Comprar Ahora"
+      },
+      "claim": {
+        "title": "Reclamar Premio",
+        "desc": "Reclama tus ganancias si ganas",
+        "action": "Reclamar"
+      },
+      "convert": {
+        "title": "Convertir a STRK",
+        "desc": "Convierte tokens de premio a STRK",
+        "action": "Convertir"
+      },
+      "notifications": {
+        "title": "Notificaciones",
+        "empty": "Estás al día.",
+        "pendingPrize": {
+          "title": "Premio pendiente por reclamar",
+          "desc": "Tienes {{amount}} STRKP esperando ser reclamados",
+          "cta": "Reclamar ahora"
+        },
+        "newDraw": {
+          "title": "Nuevo sorteo comenzando",
+          "desc": "El sorteo #{{number}} comenzará en {{time}}",
+          "cta": "Ver detalles"
+        }
       }
     }
   }
-}
-
 }

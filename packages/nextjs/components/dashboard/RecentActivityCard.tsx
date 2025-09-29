@@ -5,14 +5,20 @@ import type { ActivityItem } from "~~/lib/mocks/dashboard";
 import { Stagger, Item } from "~~/components/ui/motion";
 import { useTranslation } from "react-i18next";
 
-export default function RecentActivityCard({ items }: { items: ActivityItem[] }) {
+export default function RecentActivityCard({
+  items,
+}: {
+  items: ActivityItem[];
+}) {
   const { t } = useTranslation();
 
   return (
     <Card className="p-6">
       <div className="mb-3 flex items-center gap-2">
         <Ticket className="h-4 w-4 text-white/80" />
-        <h3 className="text-sm font-semibold">{t("dashboard.recentActivity.title")}</h3>
+        <h3 className="text-sm font-semibold">
+          {t("dashboard.recentActivity.title")}
+        </h3>
       </div>
 
       <Stagger>
@@ -43,8 +49,8 @@ export default function RecentActivityCard({ items }: { items: ActivityItem[] })
                       i.status === "won"
                         ? "text-success"
                         : i.status === "pending"
-                        ? "text-starkYellow"
-                        : "text-error/80"
+                          ? "text-starkYellow"
+                          : "text-error/80"
                     }`}
                   >
                     {i.status}
