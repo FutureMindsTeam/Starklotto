@@ -6,6 +6,8 @@ import { HeroSection, PrizeDistributionSection } from "~~/components/sections";
 import { useAccount } from "@starknet-react/core";
 import { useRouter } from "next/navigation";
 import { LastDrawResults } from "~~/components/LastDrawResults";
+import { useDrawInfo } from "~~/hooks/scaffold-stark/useDrawInfo";
+import { useCurrentDrawId } from "~~/hooks/scaffold-stark/useCurrentDrawId";
 
 export default function DappHome() {
   const navigate = useRouter();
@@ -19,6 +21,19 @@ export default function DappHome() {
   const [showTicketSelector, setShowTicketSelector] = useState(false);
   const [selectedNumbers, setSelectedNumbers] = useState<number[]>([]);
 
+  // Obtener el ID del draw actual del contrato
+  const { currentDrawId } = useCurrentDrawId();
+  
+  // Obtener información del draw actual usando bloques
+  const {
+    jackpotFormatted,
+    timeRemainingFromBlocks,
+    blocksRemaining,
+    currentBlock,
+    isDrawActiveBlocks,
+  } = useDrawInfo({ drawId: currentDrawId });
+
+  // Fallback para jackpot si no hay datos del contrato
   const jackpot = 250295;
   const targetDate = new Date();
   targetDate.setDate(targetDate.getDate() + 1);
@@ -48,6 +63,11 @@ export default function DappHome() {
         selectedNumbers={selectedNumbers}
         onSelectNumbers={handleSelectNumbers}
         onPurchase={handlePurchase}
+        // Nuevos props para el sistema basado en bloques
+        blocksRemaining={blocksRemaining}
+        currentBlock={currentBlock}
+        timeRemainingFromBlocks={timeRemainingFromBlocks}
+        useBlockBasedCountdown={true}
       />
 
       <div className="container mx-auto px-4 relative z-20">
