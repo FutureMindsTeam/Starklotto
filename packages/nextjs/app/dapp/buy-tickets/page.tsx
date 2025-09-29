@@ -411,7 +411,7 @@ export default function BuyTicketsPage() {
 
                 {/* Countdown - Nuevo componente basado en bloques */}
                 <div className="mt-4">
-                  <BlockBasedCountdownTimer 
+                  <BlockBasedCountdownTimer
                     blocksRemaining={blocksRemaining}
                     currentBlock={currentBlock}
                     timeRemaining={countdownFromBlocks}
