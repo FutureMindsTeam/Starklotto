@@ -1,19 +1,23 @@
+"use client";
 import Card from "./Card";
 import { Ticket } from "lucide-react";
 import type { ActivityItem } from "~~/lib/mocks/dashboard";
+import { useTranslation } from "react-i18next";
 
 export default function QuickHistory({ items }: { items: ActivityItem[] }) {
+  const { t } = useTranslation();
+
   return (
     <Card className="p-6">
       <div className="mb-3 flex items-center gap-2">
         <Ticket className="h-4 w-4 opacity-80" />
-        <h3 className="text-sm opacity-80">Recent Activity</h3>
+        <h3 className="text-sm opacity-80">{t("dashboard.recentActivity.title")}</h3>
       </div>
 
       <div className="space-y-3">
         {items.length === 0 ? (
           <div className="rounded-xl border border-white/5 bg-base-300/20 p-4 text-sm opacity-80">
-            No recent activity. Buy your first ticket to get started.
+            {t("dashboard.recentActivity.empty")}
           </div>
         ) : (
           items.map((i) => (
@@ -37,8 +41,8 @@ export default function QuickHistory({ items }: { items: ActivityItem[] }) {
                   i.status === "won"
                     ? "text-success"
                     : i.status === "pending"
-                      ? "text-starkYellow"
-                      : "text-error/80"
+                    ? "text-starkYellow"
+                    : "text-error/80"
                 }`}
               >
                 {i.status}

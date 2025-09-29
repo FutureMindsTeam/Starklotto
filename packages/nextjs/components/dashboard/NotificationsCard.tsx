@@ -1,25 +1,27 @@
 "use client";
-
 import Card from "~~/components/dashboard/Card";
 import { Bell, Gift, Timer } from "lucide-react";
 import Link from "next/link";
 import type { NotificationItem } from "~~/lib/mocks/dashboard";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 type Props = { list: NotificationItem[] };
 
 export default function NotificationsCard({ list }: Props) {
+  const { t } = useTranslation();
+
   return (
     <Card className="p-6">
       <div className="mb-3 flex items-center gap-2">
         <Bell className="h-4 w-4 text-white/80" />
-        <h3 className="text-sm font-semibold">Notifications</h3>
+        <h3 className="text-sm font-semibold">{t("dashboard.notifications.title")}</h3>
       </div>
 
       <div className="space-y-3">
         {list.length === 0 ? (
           <div className="rounded-xl border border-white/5 bg-[#1E293B] p-4 text-sm text-white/80">
-            You’re all caught up.
+            {t("dashboard.notifications.empty")}
           </div>
         ) : (
           list.map((n) => (

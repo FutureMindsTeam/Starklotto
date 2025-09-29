@@ -198,5 +198,52 @@
     "apiErrorMessage": "O serviço de loteria está enfrentando problemas. Por favor, tente novamente mais tarde.",
     "unexpectedErrorMessage": "Ocorreu um erro inesperado.",
     "loadingErrorMessage": "Ocorreu um erro ao carregar os resultados do sorteio."
+  },
+  "dashboard": {
+  "balances": {
+    "title": "Saldos de Tokens",
+    "strkp": "STRKP",
+    "strk": "STRK"
+  },
+  "drawStatus": {
+    "title": "Status do Sorteio",
+    "current": "Sorteio Atual",
+    "active": "Ativo",
+    "inactive": "Inativo",
+    "remainingBlocks": "Blocos Restantes"
+  },
+  "notifications": {
+    "title": "Notificações",
+    "empty": "Você está em dia."
+  },
+  "recentActivity": {
+    "title": "Atividade Recente",
+    "empty": "Nenhuma atividade recente. Compre seu primeiro bilhete para começar."
+  },
+  "steps": {
+    "title": "Processo da Loteria",
+    "step": "Etapa {{id}}",
+    "mint": {
+      "title": "Criar STRKP",
+      "desc": "Obtenha tokens STRKP para participar",
+      "action": "Ir para Criar"
+    },
+    "buy": {
+      "title": "Comprar Bilhetes",
+      "desc": "Compre bilhetes de loteria com STRKP",
+      "action": "Comprar Agora"
+    },
+    "claim": {
+      "title": "Reivindicar Prêmio",
+      "desc": "Reivindique seus ganhos se ganhar",
+      "action": "Reivindicar"
+    },
+    "convert": {
+      "title": "Converter para STRK",
+      "desc": "Converter tokens de prêmio em STRK",
+      "action": "Converter"
+    }
   }
+}
+
 }
