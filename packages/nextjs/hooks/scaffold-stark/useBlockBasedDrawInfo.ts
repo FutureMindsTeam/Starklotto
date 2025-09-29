@@ -58,7 +58,7 @@ export function useBlockBasedDrawInfo({ drawId }: UseBlockBasedDrawInfoProps) {
     const updateCurrentBlock = () => {
       // En Starknet, los bloques se generan aproximadamente cada 10-15 segundos
       // Para esta simulación, incrementamos el bloque cada 12 segundos
-      setCurrentBlock(prev => prev + 1);
+      setCurrentBlock((prev) => prev + 1);
     };
 
     // Inicializar con un bloque base simulado
@@ -114,7 +114,9 @@ export function useBlockBasedDrawInfo({ drawId }: UseBlockBasedDrawInfoProps) {
     currentBlock,
 
     // Tiempo estimado basado en bloques
-    timeRemaining: convertBlocksToTime(blocksRemaining ? Number(blocksRemaining) : 0),
+    timeRemaining: convertBlocksToTime(
+      blocksRemaining ? Number(blocksRemaining) : 0,
+    ),
 
     // Funciones de refetch
     refetchBlocksRemaining,

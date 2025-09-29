@@ -9,9 +9,14 @@ import { useEffect, useState } from "react";
  */
 export function useCurrentBlock() {
   const [currentBlockNumber, setCurrentBlockNumber] = useState<number>(0);
-  
+
   // Obtener el bloque más reciente
-  const { data: block, isLoading, error, refetch } = useBlock({
+  const {
+    data: block,
+    isLoading,
+    error,
+    refetch,
+  } = useBlock({
     blockIdentifier: "latest",
     refetchInterval: 12000, // Refetch cada 12 segundos (tiempo promedio de bloque)
   });

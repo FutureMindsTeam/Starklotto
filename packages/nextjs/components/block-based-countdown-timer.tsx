@@ -13,22 +13,27 @@ interface BlockBasedCountdownTimerProps {
   };
 }
 
-export function BlockBasedCountdownTimer({ 
-  blocksRemaining, 
-  currentBlock, 
-  timeRemaining 
+export function BlockBasedCountdownTimer({
+  blocksRemaining,
+  currentBlock,
+  timeRemaining,
 }: BlockBasedCountdownTimerProps) {
   const { t } = useTranslation();
-  
-  // Valores por defecto para evitar valores undefined
-  const safeTimeRemaining = useMemo(() => ({
-    days: timeRemaining?.days || "00",
-    hours: timeRemaining?.hours || "00", 
-    minutes: timeRemaining?.minutes || "00",
-    seconds: timeRemaining?.seconds || "00"
-  }), [timeRemaining]);
 
-  const [animatedSeconds, setAnimatedSeconds] = useState(safeTimeRemaining.seconds);
+  // Valores por defecto para evitar valores undefined
+  const safeTimeRemaining = useMemo(
+    () => ({
+      days: timeRemaining?.days || "00",
+      hours: timeRemaining?.hours || "00",
+      minutes: timeRemaining?.minutes || "00",
+      seconds: timeRemaining?.seconds || "00",
+    }),
+    [timeRemaining],
+  );
+
+  const [animatedSeconds, setAnimatedSeconds] = useState(
+    safeTimeRemaining.seconds,
+  );
 
   // Animar el cambio de segundos
   useEffect(() => {
@@ -40,7 +45,7 @@ export function BlockBasedCountdownTimer({
     console.log("BlockBasedCountdownTimer props:", {
       blocksRemaining,
       currentBlock,
-      timeRemaining: safeTimeRemaining
+      timeRemaining: safeTimeRemaining,
     });
   }, [blocksRemaining, currentBlock, safeTimeRemaining]);
 
@@ -49,8 +54,14 @@ export function BlockBasedCountdownTimer({
       {/* Countdown principal */}
       <div className="grid grid-cols-4 gap-4 text-center">
         <TimeUnit value={safeTimeRemaining.days} label={t("countdown.days")} />
-        <TimeUnit value={safeTimeRemaining.hours} label={t("countdown.hours")} />
-        <TimeUnit value={safeTimeRemaining.minutes} label={t("countdown.minutes")} />
+        <TimeUnit
+          value={safeTimeRemaining.hours}
+          label={t("countdown.hours")}
+        />
+        <TimeUnit
+          value={safeTimeRemaining.minutes}
+          label={t("countdown.minutes")}
+        />
         <TimeUnit value={animatedSeconds} label={t("countdown.seconds")} />
       </div>
 
@@ -60,9 +71,11 @@ export function BlockBasedCountdownTimer({
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
-            <span className="text-gray-300 text-sm">{t("countdown.blocksRemaining")}</span>
+            <span className="text-gray-300 text-sm">
+              {t("countdown.blocksRemaining")}
+            </span>
           </div>
-          <motion.span 
+          <motion.span
             key={blocksRemaining}
             initial={{ scale: 1.1, color: "#a855f7" }}
             animate={{ scale: 1, color: "#e5e7eb" }}
@@ -76,9 +89,11 @@ export function BlockBasedCountdownTimer({
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-            <span className="text-gray-300 text-sm">{t("countdown.currentBlock")}</span>
+            <span className="text-gray-300 text-sm">
+              {t("countdown.currentBlock")}
+            </span>
           </div>
-          <motion.span 
+          <motion.span
             key={currentBlock}
             initial={{ scale: 1.05, color: "#4ade80" }}
             animate={{ scale: 1, color: "#e5e7eb" }}

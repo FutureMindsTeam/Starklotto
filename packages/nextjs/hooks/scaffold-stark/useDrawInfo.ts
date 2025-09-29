@@ -79,7 +79,6 @@ export function useDrawInfo({ drawId }: UseDrawInfoProps) {
     enabled: !!drawId,
   });
 
-
   // Formatear el monto del jackpot
   const formatJackpot = (amount: bigint) => {
     const base = 10n ** 18n; // Asumiendo 18 decimales para USDC
@@ -158,9 +157,11 @@ export function useDrawInfo({ drawId }: UseDrawInfoProps) {
 
     // Tiempo restante (legacy)
     timeRemaining: calculateTimeRemaining(),
-    
+
     // Tiempo restante basado en bloques (nuevo)
-    timeRemainingFromBlocks: convertBlocksToTime(blocksRemaining ? Number(blocksRemaining) : 0),
+    timeRemainingFromBlocks: convertBlocksToTime(
+      blocksRemaining ? Number(blocksRemaining) : 0,
+    ),
 
     // Funciones de refetch
     refetchDrawStatus,
