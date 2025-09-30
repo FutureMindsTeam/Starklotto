@@ -7,7 +7,7 @@ import DrawStatusCard from "~~/components/dashboard/dashboard/DrawStatusCard";
 import RecentActivityCard from "~~/components/dashboard/dashboard/RecentActivityCard";
 import NotificationsCard from "~~/components/dashboard/dashboard/NotificationsCard";
 import Skeleton from "~~/components/dashboard/dashboard/Skeleton";
-import TotalPool from "~~/components/dashboard/pool/page"; 
+import TotalPool from "~~/components/dashboard/pool/page";
 
 import { fetchDashboardMock, type DashboardMock } from "~~/lib/mocks/dashboard";
 
@@ -37,7 +37,6 @@ export default function DashboardPage() {
 
   return (
     <div className="container mx-auto grid gap-4 p-4 lg:grid-cols-3">
-      
       <div className="lg:col-span-3">
         <TotalPool />
       </div>

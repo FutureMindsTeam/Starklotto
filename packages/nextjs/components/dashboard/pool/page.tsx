@@ -29,12 +29,12 @@ export default function TotalPool() {
 
       const days = Math.floor(distance / (1000 * 60 * 60 * 24));
       const hours = Math.floor(
-        (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+        (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
       );
       const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
 
       setRemainingTime(
-        `${days}${t("dashboard.pool.days")} ${hours}${t("dashboard.pool.hours")} ${minutes}${t("dashboard.pool.minutes")}`
+        `${days}${t("dashboard.pool.days")} ${hours}${t("dashboard.pool.hours")} ${minutes}${t("dashboard.pool.minutes")}`,
       );
     }, 1000);
 
