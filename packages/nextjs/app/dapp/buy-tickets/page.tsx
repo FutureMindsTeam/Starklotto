@@ -13,11 +13,13 @@ import { useTranslation } from "react-i18next";
 import TicketControls from "~~/components/buy-tickets/TicketControls";
 import TicketSelector from "~~/components/buy-tickets/TicketSelector";
 import PurchaseSummary from "~~/components/buy-tickets/PurchaseSummary";
+import { BlockBasedCountdownTimer } from "~~/components/block-based-countdown-timer";
 // Importar el hook para obtener el precio del ticket
 import { useTicketPrice } from "~~/hooks/scaffold-stark/useTicketPrice";
 import { useDeployedContractInfo } from "~~/hooks/scaffold-stark/useDeployedContractInfo";
 import { useBuyTickets } from "~~/hooks/scaffold-stark/useBuyTickets";
 import { useDrawInfo } from "~~/hooks/scaffold-stark/useDrawInfo";
+import { useCurrentDrawId } from "~~/hooks/scaffold-stark/useCurrentDrawId";
 
 export default function BuyTicketsPage() {
   const { t } = useTranslation();
@@ -40,7 +42,8 @@ export default function BuyTicketsPage() {
       | null
     >
   >({});
-  const drawId = 1;
+  // Obtener el ID del draw actual del contrato
+  const { currentDrawId } = useCurrentDrawId();
 
   // Usar hooks personalizados para la integración
   const {
@@ -53,14 +56,19 @@ export default function BuyTicketsPage() {
     isDrawActive,
     contractsReady,
     refetchBalance,
-  } = useBuyTickets({ drawId });
+  } = useBuyTickets({ drawId: currentDrawId });
 
   // Información del draw actual
   const {
     jackpotFormatted: jackpotAmount,
     timeRemaining: countdown,
+    timeRemainingFromBlocks: countdownFromBlocks,
+    blocksRemaining,
+    currentBlock,
+    isDrawActiveBlocks,
     refetchDrawStatus,
-  } = useDrawInfo({ drawId });
+    refetchDrawActiveBlocks,
+  } = useDrawInfo({ drawId: currentDrawId });
 
   const {
     priceWei,
@@ -401,25 +409,13 @@ export default function BuyTicketsPage() {
                   {jackpotAmount}
                 </motion.p>
 
-                {/* Countdown */}
-                <div className="flex justify-between mt-4">
-                  {Object.entries(countdown).map(([key, value], index) => (
-                    <motion.div
-                      key={key}
-                      className="text-center"
-                      custom={index}
-                      variants={countdownItemVariants}
-                      initial="hidden"
-                      animate="visible"
-                    >
-                      <p className="text-purple-400 text-2xl font-bold">
-                        {value}
-                      </p>
-                      <p className="text-gray-400 text-sm capitalize">
-                        {t(`buyTickets.countdown.${key}`)}
-                      </p>
-                    </motion.div>
-                  ))}
+                {/* Countdown - Nuevo componente basado en bloques */}
+                <div className="mt-4">
+                  <BlockBasedCountdownTimer
+                    blocksRemaining={blocksRemaining}
+                    currentBlock={currentBlock}
+                    timeRemaining={countdownFromBlocks}
+                  />
                 </div>
               </div>
 

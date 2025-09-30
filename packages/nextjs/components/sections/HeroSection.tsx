@@ -7,6 +7,7 @@ import { Button } from "~~/components/ui/button";
 import { SecurityBadge } from "~~/components/security-badge";
 import { GlowingButton } from "~~/components/glowing-button";
 import { CountdownTimer } from "~~/components/countdown-timer";
+import { BlockBasedCountdownTimer } from "~~/components/block-based-countdown-timer";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 
@@ -21,6 +22,16 @@ interface HeroSectionProps {
   selectedNumbers?: number[];
   onSelectNumbers?: (numbers: number[]) => void;
   onPurchase?: (quantity: number, totalPrice: number) => void;
+  // Nuevos props para bloques
+  blocksRemaining?: number;
+  currentBlock?: number;
+  timeRemainingFromBlocks?: {
+    days: string;
+    hours: string;
+    minutes: string;
+    seconds: string;
+  };
+  useBlockBasedCountdown?: boolean;
 }
 
 export function HeroSection({
@@ -30,6 +41,10 @@ export function HeroSection({
   targetDate,
   onBuyTicket,
   onToggleSecurityInfo,
+  blocksRemaining = 0,
+  currentBlock = 0,
+  timeRemainingFromBlocks,
+  useBlockBasedCountdown = false,
 }: HeroSectionProps) {
   const router = useRouter();
   const { t } = useTranslation();
@@ -58,7 +73,15 @@ export function HeroSection({
             ${jackpot.toLocaleString()} USDC
           </p>
 
-          <CountdownTimer targetDate={targetDate} />
+          {useBlockBasedCountdown && timeRemainingFromBlocks ? (
+            <BlockBasedCountdownTimer
+              blocksRemaining={blocksRemaining}
+              currentBlock={currentBlock}
+              timeRemaining={timeRemainingFromBlocks}
+            />
+          ) : (
+            <CountdownTimer targetDate={targetDate} />
+          )}
 
           <div className="mt-8">
             <GlowingButton

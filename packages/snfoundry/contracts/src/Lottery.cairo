@@ -119,6 +119,9 @@ pub trait ILottery<TContractState> {
     // Dynamic address getters
     fn GetStarkPlayContractAddress(self: @TContractState) -> ContractAddress;
     fn GetStarkPlayVaultContractAddress(self: @TContractState) -> ContractAddress;
+    
+    // Get current draw ID
+    fn GetCurrentDrawId(self: @TContractState) -> u64;
     //=======================================================================================
 }
 
@@ -966,6 +969,10 @@ pub mod Lottery {
 
         fn GetStarkPlayVaultContractAddress(self: @ContractState) -> ContractAddress {
             self.strkPlayVaultContractAddress.read()
+        }
+
+        fn GetCurrentDrawId(self: @ContractState) -> u64 {
+            self.currentDrawId.read()
         }
     }
 

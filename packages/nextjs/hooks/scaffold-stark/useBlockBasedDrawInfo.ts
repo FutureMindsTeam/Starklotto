@@ -2,26 +2,16 @@
 
 import { useScaffoldReadContract } from "./useScaffoldReadContract";
 import { LOTT_CONTRACT_NAME } from "~~/utils/Constants";
-import { useCurrentBlock } from "./useCurrentBlock";
+import { useEffect, useState } from "react";
 
-export interface UseDrawInfoProps {
+export interface UseBlockBasedDrawInfoProps {
   drawId: number;
 }
 
-export function useDrawInfo({ drawId }: UseDrawInfoProps) {
-  // Obtener el bloque actual usando Starknet React
-  const { currentBlock } = useCurrentBlock();
+export function useBlockBasedDrawInfo({ drawId }: UseBlockBasedDrawInfoProps) {
+  const [currentBlock, setCurrentBlock] = useState<number>(0);
 
-  // Leer estado del draw basado en bloques (nuevo)
-  const { data: isDrawActiveBlocks, refetch: refetchDrawActiveBlocks } =
-    useScaffoldReadContract({
-      contractName: LOTT_CONTRACT_NAME as "Lottery",
-      functionName: "IsDrawActive",
-      args: [drawId],
-      enabled: !!drawId,
-    });
-
-  // Leer bloques restantes (nuevo)
+  // Leer bloques restantes del contrato
   const { data: blocksRemaining, refetch: refetchBlocksRemaining } =
     useScaffoldReadContract({
       contractName: LOTT_CONTRACT_NAME as "Lottery",
@@ -30,11 +20,11 @@ export function useDrawInfo({ drawId }: UseDrawInfoProps) {
       enabled: !!drawId,
     });
 
-  // Leer estado del draw (legacy para compatibilidad)
-  const { data: isDrawActive, refetch: refetchDrawStatus } =
+  // Leer si el draw está activo basado en bloques
+  const { data: isDrawActive, refetch: refetchDrawActive } =
     useScaffoldReadContract({
       contractName: LOTT_CONTRACT_NAME as "Lottery",
-      functionName: "GetDrawStatus",
+      functionName: "IsDrawActive",
       args: [drawId],
       enabled: !!drawId,
     });
@@ -47,7 +37,7 @@ export function useDrawInfo({ drawId }: UseDrawInfoProps) {
     enabled: !!drawId,
   });
 
-  // Leer bloque de inicio del draw (nuevo)
+  // Leer bloque de inicio del draw
   const { data: startBlock } = useScaffoldReadContract({
     contractName: LOTT_CONTRACT_NAME as "Lottery",
     functionName: "GetJackpotEntryStartBlock",
@@ -55,7 +45,7 @@ export function useDrawInfo({ drawId }: UseDrawInfoProps) {
     enabled: !!drawId,
   });
 
-  // Leer bloque de fin del draw (nuevo)
+  // Leer bloque de fin del draw
   const { data: endBlock } = useScaffoldReadContract({
     contractName: LOTT_CONTRACT_NAME as "Lottery",
     functionName: "GetJackpotEntryEndBlock",
@@ -63,25 +53,24 @@ export function useDrawInfo({ drawId }: UseDrawInfoProps) {
     enabled: !!drawId,
   });
 
-  // Leer tiempo de inicio del draw (legacy)
-  const { data: startTime } = useScaffoldReadContract({
-    contractName: LOTT_CONTRACT_NAME as "Lottery",
-    functionName: "GetJackpotEntryStartTime",
-    args: [drawId],
-    enabled: !!drawId,
-  });
+  // Simular obtención del bloque actual (en una implementación real, esto vendría de Starknet)
+  useEffect(() => {
+    const updateCurrentBlock = () => {
+      // En Starknet, los bloques se generan aproximadamente cada 10-15 segundos
+      // Para esta simulación, incrementamos el bloque cada 12 segundos
+      setCurrentBlock((prev) => prev + 1);
+    };
 
-  // Leer tiempo de fin del draw (legacy)
-  const { data: endTime } = useScaffoldReadContract({
-    contractName: LOTT_CONTRACT_NAME as "Lottery",
-    functionName: "GetJackpotEntryEndTime",
-    args: [drawId],
-    enabled: !!drawId,
-  });
+    // Inicializar con un bloque base simulado
+    setCurrentBlock(1000000); // Bloque base simulado
+
+    const interval = setInterval(updateCurrentBlock, 12000); // 12 segundos por bloque
+    return () => clearInterval(interval);
+  }, []);
 
   // Formatear el monto del jackpot
   const formatJackpot = (amount: bigint) => {
-    const base = 10n ** 18n; // Asumiendo 18 decimales para USDC
+    const base = 10n ** 18n; // Asumiendo 18 decimales para STRKP
     const intPart = amount / base;
     const fracPart = amount % base;
     let fracStr = fracPart.toString().padStart(18, "0");
@@ -112,60 +101,25 @@ export function useDrawInfo({ drawId }: UseDrawInfoProps) {
     };
   };
 
-  // Calcular tiempo restante (legacy - basado en timestamps)
-  const calculateTimeRemaining = () => {
-    if (!endTime)
-      return { days: "00", hours: "00", minutes: "00", seconds: "00" };
-
-    const now = Math.floor(Date.now() / 1000); // timestamp actual en segundos
-    const endTimestamp = Number(endTime);
-    const diff = endTimestamp - now;
-
-    if (diff <= 0) {
-      return { days: "00", hours: "00", minutes: "00", seconds: "00" };
-    }
-
-    const days = Math.floor(diff / 86400);
-    const hours = Math.floor((diff % 86400) / 3600);
-    const minutes = Math.floor((diff % 3600) / 60);
-    const seconds = diff % 60;
-
-    return {
-      days: days.toString().padStart(2, "0"),
-      hours: hours.toString().padStart(2, "0"),
-      minutes: minutes.toString().padStart(2, "0"),
-      seconds: seconds.toString().padStart(2, "0"),
-    };
-  };
-
   return {
-    // Datos del draw (legacy para compatibilidad)
+    // Datos del draw basados en bloques
     isDrawActive: !!isDrawActive,
+    blocksRemaining: blocksRemaining ? Number(blocksRemaining) : 0,
     jackpotAmount: jackpotAmount ? BigInt(jackpotAmount.toString()) : 0n,
     jackpotFormatted: jackpotAmount
       ? `${formatJackpot(BigInt(jackpotAmount.toString()))} $TRKP`
       : "0 $TRKP",
-    startTime: startTime ? Number(startTime) : 0,
-    endTime: endTime ? Number(endTime) : 0,
-
-    // Nuevos datos basados en bloques
-    isDrawActiveBlocks: !!isDrawActiveBlocks,
-    blocksRemaining: blocksRemaining ? Number(blocksRemaining) : 0,
     startBlock: startBlock ? Number(startBlock) : 0,
     endBlock: endBlock ? Number(endBlock) : 0,
     currentBlock,
 
-    // Tiempo restante (legacy)
-    timeRemaining: calculateTimeRemaining(),
-
-    // Tiempo restante basado en bloques (nuevo)
-    timeRemainingFromBlocks: convertBlocksToTime(
+    // Tiempo estimado basado en bloques
+    timeRemaining: convertBlocksToTime(
       blocksRemaining ? Number(blocksRemaining) : 0,
     ),
 
     // Funciones de refetch
-    refetchDrawStatus,
-    refetchDrawActiveBlocks,
     refetchBlocksRemaining,
+    refetchDrawActive,
   };
 }
