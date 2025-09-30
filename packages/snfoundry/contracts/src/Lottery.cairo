@@ -29,14 +29,14 @@ struct Draw {
     winningNumber5: u16,
     //map of ticketId to ticket
     isActive: bool,
-    //start time of the draw,timestamp unix (legacy, retained for compatibility)
+    //start time of the draw,timestamp unix (legacy, retained for compatibility) (legacy, retained for compatibility)
     startTime: u64,
-    //end time of the draw,timestamp unix (legacy, retained for compatibility)
+    //end time of the draw,timestamp unix (legacy, retained for compatibility) (legacy, retained for compatibility)
     endTime: u64,
     //start block of the draw (primary scheduling reference)
     startBlock: u64,
     //end block of the draw (primary scheduling reference)
-    endBlock: u64,
+    endBlock: u64
 }
 
 #[derive(Drop, Copy, Serde, starknet::Store)]
@@ -77,7 +77,6 @@ pub trait ILottery<TContractState> {
     fn SetDrawInactive(ref self: TContractState, drawId: u64);
     fn SetTicketPrice(ref self: TContractState, price: u256);
     fn EmergencyResetReentrancyGuard(ref self: TContractState);
-    
     //=======================================================================================
     //get functions
     fn GetTicketPrice(self: @TContractState) -> u256;
@@ -141,7 +140,7 @@ pub mod Lottery {
     };
     use starknet::{
         ContractAddress, get_block_timestamp, get_caller_address,
-        get_contract_address, get_block_number,
+        get_contract_address, get_block_number
     };
     use super::{Draw, ILottery, JackpotEntry, Ticket};
 
@@ -165,6 +164,10 @@ pub mod Lottery {
     // Constantes para el cálculo del jackpot
     const JACKPOT_PERCENTAGE: u256 = 55; // 55% del monto de compra va al jackpot
     const PERCENTAGE_DENOMINATOR: u256 = 100; // Para calcular porcentajes
+    
+    // reentrancy guard component by openzeppelin
+    component!(path: ReentrancyGuardComponent, storage: reentrancy_guard, event: ReentrancyGuardEvent);
+
 
     //ownable component by openzeppelin
     #[abi(embed_v0)]
@@ -282,6 +285,7 @@ pub mod Lottery {
         pub caller: ContractAddress,
         pub timestamp: u64,
     }
+    
 
     #[derive(Drop, starknet::Event)]
     pub struct DrawClosed {
@@ -335,7 +339,7 @@ pub mod Lottery {
         // Validate that addresses are not zero address
         assert(strkPlayContractAddress != 0.try_into().unwrap(), 'Invalid STRKP contract');
         assert(
-            strkPlayVaultContractAddress != 0.try_into().unwrap(), 'Invalid Vault contract',
+            strkPlayVaultContractAddress != 0.try_into().unwrap(), 'Invalid Vault contract'
         );
 
         self.ownable.initializer(owner);
@@ -411,6 +415,7 @@ pub mod Lottery {
                 .transfer_from(user, vault_address, total_price);
             assert(transfer_success, 'Transfer failed');
 
+
             // --- End corrected payment logic ---
 
             // Calculate 55% of total price to add to jackpot
@@ -434,6 +439,8 @@ pub mod Lottery {
                     timestamp: current_timestamp,
                 },
             );
+
+            
 
             // Emit bulk purchase event for auditing
             self.emit(
@@ -673,7 +680,7 @@ pub mod Lottery {
                 startTime: current_timestamp,
                 endTime: 0,
                 startBlock: current_block,
-                endBlock: end_block,
+                endBlock: end_block
             };
             self.draws.entry(drawId).write(newDraw);
             self.currentDrawId.write(drawId);
@@ -684,7 +691,7 @@ pub mod Lottery {
                         drawId,
                         previousAmount,
                         newAmount: accumulatedPrize,
-                        timestamp: current_timestamp,
+                        timestamp: current_timestamp
                     },
                 );
         }
@@ -720,6 +727,8 @@ pub mod Lottery {
             self.draws.entry(drawId).read().isActive
         }
 
+       
+
         fn GetBlocksRemaining(self: @ContractState, drawId: u64) -> u64 {
             if !self.DrawExists(drawId) {
                 return 0;
@@ -744,6 +753,7 @@ pub mod Lottery {
             let count = self.userTicketCount.entry((player, drawId)).read();
 
             let mut i: u32 = 1;
+            while i != (count + 1) {
             while i != (count + 1) {
                 let ticketId = self.userTicketIds.entry((player, drawId, i)).read();
                 userTicket_ids.append(ticketId);
@@ -940,6 +950,7 @@ pub mod Lottery {
             draw.endTime
         }
 
+
         fn GetJackpotEntryStartBlock(self: @ContractState, drawId: u64) -> u64 {
             let draw = self.draws.entry(drawId).read();
             draw.startBlock
@@ -971,6 +982,7 @@ pub mod Lottery {
             self.strkPlayVaultContractAddress.read()
         }
 
+   
         fn GetCurrentDrawId(self: @ContractState) -> u64 {
             self.currentDrawId.read()
         }
@@ -1117,6 +1129,8 @@ pub mod Lottery {
             }
             current_block >= draw.startBlock && current_block < draw.endBlock
         }
+
+    
     }
 
     //=======================================================================================
@@ -1152,4 +1166,5 @@ pub mod Lottery {
         numbers
     }
    
+  
 }

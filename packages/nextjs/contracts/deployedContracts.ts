@@ -1553,6 +1553,33 @@ const deployedContracts = {
             },
             {
               type: "function",
+              name: "set_treasury_address",
+              inputs: [
+                {
+                  name: "treasury",
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::bool",
+                },
+              ],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "get_treasury_address",
+              inputs: [],
+              outputs: [
+                {
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
               name: "update_total_strk_stored",
               inputs: [
                 {
@@ -1976,6 +2003,28 @@ const deployedContracts = {
         },
         {
           type: "event",
+          name: "contracts::StarkPlayVault::StarkPlayVault::TreasuryFeeTransferred",
+          kind: "struct",
+          members: [
+            {
+              name: "user",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+            {
+              name: "amount",
+              type: "core::integer::u256",
+              kind: "key",
+            },
+            {
+              name: "treasury",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
           name: "contracts::StarkPlayVault::StarkPlayVault::Event",
           kind: "enum",
           variants: [
@@ -2062,6 +2111,11 @@ const deployedContracts = {
             {
               name: "PrizeConversionFeesWithdrawn",
               type: "contracts::StarkPlayVault::StarkPlayVault::PrizeConversionFeesWithdrawn",
+              kind: "nested",
+            },
+            {
+              name: "TreasuryFeeTransferred",
+              type: "contracts::StarkPlayVault::StarkPlayVault::TreasuryFeeTransferred",
               kind: "nested",
             },
             {
@@ -2221,6 +2275,8 @@ const deployedContracts = {
                   type: "core::integer::u64",
                 },
                 {
+                  name: "numbers_array",
+                  type: "core::array::Array::<core::array::Array::<core::integer::u16>>",
                   name: "numbers_array",
                   type: "core::array::Array::<core::array::Array::<core::integer::u16>>",
                 },
@@ -3008,6 +3064,38 @@ const deployedContracts = {
         },
         {
           type: "event",
+          name: "contracts::Lottery::Lottery::BulkTicketPurchase",
+          kind: "struct",
+          members: [
+            {
+              name: "drawId",
+              type: "core::integer::u64",
+              kind: "key",
+            },
+            {
+              name: "player",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+            {
+              name: "quantity",
+              type: "core::integer::u8",
+              kind: "data",
+            },
+            {
+              name: "totalPrice",
+              type: "core::integer::u256",
+              kind: "data",
+            },
+            {
+              name: "timestamp",
+              type: "core::integer::u64",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
           name: "contracts::Lottery::Lottery::DrawCompleted",
           kind: "struct",
           members: [
@@ -3108,20 +3196,33 @@ const deployedContracts = {
           type: "event",
           name: "contracts::Lottery::Lottery::InvalidDrawIdAttempted",
           kind: "struct",
+          name: "contracts::Lottery::Lottery::InvalidDrawIdAttempted",
+          kind: "struct",
           members: [
             {
               name: "caller",
+              name: "caller",
               type: "core::starknet::contract_address::ContractAddress",
+              kind: "data",
               kind: "data",
             },
             {
               name: "attempted_draw_id",
+              name: "attempted_draw_id",
               type: "core::integer::u64",
+              kind: "data",
               kind: "data",
             },
             {
               name: "current_draw_id",
+              name: "current_draw_id",
               type: "core::integer::u64",
+              kind: "data",
+            },
+            {
+              name: "function_name",
+              type: "core::felt252",
+              kind: "data",
               kind: "data",
             },
             {
@@ -3134,9 +3235,13 @@ const deployedContracts = {
         {
           type: "event",
           name: "contracts::Lottery::Lottery::DrawValidationFailed",
+          name: "contracts::Lottery::Lottery::DrawValidationFailed",
           kind: "struct",
           members: [
             {
+              name: "draw_id",
+              type: "core::integer::u64",
+              kind: "data",
               name: "draw_id",
               type: "core::integer::u64",
               kind: "data",
@@ -3195,9 +3300,13 @@ const deployedContracts = {
         {
           type: "event",
           name: "contracts::Lottery::Lottery::Event",
+          name: "contracts::Lottery::Lottery::Event",
           kind: "enum",
           variants: [
             {
+              name: "OwnableEvent",
+              type: "openzeppelin_access::ownable::ownable::OwnableComponent::Event",
+              kind: "flat",
               name: "OwnableEvent",
               type: "openzeppelin_access::ownable::ownable::OwnableComponent::Event",
               kind: "flat",

@@ -266,7 +266,15 @@ export default function BuyTicketsPage() {
   );
   const abi = (deployedLottery?.abi || []) as Abi;
   const contractAddress = deployedLottery?.address;
+  const { data: deployedLottery } = useDeployedContractInfo(
+    LOTT_CONTRACT_NAME as any,
+  );
+  const abi = (deployedLottery?.abi || []) as Abi;
+  const contractAddress = deployedLottery?.address;
 
+  // total on-chain: priceWei * cantidad
+  const totalWei = priceWei * BigInt(ticketCount);
+  const totalFormatted = formatAmount(totalWei, 18);
   // total on-chain: priceWei * cantidad
   const totalWei = priceWei * BigInt(ticketCount);
   const totalFormatted = formatAmount(totalWei, 18);
@@ -277,12 +285,23 @@ export default function BuyTicketsPage() {
       return;
     }
 
+    if (!isDrawActive) {
+      console.error("Draw is not active");
+      return;
+    }
+
     try {
       await buyTickets(selectedNumbers, totalWei);
       // Refrescar balances y estado del draw después de la compra
       await refetchBalance();
       await refetchDrawStatus();
+      await buyTickets(selectedNumbers, totalWei);
+      // Refrescar balances y estado del draw después de la compra
+      await refetchBalance();
+      await refetchDrawStatus();
     } catch (e: any) {
+      console.error("Purchase failed:", e);
+      // El error ya se maneja en el hook
       console.error("Purchase failed:", e);
       // El error ya se maneja en el hook
     }
@@ -498,7 +517,12 @@ export default function BuyTicketsPage() {
               </div>
 
               {/* Purchase Summary (usa precio on-chain) */}
+              {/* Purchase Summary (usa precio on-chain) */}
               <PurchaseSummary
+                unitPriceFormatted={unitPriceFormatted}
+                totalCostFormatted={totalFormatted}
+                isPriceLoading={priceLoading}
+                priceError={priceError?.message ?? null}
                 unitPriceFormatted={unitPriceFormatted}
                 totalCostFormatted={totalFormatted}
                 isPriceLoading={priceLoading}
@@ -506,7 +530,11 @@ export default function BuyTicketsPage() {
                 isLoading={isLoading}
                 txError={buyError}
                 txSuccess={buySuccess}
+                txError={buyError}
+                txSuccess={buySuccess}
                 onPurchase={handlePurchase}
+                isDrawActive={isDrawActive}
+                contractsReady={contractsReady}
                 isDrawActive={isDrawActive}
                 contractsReady={contractsReady}
               />
