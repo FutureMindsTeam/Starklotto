@@ -4001,7 +4001,7 @@ __metadata:
     autoprefixer: ^10.0.1
     blo: ^1.1.1
     clsx: ^2.1.1
-    daisyui: ^4.7.3
+    daisyui: ^5.1.25
     eslint: ^8
     eslint-config-next: 15.2.3
     ethers: ^6.12.0
@@ -7335,16 +7335,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"css-selector-tokenizer@npm:^0.8":
-  version: 0.8.0
-  resolution: "css-selector-tokenizer@npm:0.8.0"
-  dependencies:
-    cssesc: ^3.0.0
-    fastparse: ^1.1.2
-  checksum: 1eb7ca7d2c21ede700a0fab7df4547198431c30ba62663d81a566a8abe6ab7524f627ce6c0bde63f34917e199b73be4081e449bd8faf107d155766204082aa0a
-  languageName: node
-  linkType: hard
-
 "css.escape@npm:^1.5.1":
   version: 1.5.1
   resolution: "css.escape@npm:1.5.1"
@@ -7375,13 +7365,6 @@ __metadata:
   version: 3.1.3
   resolution: "csstype@npm:3.1.3"
   checksum: 8db785cc92d259102725b3c694ec0c823f5619a84741b5c7991b8ad135dfaa66093038a1cc63e03361a6cd28d122be48f2106ae72334e067dd619a51f49eddf7
-  languageName: node
-  linkType: hard
-
-"culori@npm:^3":
-  version: 3.3.0
-  resolution: "culori@npm:3.3.0"
-  checksum: 7091ab572ed49222a25872a0c2c350340b96dac1c3237a7b58a93bfb02d11c64d68c585c32f91985a563b3d52402d16722e33a00087456287df28e3db5d99f13
   languageName: node
   linkType: hard
 
@@ -7478,15 +7461,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"daisyui@npm:^4.7.3":
-  version: 4.12.24
-  resolution: "daisyui@npm:4.12.24"
-  dependencies:
-    css-selector-tokenizer: ^0.8
-    culori: ^3
-    picocolors: ^1
-    postcss-js: ^4
-  checksum: 7c503bb64e64067b7ac58c95c85e3af02294413575127bcfd727fa1a841d956ab4b1e7cec7f4ca5466dd86c2fb96a6642f8f6c4f1e4a059701da908d4bd24d7e
+"daisyui@npm:^5.1.25":
+  version: 5.1.25
+  resolution: "daisyui@npm:5.1.25"
+  checksum: 26213b67c0d766a2a9058782b8e29a0a12d9e273b67f5e77d06f2c04e9e7809d03e303d86d1174e4eff1740aa34a6c1db90ed6410e71b6c4792379d9e169066c
   languageName: node
   linkType: hard
 
@@ -8874,13 +8852,6 @@ __metadata:
   version: 1.0.16
   resolution: "fastest-levenshtein@npm:1.0.16"
   checksum: a78d44285c9e2ae2c25f3ef0f8a73f332c1247b7ea7fb4a191e6bb51aa6ee1ef0dfb3ed113616dcdc7023e18e35a8db41f61c8d88988e877cf510df8edafbc71
-  languageName: node
-  linkType: hard
-
-"fastparse@npm:^1.1.2":
-  version: 1.1.2
-  resolution: "fastparse@npm:1.1.2"
-  checksum: c4d199809dc4e8acafeb786be49481cc9144de296e2d54df4540ccfd868d0df73afc649aba70a748925eb32bbc4208b723d6288adf92382275031a8c7e10c0aa
   languageName: node
   linkType: hard
 
@@ -11812,7 +11783,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"picocolors@npm:^1, picocolors@npm:^1.0.0, picocolors@npm:^1.1.1":
+"picocolors@npm:^1.0.0, picocolors@npm:^1.1.1":
   version: 1.1.1
   resolution: "picocolors@npm:1.1.1"
   checksum: e1cf46bf84886c79055fdfa9dcb3e4711ad259949e3565154b004b260cd356c5d54b31a1437ce9782624bf766272fe6b0154f5f0c744fb7af5d454d2b60db045
@@ -11908,7 +11879,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss-js@npm:^4, postcss-js@npm:^4.0.1":
+"postcss-js@npm:^4.0.1":
   version: 4.0.1
   resolution: "postcss-js@npm:4.0.1"
   dependencies:
@@ -13365,7 +13336,7 @@ __metadata:
     "@next/swc-linux-x64-gnu": ^15.3.1
     "@next/swc-linux-x64-musl": ^15.3.1
     "@tsparticles/path-curves": ^3.8.1
-    daisyui: ^4.7.3
+    daisyui: ^5.1.25
     framer-motion: ^12.23.22
     husky: ^9.0.11
     i18next: ^25.3.0
