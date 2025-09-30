@@ -266,15 +266,8 @@ export default function BuyTicketsPage() {
   );
   const abi = (deployedLottery?.abi || []) as Abi;
   const contractAddress = deployedLottery?.address;
-  const { data: deployedLottery } = useDeployedContractInfo(
-    LOTT_CONTRACT_NAME as any,
-  );
-  const abi = (deployedLottery?.abi || []) as Abi;
-  const contractAddress = deployedLottery?.address;
 
-  // total on-chain: priceWei * cantidad
-  const totalWei = priceWei * BigInt(ticketCount);
-  const totalFormatted = formatAmount(totalWei, 18);
+
   // total on-chain: priceWei * cantidad
   const totalWei = priceWei * BigInt(ticketCount);
   const totalFormatted = formatAmount(totalWei, 18);
@@ -523,18 +516,10 @@ export default function BuyTicketsPage() {
                 totalCostFormatted={totalFormatted}
                 isPriceLoading={priceLoading}
                 priceError={priceError?.message ?? null}
-                unitPriceFormatted={unitPriceFormatted}
-                totalCostFormatted={totalFormatted}
-                isPriceLoading={priceLoading}
-                priceError={priceError?.message ?? null}
                 isLoading={isLoading}
                 txError={buyError}
                 txSuccess={buySuccess}
-                txError={buyError}
-                txSuccess={buySuccess}
                 onPurchase={handlePurchase}
-                isDrawActive={isDrawActive}
-                contractsReady={contractsReady}
                 isDrawActive={isDrawActive}
                 contractsReady={contractsReady}
               />
