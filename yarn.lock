@@ -4011,7 +4011,7 @@ __metadata:
     i18next: ^25.3.0
     i18next-browser-languagedetector: ^8.2.0
     jsdom: ^26.0.0
-    lucide-react: ^0.525.0
+    lucide-react: ^0.544.0
     next: 15.2.4
     next-pwa: ^5.6.0
     next-themes: ^0.2.1
@@ -10704,12 +10704,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lucide-react@npm:^0.525.0":
-  version: 0.525.0
-  resolution: "lucide-react@npm:0.525.0"
+"lucide-react@npm:^0.544.0":
+  version: 0.544.0
+  resolution: "lucide-react@npm:0.544.0"
   peerDependencies:
     react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
-  checksum: eef781bfcfd211dac1ca93d0e7c5830aec1bacef72f4af3994807ac04d2a0fe327aca1a77234daf7f13e06ea47e5585766c927c8e1f2e7dcb982e4dc55aeda5e
+  checksum: d823339cb0d0bd4c038fef6223ffa9d81e337a86d09833e6b6ff54f936fc7a5e2e8e672e8c1fae55e6a835ddcf620f7fe4e1f564b4de31d12ae8895e3ab52ed3
   languageName: node
   linkType: hard
 
