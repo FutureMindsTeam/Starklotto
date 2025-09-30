@@ -267,7 +267,6 @@ export default function BuyTicketsPage() {
   const abi = (deployedLottery?.abi || []) as Abi;
   const contractAddress = deployedLottery?.address;
 
-
   // total on-chain: priceWei * cantidad
   const totalWei = priceWei * BigInt(ticketCount);
   const totalFormatted = formatAmount(totalWei, 18);
