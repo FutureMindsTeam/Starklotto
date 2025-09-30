@@ -4061,7 +4061,7 @@ __metadata:
     "@types/node": ^20
     "@types/prettier": ^2
     "@types/yargs": ^17.0.32
-    dotenv: ^16.3.1
+    dotenv: ^17.2.3
     envfile: ^6.18.0
     globals: ^15.8.0
     prettier: ^2.8.8
@@ -7752,10 +7752,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dotenv@npm:^16.3.1":
-  version: 16.6.1
-  resolution: "dotenv@npm:16.6.1"
-  checksum: e8bd63c9a37f57934f7938a9cf35de698097fadf980cb6edb61d33b3e424ceccfe4d10f37130b904a973b9038627c2646a3365a904b4406514ea94d7f1816b69
+"dotenv@npm:^17.2.3":
+  version: 17.2.3
+  resolution: "dotenv@npm:17.2.3"
+  checksum: fde23eb88649041ec7a0f6a47bbe59cac3c454fc2007cf2e40b9c984aaf0636347218c56cfbbf067034b0a73f530a2698a19b4058695787eb650ec69fe234624
   languageName: node
   linkType: hard
 
