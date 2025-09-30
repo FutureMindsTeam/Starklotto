@@ -52,5 +52,6 @@ export default function DashboardPage() {
         <NotificationsCard list={data.notifications} />
       </div>
     </div>
+    
   );
 }
