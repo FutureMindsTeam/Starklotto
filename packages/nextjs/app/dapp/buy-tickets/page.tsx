@@ -277,12 +277,23 @@ export default function BuyTicketsPage() {
       return;
     }
 
+    if (!isDrawActive) {
+      console.error("Draw is not active");
+      return;
+    }
+
     try {
       await buyTickets(selectedNumbers, totalWei);
       // Refrescar balances y estado del draw después de la compra
       await refetchBalance();
       await refetchDrawStatus();
+      await buyTickets(selectedNumbers, totalWei);
+      // Refrescar balances y estado del draw después de la compra
+      await refetchBalance();
+      await refetchDrawStatus();
     } catch (e: any) {
+      console.error("Purchase failed:", e);
+      // El error ya se maneja en el hook
       console.error("Purchase failed:", e);
       // El error ya se maneja en el hook
     }
@@ -497,6 +508,7 @@ export default function BuyTicketsPage() {
                 })}
               </div>
 
+              {/* Purchase Summary (usa precio on-chain) */}
               {/* Purchase Summary (usa precio on-chain) */}
               <PurchaseSummary
                 unitPriceFormatted={unitPriceFormatted}

@@ -50,12 +50,8 @@ pub mod StarkPlayVault {
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     use openzeppelin_access::ownable::OwnableComponent;
     use openzeppelin_token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
-    use starknet::storage::{
-        StoragePointerReadAccess, StoragePointerWriteAccess,
-    };
-    use starknet::{
-        ContractAddress, get_caller_address, get_contract_address,
-    };
+    use starknet::storage::{StoragePointerReadAccess, StoragePointerWriteAccess};
+    use starknet::{ContractAddress, get_caller_address, get_contract_address};
     use crate::StarkPlayERC20::{
         IBurnableDispatcher, IBurnableDispatcherTrait, IMintableDispatcher,
         IMintableDispatcherTrait, IPrizeTokenDispatcher, IPrizeTokenDispatcherTrait,
@@ -150,9 +146,8 @@ pub mod StarkPlayVault {
         self.feePercentagePrizesConverted.write(300); //3%
         self.feePercentagePrizesConvertedMin.write(10); //0.1%
         self.feePercentagePrizesConvertedMax.write(500); //5%
-
         // Note: During constructor, contract address might not be final
-        // Permission initialization moved to post-deploy function
+    // Permission initialization moved to post-deploy function
     }
 
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -534,10 +529,9 @@ pub mod StarkPlayVault {
             self.accumulatedPrizeConversionFees.read()
         }
 
-            fn convert_to_strk(ref self: ContractState, amount: u256) {
-        convert_to_strk(ref self, amount)
-    }
-
+        fn convert_to_strk(ref self: ContractState, amount: u256) {
+            convert_to_strk(ref self, amount)
+        }
 
 
         // Function to update totalSTRKStored (for testing purposes)

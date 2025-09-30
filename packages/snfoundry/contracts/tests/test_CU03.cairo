@@ -124,7 +124,9 @@ fn setup_mocks_success(strk_play_address: ContractAddress, user: ContractAddress
     setup_mocks_for_buy_ticket(strk_play_address, user, TICKET_PRICE * 10, TICKET_PRICE * 10, true);
 }
 
-fn setup_mocks_for_multiple_tickets(strk_play_address: ContractAddress, user: ContractAddress, quantity: u8) {
+fn setup_mocks_for_multiple_tickets(
+    strk_play_address: ContractAddress, user: ContractAddress, quantity: u8,
+) {
     let total_price = TICKET_PRICE * quantity.into();
     setup_mocks_for_buy_ticket(strk_play_address, user, total_price * 2, total_price * 2, true);
 }
@@ -1628,7 +1630,9 @@ fn test_set_draw_inactive_emits_event_and_updates_status() {
     assert(events.events.len() >= 1, 'Should emit events on close');
 
     // Assert specific DrawClosed event content
-    let expected = Lottery::Event::DrawClosed(Lottery::DrawClosed { drawId: 1, timestamp: 777, caller: OWNER });
+    let expected = Lottery::Event::DrawClosed(
+        Lottery::DrawClosed { drawId: 1, timestamp: 777, caller: OWNER },
+    );
     spy.assert_emitted(@array![(lottery_address, expected)]);
 }
 
