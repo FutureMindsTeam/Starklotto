@@ -215,6 +215,14 @@
       "strkp": "STRKP",
       "strk": "STRK"
     },
+    "pool": {
+      "title": "💰 Prêmio Acumulado",
+      "ended": "Encerrado",
+      "drawIn": "Sorteio em {{time}}",
+      "days": "d",
+      "hours": "h",
+      "minutes": "m"
+    },
     "drawStatus": {
       "title": "Status do Sorteio",
       "current": "Sorteio Atual",

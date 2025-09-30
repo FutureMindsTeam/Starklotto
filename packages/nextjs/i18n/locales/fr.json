@@ -215,6 +215,14 @@
       "strkp": "STRKP",
       "strk": "STRK"
     },
+    "pool": {
+      "title": "💰 Cagnotte Accumulée",
+      "ended": "Terminé",
+      "drawIn": "Tirage dans {{time}}",
+      "days": "j",
+      "hours": "h",
+      "minutes": "m"
+    },
     "drawStatus": {
       "title": "Statut du Tirage",
       "current": "Tirage Actuel",

@@ -1,5 +1,5 @@
 "use client";
-import Card from "~~/components/dashboard/Card";
+import Card from "~~/components/dashboard/dashboard/Card";
 import { Coins, Ticket, Gift, ArrowLeftRight } from "lucide-react";
 import Link from "next/link";
 import { Stagger, Item } from "~~/components/ui/motion";

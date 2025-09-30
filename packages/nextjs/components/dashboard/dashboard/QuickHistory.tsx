@@ -1,5 +1,5 @@
 "use client";
-import Card from "./Card";
+import Card from "./dashboard/Card";
 import { Ticket } from "lucide-react";
 import type { ActivityItem } from "~~/lib/mocks/dashboard";
 import { useTranslation } from "react-i18next";

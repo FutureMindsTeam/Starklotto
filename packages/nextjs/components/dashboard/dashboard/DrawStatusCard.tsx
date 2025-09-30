@@ -1,5 +1,5 @@
 "use client";
-import Card from "~~/components/dashboard/Card";
+import Card from "~~/components/dashboard/dashboard/Card";
 import { Activity, Timer } from "lucide-react";
 import { SlideUp } from "~~/components/ui/motion";
 import { motion } from "framer-motion";
