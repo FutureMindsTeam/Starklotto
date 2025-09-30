@@ -146,9 +146,6 @@ pub mod Lottery {
 
     // ownable component by openzeppelin
     component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
-    
-    // reentrancy guard component by openzeppelin
-    component!(path: ReentrancyGuardComponent, storage: reentrancy_guard, event: ReentrancyGuardEvent);
 
      //=======================================================================================
     //constants
@@ -753,7 +750,6 @@ pub mod Lottery {
             let count = self.userTicketCount.entry((player, drawId)).read();
 
             let mut i: u32 = 1;
-            while i != (count + 1) {
             while i != (count + 1) {
                 let ticketId = self.userTicketIds.entry((player, drawId, i)).read();
                 userTicket_ids.append(ticketId);
