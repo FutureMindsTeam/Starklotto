@@ -7,7 +7,7 @@ const deployedContracts = {
   devnet: {
     StarkPlayERC20: {
       address:
-        "0x5d13cd03092d3d10f368ca276f43eb9c078a3f3bc05742605f808f9ff338b17",
+        "0x720581a88d5aa6c06537dbf9dd6c1beb1046e5d39570d9d76c96b517a2f9649",
       abi: [
         {
           type: "impl",
@@ -1189,7 +1189,7 @@ const deployedContracts = {
     },
     StarkPlayVault: {
       address:
-        "0x4d6978729396da4d2ccc533737f6158da50c57879cac411c7f19372e47893fe",
+        "0x242537d5241a11d92f388f6eacc04b93616a05b9c88bb1a63f5e85e10f45927",
       abi: [
         {
           type: "impl",
@@ -1523,33 +1523,6 @@ const deployedContracts = {
                 },
               ],
               state_mutability: "external",
-            },
-            {
-              type: "function",
-              name: "set_treasury_address",
-              inputs: [
-                {
-                  name: "treasury",
-                  type: "core::starknet::contract_address::ContractAddress",
-                },
-              ],
-              outputs: [
-                {
-                  type: "core::bool",
-                },
-              ],
-              state_mutability: "external",
-            },
-            {
-              type: "function",
-              name: "get_treasury_address",
-              inputs: [],
-              outputs: [
-                {
-                  type: "core::starknet::contract_address::ContractAddress",
-                },
-              ],
-              state_mutability: "view",
             },
             {
               type: "function",
@@ -2003,28 +1976,6 @@ const deployedContracts = {
         },
         {
           type: "event",
-          name: "contracts::StarkPlayVault::StarkPlayVault::TreasuryFeeTransferred",
-          kind: "struct",
-          members: [
-            {
-              name: "user",
-              type: "core::starknet::contract_address::ContractAddress",
-              kind: "key",
-            },
-            {
-              name: "amount",
-              type: "core::integer::u256",
-              kind: "key",
-            },
-            {
-              name: "treasury",
-              type: "core::starknet::contract_address::ContractAddress",
-              kind: "data",
-            },
-          ],
-        },
-        {
-          type: "event",
           name: "contracts::StarkPlayVault::StarkPlayVault::Event",
           kind: "enum",
           variants: [
@@ -2118,11 +2069,6 @@ const deployedContracts = {
               type: "contracts::StarkPlayVault::StarkPlayVault::TreasuryFeeTransferred",
               kind: "nested",
             },
-            {
-              name: "TreasuryFeeTransferred",
-              type: "contracts::StarkPlayVault::StarkPlayVault::TreasuryFeeTransferred",
-              kind: "nested",
-            },
           ],
         },
       ],
@@ -2131,7 +2077,7 @@ const deployedContracts = {
     },
     Lottery: {
       address:
-        "0x48d673958a9e6f0320a0669051bdde84900898a86b36f0e42ae7e42c63068f",
+        "0x1b7e400a1c25e71d33686adf977dd4352e4cad019376cfca9f0ff44c7915d6e",
       abi: [
         {
           type: "impl",
@@ -2275,8 +2221,6 @@ const deployedContracts = {
                   type: "core::integer::u64",
                 },
                 {
-                  name: "numbers_array",
-                  type: "core::array::Array::<core::array::Array::<core::integer::u16>>",
                   name: "numbers_array",
                   type: "core::array::Array::<core::array::Array::<core::integer::u16>>",
                 },
@@ -3064,38 +3008,6 @@ const deployedContracts = {
         },
         {
           type: "event",
-          name: "contracts::Lottery::Lottery::BulkTicketPurchase",
-          kind: "struct",
-          members: [
-            {
-              name: "drawId",
-              type: "core::integer::u64",
-              kind: "key",
-            },
-            {
-              name: "player",
-              type: "core::starknet::contract_address::ContractAddress",
-              kind: "key",
-            },
-            {
-              name: "quantity",
-              type: "core::integer::u8",
-              kind: "data",
-            },
-            {
-              name: "totalPrice",
-              type: "core::integer::u256",
-              kind: "data",
-            },
-            {
-              name: "timestamp",
-              type: "core::integer::u64",
-              kind: "data",
-            },
-          ],
-        },
-        {
-          type: "event",
           name: "contracts::Lottery::Lottery::DrawCompleted",
           kind: "struct",
           members: [
@@ -3196,33 +3108,20 @@ const deployedContracts = {
           type: "event",
           name: "contracts::Lottery::Lottery::InvalidDrawIdAttempted",
           kind: "struct",
-          name: "contracts::Lottery::Lottery::InvalidDrawIdAttempted",
-          kind: "struct",
           members: [
             {
               name: "caller",
-              name: "caller",
               type: "core::starknet::contract_address::ContractAddress",
               kind: "data",
-              kind: "data",
             },
             {
               name: "attempted_draw_id",
-              name: "attempted_draw_id",
-              type: "core::integer::u64",
-              kind: "data",
-              kind: "data",
-            },
-            {
-              name: "current_draw_id",
-              name: "current_draw_id",
               type: "core::integer::u64",
               kind: "data",
             },
             {
-              name: "function_name",
-              type: "core::felt252",
-              kind: "data",
+              name: "current_draw_id",
+              type: "core::integer::u64",
               kind: "data",
             },
             {
@@ -3235,13 +3134,9 @@ const deployedContracts = {
         {
           type: "event",
           name: "contracts::Lottery::Lottery::DrawValidationFailed",
-          name: "contracts::Lottery::Lottery::DrawValidationFailed",
           kind: "struct",
           members: [
             {
-              name: "draw_id",
-              type: "core::integer::u64",
-              kind: "data",
               name: "draw_id",
               type: "core::integer::u64",
               kind: "data",
@@ -3300,13 +3195,9 @@ const deployedContracts = {
         {
           type: "event",
           name: "contracts::Lottery::Lottery::Event",
-          name: "contracts::Lottery::Lottery::Event",
           kind: "enum",
           variants: [
             {
-              name: "OwnableEvent",
-              type: "openzeppelin_access::ownable::ownable::OwnableComponent::Event",
-              kind: "flat",
               name: "OwnableEvent",
               type: "openzeppelin_access::ownable::ownable::OwnableComponent::Event",
               kind: "flat",
