@@ -7,7 +7,7 @@ const deployedContracts = {
   devnet: {
     StarkPlayERC20: {
       address:
-        "0x226607a1df9bb3d0c1710ec0abb58320c601e2b4d5d467f513c53516a67d866",
+        "0x5d13cd03092d3d10f368ca276f43eb9c078a3f3bc05742605f808f9ff338b17",
       abi: [
         {
           type: "impl",
@@ -1189,7 +1189,7 @@ const deployedContracts = {
     },
     StarkPlayVault: {
       address:
-        "0x51142ea799b634434226889fb52499463219f4a092232e2c8f3fdeb7865dc37",
+        "0x4d6978729396da4d2ccc533737f6158da50c57879cac411c7f19372e47893fe",
       abi: [
         {
           type: "impl",
@@ -2077,7 +2077,7 @@ const deployedContracts = {
     },
     Lottery: {
       address:
-        "0x16064c51522e9a0da124120e839fd5c6947177c76804c308f0a447867a8cb5c",
+        "0x48d673958a9e6f0320a0669051bdde84900898a86b36f0e42ae7e42c63068f",
       abi: [
         {
           type: "impl",
@@ -2303,6 +2303,29 @@ const deployedContracts = {
                 {
                   name: "accumulatedPrize",
                   type: "core::integer::u256",
+                },
+              ],
+              outputs: [],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "GetCurrentActiveDraw",
+              inputs: [],
+              outputs: [
+                {
+                  type: "(core::integer::u64, core::bool)",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "SetDrawInactive",
+              inputs: [
+                {
+                  name: "drawId",
+                  type: "core::integer::u64",
                 },
               ],
               outputs: [],
@@ -3149,6 +3172,28 @@ const deployedContracts = {
         },
         {
           type: "event",
+          name: "contracts::Lottery::Lottery::DrawClosed",
+          kind: "struct",
+          members: [
+            {
+              name: "drawId",
+              type: "core::integer::u64",
+              kind: "key",
+            },
+            {
+              name: "timestamp",
+              type: "core::integer::u64",
+              kind: "data",
+            },
+            {
+              name: "caller",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
           name: "contracts::Lottery::Lottery::Event",
           kind: "enum",
           variants: [
@@ -3207,11 +3252,16 @@ const deployedContracts = {
               type: "contracts::Lottery::Lottery::EmergencyReentrancyGuardReset",
               kind: "nested",
             },
+            {
+              name: "DrawClosed",
+              type: "contracts::Lottery::Lottery::DrawClosed",
+              kind: "nested",
+            },
           ],
         },
       ],
       classHash:
-        "0x4b85b028aa19c75137522e318016dca1c25182c0b51364ba62b8de0b6d553de",
+        "0x63c8f8e1a2d2d6a60dcd1305a46c97d08d6411eff1ce2c63bfa07704d5e4457",
     },
   },
 } as const;
