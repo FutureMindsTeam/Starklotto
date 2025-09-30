@@ -2,11 +2,11 @@ name: Snfoundry Contracts CI
 
 on:
   push:
-    branches: [dev]
+    branches: [main]
     paths:
       - "packages/snfoundry/contracts/**"
   pull_request:
-    branches: [dev]
+    branches: [main]
     paths:
       - "packages/snfoundry/contracts/**"
       - ".github/workflows/**"
@@ -47,3 +47,4 @@ jobs:
           RUSTFLAGS: "-D warnings"
         run: snforge test -- -v --print-logs
         working-directory: ./packages/snfoundry/contracts
+
