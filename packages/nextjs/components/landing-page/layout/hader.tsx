@@ -34,7 +34,7 @@ export default function Header() {
 
   const goToDapp = () => {
     setOpen(false);
-    navigation.push("/dapp");
+    navigation.push("/dapp/dashboard");
   };
 
   return (
