@@ -29,14 +29,16 @@ struct Draw {
     winningNumber5: u16,
     //map of ticketId to ticket
     isActive: bool,
-    //start time of the draw,timestamp unix (legacy, retained for compatibility) (legacy, retained for compatibility)
+    //start time of the draw,timestamp unix (legacy, retained for compatibility) (legacy, retained
+    //for compatibility)
     startTime: u64,
-    //end time of the draw,timestamp unix (legacy, retained for compatibility) (legacy, retained for compatibility)
+    //end time of the draw,timestamp unix (legacy, retained for compatibility) (legacy, retained for
+    //compatibility)
     endTime: u64,
     //start block of the draw (primary scheduling reference)
     startBlock: u64,
     //end block of the draw (primary scheduling reference)
-    endBlock: u64
+    endBlock: u64,
 }
 
 #[derive(Drop, Copy, Serde, starknet::Store)]
@@ -60,7 +62,9 @@ pub trait ILottery<TContractState> {
     //=======================================================================================
     //set functions
     fn Initialize(ref self: TContractState, ticketPrice: u256, accumulatedPrize: u256);
-    fn BuyTicket(ref self: TContractState, drawId: u64, numbers_array: Array<Array<u16>>, quantity: u8);
+    fn BuyTicket(
+        ref self: TContractState, drawId: u64, numbers_array: Array<Array<u16>>, quantity: u8,
+    );
     fn DrawNumbers(ref self: TContractState, drawId: u64);
     fn ClaimPrize(ref self: TContractState, drawId: u64, ticketId: felt252);
     fn CheckMatches(
@@ -118,7 +122,7 @@ pub trait ILottery<TContractState> {
     // Dynamic address getters
     fn GetStarkPlayContractAddress(self: @TContractState) -> ContractAddress;
     fn GetStarkPlayVaultContractAddress(self: @TContractState) -> ContractAddress;
-    
+
     // Get current draw ID
     fn GetCurrentDrawId(self: @TContractState) -> u64;
     //=======================================================================================
@@ -139,15 +143,15 @@ pub mod Lottery {
         Map, StoragePathEntry, StoragePointerReadAccess, StoragePointerWriteAccess,
     };
     use starknet::{
-        ContractAddress, get_block_timestamp, get_caller_address,
-        get_contract_address, get_block_number
+        ContractAddress, get_block_number, get_block_timestamp, get_caller_address,
+        get_contract_address,
     };
     use super::{Draw, ILottery, JackpotEntry, Ticket};
 
     // ownable component by openzeppelin
     component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
 
-     //=======================================================================================
+    //=======================================================================================
     //constants
     //=======================================================================================
     const MinNumber: u16 = 1; // min number
@@ -161,16 +165,18 @@ pub mod Lottery {
     // Constantes para el cálculo del jackpot
     const JACKPOT_PERCENTAGE: u256 = 55; // 55% del monto de compra va al jackpot
     const PERCENTAGE_DENOMINATOR: u256 = 100; // Para calcular porcentajes
-    
+
     // reentrancy guard component by openzeppelin
-    component!(path: ReentrancyGuardComponent, storage: reentrancy_guard, event: ReentrancyGuardEvent);
+    component!(
+        path: ReentrancyGuardComponent, storage: reentrancy_guard, event: ReentrancyGuardEvent,
+    );
 
 
     //ownable component by openzeppelin
     #[abi(embed_v0)]
     impl OwnableImpl = OwnableComponent::OwnableImpl<ContractState>;
     impl OwnableInternalImpl = OwnableComponent::InternalImpl<ContractState>;
-    
+
     // reentrancy guard component by openzeppelin
     impl ReentrancyGuardInternalImpl = ReentrancyGuardComponent::InternalImpl<ContractState>;
 
@@ -276,13 +282,13 @@ pub mod Lottery {
         reason: felt252,
         caller: ContractAddress,
     }
-    
+
     #[derive(Drop, starknet::Event)]
     pub struct EmergencyReentrancyGuardReset {
         pub caller: ContractAddress,
         pub timestamp: u64,
     }
-    
+
 
     #[derive(Drop, starknet::Event)]
     pub struct DrawClosed {
@@ -331,13 +337,11 @@ pub mod Lottery {
         ref self: ContractState,
         owner: ContractAddress,
         strkPlayContractAddress: ContractAddress,
-        strkPlayVaultContractAddress: ContractAddress
+        strkPlayVaultContractAddress: ContractAddress,
     ) {
         // Validate that addresses are not zero address
         assert(strkPlayContractAddress != 0.try_into().unwrap(), 'Invalid STRKP contract');
-        assert(
-            strkPlayVaultContractAddress != 0.try_into().unwrap(), 'Invalid Vault contract'
-        );
+        assert(strkPlayVaultContractAddress != 0.try_into().unwrap(), 'Invalid Vault contract');
 
         self.ownable.initializer(owner);
         self.fixedPrize4Matches.write(4000000000000000000);
@@ -367,7 +371,9 @@ pub mod Lottery {
 
         //=======================================================================================
         //OK
-        fn BuyTicket(ref self: ContractState, drawId: u64, numbers_array: Array<Array<u16>>, quantity: u8) {
+        fn BuyTicket(
+            ref self: ContractState, drawId: u64, numbers_array: Array<Array<u16>>, quantity: u8,
+        ) {
             // Reentrancy guard using OpenZeppelin component
             self.reentrancy_guard.start();
 
@@ -408,10 +414,8 @@ pub mod Lottery {
             assert(allowance >= total_price, 'Insufficient allowance');
 
             // Execute token transfer for total price
-            let transfer_success = token_dispatcher
-                .transfer_from(user, vault_address, total_price);
+            let transfer_success = token_dispatcher.transfer_from(user, vault_address, total_price);
             assert(transfer_success, 'Transfer failed');
-
 
             // --- End corrected payment logic ---
 
@@ -428,27 +432,27 @@ pub mod Lottery {
             self.draws.entry(drawId).write(current_draw);
 
             // Emit event for jackpot increase
-            self.emit(
-                JackpotIncreased {
-                    drawId,
-                    previousAmount: current_accumulated_prize,
-                    newAmount: current_accumulated_prize + jackpot_contribution,
-                    timestamp: current_timestamp,
-                },
-            );
-
-            
+            self
+                .emit(
+                    JackpotIncreased {
+                        drawId,
+                        previousAmount: current_accumulated_prize,
+                        newAmount: current_accumulated_prize + jackpot_contribution,
+                        timestamp: current_timestamp,
+                    },
+                );
 
             // Emit bulk purchase event for auditing
-            self.emit(
-                BulkTicketPurchase {
-                    drawId,
-                    player: user,
-                    quantity,
-                    totalPrice: total_price,
-                    timestamp: current_timestamp,
-                },
-            );
+            self
+                .emit(
+                    BulkTicketPurchase {
+                        drawId,
+                        player: user,
+                        quantity,
+                        totalPrice: total_price,
+                        timestamp: current_timestamp,
+                    },
+                );
 
             let caller = get_caller_address();
             let mut count = self.userTicketCount.entry((caller, drawId)).read();
@@ -547,7 +551,7 @@ pub mod Lottery {
         fn ClaimPrize(ref self: ContractState, drawId: u64, ticketId: felt252) {
             // Validate that draw exists
             self.AssertDrawExists(drawId, 'ClaimPrize');
-            
+
             let draw = self.draws.entry(drawId).read();
             let ticket = self.tickets.entry((drawId, ticketId)).read();
             assert(!ticket.claimed, 'Prize already claimed');
@@ -677,7 +681,7 @@ pub mod Lottery {
                 startTime: current_timestamp,
                 endTime: 0,
                 startBlock: current_block,
-                endBlock: end_block
+                endBlock: end_block,
             };
             self.draws.entry(drawId).write(newDraw);
             self.currentDrawId.write(drawId);
@@ -688,7 +692,7 @@ pub mod Lottery {
                         drawId,
                         previousAmount,
                         newAmount: accumulatedPrize,
-                        timestamp: current_timestamp
+                        timestamp: current_timestamp,
                     },
                 );
         }
@@ -713,7 +717,12 @@ pub mod Lottery {
             draw.isActive = false;
             draw.endTime = get_block_timestamp();
             self.draws.entry(drawId).write(draw);
-            self.emit(DrawClosed { drawId, timestamp: get_block_timestamp(), caller: get_caller_address() });
+            self
+                .emit(
+                    DrawClosed {
+                        drawId, timestamp: get_block_timestamp(), caller: get_caller_address(),
+                    },
+                );
         }
 
         //OK
@@ -724,7 +733,6 @@ pub mod Lottery {
             self.draws.entry(drawId).read().isActive
         }
 
-       
 
         fn GetBlocksRemaining(self: @ContractState, drawId: u64) -> u64 {
             if !self.DrawExists(drawId) {
@@ -800,7 +808,7 @@ pub mod Lottery {
         fn GetWinningNumbers(self: @ContractState, drawId: u64) -> Array<u16> {
             // Validate that draw exists
             assert(self.DrawExists(drawId), 'Draw does not exist');
-            
+
             let draw = self.draws.entry(drawId).read();
             assert(!draw.isActive, 'Draw must be completed');
 
@@ -823,19 +831,19 @@ pub mod Lottery {
         // Emergency function to reset reentrancy guard (owner only)
         fn EmergencyResetReentrancyGuard(ref self: ContractState) {
             self.ownable.assert_only_owner();
-            
+
             // Force reset the reentrancy guard to false
             // This is a critical emergency function that should only be used
             // if the guard gets permanently locked due to a failed transaction
             self.reentrancy_guard.end();
-            
+
             // Emit event for audit trail
-            self.emit(
-                EmergencyReentrancyGuardReset {
-                    caller: get_caller_address(),
-                    timestamp: get_block_timestamp(),
-                }
-            );
+            self
+                .emit(
+                    EmergencyReentrancyGuardReset {
+                        caller: get_caller_address(), timestamp: get_block_timestamp(),
+                    },
+                );
         }
 
         // Get the ticket price (public view)
@@ -864,7 +872,6 @@ pub mod Lottery {
             // Iterate through all draws from 1 to currentDrawId
             let mut drawId: u64 = 1;
             while drawId != (currentDrawId + 1) {
-
                 let draw = self.draws.entry(drawId).read();
                 let jackpotEntry = JackpotEntry {
                     drawId: draw.drawId,
@@ -978,13 +985,12 @@ pub mod Lottery {
             self.strkPlayVaultContractAddress.read()
         }
 
-   
+
         fn GetCurrentDrawId(self: @ContractState) -> u64 {
             self.currentDrawId.read()
         }
     }
 
-   
 
     //=======================================================================================
     //internal functions
@@ -1004,7 +1010,6 @@ pub mod Lottery {
             let mut valid = true;
 
             while i != numbers.len() {
-
                 let number = *numbers.at(i);
 
                 // Verify range (1-40)
@@ -1027,7 +1032,9 @@ pub mod Lottery {
         }
 
         // NEW: Validate array of number arrays for multiple tickets
-        fn ValidateNumbersArray(self: @ContractState, numbers_array: @Array<Array<u16>>, quantity: u8) -> bool {
+        fn ValidateNumbersArray(
+            self: @ContractState, numbers_array: @Array<Array<u16>>, quantity: u8,
+        ) -> bool {
             // If quantity is 0, the array should also be empty
             if quantity == 0 {
                 return numbers_array.len() == 0;
@@ -1044,7 +1051,7 @@ pub mod Lottery {
 
             while i != numbers_array.len() {
                 let numbers = numbers_array.at(i);
-                
+
                 // Validate each individual array of numbers
                 if !self.ValidateNumbers(numbers) {
                     valid = false;
@@ -1061,7 +1068,9 @@ pub mod Lottery {
             drawId > 0 && drawId <= self.currentDrawId.read()
         }
 
-        fn ValidateDrawExists(ref self: ContractState, drawId: u64, function_name: felt252) -> bool {
+        fn ValidateDrawExists(
+            ref self: ContractState, drawId: u64, function_name: felt252,
+        ) -> bool {
             if !self.DrawExists(drawId) {
                 self
                     .emit(
@@ -1077,11 +1086,14 @@ pub mod Lottery {
 
             let draw = self.draws.entry(drawId).read();
             if !(draw.drawId == drawId && draw.isActive) {
-                self.emit( DrawValidationFailed {
-                    draw_id: drawId,
-                    reason: 'Draw is not active',
-                    caller: get_caller_address(),
-                });
+                self
+                    .emit(
+                        DrawValidationFailed {
+                            draw_id: drawId,
+                            reason: 'Draw is not active',
+                            caller: get_caller_address(),
+                        },
+                    );
                 return false;
             }
 
@@ -1125,8 +1137,6 @@ pub mod Lottery {
             }
             current_block >= draw.startBlock && current_block < draw.endBlock
         }
-
-    
     }
 
     //=======================================================================================
@@ -1161,6 +1171,4 @@ pub mod Lottery {
 
         numbers
     }
-   
-  
 }

@@ -10,9 +10,8 @@ use openzeppelin_access::ownable::interface::{IOwnableDispatcher, IOwnableDispat
 use openzeppelin_token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
 use openzeppelin_utils::serde::SerializedAppend;
 use snforge_std::{
-    start_cheat_caller_address,
-    stop_cheat_caller_address, declare, ContractClassTrait, DeclareResultTrait, spy_events,
-    EventSpyTrait // Add for fetching events directly
+    start_cheat_caller_address, stop_cheat_caller_address, declare, ContractClassTrait,
+    DeclareResultTrait, spy_events, EventSpyTrait // Add for fetching events directly
 };
 use starknet::ContractAddress;
 
@@ -62,7 +61,9 @@ fn deploy_mock_strk_token() -> IMintableDispatcher {
     // Grant MINTER_ROLE to OWNER so we can mint tokens
     strk_token.grant_minter_role(owner_address());
     strk_token
-        .set_minter_allowance(owner_address(), EXCEEDS_MINT_LIMIT().into() * 10); // Large allowance
+        .set_minter_allowance(
+            owner_address(), EXCEEDS_MINT_LIMIT().into() * 10,
+        ); // Large allowance
 
     strk_token.mint(USER1(), EXCEEDS_MINT_LIMIT().into() * 3); // Mint plenty for testing
 

@@ -68,12 +68,10 @@ mod LottoTicketNFT {
     use openzeppelin_token::erc721::interface::{IERC721, IERC721Metadata};
     use openzeppelin_token::erc721::{ERC721Component, ERC721HooksEmptyImpl};
     use starknet::storage::{
-        Map, StorageMapReadAccess, StorageMapWriteAccess,
-        StoragePointerReadAccess, StoragePointerWriteAccess,
+        Map, StorageMapReadAccess, StorageMapWriteAccess, StoragePointerReadAccess,
+        StoragePointerWriteAccess,
     };
-    use starknet::{
-        ContractAddress, get_block_timestamp, get_caller_address,
-    };
+    use starknet::{ContractAddress, get_block_timestamp, get_caller_address};
     use super::{ILottoTicketNFT, LottoStatus, TicketDetails};
 
     /// OpenZeppelin Components
