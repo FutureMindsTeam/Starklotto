@@ -21,7 +21,7 @@ export function PrizeDistributionSection({
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="text-3xl md:text-4xl font-bold text-white mb-4"
+            className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-starkYellow to-white bg-clip-text text-transparent"
           >
             Prize Distribution
           </motion.h2>
@@ -29,7 +29,7 @@ export function PrizeDistributionSection({
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-lg text-gray-300 max-w-2xl mx-auto"
+            className="text-lg text-white/80 max-w-2xl mx-auto"
           >
             Understand how prizes are distributed across different winning
             tiers. Transparency is key to our platform.
@@ -40,9 +40,18 @@ export function PrizeDistributionSection({
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
-          className="max-w-4xl mx-auto"
+          className="max-w-4xl mx-auto relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-8"
+          style={{ boxShadow: "0 10px 25px rgba(255,214,0,0.1)" }}
         >
-          <PrizeDistribution />
+          {/* Gradient Background Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-br from-starkYellow/5 via-transparent to-purple-500/5 pointer-events-none" />
+
+          {/* Animated Background Glow */}
+          <div className="absolute -inset-1 bg-gradient-to-r from-starkYellow/10 via-purple-500/10 to-starkYellow/10 rounded-2xl blur-xl opacity-30 animate-pulse" />
+
+          <div className="relative z-10">
+            <PrizeDistribution />
+          </div>
         </motion.div>
 
         <motion.div
@@ -51,7 +60,7 @@ export function PrizeDistributionSection({
           transition={{ duration: 0.6, delay: 0.6 }}
           className="text-center mt-8"
         >
-          <p className="text-gray-400 text-sm">
+          <p className="text-white/60 text-sm">
             Prize amounts are estimates based on current pool size. Actual
             prizes may vary.
           </p>
