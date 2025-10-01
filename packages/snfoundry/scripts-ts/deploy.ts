@@ -104,7 +104,7 @@ const deployScript = async (): Promise<void> => {
     constructorArgs: {
       owner: deployer.address,
       strkPlayContractAddress: starkPlayERC20Address,
-      strkPlayVaultContractAddress: starkPlayVaultAddress,
+      strkPlayVaultContractAddress: starkPlayVaultAddress
     },
   });
   const lotteryAddress = lotteryDeploymentResult.address;
@@ -133,14 +133,11 @@ const deployScript = async (): Promise<void> => {
   console.log("Assigning roles to StarkPlayVault...");
   try {
     const { Contract } = await import("starknet");
-
+    
     // Load StarkPlayERC20 contract ABI to interact with it
     const starkPlayTokenCompiledContract = JSON.parse(
       fs.readFileSync(
-        path.join(
-          __dirname,
-          "../contracts/target/dev/contracts_StarkPlayERC20.contract_class.json"
-        ),
+        path.join(__dirname, "../contracts/target/dev/contracts_StarkPlayERC20.contract_class.json"),
         "utf8"
       )
     );
@@ -154,24 +151,18 @@ const deployScript = async (): Promise<void> => {
     // Owner (deployer) assigns MINTER_ROLE to the vault
     console.log("Granting MINTER_ROLE to vault...");
     await starkPlayTokenContract.grant_minter_role(starkPlayVaultAddress);
-
+    
     // Set minter allowance for the vault
     const mint_allowance = 1_000_000_000n * 1000000000000000000n; // 1B tokens with 18 decimals
-    await starkPlayTokenContract.set_minter_allowance(
-      starkPlayVaultAddress,
-      mint_allowance
-    );
-
+    await starkPlayTokenContract.set_minter_allowance(starkPlayVaultAddress, mint_allowance);
+    
     // Owner (deployer) assigns BURNER_ROLE to the vault
     console.log("Granting BURNER_ROLE to vault...");
     await starkPlayTokenContract.grant_burner_role(starkPlayVaultAddress);
-
-    // Set burner allowance for the vault
+    
+    // Set burner allowance for the vault  
     const burn_allowance = 1_000_000_000n * 1000000000000000000n; // 1B tokens with 18 decimals
-    await starkPlayTokenContract.set_burner_allowance(
-      starkPlayVaultAddress,
-      burn_allowance
-    );
+    await starkPlayTokenContract.set_burner_allowance(starkPlayVaultAddress, burn_allowance);
 
     console.log("StarkPlayVault roles assigned successfully by owner");
   } catch (error) {
