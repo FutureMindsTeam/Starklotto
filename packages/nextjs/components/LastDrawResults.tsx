@@ -257,7 +257,9 @@ export function LastDrawResults() {
             disabled={isLoading || isRefreshing}
             className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-gray-400 bg-[#232b3b] hover:bg-[#2a3441] rounded-md"
           >
-            <RefreshCw className={`h-3 w-3 ${isRefreshing ? "animate-spin" : ""}`} />
+            <RefreshCw
+              className={`h-3 w-3 ${isRefreshing ? "animate-spin" : ""}`}
+            />
             {t("status.refresh")}
           </motion.button>
 

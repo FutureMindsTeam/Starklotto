@@ -75,17 +75,14 @@ export default function DashboardPage() {
   return (
     <>
       <div className="container mx-auto grid gap-4 p-4 lg:grid-cols-3">
-        
         <div className="lg:col-span-3">
           <TotalPool />
         </div>
 
-        
         <div className="space-y-4 lg:col-span-2">
           {/* Lottery Process */}
           <StepsWizard {...data.wizard} />
 
-          
           <HeroSection
             variant="card"
             heroY={heroY}
@@ -104,17 +101,14 @@ export default function DashboardPage() {
             useBlockBasedCountdown={true}
           />
 
-          
           <RecentActivityCard items={data.history} />
         </div>
 
-        
         <div className="space-y-4">
           <BalancesCard {...data.balances} />
           <NotificationsCard list={data.notifications} />
         </div>
 
-        
         <div className="lg:col-span-3">
           <LastDrawResultsCard />
         </div>
