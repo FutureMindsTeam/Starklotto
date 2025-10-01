@@ -62,7 +62,7 @@
     "react-i18next": "^15.5.3",
     "react-icons": "^5.5.0",
     "react-type-animation": "^3.2.0",
-    "recharts": "^2.15.3",
+    "recharts": "^3.2.1",
     "starknet": "^7.1.0",
     "tailwind-merge": "^3.3.1",
     "three": "^0.178.0",
