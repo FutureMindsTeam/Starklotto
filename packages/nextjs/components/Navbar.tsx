@@ -150,9 +150,12 @@ export function Navbar({ onBuyTicket }: NavbarProps) {
                 )}
               </div>
 
-              {/* Right Side Actions */}
+              {/* Right Side Actions - Reordered */}
               <div className="flex items-center gap-3">
-                {/* Language Switcher - Modernized */}
+                {/* Wallet Connect Button - handles connected/disconnected states internally */}
+                <CustomConnectButton />
+
+                {/* Language Switcher - Moved to the end */}
                 <div className="relative" ref={languageRef}>
                   <motion.button
                     onClick={() => setIsLanguageOpen(!isLanguageOpen)}
@@ -205,8 +208,8 @@ export function Navbar({ onBuyTicket }: NavbarProps) {
                                 setIsLanguageOpen(false);
                               }}
                               className={`w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-starkYellow/10 transition-all duration-200 ${currentLanguage === lang.code
-                                ? "text-starkYellow bg-starkYellow/5"
-                                : "text-white/80 hover:text-white"
+                                  ? "text-starkYellow bg-starkYellow/5"
+                                  : "text-white/80 hover:text-white"
                                 }`}
                               whileHover={{ x: 4 }}
                               whileTap={{ scale: 0.98 }}
@@ -228,8 +231,6 @@ export function Navbar({ onBuyTicket }: NavbarProps) {
                     )}
                   </AnimatePresence>
                 </div>
-                {/* Wallet Connect Button - handles connected/disconnected states internally */}
-                <CustomConnectButton />
 
                 {/* Mobile Menu Button */}
                 <motion.button
