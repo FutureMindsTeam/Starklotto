@@ -52,7 +52,6 @@ export function HeroSection({
           ? "rounded-2xl bg-card p-6 shadow-sm"
           : "relative min-h-screen flex items-center justify-center px-8 py-5"
       }
-      
     >
       <div className="w-full mx-auto grid grid-cols-1 gap-6 items-center">
         {/* Next Draw */}
@@ -92,7 +91,9 @@ export function HeroSection({
           <div className="mt-6">
             <GlowingButton
               onClick={onBuyTicket}
-              className={isCard ? "w-full py-2 text-base" : "w-full py-4 text-lg"}
+              className={
+                isCard ? "w-full py-2 text-base" : "w-full py-4 text-lg"
+              }
               glowColor="rgba(139, 92, 246, 0.5)"
             >
               {t("buyTickets.buyButton")}

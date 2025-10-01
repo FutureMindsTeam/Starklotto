@@ -4,15 +4,12 @@ import { useEffect, useState } from "react";
 import { useScroll, useTransform } from "framer-motion";
 import { useAccount } from "@starknet-react/core";
 import { useRouter } from "next/navigation";
-
 import BalancesCard from "~~/components/dashboard/dashboard/BalancesCard";
 import StepsWizard from "~~/components/dashboard/dashboard/StepsWizard";
-// ❌ DrawStatusCard eliminado
 import RecentActivityCard from "~~/components/dashboard/dashboard/RecentActivityCard";
 import NotificationsCard from "~~/components/dashboard/dashboard/NotificationsCard";
 import Skeleton from "~~/components/dashboard/dashboard/Skeleton";
 import TotalPool from "~~/components/dashboard/pool/page";
-
 import { HeroSection, PrizeDistributionSection } from "~~/components/sections";
 import { LastDrawResults } from "~~/components/LastDrawResults";
 import { useDrawInfo } from "~~/hooks/scaffold-stark/useDrawInfo";
@@ -81,7 +78,6 @@ export default function DashboardPage() {
 
   return (
     <>
-      
       <div className="container mx-auto grid gap-4 p-4 lg:grid-cols-3">
         <div className="lg:col-span-3">
           <TotalPool />
@@ -89,7 +85,7 @@ export default function DashboardPage() {
 
         <div className="space-y-4 lg:col-span-2">
           <StepsWizard {...data.wizard} />
-          
+
           <RecentActivityCard items={data.history} />
         </div>
 
@@ -98,7 +94,6 @@ export default function DashboardPage() {
           <NotificationsCard list={data.notifications} />
         </div>
 
-        
         <div className="lg:col-span-3">
           <HeroSection
             variant="card"
