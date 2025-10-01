@@ -4035,7 +4035,7 @@ __metadata:
     tailwindcss: ^3.3.0
     three: ^0.178.0
     tsparticles: ^3.8.1
-    type-fest: ^4.6.0
+    type-fest: ^5.0.1
     typescript: ^5
     usehooks-ts: ^2.13.0
     vercel: ^44.2.11
@@ -13774,6 +13774,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"tagged-tag@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "tagged-tag@npm:1.0.0"
+  checksum: e37653df3e495daa7ea7790cb161b810b00075bba2e4d6c93fb06a709e747e3ae9da11a120d0489833203926511b39e038a2affbd9d279cfb7a2f3fcccd30b5d
+  languageName: node
+  linkType: hard
+
 "tailwind-merge@npm:^3.3.1":
   version: 3.3.1
   resolution: "tailwind-merge@npm:3.3.1"
@@ -14340,10 +14347,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"type-fest@npm:^4.6.0":
-  version: 4.41.0
-  resolution: "type-fest@npm:4.41.0"
-  checksum: 7055c0e3eb188425d07403f1d5dc175ca4c4f093556f26871fe22041bc93d137d54bef5851afa320638ca1379106c594f5aa153caa654ac1a7f22c71588a4e80
+"type-fest@npm:^5.0.1":
+  version: 5.0.1
+  resolution: "type-fest@npm:5.0.1"
+  dependencies:
+    tagged-tag: ^1.0.0
+  checksum: abbf86f6f732f60e6a531d0043c81eb4ff2e3100b33ce94b6da1c77410f593fe565718bd377f8733a038a30db0fa7d4d47195085e7d397128a3a38f6e49d1b2d
   languageName: node
   linkType: hard
 
