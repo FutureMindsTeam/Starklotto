@@ -146,7 +146,7 @@ export function useBuyTickets({ drawId }: UseBuyTicketsProps) {
           setPurchaseDetails({
             ticketCount: quantity,
             totalCost: formatBalance(totalCost),
-            transactionHash: result?.transaction_hash,
+            transactionHash: typeof result === "string" ? result : undefined,
           });
 
           // Refrescar balances
