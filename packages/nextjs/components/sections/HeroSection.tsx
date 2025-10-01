@@ -12,6 +12,7 @@ interface HeroSectionProps {
   variant?: "hero" | "card";
   heroY: any;
   jackpot: number;
+  isConnected: boolean
   showSecurityInfo: boolean;
   targetDate: Date;
   onBuyTicket: () => void;
@@ -35,6 +36,7 @@ export function HeroSection({
   variant = "hero",
   heroY,
   jackpot,
+  isConnected,
   targetDate,
   onBuyTicket,
   blocksRemaining = 0,
@@ -75,14 +77,17 @@ export function HeroSection({
             )}
           </div>
 
-          <button
-            onClick={onBuyTicket}
-            className="group relative w-full py-3 text-base font-medium rounded-xl border border-starkYellow/30 bg-gradient-to-r from-starkYellow/20 to-starkYellow/10 text-starkYellow hover:from-starkYellow hover:to-starkYellow-light hover:text-black transition-all duration-300 hover:scale-105"
-            style={{ boxShadow: "0 4px 12px rgba(255,214,0,0.2)" }}
-          >
-            <div className="absolute -inset-1 bg-gradient-to-r from-starkYellow/20 via-purple-500/20 to-starkYellow/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            <span className="relative">{t("buyTickets.buyButton")}</span>
-          </button>
+          {
+            isConnected && <button
+              onClick={onBuyTicket}
+              className="group relative w-full py-3 text-base font-medium rounded-xl border border-starkYellow/30 bg-gradient-to-r from-starkYellow/20 to-starkYellow/10 text-starkYellow hover:from-starkYellow hover:to-starkYellow-light hover:text-black transition-all duration-300 hover:scale-105"
+              style={{ boxShadow: "0 4px 12px rgba(255,214,0,0.2)" }}
+            >
+              <div className="absolute -inset-1 bg-gradient-to-r from-starkYellow/20 via-purple-500/20 to-starkYellow/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <span className="relative">{t("buyTickets.buyButton")}</span>
+            </button>
+          }
+
         </div>
       </div>
     );

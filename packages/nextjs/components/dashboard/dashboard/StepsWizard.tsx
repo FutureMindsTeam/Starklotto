@@ -4,6 +4,7 @@ import { Coins, Ticket, Gift, ArrowLeftRight } from "lucide-react";
 import Link from "next/link";
 import { Stagger, Item } from "~~/components/ui/motion";
 import { useTranslation } from "react-i18next";
+import { useAccount } from "@starknet-react/core";
 
 type Props = {
   hasStrkp: boolean;
@@ -14,6 +15,8 @@ type Props = {
 
 export default function StepsWizard(_: Props) {
   const { t } = useTranslation();
+  const { status } = useAccount();
+  const isConnected = status === "connected";
 
   const steps = [
     {
@@ -76,12 +79,14 @@ export default function StepsWizard(_: Props) {
                   <div className="mb-4 text-sm text-white/70 group-hover:text-white/80 transition-colors">{s.desc}</div>
                 </div>
 
-                <Link
-                  href={s.href}
-                  className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-gradient-to-r from-starkYellow/20 to-starkYellow/10 border border-starkYellow/30 text-starkYellow hover:from-starkYellow hover:to-starkYellow-light hover:text-black font-medium text-sm transition-all duration-300 hover:scale-105"
-                >
-                  {s.action}
-                </Link>
+                {isConnected && (
+                  <Link
+                    href={s.href}
+                    className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-gradient-to-r from-starkYellow/20 to-starkYellow/10 border border-starkYellow/30 text-starkYellow hover:from-starkYellow hover:to-starkYellow-light hover:text-black font-medium text-sm transition-all duration-300 hover:scale-105"
+                  >
+                    {s.action}
+                  </Link>
+                )}
               </div>
             </Item>
           ))}
