@@ -30,20 +30,20 @@ export default function PurchaseSummary({
 
   return (
     <>
-      <div className="bg-[#232b3b] rounded-lg p-4 space-y-2 mt-6">
+      <div className="bg-white/5 border border-white/10 rounded-lg p-4 space-y-2 mt-6">
         <div className="flex justify-between items-center">
           <p className="text-white font-medium">{t("buyTickets.totalCost")}</p>
-          <p className="text-[#4ade80] font-medium">
+          <p className="text-starkYellow font-medium">
             {isPriceLoading ? "Loading…" : `${totalCostFormatted} $TRKP`}
           </p>
         </div>
         {priceError && <p className="text-red-400 text-sm">{priceError}</p>}
       </div>
 
-      <GlowingButton
+      <button
         onClick={onPurchase}
-        className="w-full"
-        glowColor="rgba(139, 92, 246, 0.5)"
+        className="w-full bg-gradient-to-r from-starkYellow/20 to-starkYellow/10 border border-starkYellow/30 text-starkYellow font-semibold py-3 px-6 rounded-lg transition-all duration-300 hover:from-starkYellow hover:to-starkYellow-light hover:text-black hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+        style={{ boxShadow: "0 4px 12px rgba(255,214,0,0.2)" }}
         disabled={
           isLoading ||
           isPriceLoading ||
@@ -53,7 +53,7 @@ export default function PurchaseSummary({
         }
       >
         {isLoading ? t("buyTickets.processing") : t("buyTickets.buyButton")}
-      </GlowingButton>
+      </button>
 
       {txError && <p className="text-red-500 mt-2">{txError}</p>}
       {txSuccess && <p className="text-green-500 mt-2">{txSuccess}</p>}

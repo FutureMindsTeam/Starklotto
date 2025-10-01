@@ -22,7 +22,7 @@ interface NavbarProps {
 }
 
 const menuItems = [
-  { id: "/dapp", labelKey: "navigation.home", icon: HomeIcon },
+  { id: "/dapp/dashboard", labelKey: "navigation.home", icon: HomeIcon },
   { id: "/dapp/mint", labelKey: "navigation.mint", icon: Coins },
   { id: "/dapp/claim", labelKey: "navigation.claim", icon: Trophy },
   { id: "/dapp/unmint", labelKey: "navigation.unmint", icon: ArrowUpDown },
@@ -208,8 +208,8 @@ export function Navbar({ onBuyTicket }: NavbarProps) {
                                 setIsLanguageOpen(false);
                               }}
                               className={`w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-starkYellow/10 transition-all duration-200 ${currentLanguage === lang.code
-                                  ? "text-starkYellow bg-starkYellow/5"
-                                  : "text-white/80 hover:text-white"
+                                ? "text-starkYellow bg-starkYellow/5"
+                                : "text-white/80 hover:text-white"
                                 }`}
                               whileHover={{ x: 4 }}
                               whileTap={{ scale: 0.98 }}

@@ -22,7 +22,7 @@ export default function TicketControls({
       <div className="flex items-center gap-2">
         <motion.button
           onClick={onDecreaseTickets}
-          className="bg-purple-600 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
+          className="bg-starkYellow/20 border border-starkYellow/30 rounded-full w-8 h-8 flex items-center justify-center text-starkYellow font-bold hover:bg-starkYellow hover:text-black transition-all duration-300"
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           transition={{ duration: 0.2 }}
@@ -37,7 +37,7 @@ export default function TicketControls({
         </p>
         <motion.button
           onClick={onIncreaseTickets}
-          className="bg-purple-600 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
+          className="bg-starkYellow/20 border border-starkYellow/30 rounded-full w-8 h-8 flex items-center justify-center text-starkYellow font-bold hover:bg-starkYellow hover:text-black transition-all duration-300"
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           transition={{ duration: 0.2 }}
@@ -47,7 +47,8 @@ export default function TicketControls({
       </div>
       <motion.button
         onClick={onGenerateRandomForAll}
-        className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+        className="bg-gradient-to-r from-starkYellow/20 to-starkYellow/10 border border-starkYellow/30 text-starkYellow px-4 py-2 rounded-lg flex items-center gap-2 hover:from-starkYellow hover:to-starkYellow-light hover:text-black transition-all duration-300"
+        style={{ boxShadow: "0 4px 12px rgba(255,214,0,0.2)" }}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         transition={{ duration: 0.2 }}

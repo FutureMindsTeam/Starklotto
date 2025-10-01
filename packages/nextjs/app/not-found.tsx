@@ -19,12 +19,12 @@ export default function NotFound() {
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
           >
-            <div className="text-8xl md:text-9xl font-bold bg-gradient-to-r from-[#00FFA3] via-[#00E5FF] to-[#00FFA3] bg-clip-text text-transparent">
+            <div className="text-8xl md:text-9xl font-bold bg-gradient-to-r from-starkYellow via-white to-starkYellow bg-clip-text text-transparent">
               404
             </div>
             {/* Floating dice around 404 */}
             <motion.div
-              className="absolute -top-4 -left-8 text-[#00FFA3]"
+              className="absolute -top-4 -left-8 text-starkYellow"
               animate={{
                 y: [-10, 10, -10],
                 rotate: [0, 180, 360],
@@ -38,7 +38,7 @@ export default function NotFound() {
               <Dices className="h-12 w-12" />
             </motion.div>
             <motion.div
-              className="absolute -top-6 -right-6 text-[#00E5FF]"
+              className="absolute -top-6 -right-6 text-starkYellow-light"
               animate={{
                 y: [10, -10, 10],
                 rotate: [360, 180, 0],
@@ -80,24 +80,29 @@ export default function NotFound() {
 
           {/* Glowing Card with Actions */}
           <motion.div
-            className="relative bg-black/40 backdrop-blur-md border border-[#00FFA3]/20 rounded-2xl p-8 mb-8"
+            className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-8 mb-8"
+            style={{ boxShadow: "0 10px 25px rgba(255,214,0,0.1)" }}
             initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.4 }}
           >
-            {/* Glow effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-[#00FFA3]/10 via-transparent to-[#00E5FF]/10 rounded-2xl blur-xl" />
+            {/* Gradient Background Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-br from-starkYellow/5 via-transparent to-purple-500/5 pointer-events-none" />
 
-            <div className="relative">
-              <h2 className="text-xl font-semibold mb-6 text-[#00FFA3]">
+            {/* Animated Background Glow */}
+            <div className="absolute -inset-1 bg-gradient-to-r from-starkYellow/10 via-purple-500/10 to-starkYellow/10 rounded-2xl blur-xl opacity-30 animate-pulse" />
+
+            <div className="relative z-10">
+              <h2 className="text-xl font-semibold mb-6 text-white">
                 {t("error404.suggestions.title", "What would you like to do?")}
               </h2>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 {/* Go Home Button */}
-                <Link href="/">
+                <Link href="/dapp/dashboard">
                   <motion.button
-                    className="group relative flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-[#00FFA3] to-[#00E5FF] text-black font-semibold rounded-lg shadow-lg transition-all duration-300 hover:shadow-[0_0_30px_rgba(0,255,163,0.3)] min-w-[180px]"
+                    className="group relative flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-starkYellow/20 to-starkYellow/10 border border-starkYellow/30 text-starkYellow font-semibold rounded-lg transition-all duration-300 hover:from-starkYellow hover:to-starkYellow-light hover:text-black hover:scale-105 min-w-[180px]"
+                    style={{ boxShadow: "0 4px 12px rgba(255,214,0,0.2)" }}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
@@ -109,7 +114,7 @@ export default function NotFound() {
                 {/* Go Back Button */}
                 <motion.button
                   onClick={() => window.history.back()}
-                  className="group relative flex items-center gap-3 px-6 py-3 bg-black/50 border border-[#00FFA3]/30 text-white font-semibold rounded-lg transition-all duration-300 hover:border-[#00FFA3] hover:bg-[#00FFA3]/10 min-w-[180px]"
+                  className="group relative flex items-center gap-3 px-6 py-3 bg-white/5 border border-white/20 text-white/80 font-semibold rounded-lg transition-all duration-300 hover:border-starkYellow/30 hover:bg-starkYellow/10 hover:text-starkYellow min-w-[180px]"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -137,7 +142,7 @@ export default function NotFound() {
         {[...Array(6)].map((_, i) => (
           <motion.div
             key={i}
-            className="absolute w-2 h-2 bg-[#00FFA3]/20 rounded-full"
+            className="absolute w-2 h-2 bg-starkYellow/20 rounded-full"
             initial={{
               x:
                 typeof window !== "undefined"

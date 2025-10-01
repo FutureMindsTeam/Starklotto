@@ -71,20 +71,19 @@ export default function NumberGrid({
               isLuckElement ? luckAnimationVariants : numberAnimationVariants
             }
             className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-colors duration-200
-              ${
-                isLuckElement
-                  ? "bg-gradient-to-br from-yellow-400 via-orange-400 to-yellow-500 text-white shadow-lg border-2 border-yellow-300 cursor-not-allowed relative overflow-hidden"
-                  : isSelected
-                    ? "bg-gradient-to-br from-purple-600 via-purple-700 to-purple-800 text-white shadow-lg border-2 border-purple-400"
-                    : selectedNumbers?.length >= 5 && !isSelected
-                      ? "bg-gray-700 text-gray-400 cursor-not-allowed opacity-60"
-                      : "bg-gray-700 text-gray-200 hover:bg-gray-600 cursor-pointer border border-gray-600"
+              ${isLuckElement
+                ? "bg-gradient-to-br from-starkYellow to-starkYellow-light text-black shadow-lg border-2 border-starkYellow cursor-not-allowed relative overflow-hidden"
+                : isSelected
+                  ? "bg-gradient-to-br from-starkYellow to-starkYellow-light text-black shadow-lg border-2 border-starkYellow"
+                  : selectedNumbers?.length >= 5 && !isSelected
+                    ? "bg-white/10 text-white/40 cursor-not-allowed opacity-60 border border-white/20"
+                    : "bg-white/5 text-white/70 hover:bg-white/10 cursor-pointer border border-white/20 hover:border-starkYellow/30"
               }`}
           >
             {isLuckElement ? (
               <>
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse"></div>
-                <span className="text-xs font-bold text-white drop-shadow-sm relative z-10">
+                <span className="text-xs font-bold text-black drop-shadow-sm relative z-10">
                   LUCK
                 </span>
               </>
