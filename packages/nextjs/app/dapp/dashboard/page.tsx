@@ -33,7 +33,7 @@ export default function DashboardPage() {
   const [selectedNumbers, setSelectedNumbers] = useState<number[]>([]);
   const [data, setData] = useState<DashboardMock | null>(null);
 
-  // 🔹 Hooks del contrato
+  
   const { currentDrawId } = useCurrentDrawId();
   const {
     jackpotFormatted,
@@ -43,7 +43,7 @@ export default function DashboardPage() {
     isDrawActiveBlocks,
   } = useDrawInfo({ drawId: currentDrawId });
 
-  // 🔹 Fallback para jackpot si no hay datos del contrato
+ 
   const jackpot = 250295;
   const targetDate = new Date();
   targetDate.setDate(targetDate.getDate() + 1);
@@ -53,7 +53,7 @@ export default function DashboardPage() {
     setData(mock);
   }, []);
 
-  // 🔹 Manejadores
+  
   const handleRoute = (route: string) => {
     navigate.push(route);
   };
@@ -84,7 +84,7 @@ export default function DashboardPage() {
 
   return (
     <>
-      {/* 🔹 Dashboard nuevo (va arriba) */}
+      
       <div className="container mx-auto grid gap-4 p-4 lg:grid-cols-3">
         <div className="lg:col-span-3">
           <TotalPool />
@@ -102,7 +102,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* 🔹 Contenido migrado del viejo dashboard (va debajo) */}
+      
       <HeroSection
         heroY={heroY}
         jackpot={jackpot}
