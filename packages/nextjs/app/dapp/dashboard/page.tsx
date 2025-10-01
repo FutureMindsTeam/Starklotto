@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 
 import BalancesCard from "~~/components/dashboard/dashboard/BalancesCard";
 import StepsWizard from "~~/components/dashboard/dashboard/StepsWizard";
-import DrawStatusCard from "~~/components/dashboard/dashboard/DrawStatusCard";
+// ❌ DrawStatusCard eliminado
 import RecentActivityCard from "~~/components/dashboard/dashboard/RecentActivityCard";
 import NotificationsCard from "~~/components/dashboard/dashboard/NotificationsCard";
 import Skeleton from "~~/components/dashboard/dashboard/Skeleton";
@@ -81,6 +81,7 @@ export default function DashboardPage() {
 
   return (
     <>
+      
       <div className="container mx-auto grid gap-4 p-4 lg:grid-cols-3">
         <div className="lg:col-span-3">
           <TotalPool />
@@ -88,7 +89,7 @@ export default function DashboardPage() {
 
         <div className="space-y-4 lg:col-span-2">
           <StepsWizard {...data.wizard} />
-          <DrawStatusCard {...data.draw} />
+          
           <RecentActivityCard items={data.history} />
         </div>
 
@@ -96,24 +97,28 @@ export default function DashboardPage() {
           <BalancesCard {...data.balances} />
           <NotificationsCard list={data.notifications} />
         </div>
-      </div>
 
-      <HeroSection
-        heroY={heroY}
-        jackpot={jackpot}
-        showSecurityInfo={showSecurityInfo}
-        targetDate={targetDate}
-        onBuyTicket={() => handleRoute("/dapp/buy-tickets")}
-        onToggleSecurityInfo={() => setShowSecurityInfo(!showSecurityInfo)}
-        showTicketSelector={showTicketSelector}
-        selectedNumbers={selectedNumbers}
-        onSelectNumbers={handleSelectNumbers}
-        onPurchase={handlePurchase}
-        blocksRemaining={blocksRemaining}
-        currentBlock={currentBlock}
-        timeRemainingFromBlocks={timeRemainingFromBlocks}
-        useBlockBasedCountdown={true}
-      />
+        
+        <div className="lg:col-span-3">
+          <HeroSection
+            variant="card"
+            heroY={heroY}
+            jackpot={jackpot}
+            showSecurityInfo={showSecurityInfo}
+            targetDate={targetDate}
+            onBuyTicket={() => handleRoute("/dapp/buy-tickets")}
+            onToggleSecurityInfo={() => setShowSecurityInfo(!showSecurityInfo)}
+            showTicketSelector={showTicketSelector}
+            selectedNumbers={selectedNumbers}
+            onSelectNumbers={handleSelectNumbers}
+            onPurchase={handlePurchase}
+            blocksRemaining={blocksRemaining}
+            currentBlock={currentBlock}
+            timeRemainingFromBlocks={timeRemainingFromBlocks}
+            useBlockBasedCountdown={true}
+          />
+        </div>
+      </div>
 
       <div className="container mx-auto px-4 relative z-20">
         <LastDrawResults />
