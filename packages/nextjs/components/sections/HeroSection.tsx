@@ -6,6 +6,7 @@ import { GlowingButton } from "~~/components/glowing-button";
 import { CountdownTimer } from "~~/components/countdown-timer";
 import { BlockBasedCountdownTimer } from "~~/components/block-based-countdown-timer";
 import { useTranslation } from "react-i18next";
+import Card from "~~/components/dashboard/dashboard/Card";
 
 interface HeroSectionProps {
   variant?: "hero" | "card";
@@ -44,40 +45,21 @@ export function HeroSection({
   const { t } = useTranslation();
   const isCard = variant === "card";
 
-  return (
-    <motion.section
-      style={!isCard ? { y: heroY } : {}}
-      className={
-        isCard
-          ? "rounded-2xl bg-card p-6 shadow-sm"
-          : "relative min-h-screen flex items-center justify-center px-8 py-5"
-      }
-    >
-      <div className="w-full mx-auto grid grid-cols-1 gap-6 items-center">
-        {/* Next Draw */}
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.3, duration: 0.5 }}
-          className="bg-[#1a2234] rounded-xl p-6"
-        >
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg text-gray-300">
-              {t("buyTickets.nextDraw")}
-            </h2>
-            <SecurityBadge type="secure" />
-          </div>
+  if (isCard) {
+    return (
+      <Card className="p-6">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-sm font-semibold">
+            {t("buyTickets.nextDraw")}
+          </h2>
+          <SecurityBadge type="secure" />
+        </div>
 
-          <p
-            className={
-              isCard
-                ? "text-[#4ade80] text-2xl font-bold mb-4"
-                : "text-[#4ade80] text-4xl font-bold mb-6"
-            }
-          >
-            ${jackpot.toLocaleString()} USDC
-          </p>
+        <p className="text-emerald-400 text-2xl font-bold mb-4">
+          ${jackpot.toLocaleString()} USDC
+        </p>
 
+        <div className="mb-6">
           {useBlockBasedCountdown && timeRemainingFromBlocks ? (
             <BlockBasedCountdownTimer
               blocksRemaining={blocksRemaining}
@@ -87,20 +69,17 @@ export function HeroSection({
           ) : (
             <CountdownTimer targetDate={targetDate} />
           )}
+        </div>
 
-          <div className="mt-6">
-            <GlowingButton
-              onClick={onBuyTicket}
-              className={
-                isCard ? "w-full py-2 text-base" : "w-full py-4 text-lg"
-              }
-              glowColor="rgba(139, 92, 246, 0.5)"
-            >
-              {t("buyTickets.buyButton")}
-            </GlowingButton>
-          </div>
-        </motion.div>
-      </div>
-    </motion.section>
-  );
+        <GlowingButton
+          onClick={onBuyTicket}
+          className="w-full py-3 text-base font-medium"
+          glowColor="rgba(139, 92, 246, 0.5)"
+        >
+          {t("buyTickets.buyButton")}
+        </GlowingButton>
+      </Card>
+    );
+  }
+ 
 }
