@@ -4,6 +4,7 @@ import { Coins, Ticket, Gift, ArrowLeftRight } from "lucide-react";
 import Link from "next/link";
 import { Stagger, Item } from "~~/components/ui/motion";
 import { useTranslation } from "react-i18next";
+import { useAccount } from "@starknet-react/core";
 
 type Props = {
   hasStrkp: boolean;
@@ -14,6 +15,8 @@ type Props = {
 
 export default function StepsWizard(_: Props) {
   const { t } = useTranslation();
+  const { status } = useAccount();
+  const isConnected = status === "connected";
 
   const steps = [
     {
@@ -51,41 +54,51 @@ export default function StepsWizard(_: Props) {
   ];
 
   return (
-    <Card className="p-6 bg-gradient-to-br from-slate-900/70 via-slate-800/60 to-slate-900/70 backdrop-blur-xl rounded-2xl border border-white/10 shadow-lg">
-      <h3 className="mb-6 text-xl font-bold text-white">
-        {t("dashboard.steps.title")}
-      </h3>
-      <Stagger className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 items-stretch">
-        {steps.map((s) => (
-          <Item key={s.id} className="h-full">
-            <div
-              className="flex h-full flex-col justify-between rounded-2xl border border-white/10 bg-gradient-to-br from-[#1e1e2f]/90 to-[#12121c]/90 
-              px-5 py-5 shadow-md hover:shadow-xl transition-all duration-300 hover:border-starkMagenta/60 hover:scale-[1.02]"
-            >
-              <div>
-                <div className="mb-3 flex items-center justify-between">
-                  <span className="rounded-full bg-starkMagenta/20 px-3 py-0.5 text-xs text-starkMagenta font-medium">
-                    {t("dashboard.steps.step", { id: s.id })}
-                  </span>
-                  <span className="text-starkMagenta">{s.icon}</span>
-                </div>
-                <div className="font-semibold text-lg text-white">
-                  {s.title}
-                </div>
-                <div className="mb-4 text-sm text-white/70">{s.desc}</div>
-              </div>
+    <div
+      className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-6"
+      style={{ boxShadow: "0 10px 25px rgba(255,214,0,0.1)" }}
+    >
+      {/* Gradient Background Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-starkYellow/5 via-transparent to-purple-500/5 pointer-events-none" />
 
-              <Link
-                href={s.href}
-                className="btn btn-sm w-full bg-gradient-to-r from-starkMagenta to-purple-600 text-white font-semibold 
-                hover:from-purple-600 hover:to-starkMagenta transition-all duration-200"
-              >
-                {s.action}
-              </Link>
-            </div>
-          </Item>
-        ))}
-      </Stagger>
-    </Card>
+      <div className="relative z-10">
+        <h3 className="mb-6 text-xl font-bold bg-gradient-to-r from-starkYellow to-white bg-clip-text text-transparent">
+          {t("dashboard.steps.title")}
+        </h3>
+        <Stagger className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 items-stretch">
+          {steps.map((s) => (
+            <Item key={s.id} className="h-full">
+              <div className="flex h-full flex-col justify-between rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm px-4 py-4 hover:bg-white/10 hover:border-starkYellow/30 transition-all duration-300 hover:scale-[1.02] group">
+                <div>
+                  <div className="mb-3 flex items-center justify-between">
+                    <span className="rounded-full bg-starkYellow/20 px-2.5 py-1 text-xs text-starkYellow font-medium border border-starkYellow/30">
+                      {t("dashboard.steps.step", { id: s.id })}
+                    </span>
+                    <span className="text-starkYellow group-hover:text-starkYellow-light transition-colors">
+                      {s.icon}
+                    </span>
+                  </div>
+                  <div className="font-semibold text-base text-white mb-2">
+                    {s.title}
+                  </div>
+                  <div className="mb-4 text-sm text-white/70 group-hover:text-white/80 transition-colors">
+                    {s.desc}
+                  </div>
+                </div>
+
+                {isConnected && (
+                  <Link
+                    href={s.href}
+                    className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-gradient-to-r from-starkYellow/20 to-starkYellow/10 border border-starkYellow/30 text-starkYellow hover:from-starkYellow hover:to-starkYellow-light hover:text-black font-medium text-sm transition-all duration-300 hover:scale-105"
+                  >
+                    {s.action}
+                  </Link>
+                )}
+              </div>
+            </Item>
+          ))}
+        </Stagger>
+      </div>
+    </div>
   );
 }

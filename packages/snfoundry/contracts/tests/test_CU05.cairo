@@ -38,9 +38,7 @@ fn deploy_vault_contract() -> (IStarkPlayVaultDispatcher, IMintableDispatcher) {
     let _strk_token = deploy_mock_strk_token();
 
     let starkplay_contract = declare("StarkPlayERC20").unwrap().contract_class();
-    let starkplay_constructor_calldata = array![
-        owner_address().into(), owner_address().into(),
-    ];
+    let starkplay_constructor_calldata = array![owner_address().into(), owner_address().into()];
     let (starkplay_address, _) = starkplay_contract
         .deploy(@starkplay_constructor_calldata)
         .unwrap();
@@ -57,10 +55,8 @@ fn deploy_vault_contract() -> (IStarkPlayVaultDispatcher, IMintableDispatcher) {
     start_cheat_caller_address(starkplay_token.contract_address, owner_address());
     starkplay_token.grant_minter_role(vault_address);
     starkplay_token_burn.grant_burner_role(vault_address);
-    starkplay_token
-        .set_minter_allowance(vault_address, 1000000000000000000000000000_u256);
-    starkplay_token_burn
-        .set_burner_allowance(vault_address, 1000000000000000000000000000_u256);
+    starkplay_token.set_minter_allowance(vault_address, 1000000000000000000000000000_u256);
+    starkplay_token_burn.set_burner_allowance(vault_address, 1000000000000000000000000000_u256);
     stop_cheat_caller_address(starkplay_token.contract_address);
 
     (vault, starkplay_token)
@@ -83,10 +79,7 @@ fn deploy_mock_strk_token() -> IMintableDispatcher {
     start_cheat_caller_address(deployed_address, owner_address());
 
     strk_token.grant_minter_role(owner_address());
-    strk_token
-        .set_minter_allowance(
-            owner_address(), 1000000000000000000000000000_u256,
-        );
+    strk_token.set_minter_allowance(owner_address(), 1000000000000000000000000000_u256);
 
     strk_token.mint(USER(), 1000000000000000000000000000_u256);
 
@@ -178,7 +171,9 @@ fn test_create_new_draw_default_duration() {
     let start_block = lottery.GetJackpotEntryStartBlock(current_draw_id);
     let end_block = lottery.GetJackpotEntryEndBlock(current_draw_id);
 
-    assert(end_block == start_block + STANDARD_DRAW_DURATION_BLOCKS, 'Should use standard duration');
+    assert(
+        end_block == start_block + STANDARD_DRAW_DURATION_BLOCKS, 'Should use standard duration',
+    );
 }
 
 #[test]
@@ -256,7 +251,9 @@ fn test_backward_compatibility_create_new_draw() {
     let start_block = lottery.GetJackpotEntryStartBlock(current_draw_id);
     let end_block = lottery.GetJackpotEntryEndBlock(current_draw_id);
 
-    assert(end_block == start_block + STANDARD_DRAW_DURATION_BLOCKS, 'Should use standard duration');
+    assert(
+        end_block == start_block + STANDARD_DRAW_DURATION_BLOCKS, 'Should use standard duration',
+    );
 }
 
 #[should_panic(expected: 'Duration must be > 0')]

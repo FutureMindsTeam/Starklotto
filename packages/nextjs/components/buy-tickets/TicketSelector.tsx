@@ -31,7 +31,7 @@ export default function TicketSelector({
 
   return (
     <motion.div
-      className="bg-[#232b3b] rounded-lg p-4 mb-4"
+      className="bg-white/5 border border-white/10 rounded-lg p-4 mb-4"
       variants={ticketVariants}
       initial="hidden"
       animate="visible"
@@ -41,7 +41,8 @@ export default function TicketSelector({
         <p className="text-white font-medium">Ticket #{ticketId}</p>
         <motion.button
           onClick={() => onGenerateRandom(ticketId)}
-          className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded-lg flex items-center gap-1"
+          className="bg-gradient-to-r from-starkYellow/20 to-starkYellow/10 border border-starkYellow/30 text-starkYellow px-3 py-1 rounded-lg flex items-center gap-1 hover:from-starkYellow hover:to-starkYellow-light hover:text-black transition-all duration-300"
+          style={{ boxShadow: "0 2px 8px rgba(255,214,0,0.2)" }}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >

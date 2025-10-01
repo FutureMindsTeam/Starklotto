@@ -84,7 +84,7 @@ export const AddressInfoDropdown = ({
       <details ref={dropdownRef} className="dropdown dropdown-end leading-3">
         <summary
           tabIndex={0}
-          className="btn bg-transparent btn-sm px-2 py-[0.35rem] dropdown-toggle gap-0 !h-auto border border-[#5c4fe5] "
+          className="group relative flex items-center gap-2 px-3 py-2 rounded-xl border border-white/10 bg-white/5 backdrop-blur-md hover:bg-starkYellow/10 hover:border-starkYellow/30 transition-all duration-300 cursor-pointer"
         >
           <div className="hidden [@media(min-width:412px)]:block">
             {getStarknetPFPIfExists(profile?.profilePicture) &&
@@ -110,27 +110,25 @@ export const AddressInfoDropdown = ({
               <BlockieAvatar address={address} size={28} ensImage={ensAvatar} />
             )}
           </div>
-          <span className="ml-2 mr-2 text-sm">
+          <span className="text-sm font-medium text-white group-hover:text-starkYellow transition-colors">
             {isENS(displayName)
               ? displayName
               : profile?.name ||
                 address?.slice(0, 6) + "..." + address?.slice(-4)}
           </span>
-          <ChevronDownIcon className="h-6 w-4 ml-2 sm:ml-0 sm:block hidden" />
+          <ChevronDownIcon className="h-4 w-4 text-starkYellow group-hover:text-starkYellow-light transition-colors" />
         </summary>
         <ul
           tabIndex={0}
-          className={`dropdown-content menu z-[2] p-2 mt-2 rounded-[5px] gap-1 border border-[#5c4fe5] bg-base-100`}
+          className="dropdown-content menu z-[2] p-2 mt-2 rounded-xl border border-white/10 bg-white/5 backdrop-blur-md shadow-xl gap-1"
+          style={{ boxShadow: "0 10px 25px rgba(255,214,0,0.1)" }}
         >
           <NetworkOptions hidden={!selectingNetwork} />
           <li className={selectingNetwork ? "hidden" : ""}>
             {addressCopied ? (
-              <div className="btn-sm !rounded-xl flex gap-3 py-3">
-                <CheckCircleIcon
-                  className="text-xl font-normal h-6 w-4 cursor-pointer ml-2 sm:ml-0"
-                  aria-hidden="true"
-                />
-                <span className=" whitespace-nowrap">Copy address</span>
+              <div className="flex items-center gap-3 px-4 py-2.5 text-left hover:bg-starkYellow/10 transition-all duration-200 text-starkYellow rounded-lg">
+                <CheckCircleIcon className="h-4 w-4" aria-hidden="true" />
+                <span className="text-sm font-medium">Address copied!</span>
               </div>
             ) : (
               //@ts-ignore
@@ -143,12 +141,12 @@ export const AddressInfoDropdown = ({
                   }, 800);
                 }}
               >
-                <div className="btn-sm !rounded-xl flex gap-3 py-3">
+                <div className="flex items-center gap-3 px-4 py-2.5 text-left hover:bg-starkYellow/10 transition-all duration-200 text-white/80 hover:text-white cursor-pointer rounded-lg">
                   <DocumentDuplicateIcon
-                    className="text-xl font-normal h-6 w-4 cursor-pointer ml-2 sm:ml-0"
+                    className="h-4 w-4"
                     aria-hidden="true"
                   />
-                  <span className=" whitespace-nowrap">Copy address</span>
+                  <span className="text-sm font-medium">Copy address</span>
                 </div>
               </CopyToClipboard>
             )}
@@ -164,34 +162,31 @@ export const AddressInfoDropdown = ({
           </li> */}
           {chain.network != "devnet" ? (
             <li className={selectingNetwork ? "hidden" : ""}>
-              <button
-                className="menu-item btn-sm !rounded-xl flex gap-3 py-3"
-                type="button"
+              <a
+                target="_blank"
+                href={blockExplorerAddressLink}
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 px-4 py-2.5 text-left hover:bg-starkYellow/10 transition-all duration-200 text-white/80 hover:text-white rounded-lg"
               >
-                <ArrowTopRightOnSquareIcon className="h-6 w-4 ml-2 sm:ml-0" />
-                <a
-                  target="_blank"
-                  href={blockExplorerAddressLink}
-                  rel="noopener noreferrer"
-                  className="whitespace-nowrap"
-                >
+                <ArrowTopRightOnSquareIcon className="h-4 w-4" />
+                <span className="text-sm font-medium">
                   View on Block Explorer
-                </a>
-              </button>
+                </span>
+              </a>
             </li>
           ) : null}
 
           {chain.network == "devnet" ? (
             <li className={selectingNetwork ? "hidden" : ""}>
               <button
-                className="menu-item btn-sm !rounded-xl flex gap-3 py-3"
+                className="flex items-center gap-3 px-4 py-2.5 text-left hover:bg-starkYellow/10 transition-all duration-200 text-white/80 hover:text-white rounded-lg w-full"
                 type="button"
                 onClick={() => {
                   setShowBurnerAccounts(true);
                 }}
               >
-                <UserCircleIcon className="h-6 w-4 ml-2 sm:ml-0" />
-                <span className="whitespace-nowrap">Switch Account</span>
+                <UserCircleIcon className="h-4 w-4" />
+                <span className="text-sm font-medium">Switch Account</span>
               </button>
             </li>
           ) : null}
@@ -279,12 +274,12 @@ export const AddressInfoDropdown = ({
           ) : null} */}
           <li className={selectingNetwork ? "hidden" : ""}>
             <button
-              className="menu-item text-secondary-content btn-sm !rounded-xl flex gap-3 py-3"
+              className="flex items-center gap-3 px-4 py-2.5 text-left hover:bg-red-500/10 transition-all duration-200 text-red-400 hover:text-red-300 rounded-lg w-full"
               type="button"
               onClick={() => disconnect()}
             >
-              <ArrowLeftEndOnRectangleIcon className="h-6 w-4 ml-2 sm:ml-0" />{" "}
-              <span>Disconnect</span>
+              <ArrowLeftEndOnRectangleIcon className="h-4 w-4" />
+              <span className="text-sm font-medium">Disconnect</span>
             </button>
           </li>
         </ul>

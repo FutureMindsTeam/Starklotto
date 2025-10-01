@@ -13,7 +13,7 @@ interface ScrollToTopProps {
 export function ScrollToTop({
   threshold = 400,
   className = "",
-  variant = "dapp",
+  variant = "landing",
 }: ScrollToTopProps) {
   const [isVisible, setIsVisible] = useState(false);
 

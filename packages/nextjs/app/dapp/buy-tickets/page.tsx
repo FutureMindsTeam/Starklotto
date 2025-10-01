@@ -5,7 +5,6 @@ import { ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
 
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import { Abi, useContract } from "@starknet-react/core";
 import { useTransactor } from "~~/hooks/scaffold-stark/useTransactor";
 import { LOTT_CONTRACT_NAME } from "~~/utils/Constants";
@@ -397,148 +396,143 @@ export default function BuyTicketsPage() {
   return (
     <div className="pb-8 px-4">
       <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Main Content */}
-          <div className="lg:col-span-2 space-y-6">
+        <div className="flex justify-center">
+          {/* Main Content - Centered */}
+          <div className="w-full max-w-4xl space-y-6">
             <motion.div
-              className="bg-[#1a2234] rounded-xl p-6"
+              className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-6"
+              style={{ boxShadow: "0 10px 25px rgba(255,214,0,0.1)" }}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <h1 className="text-3xl font-bold text-purple-400 mb-6">
-                {t("buyTickets.title")}
-              </h1>
+              {/* Gradient Background Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-br from-starkYellow/5 via-transparent to-purple-500/5 pointer-events-none" />
 
-              {/* Next Draw */}
-              <div className="mb-6">
-                <p className="text-gray-300 mb-1">{t("buyTickets.nextDraw")}</p>
-                <motion.p
-                  className="text-[#4ade80] text-4xl font-bold"
-                  initial={{ scale: 0.9 }}
-                  animate={{ scale: 1 }}
-                >
-                  {jackpotAmount}
-                </motion.p>
+              {/* Animated Background Glow */}
+              <div className="absolute -inset-1 bg-gradient-to-r from-starkYellow/10 via-purple-500/10 to-starkYellow/10 rounded-2xl blur-xl opacity-30 animate-pulse" />
 
-                {/* Countdown - Nuevo componente basado en bloques */}
-                <div className="mt-4">
-                  <BlockBasedCountdownTimer
-                    blocksRemaining={blocksRemaining}
-                    currentBlock={currentBlock}
-                    timeRemaining={countdownFromBlocks}
-                  />
+              <div className="relative z-10">
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-starkYellow to-white bg-clip-text text-transparent mb-6">
+                  {t("buyTickets.title")}
+                </h1>
+
+                {/* Next Draw */}
+                <div className="mb-6">
+                  <p className="text-white/70 mb-1">
+                    {t("buyTickets.nextDraw")}
+                  </p>
+                  <motion.p
+                    className="text-starkYellow text-4xl font-bold"
+                    initial={{ scale: 0.9 }}
+                    animate={{ scale: 1 }}
+                  >
+                    {jackpotAmount}
+                  </motion.p>
+
+                  {/* Countdown - Nuevo componente basado en bloques */}
+                  <div className="mt-4">
+                    <BlockBasedCountdownTimer
+                      blocksRemaining={blocksRemaining}
+                      currentBlock={currentBlock}
+                      timeRemaining={countdownFromBlocks}
+                    />
+                  </div>
                 </div>
-              </div>
 
-              {/* User Balance Display */}
-              <div className="bg-[#232b3b] rounded-lg p-4 mb-6">
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <div className="text-[#4ade80]">
-                      <svg
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <rect
-                          x="2"
-                          y="6"
-                          width="20"
-                          height="12"
-                          rx="2"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                        />
-                        <path
-                          d="M6 10H10"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                        />
-                      </svg>
+                {/* User Balance Display */}
+                <div className="bg-white/5 border border-white/10 rounded-lg p-4 mb-6">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <div className="text-starkYellow">
+                        <svg
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <rect
+                            x="2"
+                            y="6"
+                            width="20"
+                            height="12"
+                            rx="2"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          />
+                          <path
+                            d="M6 10H10"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                          />
+                        </svg>
+                      </div>
+                      <p className="text-white font-medium">
+                        {t("buyTickets.yourBalance")}
+                      </p>
                     </div>
-                    <p className="text-white font-medium">
-                      {t("buyTickets.yourBalance")}
+                    <p className="text-starkYellow font-bold text-lg">
+                      {userBalanceFormatted} $TRKP
                     </p>
                   </div>
-                  <p className="text-[#4ade80] font-bold text-lg">
-                    {userBalanceFormatted} $TRKP
-                  </p>
+                  {!isDrawActive && (
+                    <p className="text-red-400 text-sm mt-2">
+                      ⚠️ {t("buyTickets.drawNotActive")}
+                    </p>
+                  )}
+                  {!contractsReady && (
+                    <p className="text-starkYellow text-sm mt-2">
+                      ⚠️ {t("buyTickets.contractsNotReady")}
+                    </p>
+                  )}
                 </div>
-                {!isDrawActive && (
-                  <p className="text-red-400 text-sm mt-2">
-                    ⚠️ {t("buyTickets.drawNotActive")}
-                  </p>
-                )}
-                {!contractsReady && (
-                  <p className="text-yellow-400 text-sm mt-2">
-                    ⚠️ {t("buyTickets.contractsNotReady")}
-                  </p>
-                )}
+
+                {/* Ticket Controls */}
+                <TicketControls
+                  ticketCount={ticketCount}
+                  onIncreaseTickets={increaseTickets}
+                  onDecreaseTickets={decreaseTickets}
+                  onGenerateRandomForAll={generateRandomForAll}
+                />
+
+                {/* Ticket Selection */}
+                <div className="space-y-4">
+                  {Array.from({ length: ticketCount }).map((_, idx) => {
+                    const ticketId = idx + 1;
+                    return (
+                      <TicketSelector
+                        key={ticketId}
+                        ticketId={ticketId}
+                        selectedNumbers={selectedNumbers[ticketId] || []}
+                        animatingNumbers={animatingNumbers}
+                        onNumberSelect={selectNumber}
+                        onGenerateRandom={generateRandom}
+                        numberAnimationVariants={numberAnimationVariants}
+                        lotteryRevealVariants={lotteryRevealVariants}
+                        ticketVariants={ticketVariants}
+                        idx={idx}
+                      />
+                    );
+                  })}
+                </div>
+
+                {/* Purchase Summary (usa precio on-chain) */}
+                {/* Purchase Summary (usa precio on-chain) */}
+                <PurchaseSummary
+                  unitPriceFormatted={unitPriceFormatted}
+                  totalCostFormatted={totalFormatted}
+                  isPriceLoading={priceLoading}
+                  priceError={priceError?.message ?? null}
+                  isLoading={isLoading}
+                  txError={buyError}
+                  txSuccess={buySuccess}
+                  onPurchase={handlePurchase}
+                  isDrawActive={isDrawActive}
+                  contractsReady={contractsReady}
+                />
               </div>
-
-              {/* Ticket Controls */}
-              <TicketControls
-                ticketCount={ticketCount}
-                onIncreaseTickets={increaseTickets}
-                onDecreaseTickets={decreaseTickets}
-                onGenerateRandomForAll={generateRandomForAll}
-              />
-
-              {/* Ticket Selection */}
-              <div className="space-y-4">
-                {Array.from({ length: ticketCount }).map((_, idx) => {
-                  const ticketId = idx + 1;
-                  return (
-                    <TicketSelector
-                      key={ticketId}
-                      ticketId={ticketId}
-                      selectedNumbers={selectedNumbers[ticketId] || []}
-                      animatingNumbers={animatingNumbers}
-                      onNumberSelect={selectNumber}
-                      onGenerateRandom={generateRandom}
-                      numberAnimationVariants={numberAnimationVariants}
-                      lotteryRevealVariants={lotteryRevealVariants}
-                      ticketVariants={ticketVariants}
-                      idx={idx}
-                    />
-                  );
-                })}
-              </div>
-
-              {/* Purchase Summary (usa precio on-chain) */}
-              {/* Purchase Summary (usa precio on-chain) */}
-              <PurchaseSummary
-                unitPriceFormatted={unitPriceFormatted}
-                totalCostFormatted={totalFormatted}
-                isPriceLoading={priceLoading}
-                priceError={priceError?.message ?? null}
-                isLoading={isLoading}
-                txError={buyError}
-                txSuccess={buySuccess}
-                onPurchase={handlePurchase}
-                isDrawActive={isDrawActive}
-                contractsReady={contractsReady}
-              />
             </motion.div>
-          </div>
-
-          {/* Right Column - Illustration */}
-          <div className="hidden lg:block">
-            <div className="flex flex-col items-center justify-center h-full">
-              <Image
-                src="/jackpot.svg"
-                alt="Jackpot Illustration"
-                width={320}
-                height={320}
-                className="mb-6"
-              />
-              <p className="text-gray-400 text-center">
-                {/* Puedes agregar aquí más textos traducibles si lo deseas */}
-              </p>
-            </div>
           </div>
         </div>
       </div>

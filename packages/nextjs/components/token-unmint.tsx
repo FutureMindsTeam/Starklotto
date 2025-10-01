@@ -131,18 +131,27 @@ export default function TokenUnmint({
           document.body,
         )}
 
-      <div className="bg-gray-900 text-white rounded-xl shadow-lg overflow-hidden border border-purple-500/20">
-        <div className="flex items-center justify-center p-4 border-b border-purple-500/30">
-          <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-purple-600">
+      <div
+        className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md text-white shadow-lg"
+        style={{ boxShadow: "0 10px 25px rgba(255,214,0,0.1)" }}
+      >
+        {/* Gradient Background Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-starkYellow/5 via-transparent to-purple-500/5 pointer-events-none" />
+
+        {/* Animated Background Glow */}
+        <div className="absolute -inset-1 bg-gradient-to-r from-starkYellow/10 via-purple-500/10 to-starkYellow/10 rounded-2xl blur-xl opacity-30 animate-pulse" />
+
+        <div className="relative z-10 flex items-center justify-center p-4 border-b border-white/10">
+          <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-starkYellow to-white">
             Unmint STRKP
           </h2>
         </div>
 
-        <div className="p-4 space-y-4">
+        <div className="relative z-10 p-4 space-y-4">
           {/* Warning about convertible tokens */}
-          <div className="rounded-lg bg-yellow-900/20 border border-yellow-500/30 py-1 px-3">
+          <div className="rounded-lg bg-starkYellow/10 border border-starkYellow/30 py-1 px-3">
             <div className="flex items-start gap-2">
-              <div className="text-sm text-yellow-200">
+              <div className="text-sm text-starkYellow">
                 <p>
                   Note: Only STRKP tokens earned as lottery prizes can be
                   converted to STRK. Tokens minted for gameplay are NOT
@@ -153,26 +162,26 @@ export default function TokenUnmint({
           </div>
 
           {/* Input STRKP - Token to spend */}
-          <div className="rounded-lg bg-gray-800 p-4 border border-purple-500/20">
+          <div className="rounded-lg bg-white/5 border border-white/10 p-4">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center p-0.5">
-                  <div className="w-full h-full rounded-full bg-gray-900 flex items-center justify-center">
-                    <span className="text-purple-400 text-xs font-bold">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-starkYellow to-starkYellow-light flex items-center justify-center p-0.5">
+                  <div className="w-full h-full rounded-full bg-black flex items-center justify-center">
+                    <span className="text-starkYellow text-xs font-bold">
                       $P
                     </span>
                   </div>
                 </div>
-                <span className="font-semibold">STRKP</span>
+                <span className="font-semibold text-white">STRKP</span>
               </div>
-              <div className="text-right text-xl font-medium">
+              <div className="text-right text-xl font-medium text-white">
                 {isValidSelection ? selectedAmount.toFixed(6) : "0.0"}
               </div>
             </div>
 
-            <div className="flex items-center justify-between text-sm text-gray-300">
+            <div className="flex items-center justify-between text-sm text-white/70">
               <span>Balance: {prizeBalance.toFixed(4)} STRKP</span>
-              <span className="font-medium text-purple-300">
+              <span className="font-medium text-starkYellow">
                 {isValidSelection ? selectedAmount.toFixed(6) : "0.0"} STRKP
               </span>
             </div>
@@ -185,8 +194,8 @@ export default function TokenUnmint({
                 key={percentage}
                 className={`py-2 px-3 text-sm font-medium rounded-md transition-all duration-200 ${
                   selectedPercentage === percentage
-                    ? "bg-purple-500 text-white shadow-lg scale-105"
-                    : "bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 hover:scale-102"
+                    ? "bg-starkYellow text-black shadow-lg scale-105 border border-starkYellow/30"
+                    : "bg-starkYellow/20 hover:bg-starkYellow/30 text-starkYellow hover:scale-102 border border-starkYellow/30"
                 } ${
                   isProcessing || prizeBalance <= 0
                     ? "opacity-50 cursor-not-allowed"
@@ -202,17 +211,17 @@ export default function TokenUnmint({
 
           {/* Arrow indicator */}
           <div className="flex justify-center">
-            <div className="bg-purple-500/20 p-2 rounded-full">
-              <RotateCw size={24} className="text-purple-400 rotate-90" />
+            <div className="bg-starkYellow/20 border border-starkYellow/30 p-2 rounded-full">
+              <RotateCw size={24} className="text-starkYellow rotate-90" />
             </div>
           </div>
 
           {/* Output STRK - Token to receive */}
-          <div className="rounded-lg bg-gray-800 p-4 border border-purple-500/20">
+          <div className="rounded-lg bg-white/5 border border-white/10 p-4">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center p-0.5">
-                  <div className="w-full h-full rounded-full bg-gray-900 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-starkYellow to-starkYellow-light flex items-center justify-center p-0.5">
+                  <div className="w-full h-full rounded-full bg-black flex items-center justify-center">
                     <Image
                       src="/strk-svg.svg"
                       alt="STRK Token"
@@ -222,47 +231,47 @@ export default function TokenUnmint({
                     />
                   </div>
                 </div>
-                <span className="font-semibold">STRK</span>
+                <span className="font-semibold text-white">STRK</span>
               </div>
-              <div className="text-right text-xl font-medium">
+              <div className="text-right text-xl font-medium text-white">
                 {isValidSelection ? netAmount.toFixed(6) : "0.0"}
               </div>
             </div>
 
-            <div className="flex items-center justify-between text-sm text-gray-300">
+            <div className="flex items-center justify-between text-sm text-white/70">
               <span>You will receive</span>
-              <span className="font-medium text-purple-300">
+              <span className="font-medium text-starkYellow">
                 {isValidSelection ? netAmount.toFixed(6) : "0.0"} STRK
               </span>
             </div>
           </div>
 
           {/* Unmint details */}
-          <div className="rounded-lg bg-gray-800 p-4 space-y-2 border border-purple-500/20">
+          <div className="rounded-lg bg-white/5 border border-white/10 p-4 space-y-2">
             <div className="flex items-center justify-between text-sm">
               <div className="flex items-center gap-2">
-                <span className="text-purple-400 text-xs font-bold">$P</span>
-                <span>1 STRKP = 1 STRK</span>
+                <span className="text-starkYellow text-xs font-bold">$P</span>
+                <span className="text-white/80">1 STRKP = 1 STRK</span>
               </div>
             </div>
 
             <div className="flex items-center justify-between text-sm">
               <div className="flex items-center gap-1">
-                <span>Unmint Fee (3%)</span>
+                <span className="text-white/80">Unmint Fee (3%)</span>
                 <Tooltip content="A 3% fee is applied to all unmint operations">
-                  <Info size={20} className="text-purple-400" />
+                  <Info size={20} className="text-starkYellow" />
                 </Tooltip>
               </div>
-              <span>
+              <span className="text-white/70">
                 {isValidSelection ? feeAmount.toFixed(6) : "0.0"} STRKP
               </span>
             </div>
 
             <div className="flex items-center justify-between text-sm">
               <div className="flex items-center gap-1">
-                <span>Net amount</span>
+                <span className="text-white/80">Net amount</span>
               </div>
-              <span className="font-medium text-purple-300">
+              <span className="font-medium text-starkYellow">
                 {isValidSelection ? netAmount.toFixed(6) : "0.0"} STRK
               </span>
             </div>
@@ -271,15 +280,20 @@ export default function TokenUnmint({
           {error && <div className="text-red-400 text-sm px-1">{error}</div>}
         </div>
 
-        <div className="p-4">
+        <div className="relative z-10 p-4">
           <button
-            className={`w-full py-6 text-lg font-medium rounded-lg transition-colors ${
+            className={`w-full py-6 text-lg font-medium rounded-lg transition-all duration-300 ${
               isValidSelection
-                ? "bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800"
-                : "bg-gray-700 text-gray-400 cursor-not-allowed"
+                ? "bg-gradient-to-r from-starkYellow/20 to-starkYellow/10 border border-starkYellow/30 text-starkYellow hover:from-starkYellow hover:to-starkYellow-light hover:text-black hover:scale-105"
+                : "bg-white/5 border border-white/20 text-white/50 cursor-not-allowed"
             }`}
             disabled={!isValidSelection || isProcessing}
             onClick={handleUnmint}
+            style={
+              isValidSelection
+                ? { boxShadow: "0 4px 12px rgba(255,214,0,0.2)" }
+                : {}
+            }
           >
             {isProcessing ? "Unminting..." : "Unmint STRKP"}
           </button>

@@ -22,6 +22,7 @@ export default function DashboardPage() {
   const navigate = useRouter();
   const { scrollY } = useScroll();
   const { status } = useAccount();
+  const isConnected = status === "connected";
 
   const heroY = useTransform(scrollY, [0, 500], [0, -100]);
   const prizeDistributionY = useTransform(scrollY, [0, 2000], [0, -50]);
@@ -79,7 +80,9 @@ export default function DashboardPage() {
           <TotalPool />
         </div>
 
-        <div className="space-y-4 lg:col-span-2">
+        <div
+          className={`space-y-4 ${isConnected ? "lg:col-span-2" : "lg:col-span-3"}`}
+        >
           {/* Lottery Process */}
           <StepsWizard {...data.wizard} />
 
@@ -87,6 +90,7 @@ export default function DashboardPage() {
             variant="card"
             heroY={heroY}
             jackpot={jackpot}
+            isConnected={isConnected}
             showSecurityInfo={showSecurityInfo}
             targetDate={targetDate}
             onBuyTicket={() => handleRoute("/dapp/buy-tickets")}
@@ -101,13 +105,15 @@ export default function DashboardPage() {
             useBlockBasedCountdown={true}
           />
 
-          <RecentActivityCard items={data.history} />
+          {isConnected && <RecentActivityCard items={data.history} />}
         </div>
 
-        <div className="space-y-4">
-          <BalancesCard {...data.balances} />
-          <NotificationsCard list={data.notifications} />
-        </div>
+        {isConnected && (
+          <div className="space-y-4">
+            <BalancesCard {...data.balances} />
+            <NotificationsCard list={data.notifications} />
+          </div>
+        )}
 
         <div className="lg:col-span-3">
           <LastDrawResultsCard />
