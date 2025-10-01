@@ -58,8 +58,9 @@ export function FundDistributionSection({
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-lg text-gray-300 max-w-2xl mx-auto"
           >
-            Transparent breakdown of how your ticket purchase is distributed across different categories. 
-            Every contribution supports prizes, social impact, and platform development.
+            Transparent breakdown of how your ticket purchase is distributed
+            across different categories. Every contribution supports prizes,
+            social impact, and platform development.
           </motion.p>
         </div>
 
@@ -79,8 +80,8 @@ export function FundDistributionSection({
           className="text-center mt-8"
         >
           <p className="text-gray-400 text-sm">
-            Distribution percentages are fixed as per our tokenomics model and ensure 
-            sustainable growth while maximizing community impact.
+            Distribution percentages are fixed as per our tokenomics model and
+            ensure sustainable growth while maximizing community impact.
           </p>
         </motion.div>
       </motion.div>

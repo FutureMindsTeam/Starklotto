@@ -2,18 +2,25 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
-import { 
-  DollarSign, 
-  PieChart as PieChartIcon, 
-  BarChart3, 
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+  Legend,
+} from "recharts";
+import {
+  DollarSign,
+  PieChart as PieChartIcon,
+  BarChart3,
   Info,
   Heart,
   Coins,
   Wrench,
   Building,
   Code,
-  TrendingUp
+  TrendingUp,
 } from "lucide-react";
 
 interface FundDistributionProps {
@@ -75,7 +82,7 @@ const fundCategories: FundCategory[] = [
   },
 ];
 
-const COLORS = fundCategories.map(cat => cat.color);
+const COLORS = fundCategories.map((cat) => cat.color);
 
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
@@ -108,8 +115,8 @@ const CustomLegend = ({ payload }: any) => {
     <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-4">
       {payload.map((entry: any, index: number) => (
         <div key={index} className="flex items-center gap-2 text-sm">
-          <div 
-            className="w-3 h-3 rounded-full" 
+          <div
+            className="w-3 h-3 rounded-full"
             style={{ backgroundColor: entry.color }}
           />
           <span className="text-gray-300">{entry.value}</span>
@@ -119,16 +126,16 @@ const CustomLegend = ({ payload }: any) => {
   );
 };
 
-export default function FundDistribution({ 
+export default function FundDistribution({
   className = "",
-  ticketPrice = 1
+  ticketPrice = 1,
 }: FundDistributionProps) {
-  const [viewMode, setViewMode] = useState<'chart' | 'table'>('chart');
+  const [viewMode, setViewMode] = useState<"chart" | "table">("chart");
 
   // Calculate amounts based on ticket price
-  const categoriesWithAmounts = fundCategories.map(category => ({
+  const categoriesWithAmounts = fundCategories.map((category) => ({
     ...category,
-    amount: (category.percentage / 100) * ticketPrice
+    amount: (category.percentage / 100) * ticketPrice,
   }));
 
   return (
@@ -153,25 +160,26 @@ export default function FundDistribution({
         {/* View Mode Toggle */}
         <div className="flex items-center justify-between">
           <p className="text-gray-400 text-sm">
-            See how your ticket purchase is distributed across different categories
+            See how your ticket purchase is distributed across different
+            categories
           </p>
           <div className="flex bg-gray-800 rounded-lg p-1">
             <button
-              onClick={() => setViewMode('chart')}
+              onClick={() => setViewMode("chart")}
               className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-                viewMode === 'chart'
-                  ? 'bg-blue-600 text-white'
-                  : 'text-gray-400 hover:text-white'
+                viewMode === "chart"
+                  ? "bg-blue-600 text-white"
+                  : "text-gray-400 hover:text-white"
               }`}
             >
               <PieChartIcon className="w-4 h-4" />
             </button>
             <button
-              onClick={() => setViewMode('table')}
+              onClick={() => setViewMode("table")}
               className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-                viewMode === 'table'
-                  ? 'bg-blue-600 text-white'
-                  : 'text-gray-400 hover:text-white'
+                viewMode === "table"
+                  ? "bg-blue-600 text-white"
+                  : "text-gray-400 hover:text-white"
               }`}
             >
               <BarChart3 className="w-4 h-4" />
@@ -182,7 +190,7 @@ export default function FundDistribution({
 
       {/* Content */}
       <div className="p-6">
-        {viewMode === 'chart' ? (
+        {viewMode === "chart" ? (
           <div className="space-y-6">
             {/* Pie Chart */}
             <div className="flex flex-col lg:flex-row gap-6">
@@ -203,7 +211,10 @@ export default function FundDistribution({
                       dataKey="percentage"
                     >
                       {categoriesWithAmounts.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={COLORS[index % COLORS.length]}
+                        />
                       ))}
                     </Pie>
                     <Tooltip content={<CustomTooltip />} />
@@ -226,7 +237,7 @@ export default function FundDistribution({
                   >
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
-                        <div 
+                        <div
                           className="w-8 h-8 rounded-full flex items-center justify-center text-white"
                           style={{ backgroundColor: category.color }}
                         >
@@ -259,16 +270,24 @@ export default function FundDistribution({
             <h4 className="text-white font-semibold mb-4">
               Detailed Breakdown
             </h4>
-            
+
             {/* Desktop Table */}
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-700">
-                    <th className="text-left py-3 px-4 text-gray-300 font-medium">Category</th>
-                    <th className="text-right py-3 px-4 text-gray-300 font-medium">Percentage</th>
-                    <th className="text-right py-3 px-4 text-gray-300 font-medium">Amount</th>
-                    <th className="text-left py-3 px-4 text-gray-300 font-medium">Description</th>
+                    <th className="text-left py-3 px-4 text-gray-300 font-medium">
+                      Category
+                    </th>
+                    <th className="text-right py-3 px-4 text-gray-300 font-medium">
+                      Percentage
+                    </th>
+                    <th className="text-right py-3 px-4 text-gray-300 font-medium">
+                      Amount
+                    </th>
+                    <th className="text-left py-3 px-4 text-gray-300 font-medium">
+                      Description
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -282,17 +301,21 @@ export default function FundDistribution({
                     >
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-3">
-                          <div 
+                          <div
                             className="w-8 h-8 rounded-full flex items-center justify-center text-white"
                             style={{ backgroundColor: category.color }}
                           >
                             {category.icon}
                           </div>
-                          <span className="text-white font-medium">{category.name}</span>
+                          <span className="text-white font-medium">
+                            {category.name}
+                          </span>
                         </div>
                       </td>
                       <td className="text-right py-3 px-4">
-                        <span className="text-white font-semibold">{category.percentage}%</span>
+                        <span className="text-white font-semibold">
+                          {category.percentage}%
+                        </span>
                       </td>
                       <td className="text-right py-3 px-4">
                         <span className="text-green-400 font-semibold">
@@ -300,7 +323,9 @@ export default function FundDistribution({
                         </span>
                       </td>
                       <td className="py-3 px-4">
-                        <span className="text-gray-400 text-sm">{category.description}</span>
+                        <span className="text-gray-400 text-sm">
+                          {category.description}
+                        </span>
                       </td>
                     </motion.tr>
                   ))}
@@ -320,22 +345,28 @@ export default function FundDistribution({
                 >
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-3">
-                      <div 
+                      <div
                         className="w-8 h-8 rounded-full flex items-center justify-center text-white"
                         style={{ backgroundColor: category.color }}
                       >
                         {category.icon}
                       </div>
-                      <span className="text-white font-medium">{category.name}</span>
+                      <span className="text-white font-medium">
+                        {category.name}
+                      </span>
                     </div>
                     <div className="text-right">
-                      <div className="text-white font-semibold">{category.percentage}%</div>
+                      <div className="text-white font-semibold">
+                        {category.percentage}%
+                      </div>
                       <div className="text-green-400 text-sm">
                         ${category.amount?.toFixed(2)}
                       </div>
                     </div>
                   </div>
-                  <p className="text-gray-400 text-sm">{category.description}</p>
+                  <p className="text-gray-400 text-sm">
+                    {category.description}
+                  </p>
                 </motion.div>
               ))}
             </div>
@@ -349,11 +380,25 @@ export default function FundDistribution({
             <div>
               <h4 className="text-white font-semibold mb-2">How It Works</h4>
               <ul className="text-gray-300 text-sm space-y-1">
-                <li>• Each ticket purchase is automatically distributed according to these fixed percentages</li>
-                <li>• The Prize Pool (55%) funds all jackpot and tier prizes</li>
-                <li>• Social Impact (20%) supports ReFi initiatives and carbon credit programs</li>
-                <li>• Liquidity Reserve (10%) ensures platform stability and token convertibility</li>
-                <li>• Development and operational funds support continuous platform improvement</li>
+                <li>
+                  • Each ticket purchase is automatically distributed according
+                  to these fixed percentages
+                </li>
+                <li>
+                  • The Prize Pool (55%) funds all jackpot and tier prizes
+                </li>
+                <li>
+                  • Social Impact (20%) supports ReFi initiatives and carbon
+                  credit programs
+                </li>
+                <li>
+                  • Liquidity Reserve (10%) ensures platform stability and token
+                  convertibility
+                </li>
+                <li>
+                  • Development and operational funds support continuous
+                  platform improvement
+                </li>
               </ul>
             </div>
           </div>

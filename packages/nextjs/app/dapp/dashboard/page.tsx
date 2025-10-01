@@ -11,7 +11,11 @@ import RecentActivityCard from "~~/components/dashboard/dashboard/RecentActivity
 import NotificationsCard from "~~/components/dashboard/dashboard/NotificationsCard";
 import Skeleton from "~~/components/dashboard/dashboard/Skeleton";
 import TotalPool from "~~/components/dashboard/pool/page";
-import { HeroSection, PrizeDistributionSection, FundDistributionSection } from "~~/components/sections";
+import {
+  HeroSection,
+  PrizeDistributionSection,
+  FundDistributionSection,
+} from "~~/components/sections";
 import LastDrawResultsCard from "~~/components/dashboard/dashboard/LastDrawResultsCard";
 
 import { useDrawInfo } from "~~/hooks/scaffold-stark/useDrawInfo";
@@ -116,10 +120,10 @@ export default function DashboardPage() {
       </div>
 
       <PrizeDistributionSection prizeDistributionY={prizeDistributionY} />
-      
-      <FundDistributionSection 
-        fundDistributionY={fundDistributionY} 
-        ticketPrice={1} 
+
+      <FundDistributionSection
+        fundDistributionY={fundDistributionY}
+        ticketPrice={1}
       />
     </>
   );
