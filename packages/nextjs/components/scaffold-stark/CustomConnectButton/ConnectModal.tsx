@@ -69,9 +69,10 @@ const ConnectModal = () => {
     <div>
       <button
         onClick={() => setIsOpen(true)}
-        className="rounded-[18px] btn-sm font-bold px-8 bg-btn-wallet py-3 cursor-pointer"
+        className="group relative flex items-center gap-2 px-4 py-2 rounded-xl border border-white/10 bg-white/5 backdrop-blur-md hover:bg-starkYellow/10 hover:border-starkYellow/30 transition-all duration-300 font-medium"
+        style={{ boxShadow: "0 4px 12px rgba(255,214,0,0.1)" }}
       >
-        <span>{t("connect.button")}</span>
+        <span className="text-sm text-white group-hover:text-starkYellow transition-colors">{t("connect.button")}</span>
       </button>
 
       {isOpen && (
@@ -109,9 +110,8 @@ const ConnectModal = () => {
                         className="w-full flex flex-col"
                       >
                         <button
-                          className={`hover:bg-gradient-modal border rounded-md text-white py-[8px] pl-[10px] pr-16 flex items-center gap-4 ${
-                            isDarkMode ? "border-[#385183]" : ""
-                          }`}
+                          className={`hover:bg-gradient-modal border rounded-md text-white py-[8px] pl-[10px] pr-16 flex items-center gap-4 ${isDarkMode ? "border-[#385183]" : ""
+                            }`}
                           onClick={(e) => handleConnectBurner(e, ix)}
                         >
                           <BlockieAvatar

@@ -20,7 +20,10 @@ export default function DappLayout({
   } | null>(null);
 
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground overflow-x-hidden">
+    <div className="flex min-h-screen flex-col bg-[#101326] text-white overflow-x-hidden">
+      {/* Fondo degradado igual que landing page */}
+      <div className="absolute inset-0 -z-30 bg-gradient-to-b from-heroDarker via-heroDark to-heroDark" />
+
       <AnimatedBackground />
       <FloatingCoins />
       <Navbar
@@ -35,7 +38,7 @@ export default function DappLayout({
           onClose={() => setNotification(null)}
         />
       )}
-      <main className="flex-1 pt-24 relative z-10">{children}</main>
+      <main className="flex-1 pt-24 relative z-10 container mx-auto max-w-6xl px-4 sm:px-6">{children}</main>
       <ScrollToTop />
     </div>
   );
