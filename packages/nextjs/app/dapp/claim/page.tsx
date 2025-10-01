@@ -19,8 +19,8 @@ export default function ClaimPage() {
             transition={{ duration: 0.6 }}
           >
             <div className="flex items-center justify-center gap-3 mb-4">
-              <Gift className="h-8 w-8 text-[#00FFA3]" />
-              <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-[#00FFA3] to-[#00E5FF] bg-clip-text text-transparent">
+              <Gift className="h-8 w-8 text-starkYellow" />
+              <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-starkYellow to-white bg-clip-text text-transparent">
                 {t("navigation.claim")}
               </h1>
             </div>
@@ -28,18 +28,23 @@ export default function ClaimPage() {
 
           {/* Coming Soon Message */}
           <motion.div
-            className="bg-black/40 backdrop-blur-md border border-[#00FFA3]/20 rounded-2xl p-8"
+            className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-8"
+            style={{ boxShadow: "0 10px 25px rgba(255,214,0,0.1)" }}
             initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-[#00FFA3]/10 via-transparent to-[#00E5FF]/10 rounded-2xl blur-xl" />
+            {/* Gradient Background Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-br from-starkYellow/5 via-transparent to-purple-500/5 pointer-events-none" />
 
-            <div className="relative">
-              <p className="text-xl text-white/80">
+            {/* Animated Background Glow */}
+            <div className="absolute -inset-1 bg-gradient-to-r from-starkYellow/10 via-purple-500/10 to-starkYellow/10 rounded-2xl blur-xl opacity-30 animate-pulse" />
+
+            <div className="relative z-10">
+              <p className="text-xl text-white">
                 {t("comingSoon.message", "Coming Soon")}
               </p>
-              <p className="text-sm text-white/60 mt-2">
+              <p className="text-sm text-white/70 mt-2">
                 {t(
                   "comingSoon.description",
                   "This feature will be available soon. Stay tuned!",

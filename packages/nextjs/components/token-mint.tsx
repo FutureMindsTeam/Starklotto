@@ -308,22 +308,28 @@ export default function TokenMint({
           document.body,
         )}
 
-      <div className="bg-gray-900 text-white rounded-xl shadow-lg border border-purple-500/20 overflow-hidden">
+      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md text-white shadow-lg" style={{ boxShadow: "0 10px 25px rgba(255,214,0,0.1)" }}>
+        {/* Gradient Background Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-starkYellow/5 via-transparent to-purple-500/5 pointer-events-none" />
+
+        {/* Animated Background Glow */}
+        <div className="absolute -inset-1 bg-gradient-to-r from-starkYellow/10 via-purple-500/10 to-starkYellow/10 rounded-2xl blur-xl opacity-30 animate-pulse" />
+
         {/* Header */}
-        <div className="flex items-center justify-center p-4 border-b border-purple-500/30">
-          <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-purple-600">
+        <div className="relative z-10 flex items-center justify-center p-4 border-b border-white/10">
+          <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-starkYellow to-white">
             Mint $tarkPlay
           </h2>
         </div>
 
         {/* Body */}
-        <div className="p-4 space-y-4">
+        <div className="relative z-10 p-4 space-y-4">
           {/* Input STRK */}
-          <div className="bg-gray-800 p-4 rounded-lg border border-purple-500/20">
+          <div className="bg-white/5 border border-white/10 p-4 rounded-lg">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center p-0.5">
-                  <div className="w-full h-full rounded-full bg-gray-900 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-starkYellow to-starkYellow-light flex items-center justify-center p-0.5">
+                  <div className="w-full h-full rounded-full bg-black flex items-center justify-center">
                     <Image
                       src="/strk-svg.svg"
                       alt="STRK"
@@ -333,7 +339,7 @@ export default function TokenMint({
                     />
                   </div>
                 </div>
-                <span className="font-semibold">STRK</span>
+                <span className="font-semibold text-white">STRK</span>
               </div>
               <div className="w-[60%]">
                 <StarkInput
@@ -346,60 +352,60 @@ export default function TokenMint({
                 />
               </div>
             </div>
-            <div className="flex items-center justify-between text-sm text-gray-300">
+            <div className="flex items-center justify-between text-sm text-white/70">
               <span>Balance: {strkBalance.toFixed(4)} STRK</span>
               <button
-                className="h-6 px-2 text-xs bg-purple-500/20 hover:bg-purple-500/30 rounded-md transition-colors text-purple-300"
+                className="h-6 px-2 text-xs bg-starkYellow/20 hover:bg-starkYellow/30 rounded-md transition-colors text-starkYellow"
                 onClick={handleMaxClick}
               >
                 MAX
               </button>
             </div>
-            <div className="text-xs text-gray-400 mt-1">
+            <div className="text-xs text-white/60 mt-1">
               💡 Max 95% of balance to leave room for transaction fees
             </div>
           </div>
 
           {/* Arrow */}
           <div className="flex justify-center">
-            <div className="bg-purple-500/20 p-2 rounded-full">
-              <RotateCw size={24} className="text-purple-400 rotate-90" />
+            <div className="bg-starkYellow/20 border border-starkYellow/30 p-2 rounded-full">
+              <RotateCw size={24} className="text-starkYellow rotate-90" />
             </div>
           </div>
 
           {/* Output STRKP */}
-          <div className="bg-gray-800 p-4 rounded-lg border border-purple-500/20">
+          <div className="bg-white/5 border border-white/10 p-4 rounded-lg">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center p-0.5">
-                  <div className="w-full h-full rounded-full bg-gray-900 flex items-center justify-center">
-                    <span className="text-purple-400 text-xs font-bold">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-starkYellow to-starkYellow-light flex items-center justify-center p-0.5">
+                  <div className="w-full h-full rounded-full bg-black flex items-center justify-center">
+                    <span className="text-starkYellow text-xs font-bold">
                       $P
                     </span>
                   </div>
                 </div>
-                <span className="font-semibold">$TRKP</span>
+                <span className="font-semibold text-white">$TRKP</span>
               </div>
-              <div className="text-right text-xl font-medium">
+              <div className="text-right text-xl font-medium text-white">
                 {isValidInput ? mintedAmount.toFixed(6) : "0.0"}
               </div>
             </div>
-            <div className="flex items-center justify-between text-sm text-gray-300">
+            <div className="flex items-center justify-between text-sm text-white/70">
               <span>You will receive</span>
-              <span className="font-medium text-purple-300">
+              <span className="font-medium text-starkYellow">
                 {isValidInput ? mintedAmount.toFixed(6) : "0.0"} $TRKP
               </span>
             </div>
-            <div className="flex items-center justify-between text-sm text-gray-300">
+            <div className="flex items-center justify-between text-sm text-white/70">
               <span>Current Balance</span>
-              <span className="font-medium text-purple-300">
+              <span className="font-medium text-starkYellow">
                 {starkPlayBalanceFormatted.toFixed(6)} $TRKP
               </span>
             </div>
           </div>
 
           {/* Fee details */}
-          <div className="bg-gray-800 p-4 rounded-lg border border-purple-500/20 space-y-2">
+          <div className="bg-white/5 border border-white/10 p-4 rounded-lg space-y-2">
             <div className="flex items-center justify-between text-sm">
               <div className="flex items-center gap-2">
                 <Image
@@ -409,12 +415,12 @@ export default function TokenMint({
                   height={16}
                   className="w-4 h-4"
                 />
-                <span>1 STRK = 1 $TRKP</span>
+                <span className="text-white/80">1 STRK = 1 $TRKP</span>
               </div>
             </div>
             <div className="flex items-center justify-between text-sm">
               <div className="flex items-center gap-1">
-                <span>
+                <span className="text-white/80">
                   Mint Fee (
                   {feePercent !== undefined
                     ? (feePercent * 100).toFixed(1) + "%"
@@ -422,28 +428,27 @@ export default function TokenMint({
                   )
                 </span>
                 <Tooltip
-                  content={`A ${
-                    feePercent !== undefined
+                  content={`A ${feePercent !== undefined
                       ? (feePercent * 100).toFixed(2)
                       : "--"
-                  }% fee is applied to all mint operations`}
+                    }% fee is applied to all mint operations`}
                 >
-                  <Info size={20} className="text-purple-400" />
+                  <Info size={20} className="text-starkYellow" />
                 </Tooltip>
               </div>
-              <span className="text-gray-300">
+              <span className="text-white/70">
                 {isValidInput ? feeAmount.toFixed(6) : "0.0"} STRK
               </span>
             </div>
             {feeLoading && (
-              <p className="text-xs text-gray-500">Loading commission…</p>
+              <p className="text-xs text-white/60">Loading commission…</p>
             )}
             {feeError && (
-              <p className="text-xs text-red-500">Error obtaining commission</p>
+              <p className="text-xs text-red-400">Error obtaining commission</p>
             )}
             <div className="flex items-center justify-between text-sm">
-              <span>You will receive</span>
-              <span className="font-medium text-purple-300">
+              <span className="text-white/80">You will receive</span>
+              <span className="font-medium text-starkYellow">
                 {isValidInput ? mintedAmount.toFixed(6) : "0.0"} $TRKP
               </span>
             </div>
@@ -452,15 +457,15 @@ export default function TokenMint({
         </div>
 
         {/* Mint button */}
-        <div className="p-4">
+        <div className="relative z-10 p-4">
           <button
-            className={`w-full py-6 text-lg font-medium rounded-lg transition-colors ${
-              isValidInput && !isLoading
-                ? "bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800"
-                : "bg-gray-700 text-gray-400 cursor-not-allowed"
-            }`}
+            className={`w-full py-6 text-lg font-medium rounded-lg transition-all duration-300 ${isValidInput && !isLoading
+                ? "bg-gradient-to-r from-starkYellow/20 to-starkYellow/10 border border-starkYellow/30 text-starkYellow hover:from-starkYellow hover:to-starkYellow-light hover:text-black hover:scale-105"
+                : "bg-white/5 border border-white/20 text-white/50 cursor-not-allowed"
+              }`}
             disabled={!isValidInput || isLoading}
             onClick={handleMint}
+            style={isValidInput && !isLoading ? { boxShadow: "0 4px 12px rgba(255,214,0,0.2)" } : {}}
           >
             {isLoading ? "Minting..." : "Mint $TRKP"}
           </button>
