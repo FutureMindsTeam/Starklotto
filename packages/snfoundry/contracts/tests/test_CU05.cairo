@@ -2,10 +2,7 @@ use contracts::Lottery::{ILotteryDispatcher, ILotteryDispatcherTrait};
 use contracts::StarkPlayERC20::{
     IBurnableDispatcher, IBurnableDispatcherTrait, IMintableDispatcher, IMintableDispatcherTrait,
 };
-use contracts::StarkPlayVault::StarkPlayVault::FELT_STRK_CONTRACT;
-use contracts::StarkPlayVault::{
-    IStarkPlayVault, IStarkPlayVaultDispatcher, IStarkPlayVaultDispatcherTrait, StarkPlayVault,
-};
+use contracts::StarkPlayVault::{IStarkPlayVaultDispatcher};
 use openzeppelin_access::ownable::interface::{IOwnableDispatcher, IOwnableDispatcherTrait};
 use snforge_std::{
     ContractClassTrait, DeclareResultTrait, declare, start_cheat_caller_address,
@@ -19,10 +16,6 @@ const STANDARD_DRAW_DURATION_BLOCKS: u64 = 44800;
 // Helper functions from test_CU01.cairo
 fn owner_address() -> ContractAddress {
     0x123.try_into().unwrap()
-}
-
-fn user_address() -> ContractAddress {
-    0x456.try_into().unwrap()
 }
 
 fn deploy_contract_lottery() -> ContractAddress {
@@ -164,8 +157,13 @@ fn test_create_new_draw_default_duration() {
     lottery.Initialize(5000000000000000000_u256, 1000000000000000000_u256);
     stop_cheat_caller_address(lottery_address);
 
+    // Get the initial draw ID created by Initialize
+    let initial_draw_id = lottery.GetCurrentDrawId();
+    assert(initial_draw_id == 1, 'Initial draw ID should be 1');
+
+    // Mark the initial draw as inactive so we can test CreateNewDraw
     start_cheat_caller_address(lottery_address, owner.owner());
-    lottery.SetDrawInactive(1);
+    lottery.SetDrawInactive(initial_draw_id);
     stop_cheat_caller_address(lottery_address);
 
     // Test creating a draw with default duration using CreateNewDraw
