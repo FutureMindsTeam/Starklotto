@@ -1,18 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
 
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Abi, useContract } from "@starknet-react/core";
+import { Abi, useContract, useAccount } from "@starknet-react/core";
 import { useTransactor } from "~~/hooks/scaffold-stark/useTransactor";
 import { LOTT_CONTRACT_NAME } from "~~/utils/Constants";
 import { useTranslation } from "react-i18next";
 import TicketControls from "~~/components/buy-tickets/TicketControls";
 import TicketSelector from "~~/components/buy-tickets/TicketSelector";
 import PurchaseSummary from "~~/components/buy-tickets/PurchaseSummary";
+import PostPurchaseSummary from "~~/components/buy-tickets/PostPurchaseSummary";
+import PurchaseConfirmationModal from "~~/components/buy-tickets/PurchaseConfirmationModal";
 import { BlockBasedCountdownTimer } from "~~/components/block-based-countdown-timer";
 // Importar el hook para obtener el precio del ticket
 import { useTicketPrice } from "~~/hooks/scaffold-stark/useTicketPrice";
@@ -24,6 +26,7 @@ import { useCurrentDrawId } from "~~/hooks/scaffold-stark/useCurrentDrawId";
 export default function BuyTicketsPage() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { isConnected } = useAccount();
   const [ticketCount, setTicketCount] = useState(1);
   const [selectedNumbers, setSelectedNumbers] = useState<
     Record<number, number[]>
@@ -42,6 +45,8 @@ export default function BuyTicketsPage() {
       | null
     >
   >({});
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+
   // Obtener el ID del draw actual del contrato
   const { currentDrawId } = useCurrentDrawId();
 
@@ -56,6 +61,8 @@ export default function BuyTicketsPage() {
     isDrawActive,
     contractsReady,
     refetchBalance,
+    purchaseDetails,
+    clearPurchaseState,
   } = useBuyTickets({ drawId: currentDrawId });
 
   // Información del draw actual
@@ -261,6 +268,26 @@ export default function BuyTicketsPage() {
     setSelectedNumbers(newSelections);
   };
 
+  // Función para resetear el formulario después de una compra exitosa
+  const resetForm = () => {
+    setTicketCount(1);
+    setSelectedNumbers({ 1: [] });
+    setAnimatingNumbers({});
+  };
+
+  // Función para manejar "Comprar más tickets"
+  const handleBuyMore = () => {
+    clearPurchaseState();
+    resetForm();
+  };
+
+  // Cerrar modal automáticamente cuando la compra sea exitosa
+  useEffect(() => {
+    if (purchaseDetails) {
+      setIsConfirmModalOpen(false);
+    }
+  }, [purchaseDetails]);
+
   const { data: deployedLottery } = useDeployedContractInfo(
     LOTT_CONTRACT_NAME as any,
   );
@@ -271,31 +298,38 @@ export default function BuyTicketsPage() {
   const totalWei = priceWei * BigInt(ticketCount);
   const totalFormatted = formatAmount(totalWei, 18);
 
-  const handlePurchase = async () => {
-    if (!isDrawActive) {
-      console.error("Draw is not active");
-      return;
-    }
+  // Abrir modal de confirmación
+  const handlePurchase = () => {
+    setIsConfirmModalOpen(true);
+  };
 
+  // Ejecutar la compra después de confirmar
+  const handleConfirmPurchase = async () => {
     if (!isDrawActive) {
       console.error("Draw is not active");
+      setIsConfirmModalOpen(false);
       return;
     }
 
     try {
-      await buyTickets(selectedNumbers, totalWei);
-      // Refrescar balances y estado del draw después de la compra
-      await refetchBalance();
-      await refetchDrawStatus();
-      await buyTickets(selectedNumbers, totalWei);
-      // Refrescar balances y estado del draw después de la compra
-      await refetchBalance();
-      await refetchDrawStatus();
+      const result = await buyTickets(selectedNumbers, totalWei);
+
+      if (result) {
+        // Refrescar balances y estado del draw después de la compra
+        await refetchBalance();
+        await refetchDrawStatus();
+
+        // Cerrar el modal después de la compra exitosa
+        setIsConfirmModalOpen(false);
+      }
+
+      // Resetear el formulario después de una compra exitosa
+      // No lo reseteamos inmediatamente, esperamos a que el usuario vea el resumen
     } catch (e: any) {
       console.error("Purchase failed:", e);
       // El error ya se maneja en el hook
-      console.error("Purchase failed:", e);
-      // El error ya se maneja en el hook
+      // Cerrar el modal también en caso de error para ver el mensaje
+      setIsConfirmModalOpen(false);
     }
   };
 
@@ -479,49 +513,66 @@ export default function BuyTicketsPage() {
                 )}
               </div>
 
-              {/* Ticket Controls */}
-              <TicketControls
-                ticketCount={ticketCount}
-                onIncreaseTickets={increaseTickets}
-                onDecreaseTickets={decreaseTickets}
-                onGenerateRandomForAll={generateRandomForAll}
-              />
+              {/* Mostrar resumen de compra o formulario según el estado */}
+              {purchaseDetails ? (
+                <PostPurchaseSummary
+                  ticketCount={purchaseDetails.ticketCount}
+                  totalCost={purchaseDetails.totalCost}
+                  transactionHash={purchaseDetails.transactionHash}
+                  onBuyMore={handleBuyMore}
+                />
+              ) : (
+                <>
+                  {/* Ticket Controls */}
+                  <TicketControls
+                    ticketCount={ticketCount}
+                    onIncreaseTickets={increaseTickets}
+                    onDecreaseTickets={decreaseTickets}
+                    onGenerateRandomForAll={generateRandomForAll}
+                  />
 
-              {/* Ticket Selection */}
-              <div className="space-y-4">
-                {Array.from({ length: ticketCount }).map((_, idx) => {
-                  const ticketId = idx + 1;
-                  return (
-                    <TicketSelector
-                      key={ticketId}
-                      ticketId={ticketId}
-                      selectedNumbers={selectedNumbers[ticketId] || []}
-                      animatingNumbers={animatingNumbers}
-                      onNumberSelect={selectNumber}
-                      onGenerateRandom={generateRandom}
-                      numberAnimationVariants={numberAnimationVariants}
-                      lotteryRevealVariants={lotteryRevealVariants}
-                      ticketVariants={ticketVariants}
-                      idx={idx}
-                    />
-                  );
-                })}
-              </div>
+                  {/* Ticket Selection */}
+                  <div className="space-y-4">
+                    {Array.from({ length: ticketCount }).map((_, idx) => {
+                      const ticketId = idx + 1;
+                      return (
+                        <TicketSelector
+                          key={ticketId}
+                          ticketId={ticketId}
+                          selectedNumbers={selectedNumbers[ticketId] || []}
+                          animatingNumbers={animatingNumbers}
+                          onNumberSelect={selectNumber}
+                          onGenerateRandom={generateRandom}
+                          numberAnimationVariants={numberAnimationVariants}
+                          lotteryRevealVariants={lotteryRevealVariants}
+                          ticketVariants={ticketVariants}
+                          idx={idx}
+                        />
+                      );
+                    })}
+                  </div>
 
-              {/* Purchase Summary (usa precio on-chain) */}
-              {/* Purchase Summary (usa precio on-chain) */}
-              <PurchaseSummary
-                unitPriceFormatted={unitPriceFormatted}
-                totalCostFormatted={totalFormatted}
-                isPriceLoading={priceLoading}
-                priceError={priceError?.message ?? null}
-                isLoading={isLoading}
-                txError={buyError}
-                txSuccess={buySuccess}
-                onPurchase={handlePurchase}
-                isDrawActive={isDrawActive}
-                contractsReady={contractsReady}
-              />
+                  {/* Purchase Summary (usa precio on-chain) */}
+                  <PurchaseSummary
+                    unitPriceFormatted={unitPriceFormatted}
+                    totalCostFormatted={totalFormatted}
+                    totalCostWei={totalWei}
+                    isPriceLoading={priceLoading}
+                    priceError={priceError?.message ?? null}
+                    isLoading={isLoading}
+                    txError={buyError}
+                    txSuccess={buySuccess}
+                    onPurchase={handlePurchase}
+                    isDrawActive={isDrawActive}
+                    contractsReady={contractsReady}
+                    isConnected={isConnected}
+                    userBalance={userBalanceFormatted}
+                    userBalanceWei={userBalance}
+                    selectedNumbers={selectedNumbers}
+                    ticketCount={ticketCount}
+                  />
+                </>
+              )}
             </motion.div>
           </div>
 
@@ -542,6 +593,17 @@ export default function BuyTicketsPage() {
           </div>
         </div>
       </div>
+
+      {/* Modal de Confirmación */}
+      <PurchaseConfirmationModal
+        isOpen={isConfirmModalOpen}
+        onClose={() => setIsConfirmModalOpen(false)}
+        onConfirm={handleConfirmPurchase}
+        ticketCount={ticketCount}
+        selectedNumbers={selectedNumbers}
+        totalCost={totalFormatted}
+        isLoading={isLoading}
+      />
     </div>
   );
 }

@@ -15,11 +15,19 @@ export interface UseBuyTicketsProps {
   drawId: number;
 }
 
+export interface PurchaseDetails {
+  ticketCount: number;
+  totalCost: string;
+  transactionHash?: string;
+}
+
 export function useBuyTickets({ drawId }: UseBuyTicketsProps) {
   const { address: userAddress } = useAccount();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [purchaseDetails, setPurchaseDetails] =
+    useState<PurchaseDetails | null>(null);
 
   // ✅ Seguir UI_CONTRACT_INTEGRATION_GUIDE.md - usar useContractAddresses
   const { StarkPlayERC20, Lottery, isValid } = useContractAddresses();
@@ -133,6 +141,14 @@ export function useBuyTickets({ drawId }: UseBuyTicketsProps) {
 
         if (result) {
           setSuccess("Tickets purchased successfully!");
+
+          // Guardar detalles de la compra
+          setPurchaseDetails({
+            ticketCount: quantity,
+            totalCost: formatBalance(totalCost),
+            transactionHash: typeof result === "string" ? result : undefined,
+          });
+
           // Refrescar balances
           await refetchBalance();
           await refetchAllowance();
@@ -175,21 +191,29 @@ export function useBuyTickets({ drawId }: UseBuyTicketsProps) {
     return fracStr.length > 0 ? `${intPart}.${fracStr}` : intPart.toString();
   }, []);
 
+  // Función para limpiar el estado después de la compra
+  const clearPurchaseState = useCallback(() => {
+    setPurchaseDetails(null);
+    setSuccess(null);
+    setError(null);
+  }, []);
+
   // ✅ Seguir UI_CONTRACT_INTEGRATION_GUIDE.md - agregar todos los estados de loading
   const isProcessing = isLoading || buyTicketState.isPending;
   const isApproving = false; // Se puede agregar estado específico de aprobación
-  const isValidating = !isValid;
 
-  const allLoadingStates = isProcessing || isApproving || isValidating;
+  const allLoadingStates = isProcessing || isApproving;
 
   return {
     // Funciones
     buyTickets,
+    clearPurchaseState,
 
     // Estados
     isLoading: allLoadingStates,
     error,
     success,
+    purchaseDetails,
 
     // Datos del contrato
     userBalance: userBalance ? BigInt(userBalance.toString()) : 0n,
