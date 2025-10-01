@@ -7,7 +7,7 @@ const deployedContracts = {
   devnet: {
     StarkPlayERC20: {
       address:
-        "0x89d05338a23551d169741b4a223e05e1cb1a0e1f104341fb69af17bfa16d8b",
+        "0x75a8e2a18bdafbfb02c0339d16b2b65c53f377bf6993c2c5a3d484aafa77d1e",
       abi: [
         {
           type: "impl",
@@ -1189,7 +1189,7 @@ const deployedContracts = {
     },
     StarkPlayVault: {
       address:
-        "0x5c461a568905e9a9dddb508266f99749cf7a0cee9849c33969d6e0f541a485b",
+        "0x3057522294c81ceb3f34cdb538dae99bbc8915f2e5fa7a622688a74140a19b",
       abi: [
         {
           type: "impl",
@@ -2077,7 +2077,7 @@ const deployedContracts = {
     },
     Lottery: {
       address:
-        "0x5625e3be479ca2cdd42966037a441434fd30ef470a1e33234097495e6f1e6ef",
+        "0x7e195af58c7e3a14d03f5fc8d6cb6ba7f92fe9aa985b7a6e2fb19de98d73e39",
       abi: [
         {
           type: "impl",
@@ -2303,6 +2303,22 @@ const deployedContracts = {
                 {
                   name: "accumulatedPrize",
                   type: "core::integer::u256",
+                },
+              ],
+              outputs: [],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "CreateNewDrawWithDuration",
+              inputs: [
+                {
+                  name: "accumulatedPrize",
+                  type: "core::integer::u256",
+                },
+                {
+                  name: "duration_blocks",
+                  type: "core::integer::u64",
                 },
               ],
               outputs: [],
@@ -3261,7 +3277,7 @@ const deployedContracts = {
         },
       ],
       classHash:
-        "0x63c8f8e1a2d2d6a60dcd1305a46c97d08d6411eff1ce2c63bfa07704d5e4457",
+        "0x5f8641f89c255ed1c165298cfc1c3af04ec5b82159edf9dfe4c83521b12a24b",
     },
   },
 } as const;

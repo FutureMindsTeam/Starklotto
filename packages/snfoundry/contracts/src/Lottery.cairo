@@ -77,6 +77,7 @@ pub trait ILottery<TContractState> {
         number5: u16,
     ) -> u8;
     fn CreateNewDraw(ref self: TContractState, accumulatedPrize: u256);
+    fn CreateNewDrawWithDuration(ref self: TContractState, accumulatedPrize: u256, duration_blocks: u64);
     fn GetCurrentActiveDraw(self: @TContractState) -> (u64, bool);
     fn SetDrawInactive(ref self: TContractState, drawId: u64);
     fn SetTicketPrice(ref self: TContractState, price: u256);
@@ -157,14 +158,14 @@ pub mod Lottery {
     const MinNumber: u16 = 1; // min number
     const MaxNumber: u16 = 40; // max number
     const RequiredNumbers: usize = 5; // amount of numbers per ticket
-    // Precio inicial de ticket: 5 STARKP (18 decimales)
+    // Initial ticket price: 5 STARKP (18 decimals)
     const TicketPriceInitial: u256 = 5000000000000000000;
-    // Duración estándar estimada de un sorteo (≈ 1 semana) expresada en bloques
+    // Standard estimated duration of a draw (≈ 1 week) expressed in blocks
     const STANDARD_DRAW_DURATION_BLOCKS: u64 = 44800;
 
-    // Constantes para el cálculo del jackpot
-    const JACKPOT_PERCENTAGE: u256 = 55; // 55% del monto de compra va al jackpot
-    const PERCENTAGE_DENOMINATOR: u256 = 100; // Para calcular porcentajes
+    // Constants for jackpot calculation
+    const JACKPOT_PERCENTAGE: u256 = 55; // 55% of purchase amount goes to jackpot
+    const PERCENTAGE_DENOMINATOR: u256 = 100; // For percentage calculations
 
     // reentrancy guard component by openzeppelin
     component!(
@@ -313,8 +314,8 @@ pub mod Lottery {
         userTickets: Map<(ContractAddress, u64), felt252>,
         userTicketCount: Map<
             (ContractAddress, u64), u32,
-        >, // (usuario, drawId) -> usert ticket count
-        // (usuario, drawId, índice)-> ticketId
+        >, // (user, drawId) -> user ticket count
+        // (user, drawId, index)-> ticketId
         userTicketIds: Map<(ContractAddress, u64, u32), felt252>,
         draws: Map<u64, Draw>,
         tickets: Map<(u64, felt252), Ticket>,
@@ -398,7 +399,7 @@ pub mod Lottery {
                 contract_address: self.strkPlayContractAddress.read(),
             };
 
-            // --- CORREGIDO: Calculate total price for all tickets ---
+            // --- CORRECTED: Calculate total price for all tickets ---
             let ticket_price = self.ticketPrice.read();
             let total_price = ticket_price * quantity.into();
             let user = get_caller_address();
@@ -597,21 +598,21 @@ pub mod Lottery {
             number4: u16,
             number5: u16,
         ) -> u8 {
-            // Obtener el sorteo
+            // Get the draw
             let draw = self.draws.entry(drawId).read();
             assert(!draw.isActive, 'Draw must be completed');
 
-            // Obtener los números ganadores
+            // Get the winning numbers
             let winningNumber1 = draw.winningNumber1;
             let winningNumber2 = draw.winningNumber2;
             let winningNumber3 = draw.winningNumber3;
             let winningNumber4 = draw.winningNumber4;
             let winningNumber5 = draw.winningNumber5;
 
-            // Contador de coincidencias
+            // Match counter
             let mut matches: u8 = 0;
 
-            // Para cada número del ticket
+            // For each ticket number
             if number1 == winningNumber1 {
                 matches += 1;
             }
@@ -652,10 +653,17 @@ pub mod Lottery {
         }
 
         //=======================================================================================
-        //OK
         fn CreateNewDraw(ref self: ContractState, accumulatedPrize: u256) {
+            // Call the new function with default duration
+            self.CreateNewDrawWithDuration(accumulatedPrize, STANDARD_DRAW_DURATION_BLOCKS);
+        }
+
+        //=======================================================================================
+        fn CreateNewDrawWithDuration(ref self: ContractState, accumulatedPrize: u256, duration_blocks: u64) {
             // Validate that the accumulated prize is not negative
             assert(accumulatedPrize >= 0, 'Invalid accumulated prize');
+            // Validate that duration is not zero
+            assert(duration_blocks > 0, 'Duration must be > 0');
             // Only one active draw allowed at a time
             let current_id = self.currentDrawId.read();
             if current_id > 0 {
@@ -667,7 +675,7 @@ pub mod Lottery {
             let previousAmount = self.accumulatedPrize.read();
             let current_timestamp = get_block_timestamp();
             let current_block = get_block_number();
-            let end_block = current_block + STANDARD_DRAW_DURATION_BLOCKS;
+            let end_block = current_block + duration_blocks;
             let newDraw = Draw {
                 drawId,
                 accumulatedPrize: accumulatedPrize,
@@ -794,7 +802,7 @@ pub mod Lottery {
             self: @ContractState, drawId: u64, ticketId: felt252, player: ContractAddress,
         ) -> Ticket {
             let ticket = self.tickets.entry((drawId, ticketId)).read();
-            // Verificar que el ticket pertenece al caller
+            // Verify that the ticket belongs to the caller
             assert(ticket.player == player, 'Not ticket owner');
             ticket
         }

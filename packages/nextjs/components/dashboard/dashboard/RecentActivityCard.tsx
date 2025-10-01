@@ -1,5 +1,5 @@
 "use client";
-import Card from "~~/components/dashboard/Card";
+import Card from "~~/components/dashboard/dashboard/Card";
 import { Ticket } from "lucide-react";
 import type { ActivityItem } from "~~/lib/mocks/dashboard";
 import { Stagger, Item } from "~~/components/ui/motion";
