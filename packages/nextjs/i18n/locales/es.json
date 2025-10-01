@@ -219,6 +219,14 @@
       "strkp": "STRKP",
       "strk": "STRK"
     },
+    "pool": {
+      "title": "💰 Pozo Acumulado",
+      "ended": "Finalizado",
+      "drawIn": "Sorteo en {{time}}",
+      "days": "d",
+      "hours": "h",
+      "minutes": "m"
+    },
     "drawStatus": {
       "title": "Estado del Sorteo",
       "current": "Sorteo Actual",

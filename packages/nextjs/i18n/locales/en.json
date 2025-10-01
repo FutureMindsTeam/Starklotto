@@ -219,6 +219,14 @@
       "strkp": "STRKP",
       "strk": "STRK"
     },
+    "pool": {
+      "title": "💰 Accumulated Pool",
+      "ended": "Ended",
+      "drawIn": "Draw in {{time}}",
+      "days": "d",
+      "hours": "h",
+      "minutes": "m"
+    },
     "drawStatus": {
       "title": "Draw Status",
       "current": "Current Draw",

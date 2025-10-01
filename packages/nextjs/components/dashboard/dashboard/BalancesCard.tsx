@@ -1,5 +1,5 @@
 "use client";
-import Card from "~~/components/dashboard/Card";
+import Card from "~~/components/dashboard/dashboard/Card";
 import { TrendingUp } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
