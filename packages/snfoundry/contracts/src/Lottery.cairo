@@ -77,6 +77,7 @@ pub trait ILottery<TContractState> {
         number5: u16,
     ) -> u8;
     fn CreateNewDraw(ref self: TContractState, accumulatedPrize: u256);
+    fn CreateNewDrawWithDuration(ref self: TContractState, accumulatedPrize: u256, duration_blocks: u64);
     fn GetCurrentActiveDraw(self: @TContractState) -> (u64, bool);
     fn SetDrawInactive(ref self: TContractState, drawId: u64);
     fn SetTicketPrice(ref self: TContractState, price: u256);
@@ -652,10 +653,17 @@ pub mod Lottery {
         }
 
         //=======================================================================================
-        //OK
         fn CreateNewDraw(ref self: ContractState, accumulatedPrize: u256) {
+            // Call the new function with default duration
+            self.CreateNewDrawWithDuration(accumulatedPrize, STANDARD_DRAW_DURATION_BLOCKS);
+        }
+
+        //=======================================================================================
+        fn CreateNewDrawWithDuration(ref self: ContractState, accumulatedPrize: u256, duration_blocks: u64) {
             // Validate that the accumulated prize is not negative
             assert(accumulatedPrize >= 0, 'Invalid accumulated prize');
+            // Validate that duration is not zero
+            assert(duration_blocks > 0, 'Duration must be > 0');
             // Only one active draw allowed at a time
             let current_id = self.currentDrawId.read();
             if current_id > 0 {
@@ -667,7 +675,7 @@ pub mod Lottery {
             let previousAmount = self.accumulatedPrize.read();
             let current_timestamp = get_block_timestamp();
             let current_block = get_block_number();
-            let end_block = current_block + STANDARD_DRAW_DURATION_BLOCKS;
+            let end_block = current_block + duration_blocks;
             let newDraw = Draw {
                 drawId,
                 accumulatedPrize: accumulatedPrize,
