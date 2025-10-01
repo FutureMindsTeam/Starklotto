@@ -106,53 +106,55 @@ export default function PurchaseConfirmationModal({
                     {t("buyTickets.yourNumbers") || "Tus Números"}
                   </h3>
                   <div className="space-y-2 max-h-48 overflow-y-auto">
-                    {Object.entries(selectedNumbers).map(([ticketId, numbers]) => (
-                      <div
-                        key={ticketId}
-                        className="bg-[#232b3b] rounded-lg p-3"
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <p className="text-xs font-medium text-gray-400">
-                            {t("buyTickets.ticketNumber", {
-                              number: ticketId,
-                            }) || `Boleto #${ticketId}`}
-                          </p>
-                          {numbers.length === 5 ? (
-                            <div className="flex items-center gap-1 text-green-400 text-xs">
-                              <CheckCircle2 className="w-3 h-3" />
-                              <span>
-                                {t("buyTickets.complete") || "Completo"}
-                              </span>
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-1 text-orange-400 text-xs">
-                              <AlertCircle className="w-3 h-3" />
-                              <span>
-                                {numbers.length}/5{" "}
-                                {t("buyTickets.numbers") || "números"}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex gap-1.5 flex-wrap">
-                          {numbers.length > 0 ? (
-                            numbers.map((num) => (
-                              <div
-                                key={num}
-                                className="bg-purple-600 text-white rounded-md px-2.5 py-1.5 text-xs font-bold min-w-[2.5rem] text-center"
-                              >
-                                {num.toString().padStart(2, "0")}
-                              </div>
-                            ))
-                          ) : (
-                            <p className="text-gray-500 text-xs italic">
-                              {t("buyTickets.noNumbersSelected") ||
-                                "No hay números seleccionados"}
+                    {Object.entries(selectedNumbers).map(
+                      ([ticketId, numbers]) => (
+                        <div
+                          key={ticketId}
+                          className="bg-[#232b3b] rounded-lg p-3"
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <p className="text-xs font-medium text-gray-400">
+                              {t("buyTickets.ticketNumber", {
+                                number: ticketId,
+                              }) || `Boleto #${ticketId}`}
                             </p>
-                          )}
+                            {numbers.length === 5 ? (
+                              <div className="flex items-center gap-1 text-green-400 text-xs">
+                                <CheckCircle2 className="w-3 h-3" />
+                                <span>
+                                  {t("buyTickets.complete") || "Completo"}
+                                </span>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-1 text-orange-400 text-xs">
+                                <AlertCircle className="w-3 h-3" />
+                                <span>
+                                  {numbers.length}/5{" "}
+                                  {t("buyTickets.numbers") || "números"}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex gap-1.5 flex-wrap">
+                            {numbers.length > 0 ? (
+                              numbers.map((num) => (
+                                <div
+                                  key={num}
+                                  className="bg-purple-600 text-white rounded-md px-2.5 py-1.5 text-xs font-bold min-w-[2.5rem] text-center"
+                                >
+                                  {num.toString().padStart(2, "0")}
+                                </div>
+                              ))
+                            ) : (
+                              <p className="text-gray-500 text-xs italic">
+                                {t("buyTickets.noNumbersSelected") ||
+                                  "No hay números seleccionados"}
+                              </p>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ),
+                    )}
                   </div>
                 </div>
 
@@ -189,7 +191,8 @@ export default function PurchaseConfirmationModal({
                 >
                   {isLoading
                     ? t("buyTickets.processing") || "Procesando..."
-                    : t("buyTickets.confirmAndPurchase") || "Confirmar y Comprar"}
+                    : t("buyTickets.confirmAndPurchase") ||
+                      "Confirmar y Comprar"}
                 </GlowingButton>
               </div>
             </motion.div>
@@ -199,4 +202,3 @@ export default function PurchaseConfirmationModal({
     </AnimatePresence>
   );
 }
-

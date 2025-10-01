@@ -26,7 +26,8 @@ export function useBuyTickets({ drawId }: UseBuyTicketsProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [purchaseDetails, setPurchaseDetails] = useState<PurchaseDetails | null>(null);
+  const [purchaseDetails, setPurchaseDetails] =
+    useState<PurchaseDetails | null>(null);
 
   // ✅ Seguir UI_CONTRACT_INTEGRATION_GUIDE.md - usar useContractAddresses
   const { StarkPlayERC20, Lottery, isValid } = useContractAddresses();
@@ -140,14 +141,14 @@ export function useBuyTickets({ drawId }: UseBuyTicketsProps) {
 
         if (result) {
           setSuccess("Tickets purchased successfully!");
-          
+
           // Guardar detalles de la compra
           setPurchaseDetails({
             ticketCount: quantity,
             totalCost: formatBalance(totalCost),
             transactionHash: result?.transaction_hash,
           });
-          
+
           // Refrescar balances
           await refetchBalance();
           await refetchAllowance();

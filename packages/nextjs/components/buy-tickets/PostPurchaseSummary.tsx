@@ -164,4 +164,3 @@ export default function PostPurchaseSummary({
     </motion.div>
   );
 }
-

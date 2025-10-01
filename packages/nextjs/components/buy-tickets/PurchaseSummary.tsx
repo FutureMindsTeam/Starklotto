@@ -55,7 +55,7 @@ export default function PurchaseSummary({
 
   const allTicketsComplete = areAllTicketsComplete();
   const incompleteTicketsCount = Object.values(selectedNumbers).filter(
-    (numbers) => numbers.length !== 5
+    (numbers) => numbers.length !== 5,
   ).length;
 
   // Validar que el usuario tenga suficientes tokens
@@ -148,9 +148,7 @@ export default function PurchaseSummary({
               : "hover:shadow-xl hover:shadow-purple-500/20"
           }`}
           glowColor={
-            isDisabled
-              ? "rgba(139, 92, 246, 0.2)"
-              : "rgba(139, 92, 246, 0.5)"
+            isDisabled ? "rgba(139, 92, 246, 0.2)" : "rgba(139, 92, 246, 0.5)"
           }
           disabled={isDisabled}
         >
@@ -184,9 +182,9 @@ export default function PurchaseSummary({
                   "No tienes suficientes tokens $TRKP"}
               </p>
               <p className="text-red-400 text-xs mt-1">
-                {t("buyTickets.balanceInfo") || "Balance:"} {userBalance} $TRKP |{" "}
-                {t("buyTickets.required") || "Requerido:"} {totalCostFormatted}{" "}
-                $TRKP
+                {t("buyTickets.balanceInfo") || "Balance:"} {userBalance} $TRKP
+                | {t("buyTickets.required") || "Requerido:"}{" "}
+                {totalCostFormatted} $TRKP
               </p>
             </div>
           </motion.div>

@@ -46,7 +46,7 @@ export default function BuyTicketsPage() {
     >
   >({});
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-  
+
   // Obtener el ID del draw actual del contrato
   const { currentDrawId } = useCurrentDrawId();
 
@@ -313,16 +313,16 @@ export default function BuyTicketsPage() {
 
     try {
       const result = await buyTickets(selectedNumbers, totalWei);
-      
+
       if (result) {
         // Refrescar balances y estado del draw después de la compra
         await refetchBalance();
         await refetchDrawStatus();
-        
+
         // Cerrar el modal después de la compra exitosa
         setIsConfirmModalOpen(false);
       }
-      
+
       // Resetear el formulario después de una compra exitosa
       // No lo reseteamos inmediatamente, esperamos a que el usuario vea el resumen
     } catch (e: any) {

@@ -170,16 +170,16 @@ pub mod StarkPlayERC20 {
     fn constructor(ref self: ContractState, recipient: ContractAddress, admin: ContractAddress) {
         self.erc20.initializer("$tarkPlay", "STARKP");
         self.accesscontrol.initializer();
-        
+
         // Grant admin role to the specified admin
         self.accesscontrol._grant_role(DEFAULT_ADMIN_ROLE, admin);
         self.accesscontrol._grant_role(PAUSER_ROLE, admin);
-        
+
         // Always grant admin role temporarily to the caller for auto-configuration
         // This allows vault to configure itself during deployment
         let caller = get_caller_address();
         self.accesscontrol._grant_role(DEFAULT_ADMIN_ROLE, caller);
-        
+
         // Mint initial supply for testing
         self.erc20.mint(recipient, 1000);
     }

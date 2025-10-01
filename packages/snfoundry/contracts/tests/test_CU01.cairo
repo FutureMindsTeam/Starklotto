@@ -214,9 +214,7 @@ fn deploy_mock_strk_token() -> IMintableDispatcher {
     // Grant MINTER_ROLE to OWNER so we can mint tokens
     strk_token.grant_minter_role(owner_address());
     strk_token
-        .set_minter_allowance(
-            owner_address(), EXCEEDS_MINT_LIMIT().into() * 10,
-        ); // Large allowance
+        .set_minter_allowance(owner_address(), EXCEEDS_MINT_LIMIT().into() * 10); // Large allowance
 
     strk_token.mint(USER1(), EXCEEDS_MINT_LIMIT().into() * 3); // Mint plenty for testing
 
@@ -2888,9 +2886,7 @@ fn test_withdraw_general_fees_insufficient_vault_balance() {
 
     store(
         vault.contract_address, // storage owner
-        selector!(
-            "accumulatedFee",
-        ), // field marking the start of the memory chunk being written to
+        selector!("accumulatedFee"), // field marking the start of the memory chunk being written to
         array![5000].span() // array of felts to write
     );
 
