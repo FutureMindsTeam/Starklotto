@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useScroll, useTransform } from "framer-motion";
+import { useScroll, useTransform, motion } from "framer-motion";
 import { useAccount } from "@starknet-react/core";
 import { useRouter } from "next/navigation";
 
@@ -11,7 +11,7 @@ import RecentActivityCard from "~~/components/dashboard/dashboard/RecentActivity
 import NotificationsCard from "~~/components/dashboard/dashboard/NotificationsCard";
 import Skeleton from "~~/components/dashboard/dashboard/Skeleton";
 import TotalPool from "~~/components/dashboard/pool/page";
-import { HeroSection, PrizeDistributionSection } from "~~/components/sections";
+import { HeroSection, PrizeDistributionSection, FundDistributionSection } from "~~/components/sections";
 import LastDrawResultsCard from "~~/components/dashboard/dashboard/LastDrawResultsCard";
 
 import { useDrawInfo } from "~~/hooks/scaffold-stark/useDrawInfo";
@@ -25,6 +25,7 @@ export default function DashboardPage() {
 
   const heroY = useTransform(scrollY, [0, 500], [0, -100]);
   const prizeDistributionY = useTransform(scrollY, [0, 2000], [0, -50]);
+  const fundDistributionY = useTransform(scrollY, [0, 2500], [0, -30]);
 
   const [showSecurityInfo, setShowSecurityInfo] = useState(false);
   const [showTicketSelector, setShowTicketSelector] = useState(false);
@@ -115,6 +116,11 @@ export default function DashboardPage() {
       </div>
 
       <PrizeDistributionSection prizeDistributionY={prizeDistributionY} />
+      
+      <FundDistributionSection 
+        fundDistributionY={fundDistributionY} 
+        ticketPrice={1} 
+      />
     </>
   );
 }
