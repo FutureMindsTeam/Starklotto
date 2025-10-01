@@ -13,7 +13,10 @@ export default function RecentActivityCard({
   const { t } = useTranslation();
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-6" style={{ boxShadow: "0 10px 25px rgba(255,214,0,0.1)" }}>
+    <div
+      className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-6"
+      style={{ boxShadow: "0 10px 25px rgba(255,214,0,0.1)" }}
+    >
       {/* Gradient Background Overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-starkYellow/5 via-transparent to-purple-500/5 pointer-events-none" />
 
@@ -47,16 +50,19 @@ export default function RecentActivityCard({
                         <div className="font-medium text-white group-hover:text-starkYellow transition-colors">
                           {i.amount} {i.unit}
                         </div>
-                        <div className="text-xs text-white/70 group-hover:text-white/80 transition-colors">{i.when}</div>
+                        <div className="text-xs text-white/70 group-hover:text-white/80 transition-colors">
+                          {i.when}
+                        </div>
                       </div>
                     </div>
                     <div
-                      className={`text-xs font-medium px-2 py-1 rounded-full border ${i.status === "won"
+                      className={`text-xs font-medium px-2 py-1 rounded-full border ${
+                        i.status === "won"
                           ? "text-green-400 bg-green-400/10 border-green-400/30"
                           : i.status === "pending"
                             ? "text-starkYellow bg-starkYellow/10 border-starkYellow/30"
                             : "text-red-400 bg-red-400/10 border-red-400/30"
-                        }`}
+                      }`}
                     >
                       {i.status}
                     </div>

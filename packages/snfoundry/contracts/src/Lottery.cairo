@@ -77,7 +77,9 @@ pub trait ILottery<TContractState> {
         number5: u16,
     ) -> u8;
     fn CreateNewDraw(ref self: TContractState, accumulatedPrize: u256);
-    fn CreateNewDrawWithDuration(ref self: TContractState, accumulatedPrize: u256, duration_blocks: u64);
+    fn CreateNewDrawWithDuration(
+        ref self: TContractState, accumulatedPrize: u256, duration_blocks: u64,
+    );
     fn GetCurrentActiveDraw(self: @TContractState) -> (u64, bool);
     fn SetDrawInactive(ref self: TContractState, drawId: u64);
     fn SetTicketPrice(ref self: TContractState, price: u256);
@@ -312,9 +314,7 @@ pub mod Lottery {
         fixedPrize2Matches: u256,
         accumulatedPrize: u256,
         userTickets: Map<(ContractAddress, u64), felt252>,
-        userTicketCount: Map<
-            (ContractAddress, u64), u32,
-        >, // (user, drawId) -> user ticket count
+        userTicketCount: Map<(ContractAddress, u64), u32>, // (user, drawId) -> user ticket count
         // (user, drawId, index)-> ticketId
         userTicketIds: Map<(ContractAddress, u64, u32), felt252>,
         draws: Map<u64, Draw>,
@@ -659,7 +659,9 @@ pub mod Lottery {
         }
 
         //=======================================================================================
-        fn CreateNewDrawWithDuration(ref self: ContractState, accumulatedPrize: u256, duration_blocks: u64) {
+        fn CreateNewDrawWithDuration(
+            ref self: ContractState, accumulatedPrize: u256, duration_blocks: u64,
+        ) {
             // Validate that the accumulated prize is not negative
             assert(accumulatedPrize >= 0, 'Invalid accumulated prize');
             // Validate that duration is not zero

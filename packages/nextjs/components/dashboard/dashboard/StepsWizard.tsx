@@ -54,7 +54,10 @@ export default function StepsWizard(_: Props) {
   ];
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-6" style={{ boxShadow: "0 10px 25px rgba(255,214,0,0.1)" }}>
+    <div
+      className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-6"
+      style={{ boxShadow: "0 10px 25px rgba(255,214,0,0.1)" }}
+    >
       {/* Gradient Background Overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-starkYellow/5 via-transparent to-purple-500/5 pointer-events-none" />
 
@@ -71,12 +74,16 @@ export default function StepsWizard(_: Props) {
                     <span className="rounded-full bg-starkYellow/20 px-2.5 py-1 text-xs text-starkYellow font-medium border border-starkYellow/30">
                       {t("dashboard.steps.step", { id: s.id })}
                     </span>
-                    <span className="text-starkYellow group-hover:text-starkYellow-light transition-colors">{s.icon}</span>
+                    <span className="text-starkYellow group-hover:text-starkYellow-light transition-colors">
+                      {s.icon}
+                    </span>
                   </div>
                   <div className="font-semibold text-base text-white mb-2">
                     {s.title}
                   </div>
-                  <div className="mb-4 text-sm text-white/70 group-hover:text-white/80 transition-colors">{s.desc}</div>
+                  <div className="mb-4 text-sm text-white/70 group-hover:text-white/80 transition-colors">
+                    {s.desc}
+                  </div>
                 </div>
 
                 {isConnected && (

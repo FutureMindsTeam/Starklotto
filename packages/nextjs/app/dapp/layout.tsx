@@ -38,7 +38,9 @@ export default function DappLayout({
           onClose={() => setNotification(null)}
         />
       )}
-      <main className="flex-1 pt-24 relative z-10 container mx-auto max-w-6xl px-4 sm:px-6">{children}</main>
+      <main className="flex-1 pt-24 relative z-10 container mx-auto max-w-6xl px-4 sm:px-6">
+        {children}
+      </main>
       <ScrollToTop />
     </div>
   );

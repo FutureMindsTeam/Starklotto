@@ -16,7 +16,12 @@ export default function TotalPool() {
 
     const startCountdown = () => {
       // Fecha objetivo: 2 días, 8 horas, 42 minutos desde ahora
-      const endTime = Date.now() + (2 * 24 * 60 * 60 * 1000) + (8 * 60 * 60 * 1000) + (42 * 60 * 1000) + (30 * 1000);
+      const endTime =
+        Date.now() +
+        2 * 24 * 60 * 60 * 1000 +
+        8 * 60 * 60 * 1000 +
+        42 * 60 * 1000 +
+        30 * 1000;
 
       const updateTimer = () => {
         const now = Date.now();
@@ -35,7 +40,7 @@ export default function TotalPool() {
         const seconds = totalSeconds % 60;
 
         // Formatear con padding de ceros
-        const pad = (num: number) => num.toString().padStart(2, '0');
+        const pad = (num: number) => num.toString().padStart(2, "0");
 
         // Formato completo siempre: días, horas, minutos, segundos
         const display = `${days}d ${pad(hours)}h ${pad(minutes)}m ${pad(seconds)}s`;
@@ -89,9 +94,7 @@ export default function TotalPool() {
           transition={{ duration: 1, ease: "easeOut", delay: 0.5 }}
           className="mb-6"
         >
-          <motion.p
-            className="text-6xl md:text-7xl lg:text-8xl font-extrabold mb-2 text-white drop-shadow-[0_0_25px_rgba(255,214,0,0.5)]"
-          >
+          <motion.p className="text-6xl md:text-7xl lg:text-8xl font-extrabold mb-2 text-white drop-shadow-[0_0_25px_rgba(255,214,0,0.5)]">
             <motion.span
               animate={{ scale: [1, 1.02, 1] }}
               transition={{
@@ -113,9 +116,11 @@ export default function TotalPool() {
           transition={{ delay: 1.2, duration: 1 }}
           className="text-2xl md:text-3xl font-semibold text-white/80 mb-8"
         >
-          ≈ <span className="text-starkYellow font-bold">
+          ≈{" "}
+          <span className="text-starkYellow font-bold">
             <CountUp end={usdValue} duration={3} separator="," />
-          </span> USD
+          </span>{" "}
+          USD
         </motion.p>
 
         <motion.div

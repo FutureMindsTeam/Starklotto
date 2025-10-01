@@ -14,7 +14,9 @@ export const WrongNetworkDropdown = () => {
         tabIndex={0}
         className="group relative flex items-center gap-2 px-4 py-2 rounded-xl border border-red-500/30 bg-red-500/10 backdrop-blur-md hover:bg-red-500/20 hover:border-red-500/50 transition-all duration-300 font-medium cursor-pointer"
       >
-        <span className="text-sm text-red-400 group-hover:text-red-300 transition-colors">Wrong network</span>
+        <span className="text-sm text-red-400 group-hover:text-red-300 transition-colors">
+          Wrong network
+        </span>
         <ChevronDownIcon className="h-4 w-4 text-red-400 group-hover:text-red-300 transition-colors" />
       </label>
 

@@ -418,7 +418,9 @@ export default function BuyTicketsPage() {
 
                 {/* Next Draw */}
                 <div className="mb-6">
-                  <p className="text-white/70 mb-1">{t("buyTickets.nextDraw")}</p>
+                  <p className="text-white/70 mb-1">
+                    {t("buyTickets.nextDraw")}
+                  </p>
                   <motion.p
                     className="text-starkYellow text-4xl font-bold"
                     initial={{ scale: 0.9 }}

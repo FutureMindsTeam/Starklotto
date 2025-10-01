@@ -9,7 +9,10 @@ export default function BalancesCard({ strkp, strk, loading = false }: Props) {
   const { t } = useTranslation();
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-4" style={{ boxShadow: "0 10px 25px rgba(255,214,0,0.1)" }}>
+    <div
+      className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-4"
+      style={{ boxShadow: "0 10px 25px rgba(255,214,0,0.1)" }}
+    >
       {/* Gradient Background Overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-starkYellow/5 via-transparent to-purple-500/5 pointer-events-none" />
 
@@ -46,13 +49,17 @@ function Row({
 }) {
   return (
     <div className="flex items-center justify-between bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl px-4 py-3 hover:bg-white/10 hover:border-starkYellow/30 transition-all duration-300 group">
-      <div className="text-sm text-white/80 group-hover:text-white transition-colors">{label}</div>
+      <div className="text-sm text-white/80 group-hover:text-white transition-colors">
+        {label}
+      </div>
       <div className="flex items-center gap-2">
         {loading ? (
           <div className="w-24 h-4 bg-starkYellow/20 animate-pulse rounded"></div>
         ) : (
           <>
-            <div className="font-semibold text-lg text-starkYellow group-hover:text-starkYellow-light transition-colors">{value}</div>
+            <div className="font-semibold text-lg text-starkYellow group-hover:text-starkYellow-light transition-colors">
+              {value}
+            </div>
             <TrendingUp className="h-4 w-4 text-starkYellow/70 group-hover:text-starkYellow transition-colors" />
           </>
         )}

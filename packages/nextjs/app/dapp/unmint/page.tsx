@@ -53,7 +53,10 @@ export default function UnmintPage() {
       <div className="max-w-4xl mx-auto">
         <div className="grid md:grid-cols-2 gap-8">
           {/* How it works */}
-          <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-6" style={{ boxShadow: "0 10px 25px rgba(255,214,0,0.1)" }}>
+          <div
+            className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-6"
+            style={{ boxShadow: "0 10px 25px rgba(255,214,0,0.1)" }}
+          >
             {/* Gradient Background Overlay */}
             <div className="absolute inset-0 bg-gradient-to-br from-starkYellow/5 via-transparent to-purple-500/5 pointer-events-none" />
 
@@ -67,7 +70,9 @@ export default function UnmintPage() {
               <div className="space-y-3 text-white/80">
                 <div className="flex items-center gap-3 gap-x-5">
                   <div className="w-6 h-6 rounded-full bg-starkYellow/20 border border-starkYellow/30 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-starkYellow text-sm font-bold">1</span>
+                    <span className="text-starkYellow text-sm font-bold">
+                      1
+                    </span>
                   </div>
                   <p>
                     Select a percentage (25%, 50%, 75%, or 100%) of your
@@ -76,13 +81,17 @@ export default function UnmintPage() {
                 </div>
                 <div className="flex items-center gap-3 gap-x-5">
                   <div className="w-6 h-6 rounded-full bg-starkYellow/20 border border-starkYellow/30 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-starkYellow text-sm font-bold">2</span>
+                    <span className="text-starkYellow text-sm font-bold">
+                      2
+                    </span>
                   </div>
                   <p>A 3% fee is deducted from the conversion amount</p>
                 </div>
                 <div className="flex items-center gap-3 gap-x-5">
                   <div className="w-6 h-6 rounded-full bg-starkYellow/20 border border-starkYellow/30 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-starkYellow text-sm font-bold">3</span>
+                    <span className="text-starkYellow text-sm font-bold">
+                      3
+                    </span>
                   </div>
                   <p>Receive STRK tokens at a 1:1 rate (minus fees)</p>
                 </div>
@@ -91,7 +100,10 @@ export default function UnmintPage() {
           </div>
 
           {/* Important Notes */}
-          <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-6" style={{ boxShadow: "0 10px 25px rgba(255,214,0,0.1)" }}>
+          <div
+            className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-6"
+            style={{ boxShadow: "0 10px 25px rgba(255,214,0,0.1)" }}
+          >
             {/* Gradient Background Overlay */}
             <div className="absolute inset-0 bg-gradient-to-br from-starkYellow/5 via-transparent to-purple-500/5 pointer-events-none" />
 
@@ -127,8 +139,8 @@ export default function UnmintPage() {
                 <div className="flex items-center gap-3 gap-x-5">
                   <div className="w-2 h-2 rounded-full bg-starkYellow flex-shrink-0 mt-2"></div>
                   <p>
-                    <strong>Percentage Selection:</strong> Choose from predefined
-                    percentages - manual amounts are not allowed
+                    <strong>Percentage Selection:</strong> Choose from
+                    predefined percentages - manual amounts are not allowed
                   </p>
                 </div>
               </div>

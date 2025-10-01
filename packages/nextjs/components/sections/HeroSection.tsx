@@ -12,7 +12,7 @@ interface HeroSectionProps {
   variant?: "hero" | "card";
   heroY: any;
   jackpot: number;
-  isConnected: boolean
+  isConnected: boolean;
   showSecurityInfo: boolean;
   targetDate: Date;
   onBuyTicket: () => void;
@@ -49,7 +49,10 @@ export function HeroSection({
 
   if (isCard) {
     return (
-      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-6" style={{ boxShadow: "0 10px 25px rgba(255,214,0,0.1)" }}>
+      <div
+        className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-6"
+        style={{ boxShadow: "0 10px 25px rgba(255,214,0,0.1)" }}
+      >
         {/* Gradient Background Overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-starkYellow/5 via-transparent to-purple-500/5 pointer-events-none" />
 
@@ -77,8 +80,8 @@ export function HeroSection({
             )}
           </div>
 
-          {
-            isConnected && <button
+          {isConnected && (
+            <button
               onClick={onBuyTicket}
               className="group relative w-full py-3 text-base font-medium rounded-xl border border-starkYellow/30 bg-gradient-to-r from-starkYellow/20 to-starkYellow/10 text-starkYellow hover:from-starkYellow hover:to-starkYellow-light hover:text-black transition-all duration-300 hover:scale-105"
               style={{ boxShadow: "0 4px 12px rgba(255,214,0,0.2)" }}
@@ -86,8 +89,7 @@ export function HeroSection({
               <div className="absolute -inset-1 bg-gradient-to-r from-starkYellow/20 via-purple-500/20 to-starkYellow/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <span className="relative">{t("buyTickets.buyButton")}</span>
             </button>
-          }
-
+          )}
         </div>
       </div>
     );

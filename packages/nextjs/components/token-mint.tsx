@@ -308,7 +308,10 @@ export default function TokenMint({
           document.body,
         )}
 
-      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md text-white shadow-lg" style={{ boxShadow: "0 10px 25px rgba(255,214,0,0.1)" }}>
+      <div
+        className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md text-white shadow-lg"
+        style={{ boxShadow: "0 10px 25px rgba(255,214,0,0.1)" }}
+      >
         {/* Gradient Background Overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-starkYellow/5 via-transparent to-purple-500/5 pointer-events-none" />
 
@@ -428,10 +431,11 @@ export default function TokenMint({
                   )
                 </span>
                 <Tooltip
-                  content={`A ${feePercent !== undefined
+                  content={`A ${
+                    feePercent !== undefined
                       ? (feePercent * 100).toFixed(2)
                       : "--"
-                    }% fee is applied to all mint operations`}
+                  }% fee is applied to all mint operations`}
                 >
                   <Info size={20} className="text-starkYellow" />
                 </Tooltip>
@@ -459,13 +463,18 @@ export default function TokenMint({
         {/* Mint button */}
         <div className="relative z-10 p-4">
           <button
-            className={`w-full py-6 text-lg font-medium rounded-lg transition-all duration-300 ${isValidInput && !isLoading
+            className={`w-full py-6 text-lg font-medium rounded-lg transition-all duration-300 ${
+              isValidInput && !isLoading
                 ? "bg-gradient-to-r from-starkYellow/20 to-starkYellow/10 border border-starkYellow/30 text-starkYellow hover:from-starkYellow hover:to-starkYellow-light hover:text-black hover:scale-105"
                 : "bg-white/5 border border-white/20 text-white/50 cursor-not-allowed"
-              }`}
+            }`}
             disabled={!isValidInput || isLoading}
             onClick={handleMint}
-            style={isValidInput && !isLoading ? { boxShadow: "0 4px 12px rgba(255,214,0,0.2)" } : {}}
+            style={
+              isValidInput && !isLoading
+                ? { boxShadow: "0 4px 12px rgba(255,214,0,0.2)" }
+                : {}
+            }
           >
             {isLoading ? "Minting..." : "Mint $TRKP"}
           </button>

@@ -265,14 +265,16 @@ export function LastDrawResults() {
 
           <button
             onClick={isPolling ? stopPolling : startPolling}
-            className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md transition-colors ${isPolling
+            className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md transition-colors ${
+              isPolling
                 ? "text-starkYellow bg-starkYellow/10 border border-starkYellow/30 hover:bg-starkYellow/20"
                 : "text-white/80 bg-white/5 border border-white/10 hover:bg-white/10"
-              }`}
+            }`}
           >
             <div
-              className={`h-2 w-2 rounded-full ${isPolling ? "bg-starkYellow" : "bg-white/60"
-                }`}
+              className={`h-2 w-2 rounded-full ${
+                isPolling ? "bg-starkYellow" : "bg-white/60"
+              }`}
             />
             {isPolling ? t("status.autoRefreshOn") : t("status.autoRefreshOff")}
           </button>

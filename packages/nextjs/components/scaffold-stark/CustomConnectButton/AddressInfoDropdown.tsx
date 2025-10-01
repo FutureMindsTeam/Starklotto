@@ -88,7 +88,7 @@ export const AddressInfoDropdown = ({
         >
           <div className="hidden [@media(min-width:412px)]:block">
             {getStarknetPFPIfExists(profile?.profilePicture) &&
-              !profileImageError ? (
+            !profileImageError ? (
               <NextImage
                 src={profile?.profilePicture || ""}
                 alt="Profile Picture"
@@ -114,7 +114,7 @@ export const AddressInfoDropdown = ({
             {isENS(displayName)
               ? displayName
               : profile?.name ||
-              address?.slice(0, 6) + "..." + address?.slice(-4)}
+                address?.slice(0, 6) + "..." + address?.slice(-4)}
           </span>
           <ChevronDownIcon className="h-4 w-4 text-starkYellow group-hover:text-starkYellow-light transition-colors" />
         </summary>
@@ -127,10 +127,7 @@ export const AddressInfoDropdown = ({
           <li className={selectingNetwork ? "hidden" : ""}>
             {addressCopied ? (
               <div className="flex items-center gap-3 px-4 py-2.5 text-left hover:bg-starkYellow/10 transition-all duration-200 text-starkYellow rounded-lg">
-                <CheckCircleIcon
-                  className="h-4 w-4"
-                  aria-hidden="true"
-                />
+                <CheckCircleIcon className="h-4 w-4" aria-hidden="true" />
                 <span className="text-sm font-medium">Address copied!</span>
               </div>
             ) : (
@@ -172,7 +169,9 @@ export const AddressInfoDropdown = ({
                 className="flex items-center gap-3 px-4 py-2.5 text-left hover:bg-starkYellow/10 transition-all duration-200 text-white/80 hover:text-white rounded-lg"
               >
                 <ArrowTopRightOnSquareIcon className="h-4 w-4" />
-                <span className="text-sm font-medium">View on Block Explorer</span>
+                <span className="text-sm font-medium">
+                  View on Block Explorer
+                </span>
               </a>
             </li>
           ) : null}
@@ -230,10 +229,11 @@ export const AddressInfoDropdown = ({
                               className="w-full flex flex-col"
                             >
                               <button
-                                className={`${isDarkMode
+                                className={`${
+                                  isDarkMode
                                     ? "hover:bg-[#385183] border-[#385183]"
                                     : "hover:bg-gradient-light "
-                                  } border rounded-md text-neutral py-[8px] pl-[10px] pr-16 flex items-center gap-4`}
+                                } border rounded-md text-neutral py-[8px] pl-[10px] pr-16 flex items-center gap-4`}
                                 onClick={(e) => handleConnectBurner(e, ix)}
                               >
                                 <BlockieAvatar

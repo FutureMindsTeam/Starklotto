@@ -50,10 +50,7 @@ export default function Header() {
         <div className="container mx-auto relative flex h-20 items-center justify-center px-6 lg:px-8">
           {/* Logo */}
           <div className="absolute left-6">
-            <StarkLottoLogo
-              variant="landing"
-              onClick={() => goTo("#hero")}
-            />
+            <StarkLottoLogo variant="landing" onClick={() => goTo("#hero")} />
           </div>
 
           {/* Desktop Nav */}

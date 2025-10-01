@@ -30,10 +30,11 @@ export default function LotteryDisplay({
           return (
             <motion.div
               key={index}
-              className={`w-12 h-12 rounded-full bg-gradient-to-br from-starkYellow to-starkYellow-light flex items-center justify-center text-black font-bold text-lg shadow-lg border-2 border-starkYellow ${hasNumber
+              className={`w-12 h-12 rounded-full bg-gradient-to-br from-starkYellow to-starkYellow-light flex items-center justify-center text-black font-bold text-lg shadow-lg border-2 border-starkYellow ${
+                hasNumber
                   ? "cursor-pointer hover:scale-110"
                   : "cursor-not-allowed"
-                }`}
+              }`}
               initial={{ scale: 0.8 }}
               animate={{ scale: 1 }}
               whileHover={hasNumber ? { scale: 1.1 } : {}}

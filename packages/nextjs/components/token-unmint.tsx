@@ -131,7 +131,10 @@ export default function TokenUnmint({
           document.body,
         )}
 
-      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md text-white shadow-lg" style={{ boxShadow: "0 10px 25px rgba(255,214,0,0.1)" }}>
+      <div
+        className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md text-white shadow-lg"
+        style={{ boxShadow: "0 10px 25px rgba(255,214,0,0.1)" }}
+      >
         {/* Gradient Background Overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-starkYellow/5 via-transparent to-purple-500/5 pointer-events-none" />
 
@@ -189,13 +192,15 @@ export default function TokenUnmint({
             {percentageOptions.map((percentage) => (
               <button
                 key={percentage}
-                className={`py-2 px-3 text-sm font-medium rounded-md transition-all duration-200 ${selectedPercentage === percentage
+                className={`py-2 px-3 text-sm font-medium rounded-md transition-all duration-200 ${
+                  selectedPercentage === percentage
                     ? "bg-starkYellow text-black shadow-lg scale-105 border border-starkYellow/30"
                     : "bg-starkYellow/20 hover:bg-starkYellow/30 text-starkYellow hover:scale-102 border border-starkYellow/30"
-                  } ${isProcessing || prizeBalance <= 0
+                } ${
+                  isProcessing || prizeBalance <= 0
                     ? "opacity-50 cursor-not-allowed"
                     : "cursor-pointer"
-                  }`}
+                }`}
                 onClick={() => handlePercentageSelect(percentage)}
                 disabled={isProcessing || prizeBalance <= 0}
               >
@@ -277,13 +282,18 @@ export default function TokenUnmint({
 
         <div className="relative z-10 p-4">
           <button
-            className={`w-full py-6 text-lg font-medium rounded-lg transition-all duration-300 ${isValidSelection
+            className={`w-full py-6 text-lg font-medium rounded-lg transition-all duration-300 ${
+              isValidSelection
                 ? "bg-gradient-to-r from-starkYellow/20 to-starkYellow/10 border border-starkYellow/30 text-starkYellow hover:from-starkYellow hover:to-starkYellow-light hover:text-black hover:scale-105"
                 : "bg-white/5 border border-white/20 text-white/50 cursor-not-allowed"
-              }`}
+            }`}
             disabled={!isValidSelection || isProcessing}
             onClick={handleUnmint}
-            style={isValidSelection ? { boxShadow: "0 4px 12px rgba(255,214,0,0.2)" } : {}}
+            style={
+              isValidSelection
+                ? { boxShadow: "0 4px 12px rgba(255,214,0,0.2)" }
+                : {}
+            }
           >
             {isProcessing ? "Unminting..." : "Unmint STRKP"}
           </button>

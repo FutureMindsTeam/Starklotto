@@ -80,7 +80,9 @@ export default function DashboardPage() {
           <TotalPool />
         </div>
 
-        <div className={`space-y-4 ${isConnected ? 'lg:col-span-2' : 'lg:col-span-3'}`}>
+        <div
+          className={`space-y-4 ${isConnected ? "lg:col-span-2" : "lg:col-span-3"}`}
+        >
           {/* Lottery Process */}
           <StepsWizard {...data.wizard} />
 
