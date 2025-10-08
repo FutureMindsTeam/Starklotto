@@ -96,15 +96,19 @@ const deployScript = async (): Promise<void> => {
     );
   }
 
-  // Deploy Lottery with dynamic addresses before executing calls
+  // Deploy Lottery with dynamic addresses including Randomness contract address
   console.log("Deploying Lottery contract...");
+  // Usar dirección del contrato Randomness desplegado en src_adapter
+  const deployedRandomnessAddress = "0x36bcac633a4b319190ad7691e2b92dbfff8eef098feba82e6a20488824204f7"; // Devnet address
+
   const lotteryDeploymentResult = await deployContract({
     contract: "Lottery",
     contractName: "Lottery",
     constructorArgs: {
       owner: deployer.address,
       strkPlayContractAddress: starkPlayERC20Address,
-      strkPlayVaultContractAddress: starkPlayVaultAddress
+      strkPlayVaultContractAddress: starkPlayVaultAddress,
+      randomnessContractAddress: deployedRandomnessAddress,  // Dirección del contrato Randomness existente
     },
   });
   const lotteryAddress = lotteryDeploymentResult.address;

@@ -7,7 +7,7 @@ const deployedContracts = {
   devnet: {
     StarkPlayERC20: {
       address:
-        "0x75a8e2a18bdafbfb02c0339d16b2b65c53f377bf6993c2c5a3d484aafa77d1e",
+        "0x6672157a4a90aad24d237b8b3b690cbf476d64ee49482deac754d701d42f88c",
       abi: [
         {
           type: "impl",
@@ -1189,7 +1189,7 @@ const deployedContracts = {
     },
     StarkPlayVault: {
       address:
-        "0x3057522294c81ceb3f34cdb538dae99bbc8915f2e5fa7a622688a74140a19b",
+        "0xe2f2693c6498095f1e0d99fc76ca9703355eecfdc58fef966428526015d88a",
       abi: [
         {
           type: "impl",
@@ -2077,7 +2077,7 @@ const deployedContracts = {
     },
     Lottery: {
       address:
-        "0x7e195af58c7e3a14d03f5fc8d6cb6ba7f92fe9aa985b7a6e2fb19de98d73e39",
+        "0x35a17d0a705e0342e83c55b5e208347292a4a0d74fe8a6648346f11e548fbc0",
       abi: [
         {
           type: "impl",
