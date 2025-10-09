@@ -7,7 +7,7 @@ const deployedContracts = {
   devnet: {
     StarkPlayERC20: {
       address:
-        "0x75a8e2a18bdafbfb02c0339d16b2b65c53f377bf6993c2c5a3d484aafa77d1e",
+        "0x5ae170a5f7a6865bf12fa8224a32c02acd3dc6e55413ea32b0ae44def275377",
       abi: [
         {
           type: "impl",
@@ -1189,7 +1189,7 @@ const deployedContracts = {
     },
     StarkPlayVault: {
       address:
-        "0x3057522294c81ceb3f34cdb538dae99bbc8915f2e5fa7a622688a74140a19b",
+        "0x25ef073cf5fd8d454802699d6712a79a456746ecf66f521e9c02d2c3c0fd063",
       abi: [
         {
           type: "impl",
@@ -2077,7 +2077,7 @@ const deployedContracts = {
     },
     Lottery: {
       address:
-        "0x7e195af58c7e3a14d03f5fc8d6cb6ba7f92fe9aa985b7a6e2fb19de98d73e39",
+        "0x334f06afd7b2dae710821e3d39a9a8d7bf32874ae23cdb6309927ea8eb6d890",
       abi: [
         {
           type: "impl",
@@ -2364,6 +2364,26 @@ const deployedContracts = {
               name: "EmergencyResetReentrancyGuard",
               inputs: [],
               outputs: [],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "RequestRandomGeneration",
+              inputs: [
+                {
+                  name: "drawId",
+                  type: "core::integer::u64",
+                },
+                {
+                  name: "seed",
+                  type: "core::integer::u64",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::integer::u64",
+                },
+              ],
               state_mutability: "external",
             },
             {
@@ -2835,6 +2855,17 @@ const deployedContracts = {
               ],
               state_mutability: "view",
             },
+            {
+              type: "function",
+              name: "GetRandomnessContractAddress",
+              inputs: [],
+              outputs: [
+                {
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              state_mutability: "view",
+            },
           ],
         },
         {
@@ -2892,6 +2923,10 @@ const deployedContracts = {
             },
             {
               name: "strkPlayVaultContractAddress",
+              type: "core::starknet::contract_address::ContractAddress",
+            },
+            {
+              name: "randomnessContractAddress",
               type: "core::starknet::contract_address::ContractAddress",
             },
           ],
@@ -3277,7 +3312,7 @@ const deployedContracts = {
         },
       ],
       classHash:
-        "0x5f8641f89c255ed1c165298cfc1c3af04ec5b82159edf9dfe4c83521b12a24b",
+        "0x5462f3a1c3b87ea9d38b448c523e04dea9119861d38c08b53037f90fdeedc80",
     },
   },
 } as const;

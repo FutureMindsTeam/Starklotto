@@ -1,5 +1,14 @@
 use starknet::ContractAddress;
 
+// Interface for the deployed Randomness contract
+#[starknet::interface]
+pub trait IRandomnessLottery<TContractState> {
+    fn devnet_generate(ref self: TContractState, seed: u64) -> u64;
+    fn get_generation_numbers(self: @TContractState, id: u64) -> Array<u8>;
+    fn get_generation_status(self: @TContractState, id: u64) -> u8;
+}
+
+
 //=======================================================================================
 //structs
 //=======================================================================================
@@ -77,11 +86,14 @@ pub trait ILottery<TContractState> {
         number5: u16,
     ) -> u8;
     fn CreateNewDraw(ref self: TContractState, accumulatedPrize: u256);
-    fn CreateNewDrawWithDuration(ref self: TContractState, accumulatedPrize: u256, duration_blocks: u64);
+    fn CreateNewDrawWithDuration(
+        ref self: TContractState, accumulatedPrize: u256, duration_blocks: u64,
+    );
     fn GetCurrentActiveDraw(self: @TContractState) -> (u64, bool);
     fn SetDrawInactive(ref self: TContractState, drawId: u64);
     fn SetTicketPrice(ref self: TContractState, price: u256);
     fn EmergencyResetReentrancyGuard(ref self: TContractState);
+    fn RequestRandomGeneration(ref self: TContractState, drawId: u64, seed: u64) -> u64;
     //=======================================================================================
     //get functions
     fn GetTicketPrice(self: @TContractState) -> u256;
@@ -126,6 +138,9 @@ pub trait ILottery<TContractState> {
 
     // Get current draw ID
     fn GetCurrentDrawId(self: @TContractState) -> u64;
+
+    // Get randomness contract address
+    fn GetRandomnessContractAddress(self: @TContractState) -> ContractAddress;
     //=======================================================================================
 }
 
@@ -147,7 +162,10 @@ pub mod Lottery {
         ContractAddress, get_block_number, get_block_timestamp, get_caller_address,
         get_contract_address,
     };
-    use super::{Draw, ILottery, JackpotEntry, Ticket};
+    use super::{
+        Draw, ILottery, IRandomnessLotteryDispatcher, IRandomnessLotteryDispatcherTrait,
+        JackpotEntry, Ticket,
+    };
 
     // ownable component by openzeppelin
     component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
@@ -312,9 +330,7 @@ pub mod Lottery {
         fixedPrize2Matches: u256,
         accumulatedPrize: u256,
         userTickets: Map<(ContractAddress, u64), felt252>,
-        userTicketCount: Map<
-            (ContractAddress, u64), u32,
-        >, // (user, drawId) -> user ticket count
+        userTicketCount: Map<(ContractAddress, u64), u32>, // (user, drawId) -> user ticket count
         // (user, drawId, index)-> ticketId
         userTicketIds: Map<(ContractAddress, u64, u32), felt252>,
         draws: Map<u64, Draw>,
@@ -322,6 +338,10 @@ pub mod Lottery {
         // Dynamic contract addresses
         strkPlayContractAddress: ContractAddress,
         strkPlayVaultContractAddress: ContractAddress,
+        // Address of the deployed Randomness contract
+        randomnessContractAddress: ContractAddress,
+        // Randomness generation ID counter (starts at 1)
+        currentRandomnessId: u64,
         // ownable component by openzeppelin
         #[substorage(v0)]
         ownable: OwnableComponent::Storage,
@@ -339,10 +359,12 @@ pub mod Lottery {
         owner: ContractAddress,
         strkPlayContractAddress: ContractAddress,
         strkPlayVaultContractAddress: ContractAddress,
+        randomnessContractAddress: ContractAddress,
     ) {
         // Validate that addresses are not zero address
         assert(strkPlayContractAddress != 0.try_into().unwrap(), 'Invalid STRKP contract');
         assert(strkPlayVaultContractAddress != 0.try_into().unwrap(), 'Invalid Vault contract');
+        assert(randomnessContractAddress != 0.try_into().unwrap(), 'Invalid Randomness contract');
 
         self.ownable.initializer(owner);
         self.fixedPrize4Matches.write(4000000000000000000);
@@ -350,10 +372,12 @@ pub mod Lottery {
         self.fixedPrize2Matches.write(2000000000000000000);
         self.currentDrawId.write(0);
         self.currentTicketId.write(0);
+        self.currentRandomnessId.write(1); // Initialize at 1
 
         // Store dynamic contract addresses
         self.strkPlayContractAddress.write(strkPlayContractAddress);
         self.strkPlayVaultContractAddress.write(strkPlayVaultContractAddress);
+        self.randomnessContractAddress.write(randomnessContractAddress);
         self.ticketPrice.write(TicketPriceInitial);
     }
     //=======================================================================================
@@ -531,7 +555,27 @@ pub mod Lottery {
             let mut draw = self.draws.entry(drawId).read();
             assert(draw.isActive, 'Draw is not active');
 
-            let winningNumbers = GenerateRandomNumbers();
+            // Get current randomness ID
+            let current_randomness_id = self.currentRandomnessId.read();
+
+            // Create dispatcher for the deployed Randomness contract
+            let randomness_dispatcher = IRandomnessLotteryDispatcher {
+                contract_address: self.randomnessContractAddress.read(),
+            };
+
+            // Validate that generation is completed (status = 2)
+            let status = randomness_dispatcher.get_generation_status(current_randomness_id);
+            assert(status == 2_u8, 'Random generation not ready');
+
+            // Get random numbers (Array<u8> in range 1-40)
+            let random_numbers_u8 = randomness_dispatcher
+                .get_generation_numbers(current_randomness_id);
+            assert(random_numbers_u8.len() == 5, 'Invalid random numbers count');
+
+            // Convert from u8 to u16 (already in range 1-40)
+            let winningNumbers = self.MapRandomNumbersToLotteryRange(@random_numbers_u8);
+
+            // Assign winning numbers to the draw
             draw.winningNumber1 = *winningNumbers.at(0);
             draw.winningNumber2 = *winningNumbers.at(1);
             draw.winningNumber3 = *winningNumbers.at(2);
@@ -546,6 +590,9 @@ pub mod Lottery {
                         drawId, winningNumbers, accumulatedPrize: self.accumulatedPrize.read(),
                     },
                 );
+
+            // Increment randomness ID for next generation
+            self.currentRandomnessId.write(current_randomness_id + 1);
         }
         //=======================================================================================
         //OK
@@ -659,7 +706,9 @@ pub mod Lottery {
         }
 
         //=======================================================================================
-        fn CreateNewDrawWithDuration(ref self: ContractState, accumulatedPrize: u256, duration_blocks: u64) {
+        fn CreateNewDrawWithDuration(
+            ref self: ContractState, accumulatedPrize: u256, duration_blocks: u64,
+        ) {
             // Validate that the accumulated prize is not negative
             assert(accumulatedPrize >= 0, 'Invalid accumulated prize');
             // Validate that duration is not zero
@@ -997,6 +1046,31 @@ pub mod Lottery {
         fn GetCurrentDrawId(self: @ContractState) -> u64 {
             self.currentDrawId.read()
         }
+
+        fn GetRandomnessContractAddress(self: @ContractState) -> ContractAddress {
+            self.randomnessContractAddress.read()
+        }
+
+        /// Requests random number generation for a draw
+        /// Must be called by the owner before executing DrawNumbers
+        fn RequestRandomGeneration(ref self: ContractState, drawId: u64, seed: u64) -> u64 {
+            self.ownable.assert_only_owner();
+
+            // Validate that the draw exists and is active
+            self.AssertDrawExists(drawId, 'RequestRandomGeneration');
+            let draw = self.draws.entry(drawId).read();
+            assert(draw.isActive, 'Draw is not active');
+
+            // Create dispatcher for the deployed Randomness contract
+            let mut randomness_dispatcher = IRandomnessLotteryDispatcher {
+                contract_address: self.randomnessContractAddress.read(),
+            };
+
+            // Request generation (devnet mode) - generates numbers in range 1-40
+            let generation_id = randomness_dispatcher.devnet_generate(seed);
+
+            generation_id
+        }
     }
 
 
@@ -1144,6 +1218,26 @@ pub mod Lottery {
                 return current_time >= draw.startTime && current_time < draw.endTime;
             }
             current_block >= draw.startBlock && current_block < draw.endBlock
+        }
+
+        /// Converts random numbers from range [1-40] from u8 to u16 for Lottery
+        /// Numbers are already in the correct range [1-40]
+        fn MapRandomNumbersToLotteryRange(
+            self: @ContractState, random_numbers: @Array<u8>,
+        ) -> Array<u16> {
+            let mut lottery_numbers = ArrayTrait::new();
+            let mut i: usize = 0;
+
+            while i < random_numbers.len() {
+                let random_u8 = *random_numbers.at(i);
+                // Convert directly from u8 to u16 (already in range 1-40)
+                let mapped_number: u16 = random_u8.into();
+
+                lottery_numbers.append(mapped_number);
+                i += 1;
+            }
+
+            lottery_numbers
         }
     }
 

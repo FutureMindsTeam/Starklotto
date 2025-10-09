@@ -105,14 +105,25 @@ fn deploy_starkplay_vault(starkplay_token: ContractAddress) -> ContractAddress {
     deployed_address
 }
 
+fn deploy_mock_randomness() -> ContractAddress {
+    let randomness_contract = declare("MockRandomness").unwrap().contract_class();
+    let (randomness_address, _) = randomness_contract.deploy(@array![]).unwrap();
+    randomness_address
+}
+
 fn deploy_lottery_contract(
     strk_play_address: ContractAddress, vault_address: ContractAddress,
 ) -> ContractAddress {
     let contract_class = declare("Lottery").unwrap().contract_class();
+    
+    // Deploy mock randomness contract
+    let randomness_contract_address = deploy_mock_randomness();
+    
     let mut calldata = array![];
     calldata.append_serde(owner_address()); // owner
     calldata.append_serde(strk_play_address); // strkPlayContractAddress
     calldata.append_serde(vault_address); // strkPlayVaultContractAddress
+    calldata.append_serde(randomness_contract_address); // randomnessContractAddress
     let (contract_address, _) = contract_class.deploy(@calldata).unwrap();
     contract_address
 }
