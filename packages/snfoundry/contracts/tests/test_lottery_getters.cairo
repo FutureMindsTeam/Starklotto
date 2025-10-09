@@ -61,12 +61,21 @@ fn deploy_mock_vault(strk_play_address: ContractAddress) -> ContractAddress {
     contract_address
 }
 
+fn deploy_mock_randomness() -> ContractAddress {
+    let randomness_contract = declare("MockRandomness").unwrap().contract_class();
+    let (randomness_address, _) = randomness_contract.deploy(@array![]).unwrap();
+    randomness_address
+}
+
 fn deploy_lottery() -> (ContractAddress, ContractAddress, ContractAddress) {
     // Deploy mock contracts first
     let mock_strk_play = deploy_mock_strk_play();
     let mock_vault = deploy_mock_vault(mock_strk_play);
 
-    let mut calldata = array![owner_address().into(), mock_strk_play.into(), mock_vault.into()];
+    // Deploy mock randomness contract
+    let randomness_contract_address = deploy_mock_randomness();
+
+    let mut calldata = array![owner_address().into(), mock_strk_play.into(), mock_vault.into(), randomness_contract_address.into()];
     let lottery_address = declare_and_deploy("Lottery", calldata);
 
     (lottery_address, mock_strk_play, mock_vault)

@@ -6,6 +6,12 @@ use snforge_std::{
 };
 use starknet::ContractAddress;
 
+fn deploy_mock_randomness() -> ContractAddress {
+    let randomness_contract = declare("MockRandomness").unwrap().contract_class();
+    let (randomness_address, _) = randomness_contract.deploy(@array![]).unwrap();
+    randomness_address
+}
+
 // Helper function to deploy the lottery contract
 fn deploy_lottery_contract() -> (ILotteryDispatcher, ContractAddress) {
     let contract = declare("Lottery").unwrap().contract_class();
@@ -13,11 +19,15 @@ fn deploy_lottery_contract() -> (ILotteryDispatcher, ContractAddress) {
     let owner: ContractAddress = 'owner'.try_into().unwrap();
     let strkp_contract: ContractAddress = 'strkp_contract'.try_into().unwrap();
     let vault_contract: ContractAddress = 'vault_contract'.try_into().unwrap();
+    
+    // Deploy mock randomness contract
+    let randomness_contract = deploy_mock_randomness();
 
     let mut constructor_args = array![];
     constructor_args.append(owner.into());
     constructor_args.append(strkp_contract.into());
     constructor_args.append(vault_contract.into());
+    constructor_args.append(randomness_contract.into());
 
     let (contract_address, _) = contract.deploy(@constructor_args).unwrap();
     let dispatcher = ILotteryDispatcher { contract_address };

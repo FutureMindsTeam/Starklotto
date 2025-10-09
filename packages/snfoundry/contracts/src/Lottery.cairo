@@ -1,6 +1,6 @@
 use starknet::ContractAddress;
 
-// Interfaz para el contrato Randomness desplegado
+// Interface for the deployed Randomness contract
 #[starknet::interface]
 pub trait IRandomnessLottery<TContractState> {
     fn devnet_generate(ref self: TContractState, seed: u64) -> u64;
@@ -335,9 +335,9 @@ pub mod Lottery {
         // Dynamic contract addresses
         strkPlayContractAddress: ContractAddress,
         strkPlayVaultContractAddress: ContractAddress,
-        // Dirección del contrato Randomness desplegado
+        // Address of the deployed Randomness contract
         randomnessContractAddress: ContractAddress,
-        // Contador de ID de generación de randomness (inicia en 1)
+        // Randomness generation ID counter (starts at 1)
         currentRandomnessId: u64,
         // ownable component by openzeppelin
         #[substorage(v0)]
@@ -369,7 +369,7 @@ pub mod Lottery {
         self.fixedPrize2Matches.write(2000000000000000000);
         self.currentDrawId.write(0);
         self.currentTicketId.write(0);
-        self.currentRandomnessId.write(1); // Inicializar en 1
+        self.currentRandomnessId.write(1); // Initialize at 1
 
         // Store dynamic contract addresses
         self.strkPlayContractAddress.write(strkPlayContractAddress);
@@ -552,26 +552,26 @@ pub mod Lottery {
             let mut draw = self.draws.entry(drawId).read();
             assert(draw.isActive, 'Draw is not active');
 
-            // Obtener el ID actual de randomness
+            // Get current randomness ID
             let current_randomness_id = self.currentRandomnessId.read();
 
-            // Crear dispatcher para el contrato Randomness desplegado
+            // Create dispatcher for the deployed Randomness contract
             let randomness_dispatcher = IRandomnessLotteryDispatcher {
                 contract_address: self.randomnessContractAddress.read()
             };
 
-            // Validar que la generación esté completada (status = 2)
+            // Validate that generation is completed (status = 2)
             let status = randomness_dispatcher.get_generation_status(current_randomness_id);
             assert(status == 2_u8, 'Random generation not ready');
 
-            // Obtener los números aleatorios (Array<u8> en rango 1-40)
+            // Get random numbers (Array<u8> in range 1-40)
             let random_numbers_u8 = randomness_dispatcher.get_generation_numbers(current_randomness_id);
             assert(random_numbers_u8.len() == 5, 'Invalid random numbers count');
 
-            // Convertir de u8 a u16 (ya están en rango 1-40)
+            // Convert from u8 to u16 (already in range 1-40)
             let winningNumbers = self.MapRandomNumbersToLotteryRange(@random_numbers_u8);
 
-            // Asignar los números ganadores al draw
+            // Assign winning numbers to the draw
             draw.winningNumber1 = *winningNumbers.at(0);
             draw.winningNumber2 = *winningNumbers.at(1);
             draw.winningNumber3 = *winningNumbers.at(2);
@@ -587,7 +587,7 @@ pub mod Lottery {
                     },
                 );
 
-            // Incrementar el ID de randomness para la próxima generación
+            // Increment randomness ID for next generation
             self.currentRandomnessId.write(current_randomness_id + 1);
         }
         //=======================================================================================
@@ -1045,22 +1045,22 @@ pub mod Lottery {
             self.randomnessContractAddress.read()
         }
 
-        /// Solicita la generación de números aleatorios para un draw
-        /// Debe ser llamada por el owner antes de ejecutar DrawNumbers
+        /// Requests random number generation for a draw
+        /// Must be called by the owner before executing DrawNumbers
         fn RequestRandomGeneration(ref self: ContractState, drawId: u64, seed: u64) -> u64 {
             self.ownable.assert_only_owner();
 
-            // Validar que el draw existe y está activo
+            // Validate that the draw exists and is active
             self.AssertDrawExists(drawId, 'RequestRandomGeneration');
             let draw = self.draws.entry(drawId).read();
             assert(draw.isActive, 'Draw is not active');
 
-            // Crear dispatcher para el contrato Randomness desplegado
+            // Create dispatcher for the deployed Randomness contract
             let mut randomness_dispatcher = IRandomnessLotteryDispatcher {
                 contract_address: self.randomnessContractAddress.read()
             };
 
-            // Solicitar generación (en modo devnet) - genera números en rango 1-40
+            // Request generation (devnet mode) - generates numbers in range 1-40
             let generation_id = randomness_dispatcher.devnet_generate(seed);
 
             generation_id
@@ -1214,8 +1214,8 @@ pub mod Lottery {
             current_block >= draw.startBlock && current_block < draw.endBlock
         }
 
-        /// Convierte números aleatorios del rango [1-40] de u8 a u16 para Lottery
-        /// Los números ya vienen en el rango correcto [1-40]
+        /// Converts random numbers from range [1-40] from u8 to u16 for Lottery
+        /// Numbers are already in the correct range [1-40]
         fn MapRandomNumbersToLotteryRange(
             self: @ContractState,
             random_numbers: @Array<u8>
@@ -1225,7 +1225,7 @@ pub mod Lottery {
 
             while i < random_numbers.len() {
                 let random_u8 = *random_numbers.at(i);
-                // Convertir directamente de u8 a u16 (ya está en rango 1-40)
+                // Convert directly from u8 to u16 (already in range 1-40)
                 let mapped_number: u16 = random_u8.into();
 
                 lottery_numbers.append(mapped_number);

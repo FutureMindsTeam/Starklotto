@@ -18,16 +18,27 @@ fn owner_address() -> ContractAddress {
     0x123.try_into().unwrap()
 }
 
+fn deploy_mock_randomness() -> ContractAddress {
+    let randomness_contract = declare("MockRandomness").unwrap().contract_class();
+    let (randomness_address, _) = randomness_contract.deploy(@array![]).unwrap();
+    randomness_address
+}
+
 fn deploy_contract_lottery() -> ContractAddress {
     // Deploy mock contracts first
     let (vault, starkplay_token) = deploy_vault_contract();
+    
+    // Deploy mock randomness contract
+    let randomness_contract_address = deploy_mock_randomness();
 
     // Deploy Lottery with the mock contracts
     let lottery_contract = declare("Lottery").unwrap().contract_class();
+    
     let lottery_constructor_calldata = array![
         owner_address().into(),
         starkplay_token.contract_address.into(),
         vault.contract_address.into(),
+        randomness_contract_address.into(),
     ];
     let (lottery_address, _) = lottery_contract.deploy(@lottery_constructor_calldata).unwrap();
     lottery_address

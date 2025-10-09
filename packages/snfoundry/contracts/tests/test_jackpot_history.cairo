@@ -17,15 +17,25 @@ pub fn USER() -> ContractAddress {
     'USER'.try_into().unwrap()
 }
 
+fn deploy_mock_randomness() -> ContractAddress {
+    let randomness_contract = declare("MockRandomness").unwrap().contract_class();
+    let (randomness_address, _) = randomness_contract.deploy(@array![]).unwrap();
+    randomness_address
+}
+
 pub fn deploy_lottery() -> ContractAddress {
     // Deploy mock contracts first
     let mock_strk_play = deploy_mock_strk_play();
     let mock_vault = deploy_mock_vault(mock_strk_play.contract_address);
 
+    // Deploy mock randomness contract
+    let randomness_contract_address = deploy_mock_randomness();
+
     let mut constructor_calldata = array![];
     OWNER().serialize(ref constructor_calldata);
     mock_strk_play.contract_address.serialize(ref constructor_calldata);
     mock_vault.contract_address.serialize(ref constructor_calldata);
+    randomness_contract_address.serialize(ref constructor_calldata);
 
     let lottery_class = declare("Lottery").unwrap().contract_class();
     let (lottery_addr, _) = lottery_class.deploy(@constructor_calldata).unwrap();
