@@ -297,3 +297,67 @@ fn test_create_new_draw_with_zero_duration() {
     lottery.CreateNewDrawWithDuration(1000000000000000000_u256, 0_u64);
     stop_cheat_caller_address(lottery_address);
 }
+
+// ============================================================================================
+// INTEGRATION TEST: Complete Randomness Flow
+// ============================================================================================
+
+#[test]
+fn test_complete_randomness_flow() {
+    // Deploy lottery contract
+    let lottery_address = deploy_contract_lottery();
+    let lottery = ILotteryDispatcher { contract_address: lottery_address };
+
+    // Initialize the lottery (creates draw ID 1)
+    let owner = IOwnableDispatcher { contract_address: lottery_address };
+    start_cheat_caller_address(lottery_address, owner.owner());
+    lottery.Initialize(5000000000000000000_u256, 1000000000000000000_u256);
+    stop_cheat_caller_address(lottery_address);
+
+    // Verify draw was created
+    let draw_id = lottery.GetCurrentDrawId();
+    assert(draw_id == 1, 'Draw ID should be 1');
+    
+    // STEP 1: REQUEST - Request random number generation
+    // Owner requests randomness with seed
+    start_cheat_caller_address(lottery_address, owner.owner());
+    let generation_id = lottery.RequestRandomGeneration(draw_id, 12345_u64);
+    stop_cheat_caller_address(lottery_address);
+    
+    // Verify generation ID is correct (should start at 1)
+    assert(generation_id == 1, 'Generation ID should be 1');
+    
+    // STEP 2: VERIFY - Check randomness status (MockRandomness always returns completed)
+    // In production, you would wait for VRF to complete here
+    // With MockRandomness, status is automatically 2 (completed)
+    
+    // STEP 3: CONSUME - Draw numbers using the random generation
+    start_cheat_caller_address(lottery_address, owner.owner());
+    lottery.DrawNumbers(draw_id);
+    stop_cheat_caller_address(lottery_address);
+    
+    // VERIFY RESULTS:
+    // 1. Draw should be completed (inactive)
+    let is_active = lottery.IsDrawActive(draw_id);
+    assert(!is_active, 'Draw should be inactive');
+    
+    // 2. Winning numbers should be set
+    let winning_numbers = lottery.GetWinningNumbers(draw_id);
+    assert(winning_numbers.len() == 5, 'Should have 5 numbers');
+    
+    // 3. All winning numbers should be in valid range (1-40)
+    let mut i: usize = 0;
+    while i < winning_numbers.len() {
+        let number = *winning_numbers.at(i);
+        assert(number >= 1 && number <= 40, 'Number out of range');
+        i += 1;
+    };
+    
+    // 4. Verify the numbers match MockRandomness expected values
+    // MockRandomness returns: [5, 12, 23, 31, 38]
+    assert(*winning_numbers.at(0) == 5, 'Number 1 should be 5');
+    assert(*winning_numbers.at(1) == 12, 'Number 2 should be 12');
+    assert(*winning_numbers.at(2) == 23, 'Number 3 should be 23');
+    assert(*winning_numbers.at(3) == 31, 'Number 4 should be 31');
+    assert(*winning_numbers.at(4) == 38, 'Number 5 should be 38');
+}
