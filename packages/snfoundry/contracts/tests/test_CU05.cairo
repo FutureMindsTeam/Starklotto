@@ -2,7 +2,7 @@ use contracts::Lottery::{ILotteryDispatcher, ILotteryDispatcherTrait};
 use contracts::StarkPlayERC20::{
     IBurnableDispatcher, IBurnableDispatcherTrait, IMintableDispatcher, IMintableDispatcherTrait,
 };
-use contracts::StarkPlayVault::{IStarkPlayVaultDispatcher};
+use contracts::StarkPlayVault::IStarkPlayVaultDispatcher;
 use openzeppelin_access::ownable::interface::{IOwnableDispatcher, IOwnableDispatcherTrait};
 use snforge_std::{
     ContractClassTrait, DeclareResultTrait, declare, start_cheat_caller_address,
@@ -27,13 +27,13 @@ fn deploy_mock_randomness() -> ContractAddress {
 fn deploy_contract_lottery() -> ContractAddress {
     // Deploy mock contracts first
     let (vault, starkplay_token) = deploy_vault_contract();
-    
+
     // Deploy mock randomness contract
     let randomness_contract_address = deploy_mock_randomness();
 
     // Deploy Lottery with the mock contracts
     let lottery_contract = declare("Lottery").unwrap().contract_class();
-    
+
     let lottery_constructor_calldata = array![
         owner_address().into(),
         starkplay_token.contract_address.into(),
@@ -49,9 +49,7 @@ fn deploy_vault_contract() -> (IStarkPlayVaultDispatcher, IMintableDispatcher) {
     let _strk_token = deploy_mock_strk_token();
 
     let starkplay_contract = declare("StarkPlayERC20").unwrap().contract_class();
-    let starkplay_constructor_calldata = array![
-        owner_address().into(), owner_address().into(),
-    ];
+    let starkplay_constructor_calldata = array![owner_address().into(), owner_address().into()];
     let (starkplay_address, _) = starkplay_contract
         .deploy(@starkplay_constructor_calldata)
         .unwrap();
@@ -68,10 +66,8 @@ fn deploy_vault_contract() -> (IStarkPlayVaultDispatcher, IMintableDispatcher) {
     start_cheat_caller_address(starkplay_token.contract_address, owner_address());
     starkplay_token.grant_minter_role(vault_address);
     starkplay_token_burn.grant_burner_role(vault_address);
-    starkplay_token
-        .set_minter_allowance(vault_address, 1000000000000000000000000000_u256);
-    starkplay_token_burn
-        .set_burner_allowance(vault_address, 1000000000000000000000000000_u256);
+    starkplay_token.set_minter_allowance(vault_address, 1000000000000000000000000000_u256);
+    starkplay_token_burn.set_burner_allowance(vault_address, 1000000000000000000000000000_u256);
     stop_cheat_caller_address(starkplay_token.contract_address);
 
     (vault, starkplay_token)
@@ -94,10 +90,7 @@ fn deploy_mock_strk_token() -> IMintableDispatcher {
     start_cheat_caller_address(deployed_address, owner_address());
 
     strk_token.grant_minter_role(owner_address());
-    strk_token
-        .set_minter_allowance(
-            owner_address(), 1000000000000000000000000000_u256,
-        );
+    strk_token.set_minter_allowance(owner_address(), 1000000000000000000000000000_u256);
 
     strk_token.mint(USER(), 1000000000000000000000000000_u256);
 
@@ -189,7 +182,9 @@ fn test_create_new_draw_default_duration() {
     let start_block = lottery.GetJackpotEntryStartBlock(current_draw_id);
     let end_block = lottery.GetJackpotEntryEndBlock(current_draw_id);
 
-    assert(end_block == start_block + STANDARD_DRAW_DURATION_BLOCKS, 'Should use standard duration');
+    assert(
+        end_block == start_block + STANDARD_DRAW_DURATION_BLOCKS, 'Should use standard duration',
+    );
 }
 
 #[test]
@@ -267,7 +262,9 @@ fn test_backward_compatibility_create_new_draw() {
     let start_block = lottery.GetJackpotEntryStartBlock(current_draw_id);
     let end_block = lottery.GetJackpotEntryEndBlock(current_draw_id);
 
-    assert(end_block == start_block + STANDARD_DRAW_DURATION_BLOCKS, 'Should use standard duration');
+    assert(
+        end_block == start_block + STANDARD_DRAW_DURATION_BLOCKS, 'Should use standard duration',
+    );
 }
 
 #[should_panic(expected: 'Duration must be > 0')]
@@ -317,42 +314,42 @@ fn test_complete_randomness_flow() {
     // Verify draw was created
     let draw_id = lottery.GetCurrentDrawId();
     assert(draw_id == 1, 'Draw ID should be 1');
-    
+
     // STEP 1: REQUEST - Request random number generation
     // Owner requests randomness with seed
     start_cheat_caller_address(lottery_address, owner.owner());
     let generation_id = lottery.RequestRandomGeneration(draw_id, 12345_u64);
     stop_cheat_caller_address(lottery_address);
-    
+
     // Verify generation ID is correct (should start at 1)
     assert(generation_id == 1, 'Generation ID should be 1');
-    
+
     // STEP 2: VERIFY - Check randomness status (MockRandomness always returns completed)
     // In production, you would wait for VRF to complete here
     // With MockRandomness, status is automatically 2 (completed)
-    
+
     // STEP 3: CONSUME - Draw numbers using the random generation
     start_cheat_caller_address(lottery_address, owner.owner());
     lottery.DrawNumbers(draw_id);
     stop_cheat_caller_address(lottery_address);
-    
+
     // VERIFY RESULTS:
     // 1. Draw should be completed (inactive)
     let is_active = lottery.IsDrawActive(draw_id);
     assert(!is_active, 'Draw should be inactive');
-    
+
     // 2. Winning numbers should be set
     let winning_numbers = lottery.GetWinningNumbers(draw_id);
     assert(winning_numbers.len() == 5, 'Should have 5 numbers');
-    
+
     // 3. All winning numbers should be in valid range (1-40)
     let mut i: usize = 0;
     while i < winning_numbers.len() {
         let number = *winning_numbers.at(i);
         assert(number >= 1 && number <= 40, 'Number out of range');
         i += 1;
-    };
-    
+    }
+
     // 4. Verify the numbers match MockRandomness expected values
     // MockRandomness returns: [5, 12, 23, 31, 38]
     assert(*winning_numbers.at(0) == 5, 'Number 1 should be 5');

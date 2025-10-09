@@ -7,7 +7,9 @@ pub trait IMockRandomness<TContractState> {
 
 #[starknet::contract]
 pub mod MockRandomness {
-    use starknet::storage::{Map, StoragePathEntry, StoragePointerReadAccess, StoragePointerWriteAccess};
+    use starknet::storage::{
+        Map, StoragePathEntry, StoragePointerReadAccess, StoragePointerWriteAccess,
+    };
 
     #[storage]
     struct Storage {

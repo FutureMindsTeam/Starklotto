@@ -86,7 +86,9 @@ pub trait ILottery<TContractState> {
         number5: u16,
     ) -> u8;
     fn CreateNewDraw(ref self: TContractState, accumulatedPrize: u256);
-    fn CreateNewDrawWithDuration(ref self: TContractState, accumulatedPrize: u256, duration_blocks: u64);
+    fn CreateNewDrawWithDuration(
+        ref self: TContractState, accumulatedPrize: u256, duration_blocks: u64,
+    );
     fn GetCurrentActiveDraw(self: @TContractState) -> (u64, bool);
     fn SetDrawInactive(ref self: TContractState, drawId: u64);
     fn SetTicketPrice(ref self: TContractState, price: u256);
@@ -160,7 +162,10 @@ pub mod Lottery {
         ContractAddress, get_block_number, get_block_timestamp, get_caller_address,
         get_contract_address,
     };
-    use super::{Draw, ILottery, JackpotEntry, Ticket, IRandomnessLotteryDispatcher, IRandomnessLotteryDispatcherTrait};
+    use super::{
+        Draw, ILottery, IRandomnessLotteryDispatcher, IRandomnessLotteryDispatcherTrait,
+        JackpotEntry, Ticket,
+    };
 
     // ownable component by openzeppelin
     component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
@@ -325,9 +330,7 @@ pub mod Lottery {
         fixedPrize2Matches: u256,
         accumulatedPrize: u256,
         userTickets: Map<(ContractAddress, u64), felt252>,
-        userTicketCount: Map<
-            (ContractAddress, u64), u32,
-        >, // (user, drawId) -> user ticket count
+        userTicketCount: Map<(ContractAddress, u64), u32>, // (user, drawId) -> user ticket count
         // (user, drawId, index)-> ticketId
         userTicketIds: Map<(ContractAddress, u64, u32), felt252>,
         draws: Map<u64, Draw>,
@@ -557,7 +560,7 @@ pub mod Lottery {
 
             // Create dispatcher for the deployed Randomness contract
             let randomness_dispatcher = IRandomnessLotteryDispatcher {
-                contract_address: self.randomnessContractAddress.read()
+                contract_address: self.randomnessContractAddress.read(),
             };
 
             // Validate that generation is completed (status = 2)
@@ -565,7 +568,8 @@ pub mod Lottery {
             assert(status == 2_u8, 'Random generation not ready');
 
             // Get random numbers (Array<u8> in range 1-40)
-            let random_numbers_u8 = randomness_dispatcher.get_generation_numbers(current_randomness_id);
+            let random_numbers_u8 = randomness_dispatcher
+                .get_generation_numbers(current_randomness_id);
             assert(random_numbers_u8.len() == 5, 'Invalid random numbers count');
 
             // Convert from u8 to u16 (already in range 1-40)
@@ -702,7 +706,9 @@ pub mod Lottery {
         }
 
         //=======================================================================================
-        fn CreateNewDrawWithDuration(ref self: ContractState, accumulatedPrize: u256, duration_blocks: u64) {
+        fn CreateNewDrawWithDuration(
+            ref self: ContractState, accumulatedPrize: u256, duration_blocks: u64,
+        ) {
             // Validate that the accumulated prize is not negative
             assert(accumulatedPrize >= 0, 'Invalid accumulated prize');
             // Validate that duration is not zero
@@ -1057,7 +1063,7 @@ pub mod Lottery {
 
             // Create dispatcher for the deployed Randomness contract
             let mut randomness_dispatcher = IRandomnessLotteryDispatcher {
-                contract_address: self.randomnessContractAddress.read()
+                contract_address: self.randomnessContractAddress.read(),
             };
 
             // Request generation (devnet mode) - generates numbers in range 1-40
@@ -1217,8 +1223,7 @@ pub mod Lottery {
         /// Converts random numbers from range [1-40] from u8 to u16 for Lottery
         /// Numbers are already in the correct range [1-40]
         fn MapRandomNumbersToLotteryRange(
-            self: @ContractState,
-            random_numbers: @Array<u8>
+            self: @ContractState, random_numbers: @Array<u8>,
         ) -> Array<u16> {
             let mut lottery_numbers = ArrayTrait::new();
             let mut i: usize = 0;
@@ -1230,7 +1235,7 @@ pub mod Lottery {
 
                 lottery_numbers.append(mapped_number);
                 i += 1;
-            };
+            }
 
             lottery_numbers
         }

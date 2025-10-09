@@ -65,7 +65,12 @@ fn deploy_lottery() -> (ContractAddress, IMintableDispatcher, ILotteryDispatcher
     // Deploy mock randomness contract
     let randomness_contract_address = deploy_mock_randomness();
 
-    let mut calldata = array![owner_address().into(), mock_strk_play.into(), mock_vault.into(), randomness_contract_address.into()];
+    let mut calldata = array![
+        owner_address().into(),
+        mock_strk_play.into(),
+        mock_vault.into(),
+        randomness_contract_address.into(),
+    ];
     let lottery_address = declare_and_deploy("Lottery", calldata);
 
     let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_address };
