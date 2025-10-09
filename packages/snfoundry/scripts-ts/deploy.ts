@@ -99,7 +99,7 @@ const deployScript = async (): Promise<void> => {
   // Deploy Lottery with dynamic addresses including Randomness contract address
   console.log("Deploying Lottery contract...");
   // Usar dirección del contrato Randomness desplegado en src_adapter
-  const deployedRandomnessAddress = "0x36bcac633a4b319190ad7691e2b92dbfff8eef098feba82e6a20488824204f7"; // Devnet address
+  const deployedRandomnessAddress = "0x5b3558ec6cbe58d1d1279b428aaace0fd9230b5993e19f482af82306076c54f"; // Devnet address
 
   const lotteryDeploymentResult = await deployContract({
     contract: "Lottery",

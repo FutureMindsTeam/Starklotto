@@ -8,6 +8,7 @@ pub trait IRandomnessLottery<TContractState> {
     fn get_generation_status(self: @TContractState, id: u64) -> u8;
 }
 
+
 //=======================================================================================
 //structs
 //=======================================================================================
@@ -135,6 +136,9 @@ pub trait ILottery<TContractState> {
 
     // Get current draw ID
     fn GetCurrentDrawId(self: @TContractState) -> u64;
+
+    // Get randomness contract address
+    fn GetRandomnessContractAddress(self: @TContractState) -> ContractAddress;
     //=======================================================================================
 }
 
@@ -156,7 +160,7 @@ pub mod Lottery {
         ContractAddress, get_block_number, get_block_timestamp, get_caller_address,
         get_contract_address,
     };
-    use super::{Draw, ILottery, JackpotEntry, Ticket};
+    use super::{Draw, ILottery, JackpotEntry, Ticket, IRandomnessLotteryDispatcher, IRandomnessLotteryDispatcherTrait};
 
     // ownable component by openzeppelin
     component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
@@ -333,6 +337,8 @@ pub mod Lottery {
         strkPlayVaultContractAddress: ContractAddress,
         // Dirección del contrato Randomness desplegado
         randomnessContractAddress: ContractAddress,
+        // Contador de ID de generación de randomness (inicia en 1)
+        currentRandomnessId: u64,
         // ownable component by openzeppelin
         #[substorage(v0)]
         ownable: OwnableComponent::Storage,
@@ -363,6 +369,7 @@ pub mod Lottery {
         self.fixedPrize2Matches.write(2000000000000000000);
         self.currentDrawId.write(0);
         self.currentTicketId.write(0);
+        self.currentRandomnessId.write(1); // Inicializar en 1
 
         // Store dynamic contract addresses
         self.strkPlayContractAddress.write(strkPlayContractAddress);
@@ -545,17 +552,20 @@ pub mod Lottery {
             let mut draw = self.draws.entry(drawId).read();
             assert(draw.isActive, 'Draw is not active');
 
+            // Obtener el ID actual de randomness
+            let current_randomness_id = self.currentRandomnessId.read();
+
             // Crear dispatcher para el contrato Randomness desplegado
             let randomness_dispatcher = IRandomnessLotteryDispatcher {
                 contract_address: self.randomnessContractAddress.read()
             };
 
             // Validar que la generación esté completada (status = 2)
-            let status = randomness_dispatcher.get_generation_status(0); // Usar ID 0 por simplicidad para demo
+            let status = randomness_dispatcher.get_generation_status(current_randomness_id);
             assert(status == 2_u8, 'Random generation not ready');
 
             // Obtener los números aleatorios (Array<u8> en rango 1-40)
-            let random_numbers_u8 = randomness_dispatcher.get_generation_numbers(0); // Usar ID 0 por simplicidad para demo
+            let random_numbers_u8 = randomness_dispatcher.get_generation_numbers(current_randomness_id);
             assert(random_numbers_u8.len() == 5, 'Invalid random numbers count');
 
             // Convertir de u8 a u16 (ya están en rango 1-40)
@@ -576,6 +586,9 @@ pub mod Lottery {
                         drawId, winningNumbers, accumulatedPrize: self.accumulatedPrize.read(),
                     },
                 );
+
+            // Incrementar el ID de randomness para la próxima generación
+            self.currentRandomnessId.write(current_randomness_id + 1);
         }
         //=======================================================================================
         //OK
@@ -1043,7 +1056,7 @@ pub mod Lottery {
             assert(draw.isActive, 'Draw is not active');
 
             // Crear dispatcher para el contrato Randomness desplegado
-            let randomness_dispatcher = IRandomnessLotteryDispatcher {
+            let mut randomness_dispatcher = IRandomnessLotteryDispatcher {
                 contract_address: self.randomnessContractAddress.read()
             };
 
