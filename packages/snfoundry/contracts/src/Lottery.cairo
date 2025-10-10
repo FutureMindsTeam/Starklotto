@@ -24,6 +24,8 @@ struct Ticket {
     claimed: bool,
     drawId: u64,
     timestamp: u64,
+    prize_amount: u256,
+    prize_assigned: bool,
 }
 
 #[derive(Drop, Copy, Serde, starknet::Store)]
@@ -48,6 +50,8 @@ struct Draw {
     startBlock: u64,
     //end block of the draw (primary scheduling reference)
     endBlock: u64,
+    //prize distribution completed flag (CU-05)
+    distribution_done: bool,
 }
 
 #[derive(Drop, Copy, Serde, starknet::Store)]
@@ -94,6 +98,7 @@ pub trait ILottery<TContractState> {
     fn SetTicketPrice(ref self: TContractState, price: u256);
     fn EmergencyResetReentrancyGuard(ref self: TContractState);
     fn RequestRandomGeneration(ref self: TContractState, drawId: u64, seed: u64) -> u64;
+    fn DistributePrizes(ref self: TContractState, drawId: u64);
     //=======================================================================================
     //get functions
     fn GetTicketPrice(self: @TContractState) -> u256;
@@ -228,6 +233,8 @@ pub mod Lottery {
         DrawValidationFailed: DrawValidationFailed,
         EmergencyReentrancyGuardReset: EmergencyReentrancyGuardReset,
         DrawClosed: DrawClosed,
+        PrizeAssigned: PrizeAssigned,
+        PrizesDistributed: PrizesDistributed,
     }
 
     #[derive(Drop, starknet::Event)]
@@ -317,6 +324,24 @@ pub mod Lottery {
         pub caller: ContractAddress,
     }
 
+    #[derive(Drop, starknet::Event)]
+    pub struct PrizeAssigned {
+        #[key]
+        pub drawId: u64,
+        #[key]
+        pub ticketId: felt252,
+        pub level: u8,
+        pub amount: u256,
+    }
+
+    #[derive(Drop, starknet::Event)]
+    pub struct PrizesDistributed {
+        #[key]
+        pub drawId: u64,
+        pub winners_total: u32,
+        pub total_distributed: u256,
+    }
+
     //=======================================================================================
     //storage
     //=======================================================================================
@@ -335,6 +360,10 @@ pub mod Lottery {
         userTicketIds: Map<(ContractAddress, u64, u32), felt252>,
         draws: Map<u64, Draw>,
         tickets: Map<(u64, felt252), Ticket>,
+        // (drawId, index) -> ticketId for iterating all tickets in a draw
+        drawTicketIds: Map<(u64, u32), felt252>,
+        // drawId -> total ticket count for that draw
+        drawTicketCount: Map<u64, u32>,
         // Dynamic contract addresses
         strkPlayContractAddress: ContractAddress,
         strkPlayVaultContractAddress: ContractAddress,
@@ -507,6 +536,8 @@ pub mod Lottery {
                     claimed: false,
                     drawId: drawId,
                     timestamp: current_timestamp,
+                    prize_amount: 0,
+                    prize_assigned: false,
                 };
 
                 let ticketId = GenerateTicketId(ref self);
@@ -516,6 +547,12 @@ pub mod Lottery {
                 count += 1;
                 self.userTicketCount.entry((caller, drawId)).write(count);
                 self.userTicketIds.entry((caller, drawId, count)).write(ticketId);
+
+                // Also track all tickets globally for the draw
+                let mut draw_ticket_count = self.drawTicketCount.entry(drawId).read();
+                draw_ticket_count += 1;
+                self.drawTicketCount.entry(drawId).write(draw_ticket_count);
+                self.drawTicketIds.entry((drawId, draw_ticket_count)).write(ticketId);
 
                 // Emit event for each generated ticket with its specific numbers
                 let mut event_numbers = ArrayTrait::new();
@@ -739,6 +776,7 @@ pub mod Lottery {
                 endTime: 0,
                 startBlock: current_block,
                 endBlock: end_block,
+                distribution_done: false,
             };
             self.draws.entry(drawId).write(newDraw);
             self.currentDrawId.write(drawId);
@@ -1071,6 +1109,127 @@ pub mod Lottery {
 
             generation_id
         }
+
+        /// Distributes prizes to all winning tickets based on match levels
+        /// CU-05: Global prize distribution
+        fn DistributePrizes(ref self: ContractState, drawId: u64) {
+            // Only owner can distribute prizes
+            self.ownable.assert_only_owner();
+
+            // 1. Validate that draw exists
+            self.AssertDrawExists(drawId, 'DistributePrizes');
+
+            let mut draw = self.draws.entry(drawId).read();
+
+            // 2. Validate that draw is finalized (not active)
+            assert(!draw.isActive, 'LOTTERY_NOT_FINALIZED');
+
+            // 3. Validate that distribution hasn't been done already
+            assert(!draw.distribution_done, 'ALREADY_DISTRIBUTED');
+
+            // 4. Get total pool and winning numbers
+            let total_pool = draw.accumulatedPrize;
+            let winning_numbers = array![
+                draw.winningNumber1,
+                draw.winningNumber2,
+                draw.winningNumber3,
+                draw.winningNumber4,
+                draw.winningNumber5,
+            ];
+
+            // 5. Get all tickets for this draw
+            let total_tickets = self.drawTicketCount.entry(drawId).read();
+            assert(total_tickets > 0, 'NO_TICKETS');
+
+            // 6. Count winners by level using arrays (1-4 matches)
+            let mut level1_winners: Array<felt252> = ArrayTrait::new();
+            let mut level2_winners: Array<felt252> = ArrayTrait::new();
+            let mut level3_winners: Array<felt252> = ArrayTrait::new();
+            let mut level4_winners: Array<felt252> = ArrayTrait::new();
+
+            // Iterate through all tickets and count matches
+            let mut ticket_index: u32 = 1;
+            while ticket_index <= total_tickets {
+                let ticket_id = self.drawTicketIds.entry((drawId, ticket_index)).read();
+                let ticket = self.tickets.entry((drawId, ticket_id)).read();
+
+                // Count matches for this ticket
+                let matches = self
+                    .CountTicketMatches(@ticket, @winning_numbers.span());
+
+                // Group by level
+                if matches == 1 {
+                    level1_winners.append(ticket_id);
+                } else if matches == 2 {
+                    level2_winners.append(ticket_id);
+                } else if matches == 3 {
+                    level3_winners.append(ticket_id);
+                } else if matches == 4 {
+                    level4_winners.append(ticket_id);
+                }
+
+                ticket_index += 1;
+            };
+
+            // 7. Define prize percentages for each level
+            // Level 1: 5%, Level 2: 10%, Level 3: 25%, Level 4: 60%
+            let percentages = array![5_u256, 10_u256, 25_u256, 60_u256];
+
+            let mut total_winners: u32 = 0;
+            let mut total_distributed: u256 = 0;
+
+            // 8. Distribute prizes for level 1 (1 match)
+            if level1_winners.len() > 0 {
+                let (winners, distributed) = self
+                    .DistributePrizesForLevel(
+                        drawId, @level1_winners, total_pool, *percentages.at(0), 1,
+                    );
+                total_winners += winners;
+                total_distributed += distributed;
+            }
+
+            // 9. Distribute prizes for level 2 (2 matches)
+            if level2_winners.len() > 0 {
+                let (winners, distributed) = self
+                    .DistributePrizesForLevel(
+                        drawId, @level2_winners, total_pool, *percentages.at(1), 2,
+                    );
+                total_winners += winners;
+                total_distributed += distributed;
+            }
+
+            // 10. Distribute prizes for level 3 (3 matches)
+            if level3_winners.len() > 0 {
+                let (winners, distributed) = self
+                    .DistributePrizesForLevel(
+                        drawId, @level3_winners, total_pool, *percentages.at(2), 3,
+                    );
+                total_winners += winners;
+                total_distributed += distributed;
+            }
+
+            // 11. Distribute prizes for level 4 (4 matches)
+            if level4_winners.len() > 0 {
+                let (winners, distributed) = self
+                    .DistributePrizesForLevel(
+                        drawId, @level4_winners, total_pool, *percentages.at(3), 4,
+                    );
+                total_winners += winners;
+                total_distributed += distributed;
+            }
+
+            // 12. Mark distribution as done
+            draw.distribution_done = true;
+            self.draws.entry(drawId).write(draw);
+
+            // 13. Emit final event
+            self
+                .emit(
+                    Event::PrizesDistributed(
+                        PrizesDistributed { drawId, winners_total: total_winners, total_distributed },
+                    ),
+                );
+        }
     }
 
 
@@ -1238,6 +1397,90 @@ pub mod Lottery {
             }
 
             lottery_numbers
+        }
+
+        /// Counts how many numbers in a ticket match the winning numbers
+        /// CU-05: Helper function for prize distribution
+        fn CountTicketMatches(
+            self: @ContractState, ticket: @Ticket, winning_numbers: @Span<u16>,
+        ) -> u8 {
+            let mut matches: u8 = 0;
+
+            // Compare each ticket number with winning numbers
+            if *ticket.number1 == *winning_numbers.at(0) {
+                matches += 1;
+            }
+            if *ticket.number2 == *winning_numbers.at(1) {
+                matches += 1;
+            }
+            if *ticket.number3 == *winning_numbers.at(2) {
+                matches += 1;
+            }
+            if *ticket.number4 == *winning_numbers.at(3) {
+                matches += 1;
+            }
+            if *ticket.number5 == *winning_numbers.at(4) {
+                matches += 1;
+            }
+
+            matches
+        }
+
+        /// Distributes prizes for a specific match level
+        /// Returns (number_of_winners, total_distributed)
+        /// CU-05: Helper function for prize distribution
+        fn DistributePrizesForLevel(
+            ref self: ContractState,
+            drawId: u64,
+            winner_tickets: @Array<felt252>,
+            total_pool: u256,
+            percentage: u256,
+            level: u8,
+        ) -> (u32, u256) {
+            let winner_count: u256 = winner_tickets.len().into();
+
+            if winner_count == 0 {
+                return (0, 0);
+            }
+
+            // Calculate pool for this level
+            let pool_for_level = (total_pool * percentage) / 100;
+
+            // Calculate prize per ticket
+            let prize_per_ticket = pool_for_level / winner_count;
+
+            let mut total_distributed: u256 = 0;
+
+            // Distribute to each winner
+            let mut i: usize = 0;
+            while i < winner_tickets.len() {
+                let ticket_id = *winner_tickets.at(i);
+
+                // Read ticket
+                let mut ticket = self.tickets.entry((drawId, ticket_id)).read();
+
+                // Assign prize
+                ticket.prize_amount = prize_per_ticket;
+                ticket.prize_assigned = true;
+
+                // Write back
+                self.tickets.entry((drawId, ticket_id)).write(ticket);
+
+                // Emit event for this ticket
+                self
+                    .emit(
+                        Event::PrizeAssigned(
+                            PrizeAssigned {
+                                drawId, ticketId: ticket_id, level, amount: prize_per_ticket,
+                            },
+                        ),
+                    );
+
+                total_distributed += prize_per_ticket;
+                i += 1;
+            };
+
+            (winner_tickets.len(), total_distributed)
         }
     }
 
