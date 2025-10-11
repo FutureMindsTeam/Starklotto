@@ -70,7 +70,7 @@ struct JackpotEntry {
 pub trait ILottery<TContractState> {
     //=======================================================================================
     //set functions
-    fn Initialize(ref self: TContractState, ticketPrice: u256, accumulatedPrize: u256);
+    fn Initialize(ref self: TContractState, ticketPrice: u256);
     fn BuyTicket(
         ref self: TContractState, drawId: u64, numbers_array: Array<Array<u16>>, quantity: u8,
     );
@@ -85,10 +85,8 @@ pub trait ILottery<TContractState> {
         number4: u16,
         number5: u16,
     ) -> u8;
-    fn CreateNewDraw(ref self: TContractState, accumulatedPrize: u256);
-    fn CreateNewDrawWithDuration(
-        ref self: TContractState, accumulatedPrize: u256, duration_blocks: u64,
-    );
+    fn CreateNewDraw(ref self: TContractState);
+    fn CreateNewDrawWithDuration(ref self: TContractState, duration_blocks: u64);
     fn GetCurrentActiveDraw(self: @TContractState) -> (u64, bool);
     fn SetDrawInactive(ref self: TContractState, drawId: u64);
     fn SetTicketPrice(ref self: TContractState, price: u256);
@@ -97,6 +95,7 @@ pub trait ILottery<TContractState> {
     //=======================================================================================
     //get functions
     fn GetTicketPrice(self: @TContractState) -> u256;
+    fn GetVaultBalance(self: @TContractState) -> u256;
     fn GetAccumulatedPrize(self: @TContractState) -> u256;
     fn GetFixedPrize(self: @TContractState, matches: u8) -> u256;
     fn GetDrawStatus(self: @TContractState, drawId: u64) -> bool;
@@ -228,6 +227,7 @@ pub mod Lottery {
         DrawValidationFailed: DrawValidationFailed,
         EmergencyReentrancyGuardReset: EmergencyReentrancyGuardReset,
         DrawClosed: DrawClosed,
+        JackpotCalculated: JackpotCalculated,
     }
 
     #[derive(Drop, starknet::Event)]
@@ -317,6 +317,16 @@ pub mod Lottery {
         pub caller: ContractAddress,
     }
 
+    #[derive(Drop, starknet::Event)]
+    pub struct JackpotCalculated {
+        #[key]
+        pub draw_id: u64,
+        pub vault_balance: u256,
+        pub prizes_distributed: u256,
+        pub calculated_jackpot: u256,
+        pub timestamp: u64,
+    }
+
     //=======================================================================================
     //storage
     //=======================================================================================
@@ -335,6 +345,8 @@ pub mod Lottery {
         userTicketIds: Map<(ContractAddress, u64, u32), felt252>,
         draws: Map<u64, Draw>,
         tickets: Map<(u64, felt252), Ticket>,
+        // Total prizes distributed per draw (for jackpot calculation)
+        totalPrizesDistributed: Map<u64, u256>,
         // Dynamic contract addresses
         strkPlayContractAddress: ContractAddress,
         strkPlayVaultContractAddress: ContractAddress,
@@ -387,11 +399,11 @@ pub mod Lottery {
     #[abi(embed_v0)]
     impl LotteryImpl of ILottery<ContractState> {
         //OK
-        fn Initialize(ref self: ContractState, ticketPrice: u256, accumulatedPrize: u256) {
+        fn Initialize(ref self: ContractState, ticketPrice: u256) {
             self.ownable.assert_only_owner();
             self.ticketPrice.write(ticketPrice);
-            self.accumulatedPrize.write(accumulatedPrize);
-            self.CreateNewDraw(accumulatedPrize);
+            // CreateNewDraw will calculate the jackpot automatically from vault balance
+            self.CreateNewDraw();
         }
 
         //=======================================================================================
@@ -621,6 +633,11 @@ pub mod Lottery {
             self.tickets.entry((drawId, ticketId)).write(ticket);
 
             if prize > 0 {
+                // TODO: The following two lines should be moved to the prize distribution function
+                // Update the total prizes distributed for this draw
+                let current_distributed = self.totalPrizesDistributed.entry(drawId).read();
+                self.totalPrizesDistributed.entry(drawId).write(current_distributed + prize);
+
                 //TODO: We need to process the payment of the prize
 
                 self
@@ -700,17 +717,13 @@ pub mod Lottery {
         }
 
         //=======================================================================================
-        fn CreateNewDraw(ref self: ContractState, accumulatedPrize: u256) {
+        fn CreateNewDraw(ref self: ContractState) {
             // Call the new function with default duration
-            self.CreateNewDrawWithDuration(accumulatedPrize, STANDARD_DRAW_DURATION_BLOCKS);
+            self.CreateNewDrawWithDuration(STANDARD_DRAW_DURATION_BLOCKS);
         }
 
         //=======================================================================================
-        fn CreateNewDrawWithDuration(
-            ref self: ContractState, accumulatedPrize: u256, duration_blocks: u64,
-        ) {
-            // Validate that the accumulated prize is not negative
-            assert(accumulatedPrize >= 0, 'Invalid accumulated prize');
+        fn CreateNewDrawWithDuration(ref self: ContractState, duration_blocks: u64) {
             // Validate that duration is not zero
             assert(duration_blocks > 0, 'Duration must be > 0');
             // Only one active draw allowed at a time
@@ -720,20 +733,37 @@ pub mod Lottery {
                 assert(!last_draw.isActive, 'Active draw exists');
             }
 
+            // Calculate jackpot automatically from vault balance
+            let vault_balance = self.GetVaultBalance();
+            
+            // Get prizes distributed in the previous draw (if exists)
+            let prizes_distributed = if current_id > 0 {
+                self.totalPrizesDistributed.entry(current_id).read()
+            } else {
+                0
+            };
+
+            // Calculate the jackpot: vault_balance - prizes_distributed
+            // This ensures we don't count money that was already distributed
+            assert(vault_balance >= prizes_distributed, 'Insufficient vault balance');
+            let calculated_jackpot = vault_balance - prizes_distributed;
+            
+            // Validate that there are funds available
+            assert(calculated_jackpot > 0, 'No funds available in vault');
+
             let drawId = self.currentDrawId.read() + 1;
-            let previousAmount = self.accumulatedPrize.read();
             let current_timestamp = get_block_timestamp();
             let current_block = get_block_number();
             let end_block = current_block + duration_blocks;
+            
             let newDraw = Draw {
                 drawId,
-                accumulatedPrize: accumulatedPrize,
+                accumulatedPrize: calculated_jackpot,
                 winningNumber1: 0,
                 winningNumber2: 0,
                 winningNumber3: 0,
                 winningNumber4: 0,
                 winningNumber5: 0,
-                // tickets: Map::new(),
                 isActive: true,
                 startTime: current_timestamp,
                 endTime: 0,
@@ -742,13 +772,18 @@ pub mod Lottery {
             };
             self.draws.entry(drawId).write(newDraw);
             self.currentDrawId.write(drawId);
+            
+            // Update global accumulated prize
+            self.accumulatedPrize.write(calculated_jackpot);
 
+            // Emit event with transparent jackpot calculation
             self
                 .emit(
-                    JackpotIncreased {
-                        drawId,
-                        previousAmount,
-                        newAmount: accumulatedPrize,
+                    JackpotCalculated {
+                        draw_id: drawId,
+                        vault_balance: vault_balance,
+                        prizes_distributed: prizes_distributed,
+                        calculated_jackpot: calculated_jackpot,
                         timestamp: current_timestamp,
                     },
                 );
@@ -906,6 +941,15 @@ pub mod Lottery {
         // Get the ticket price (public view)
         fn GetTicketPrice(self: @ContractState) -> u256 {
             self.ticketPrice.read()
+        }
+
+        // Get the current balance of the vault
+        fn GetVaultBalance(self: @ContractState) -> u256 {
+            let vault_address = self.strkPlayVaultContractAddress.read();
+            let token_dispatcher = IERC20Dispatcher {
+                contract_address: self.strkPlayContractAddress.read(),
+            };
+            token_dispatcher.balance_of(vault_address)
         }
 
         //=======================================================================================
