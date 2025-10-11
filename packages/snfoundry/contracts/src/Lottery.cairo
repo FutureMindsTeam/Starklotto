@@ -1164,8 +1164,7 @@ pub mod Lottery {
                 let ticket = self.tickets.entry((drawId, ticket_id)).read();
 
                 // Count matches for this ticket
-                let matches = self
-                    .CountTicketMatches(@ticket, @winning_numbers.span());
+                let matches = self.CountTicketMatches(@ticket, @winning_numbers.span());
 
                 // Group by level
                 if matches == 1 {
@@ -1179,7 +1178,7 @@ pub mod Lottery {
                 }
 
                 ticket_index += 1;
-            };
+            }
 
             // 8. Define prize percentages for each level
             // Level 1: 5%, Level 2: 10%, Level 3: 25%, Level 4: 60%
@@ -1236,7 +1235,9 @@ pub mod Lottery {
             self
                 .emit(
                     Event::PrizesDistributed(
-                        PrizesDistributed { drawId, winners_total: total_winners, total_distributed },
+                        PrizesDistributed {
+                            drawId, winners_total: total_winners, total_distributed,
+                        },
                     ),
                 );
         }
@@ -1488,7 +1489,7 @@ pub mod Lottery {
 
                 total_distributed += prize_per_ticket;
                 i += 1;
-            };
+            }
 
             (winner_tickets.len(), total_distributed)
         }
