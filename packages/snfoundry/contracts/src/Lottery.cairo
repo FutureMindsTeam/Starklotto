@@ -1116,18 +1116,28 @@ pub mod Lottery {
             // Only owner can distribute prizes
             self.ownable.assert_only_owner();
 
-            // 1. Validate that draw exists
-            self.AssertDrawExists(drawId, 'DistributePrizes');
+            // 1. Validate that draw exists (don't check if active, we need it finalized)
+            assert(self.DrawExists(drawId), 'Draw does not exist');
 
             let mut draw = self.draws.entry(drawId).read();
 
-            // 2. Validate that draw is finalized (not active)
+            // 2. Validate that draw is finalized (not active, numbers already drawn)
             assert(!draw.isActive, 'LOTTERY_NOT_FINALIZED');
 
-            // 3. Validate that distribution hasn't been done already
+            // 3. Validate that winning numbers have been drawn (at least one number set)
+            assert(
+                draw.winningNumber1 > 0
+                    || draw.winningNumber2 > 0
+                    || draw.winningNumber3 > 0
+                    || draw.winningNumber4 > 0
+                    || draw.winningNumber5 > 0,
+                'Winning numbers not drawn',
+            );
+
+            // 4. Validate that distribution hasn't been done already
             assert(!draw.distribution_done, 'ALREADY_DISTRIBUTED');
 
-            // 4. Get total pool and winning numbers
+            // 5. Get total pool and winning numbers
             let total_pool = draw.accumulatedPrize;
             let winning_numbers = array![
                 draw.winningNumber1,
@@ -1137,11 +1147,11 @@ pub mod Lottery {
                 draw.winningNumber5,
             ];
 
-            // 5. Get all tickets for this draw
+            // 6. Get all tickets for this draw
             let total_tickets = self.drawTicketCount.entry(drawId).read();
             assert(total_tickets > 0, 'NO_TICKETS');
 
-            // 6. Count winners by level using arrays (1-4 matches)
+            // 7. Count winners by level using arrays (1-4 matches)
             let mut level1_winners: Array<felt252> = ArrayTrait::new();
             let mut level2_winners: Array<felt252> = ArrayTrait::new();
             let mut level3_winners: Array<felt252> = ArrayTrait::new();
@@ -1171,14 +1181,14 @@ pub mod Lottery {
                 ticket_index += 1;
             };
 
-            // 7. Define prize percentages for each level
+            // 8. Define prize percentages for each level
             // Level 1: 5%, Level 2: 10%, Level 3: 25%, Level 4: 60%
             let percentages = array![5_u256, 10_u256, 25_u256, 60_u256];
 
             let mut total_winners: u32 = 0;
             let mut total_distributed: u256 = 0;
 
-            // 8. Distribute prizes for level 1 (1 match)
+            // 9. Distribute prizes for level 1 (1 match)
             if level1_winners.len() > 0 {
                 let (winners, distributed) = self
                     .DistributePrizesForLevel(
@@ -1188,7 +1198,7 @@ pub mod Lottery {
                 total_distributed += distributed;
             }
 
-            // 9. Distribute prizes for level 2 (2 matches)
+            // 10. Distribute prizes for level 2 (2 matches)
             if level2_winners.len() > 0 {
                 let (winners, distributed) = self
                     .DistributePrizesForLevel(
@@ -1198,7 +1208,7 @@ pub mod Lottery {
                 total_distributed += distributed;
             }
 
-            // 10. Distribute prizes for level 3 (3 matches)
+            // 11. Distribute prizes for level 3 (3 matches)
             if level3_winners.len() > 0 {
                 let (winners, distributed) = self
                     .DistributePrizesForLevel(
@@ -1208,7 +1218,7 @@ pub mod Lottery {
                 total_distributed += distributed;
             }
 
-            // 11. Distribute prizes for level 4 (4 matches)
+            // 12. Distribute prizes for level 4 (4 matches)
             if level4_winners.len() > 0 {
                 let (winners, distributed) = self
                     .DistributePrizesForLevel(
@@ -1218,11 +1228,11 @@ pub mod Lottery {
                 total_distributed += distributed;
             }
 
-            // 12. Mark distribution as done
+            // 13. Mark distribution as done
             draw.distribution_done = true;
             self.draws.entry(drawId).write(draw);
 
-            // 13. Emit final event
+            // 14. Emit final event
             self
                 .emit(
                     Event::PrizesDistributed(
