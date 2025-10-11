@@ -1151,11 +1151,12 @@ pub mod Lottery {
             let total_tickets = self.drawTicketCount.entry(drawId).read();
             assert(total_tickets > 0, 'NO_TICKETS');
 
-            // 7. Count winners by level using arrays (1-4 matches)
+            // 7. Count winners by level using arrays (1-5 matches)
             let mut level1_winners: Array<felt252> = ArrayTrait::new();
             let mut level2_winners: Array<felt252> = ArrayTrait::new();
             let mut level3_winners: Array<felt252> = ArrayTrait::new();
             let mut level4_winners: Array<felt252> = ArrayTrait::new();
+            let mut level5_winners: Array<felt252> = ArrayTrait::new(); // Jackpot (5 matches)
 
             // Iterate through all tickets and count matches
             let mut ticket_index: u32 = 1;
@@ -1175,14 +1176,16 @@ pub mod Lottery {
                     level3_winners.append(ticket_id);
                 } else if matches == 4 {
                     level4_winners.append(ticket_id);
+                } else if matches == 5 {
+                    level5_winners.append(ticket_id); // Jackpot winner!
                 }
 
                 ticket_index += 1;
             }
 
             // 8. Define prize percentages for each level
-            // Level 1: 5%, Level 2: 10%, Level 3: 25%, Level 4: 60%
-            let percentages = array![5_u256, 10_u256, 25_u256, 60_u256];
+            // Level 1: 1%, Level 2: 4%, Level 3: 10%, Level 4: 15%, Level 5: 70%
+            let percentages = array![1_u256, 4_u256, 10_u256, 15_u256, 70_u256];
 
             let mut total_winners: u32 = 0;
             let mut total_distributed: u256 = 0;
@@ -1227,11 +1230,21 @@ pub mod Lottery {
                 total_distributed += distributed;
             }
 
-            // 13. Mark distribution as done
+            // 13. Distribute jackpot for level 5 (5 matches = 70% of pool)
+            if level5_winners.len() > 0 {
+                let (winners, distributed) = self
+                    .DistributePrizesForLevel(
+                        drawId, @level5_winners, total_pool, *percentages.at(4), 5,
+                    );
+                total_winners += winners;
+                total_distributed += distributed;
+            }
+
+            // 14. Mark distribution as done
             draw.distribution_done = true;
             self.draws.entry(drawId).write(draw);
 
-            // 14. Emit final event
+            // 15. Emit final event
             self
                 .emit(
                     Event::PrizesDistributed(
