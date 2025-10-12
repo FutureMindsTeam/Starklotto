@@ -24,7 +24,7 @@ interface NavbarProps {
 }
 
 const menuItems = [
-  { id: "/dapp", labelKey: "navigation.home", icon: HomeIcon },
+  { id: "/dapp/dashboard", labelKey: "navigation.home", icon: HomeIcon },
   { id: "/dapp/mint", labelKey: "navigation.mint", icon: Coins },
   { id: "/dapp/claim", labelKey: "navigation.claim", icon: Trophy },
   { id: "/dapp/unmint", labelKey: "navigation.unmint", icon: ArrowUpDown },

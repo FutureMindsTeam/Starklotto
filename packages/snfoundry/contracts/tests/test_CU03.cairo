@@ -169,7 +169,7 @@ fn context(
     let (lottery, _, _) = deploy_lottery();
     let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery };
     cheat_caller_address(lottery, owner_address(), CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(ticket_price, accumulated_prize);
+    lottery_dispatcher.Initialize(ticket_price);
     let erc = start(lottery_dispatcher, USER1, ticket_price, lottery);
     (erc, lottery_dispatcher)
 }
@@ -451,7 +451,7 @@ fn test_buy_ticket_successful_single_ticket() {
 
     // Initialize lottery
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+    lottery_dispatcher.Initialize(TICKET_PRICE);
 
     // Setup mocks for successful ticket purchase
     setup_mocks_success(mock_strk_play, USER1);
@@ -477,7 +477,7 @@ fn test_buy_multiple_tickets_same_user() {
 
     // Initialize lottery
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+    lottery_dispatcher.Initialize(TICKET_PRICE);
 
     // Setup mocks for successful ticket purchases
     setup_mocks_success(mock_strk_play, USER1);
@@ -502,7 +502,7 @@ fn test_buy_multiple_tickets_with_unique_numbers() {
 
     // Initialize lottery
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+    lottery_dispatcher.Initialize(TICKET_PRICE);
 
     // Setup mocks for successful ticket purchases
     setup_mocks_success(mock_strk_play, USER1);
@@ -540,7 +540,7 @@ fn test_buy_tickets_different_users() {
 
     // Initialize lottery
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+    lottery_dispatcher.Initialize(TICKET_PRICE);
 
     // Create arrays for different users
     let numbers_array1 = create_valid_numbers_array(2);
@@ -572,7 +572,7 @@ fn test_buy_ticket_different_number_combinations() {
 
     // Initialize lottery
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+    lottery_dispatcher.Initialize(TICKET_PRICE);
 
     // Setup mocks for successful ticket purchases
     setup_mocks_success(mock_strk_play, USER1);
@@ -600,7 +600,7 @@ fn test_buy_ticket_event_emission() {
 
     // Initialize lottery
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+    lottery_dispatcher.Initialize(TICKET_PRICE);
 
     // Setup mocks for successful ticket purchase
     setup_mocks_success(mock_strk_play, USER1);
@@ -630,7 +630,7 @@ fn test_buy_ticket_invalid_numbers_count_too_few() {
 
     // Initialize lottery
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+    lottery_dispatcher.Initialize(TICKET_PRICE);
 
     // Setup mocks for successful ticket purchase (validation fails before payment)
     setup_mocks_success(mock_strk_play, USER1);
@@ -653,7 +653,7 @@ fn test_buy_ticket_invalid_numbers_count_too_many() {
 
     // Initialize lottery
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+    lottery_dispatcher.Initialize(TICKET_PRICE);
 
     // Setup mocks for successful ticket purchase (validation fails before payment)
     setup_mocks_success(mock_strk_play, USER1);
@@ -677,7 +677,7 @@ fn test_buy_ticket_low_quantity() {
 
     // Initialize lottery
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+    lottery_dispatcher.Initialize(TICKET_PRICE);
 
     // Setup mocks for successful ticket purchase (validation fails before payment)
     setup_mocks_success(mock_strk_play, USER1);
@@ -700,7 +700,7 @@ fn test_buy_ticket_high_quantity() {
 
     // Initialize lottery
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+    lottery_dispatcher.Initialize(TICKET_PRICE);
 
     // Setup mocks for successful ticket purchase (validation fails before payment)
     setup_mocks_success(mock_strk_play, USER1);
@@ -722,7 +722,7 @@ fn test_buy_ticket_numbers_out_of_range() {
 
     // Initialize lottery
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+    lottery_dispatcher.Initialize(TICKET_PRICE);
 
     // Setup mocks for successful ticket purchase (validation fails before payment)
     setup_mocks_success(mock_strk_play, USER1);
@@ -745,7 +745,7 @@ fn test_buy_ticket_duplicate_numbers() {
 
     // Initialize lottery
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+    lottery_dispatcher.Initialize(TICKET_PRICE);
 
     // Setup mocks for successful ticket purchase (validation fails before payment)
     setup_mocks_success(mock_strk_play, USER1);
@@ -768,7 +768,7 @@ fn test_buy_ticket_insufficient_balance() {
 
     // Initialize lottery
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+    lottery_dispatcher.Initialize(TICKET_PRICE);
 
     // Setup mocks for insufficient balance
     setup_mocks_insufficient_balance(mock_strk_play, USER1);
@@ -790,7 +790,7 @@ fn test_buy_ticket_zero_balance() {
 
     // Initialize lottery
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+    lottery_dispatcher.Initialize(TICKET_PRICE);
 
     // Setup mocks for zero balance
     setup_mocks_zero_balance(mock_strk_play, USER1);
@@ -812,7 +812,7 @@ fn test_buy_ticket_insufficient_allowance() {
 
     // Initialize lottery
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+    lottery_dispatcher.Initialize(TICKET_PRICE);
 
     // Setup mocks for insufficient allowance
     setup_mocks_insufficient_allowance(mock_strk_play, USER1);
@@ -834,7 +834,7 @@ fn test_buy_ticket_inactive_draw() {
 
     // Initialize lottery
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+    lottery_dispatcher.Initialize(TICKET_PRICE);
 
     // Complete the draw to make it inactive
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
@@ -863,7 +863,7 @@ fn test_buy_ticket_boundary_numbers() {
 
     // Initialize lottery
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+    lottery_dispatcher.Initialize(TICKET_PRICE);
 
     // Setup mocks for successful ticket purchases
     setup_mocks_success(mock_strk_play, USER1);
@@ -889,7 +889,7 @@ fn test_buy_ticket_exact_balance() {
 
     // Initialize lottery
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+    lottery_dispatcher.Initialize(TICKET_PRICE);
 
     // Setup mocks for exact balance (same as ticket price)
     setup_mocks_for_buy_ticket(mock_strk_play, USER1, TICKET_PRICE, TICKET_PRICE, true);
@@ -917,7 +917,7 @@ fn test_buy_ticket_balance_updates() {
 
     // Initialize lottery
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+    lottery_dispatcher.Initialize(TICKET_PRICE);
 
     // Setup mocks for successful ticket purchase
     setup_mocks_success(mock_strk_play, USER1);
@@ -941,7 +941,7 @@ fn test_buy_ticket_state_updates() {
 
     // Initialize lottery
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+    lottery_dispatcher.Initialize(TICKET_PRICE);
 
     // Setup mocks for successful ticket purchase
     setup_mocks_success(mock_strk_play, USER1);
@@ -975,7 +975,7 @@ fn test_buy_ticket_with_large_balance() {
 
     // Initialize lottery
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+    lottery_dispatcher.Initialize(TICKET_PRICE);
 
     // Setup mocks with very large balance
     let large_balance = 1000000000000000000000_u256; // 1000 tokens
@@ -1003,7 +1003,7 @@ fn test_buy_ticket_invalid_draw_id_zero() {
 
     // Initialize lottery
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+    lottery_dispatcher.Initialize(TICKET_PRICE);
 
     // Setup mocks for successful ticket purchase (validation fails before payment)
     setup_mocks_success(mock_strk_play, USER1);
@@ -1026,7 +1026,7 @@ fn test_buy_ticket_invalid_draw_id_out_of_range() {
 
     // Initialize lottery
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+    lottery_dispatcher.Initialize(TICKET_PRICE);
 
     // Setup mocks for successful ticket purchase (validation fails before payment)
     setup_mocks_success(mock_strk_play, USER1);
@@ -1050,7 +1050,7 @@ fn test_buy_ticket_empty_numbers_array() {
 
     // Initialize lottery
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+    lottery_dispatcher.Initialize(TICKET_PRICE);
 
     // Setup mocks for successful ticket purchase (validation fails before payment)
     setup_mocks_success(mock_strk_play, USER1);
@@ -1073,7 +1073,7 @@ fn test_buy_ticket_numbers_with_zero() {
 
     // Initialize lottery
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+    lottery_dispatcher.Initialize(TICKET_PRICE);
 
     // Setup mocks for successful ticket purchase (validation fails before payment)
     setup_mocks_success(mock_strk_play, USER1);
@@ -1096,7 +1096,7 @@ fn test_buy_ticket_event_content_validation() {
 
     // Initialize lottery
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+    lottery_dispatcher.Initialize(TICKET_PRICE);
 
     // Setup mocks for successful ticket purchase
     setup_mocks_success(mock_strk_play, USER1);
@@ -1127,7 +1127,7 @@ fn test_buy_ticket_multiple_events_validation() {
 
     // Initialize lottery
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+    lottery_dispatcher.Initialize(TICKET_PRICE);
 
     // Setup mocks for successful ticket purchases
     setup_mocks_success(mock_strk_play, USER1);
@@ -1162,7 +1162,7 @@ fn test_buy_ticket_event_data_consistency() {
 
     // Initialize lottery
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+    lottery_dispatcher.Initialize(TICKET_PRICE);
 
     // Setup mocks for successful ticket purchase
     setup_mocks_success(mock_strk_play, USER1);
@@ -1201,7 +1201,7 @@ fn test_buy_ticket_stress_test_many_tickets() {
 
     // Initialize lottery
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+    lottery_dispatcher.Initialize(TICKET_PRICE);
 
     // Setup mocks for successful ticket purchases
     setup_mocks_success(mock_strk_play, USER1);
@@ -1235,7 +1235,7 @@ fn test_buy_ticket_overflow_prevention_excessive_tickets() {
 
     // Initialize lottery
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+    lottery_dispatcher.Initialize(TICKET_PRICE);
 
     // Setup mocks with huge balance to simulate potential overflow scenarios
     let huge_balance = 340282366920938463463374607431768211455_u256; // Max u256
@@ -1273,7 +1273,7 @@ fn test_buy_ticket_balance_overflow_simulation() {
 
     // Initialize lottery
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+    lottery_dispatcher.Initialize(TICKET_PRICE);
 
     // Setup mocks with maximum possible balance that could cause overflow
     let max_u256 = 340282366920938463463374607431768211455_u256;
@@ -1305,7 +1305,7 @@ fn test_buy_ticket_draw_id_zero_enhanced() {
 
     // Initialize lottery (this creates draw_id = 1)
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+    lottery_dispatcher.Initialize(TICKET_PRICE);
 
     // Setup mocks for successful ticket purchase
     setup_mocks_success(mock_strk_play, USER1);
@@ -1328,7 +1328,7 @@ fn test_buy_ticket_draw_id_negative_edge() {
 
     // Initialize lottery
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+    lottery_dispatcher.Initialize(TICKET_PRICE);
 
     // Setup mocks for successful ticket purchase
     setup_mocks_success(mock_strk_play, USER1);
@@ -1355,7 +1355,7 @@ fn test_buy_ticket_empty_array_enhanced() {
 
     // Initialize lottery
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+    lottery_dispatcher.Initialize(TICKET_PRICE);
 
     // Setup mocks (validation should fail before payment processing)
     setup_mocks_success(mock_strk_play, USER1);
@@ -1378,7 +1378,7 @@ fn test_buy_ticket_single_element_array() {
 
     // Initialize lottery
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+    lottery_dispatcher.Initialize(TICKET_PRICE);
 
     // Setup mocks
     setup_mocks_success(mock_strk_play, USER1);
@@ -1404,7 +1404,7 @@ fn test_buy_ticket_event_ticketpurchased_structure() {
 
     // Initialize lottery
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+    lottery_dispatcher.Initialize(TICKET_PRICE);
 
     // Setup mocks for successful ticket purchase
     setup_mocks_success(mock_strk_play, USER1);
@@ -1445,7 +1445,7 @@ fn test_buy_ticket_event_fields_validation() {
 
     // Initialize lottery
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+    lottery_dispatcher.Initialize(TICKET_PRICE);
 
     // Setup mocks for successful ticket purchase
     setup_mocks_success(mock_strk_play, USER1);
@@ -1483,7 +1483,7 @@ fn test_buy_ticket_multiple_events_structure() {
 
     // Initialize lottery
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+    lottery_dispatcher.Initialize(TICKET_PRICE);
 
     // Setup mocks for successful ticket purchases
     setup_mocks_success(mock_strk_play, USER1);
@@ -1527,7 +1527,7 @@ fn test_buy_ticket_event_ordering_consistency() {
 
     // Initialize lottery
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+    lottery_dispatcher.Initialize(TICKET_PRICE);
 
     // Setup mocks for successful ticket purchases
     setup_mocks_success(mock_strk_play, USER1);
@@ -1577,10 +1577,10 @@ fn test_prevent_multiple_active_lotteries() {
 
     // Initialize creates draw 1 (active)
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+    lottery_dispatcher.Initialize(TICKET_PRICE);
 
     // Attempt to create new draw while previous is still active should panic
-    lottery_dispatcher.CreateNewDraw(INITIAL_JACKPOT);
+    lottery_dispatcher.CreateNewDraw();
 }
 
 #[test]
@@ -1590,7 +1590,7 @@ fn test_get_current_active_draw_and_transition() {
 
     // Initialize → draw 1 active
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+    lottery_dispatcher.Initialize(TICKET_PRICE);
 
     let (id1, active1) = lottery_dispatcher.GetCurrentActiveDraw();
     assert(id1 == 1, 'Current draw should be 1');
@@ -1606,7 +1606,7 @@ fn test_get_current_active_draw_and_transition() {
     assert(active1_after == false, 'Draw 1 now inactive');
 
     // Create new draw now that none is active
-    lottery_dispatcher.CreateNewDraw(INITIAL_JACKPOT);
+    lottery_dispatcher.CreateNewDraw();
     let (id2, active2) = lottery_dispatcher.GetCurrentActiveDraw();
     assert(id2 == 2, 'New current draw should be 2');
     assert(active2 == true, 'New draw should be active');
@@ -1620,7 +1620,7 @@ fn test_set_draw_inactive_non_admin_forbidden() {
 
     // Initialize → draw 1 active
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+    lottery_dispatcher.Initialize(TICKET_PRICE);
 
     // Non-owner attempts to close
     cheat_caller_address(lottery_address, USER1, CheatSpan::TargetCalls(1));
@@ -1634,7 +1634,7 @@ fn test_set_draw_inactive_emits_event_and_updates_status() {
 
     // Initialize → draw 1 active
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_JACKPOT);
+    lottery_dispatcher.Initialize(TICKET_PRICE);
 
     let mut spy = spy_events();
 
@@ -1794,8 +1794,7 @@ fn test_ticket_price_with_initialize() {
     start_cheat_caller_address(lottery_dispatcher.contract_address, owner_address());
 
     let init_price: u256 = 500000000000000000;
-    let accumulated_prize: u256 = 10000000000000000000;
-    lottery_dispatcher.Initialize(init_price, accumulated_prize);
+    lottery_dispatcher.Initialize(init_price);
 
     assert!(
         lottery_dispatcher.GetTicketPrice() == init_price,

@@ -97,12 +97,13 @@ pub trait ILottery<TContractState> {
     fn EmergencyResetReentrancyGuard(ref self: TContractState);
     fn RequestRandomGeneration(ref self: TContractState, drawId: u64, seed: u64) -> u64;
     fn DistributePrizes(ref self: TContractState, drawId: u64);
+    fn AddExternalFunds(ref self: TContractState, amount: u256);
     //=======================================================================================
     //get functions
     fn GetTicketPrice(self: @TContractState) -> u256;
     fn GetVaultBalance(self: @TContractState) -> u256;
     fn GetAccumulatedPrize(self: @TContractState) -> u256;
-    fn GetFixedPrize(self: @TContractState, matches: u8) -> u256;
+    fn GetFixedPrize(self: @TContractState, drawId: u64, matches: u8) -> u256;
     fn GetDrawStatus(self: @TContractState, drawId: u64) -> bool;
     fn GetBlocksRemaining(self: @TContractState, drawId: u64) -> u64;
     fn IsDrawActive(self: @TContractState, drawId: u64) -> bool;
@@ -235,6 +236,7 @@ pub mod Lottery {
         JackpotCalculated: JackpotCalculated,
         PrizeAssigned: PrizeAssigned,
         PrizesDistributed: PrizesDistributed,
+        ExternalFundsAdded: ExternalFundsAdded,
     }
 
     #[derive(Drop, starknet::Event)]
@@ -350,6 +352,17 @@ pub mod Lottery {
         pub drawId: u64,
         pub winners_total: u32,
         pub total_distributed: u256,
+    }
+
+    #[derive(Drop, starknet::Event)]
+    pub struct ExternalFundsAdded {
+        #[key]
+        pub contributor: ContractAddress,
+        #[key]
+        pub drawId: u64,
+        pub amount: u256,
+        pub new_jackpot: u256,
+        pub timestamp: u64,
     }
 
     //=======================================================================================
@@ -488,12 +501,11 @@ pub mod Lottery {
             // Calculate 55% of total price to add to jackpot
             let jackpot_contribution = (total_price * JACKPOT_PERCENTAGE) / PERCENTAGE_DENOMINATOR;
 
-            // Update global accumulated prize
-            let current_accumulated_prize = self.accumulatedPrize.read();
-            self.accumulatedPrize.write(current_accumulated_prize + jackpot_contribution);
-
             // Update the specific draw's accumulated prize
+            // Note: We only update the draw's jackpot, not the global accumulatedPrize
+            // The global accumulatedPrize is recalculated from vault balance when creating new draws
             let mut current_draw = self.draws.entry(drawId).read();
+            let previous_draw_jackpot = current_draw.accumulatedPrize;
             current_draw.accumulatedPrize = current_draw.accumulatedPrize + jackpot_contribution;
             self.draws.entry(drawId).write(current_draw);
 
@@ -502,8 +514,8 @@ pub mod Lottery {
                 .emit(
                     JackpotIncreased {
                         drawId,
-                        previousAmount: current_accumulated_prize,
-                        newAmount: current_accumulated_prize + jackpot_contribution,
+                        previousAmount: previous_draw_jackpot,
+                        newAmount: previous_draw_jackpot + jackpot_contribution,
                         timestamp: current_timestamp,
                     },
                 );
@@ -598,7 +610,6 @@ pub mod Lottery {
         }
 
         //=======================================================================================
-        //OK
         fn DrawNumbers(ref self: ContractState, drawId: u64) {
             self.ownable.assert_only_owner();
             let mut draw = self.draws.entry(drawId).read();
@@ -636,7 +647,7 @@ pub mod Lottery {
             self
                 .emit(
                     DrawCompleted {
-                        drawId, winningNumbers, accumulatedPrize: self.accumulatedPrize.read(),
+                        drawId, winningNumbers, accumulatedPrize: draw.accumulatedPrize,
                     },
                 );
 
@@ -644,7 +655,6 @@ pub mod Lottery {
             self.currentRandomnessId.write(current_randomness_id + 1);
         }
         //=======================================================================================
-        //OK
         fn ClaimPrize(ref self: ContractState, drawId: u64, ticketId: felt252) {
             // Validate that draw exists
             self.AssertDrawExists(drawId, 'ClaimPrize');
@@ -663,18 +673,13 @@ pub mod Lottery {
                     ticket.number4,
                     ticket.number5,
                 );
-            let prize = self.GetFixedPrize(matches);
+            let prize = self.GetFixedPrize(drawId, matches);
 
             let mut ticket = ticket;
             ticket.claimed = true;
             self.tickets.entry((drawId, ticketId)).write(ticket);
 
             if prize > 0 {
-                // TODO: The following two lines should be moved to the prize distribution function
-                // Update the total prizes distributed for this draw
-                let current_distributed = self.totalPrizesDistributed.entry(drawId).read();
-                self.totalPrizesDistributed.entry(drawId).write(current_distributed + prize);
-
                 //TODO: We need to process the payment of the prize
 
                 self
@@ -736,19 +741,29 @@ pub mod Lottery {
         //=======================================================================================
         //OK
         fn GetAccumulatedPrize(self: @ContractState) -> u256 {
-            self.accumulatedPrize.read()
+            // Return the jackpot of the current active draw
+            let current_draw_id = self.currentDrawId.read();
+            if current_draw_id == 0 {
+                return 0;
+            }
+            let current_draw = self.draws.entry(current_draw_id).read();
+            current_draw.accumulatedPrize
         }
 
         //=======================================================================================
         //OK
-        fn GetFixedPrize(self: @ContractState, matches: u8) -> u256 {
+        fn GetFixedPrize(self: @ContractState, drawId: u64, matches: u8) -> u256 {
             match matches {
                 0 => 0,
                 1 => 0,
                 2 => self.fixedPrize2Matches.read(),
                 3 => self.fixedPrize3Matches.read(),
                 4 => self.fixedPrize4Matches.read(),
-                5 => self.accumulatedPrize.read(),
+                5 => {
+                    // For jackpot (5 matches), return the accumulated prize of the specific draw
+                    let draw = self.draws.entry(drawId).read();
+                    draw.accumulatedPrize
+                },
                 _ => 0,
             }
         }
@@ -771,22 +786,24 @@ pub mod Lottery {
             }
 
             // Calculate jackpot automatically from vault balance
+            // The jackpot for the new draw is calculated as:
+            // remaining_funds = vault_balance - prizes_distributed_in_previous_draw
+            // This ensures the remaining funds after prize distribution carry over to the next draw
             let vault_balance = self.GetVaultBalance();
             
             // Get prizes distributed in the previous draw (if exists)
+            // This value is set by DistributePrizes function when prizes are assigned to winners
             let prizes_distributed = if current_id > 0 {
                 self.totalPrizesDistributed.entry(current_id).read()
             } else {
                 0
             };
 
-            // Calculate the jackpot: vault_balance - prizes_distributed
-            // This ensures we don't count money that was already distributed
+            // Calculate the jackpot: remaining funds after previous prize distribution
+            // Formula: vault_balance - prizes_distributed = funds_available_for_new_draw
+            // Note: calculated_jackpot can be 0 if vault is empty; it will grow as tickets are purchased
             assert(vault_balance >= prizes_distributed, 'Insufficient vault balance');
             let calculated_jackpot = vault_balance - prizes_distributed;
-            
-            // Validate that there are funds available
-            assert(calculated_jackpot > 0, 'No funds available in vault');
 
             let drawId = self.currentDrawId.read() + 1;
             let current_timestamp = get_block_timestamp();
@@ -1284,16 +1301,87 @@ pub mod Lottery {
                 total_distributed += distributed;
             }
 
-            // 14. Mark distribution as done
+            // 14. Store total prizes distributed for jackpot calculation
+            self.totalPrizesDistributed.entry(drawId).write(total_distributed);
+
+            // 15. Mark distribution as done
             draw.distribution_done = true;
             self.draws.entry(drawId).write(draw);
 
-            // 15. Emit final event
+            // 16. Emit final event
             self
                 .emit(
                     Event::PrizesDistributed(
                         PrizesDistributed {
                             drawId, winners_total: total_winners, total_distributed,
+                        },
+                    ),
+                );
+        }
+
+        /// Adds external funds (donations or investments) to the lottery jackpot
+        /// Only the owner (administrator) can call this function
+        /// 
+        /// # Arguments
+        /// * `amount` - The amount of tokens to add to the jackpot
+        /// 
+        /// # Requirements
+        /// * Caller must be the contract owner
+        /// * Caller must have approved the lottery contract to transfer tokens
+        /// * Amount must be greater than 0
+        /// * There must be an active draw to add funds to
+        fn AddExternalFunds(ref self: ContractState, amount: u256) {
+            // 1. Only owner can add external funds
+            self.ownable.assert_only_owner();
+
+            // 2. Validate amount
+            assert(amount > 0, 'Amount must be greater than 0');
+
+            // 3. Get current draw ID
+            let current_draw_id = self.currentDrawId.read();
+            assert(current_draw_id > 0, 'No draw exists');
+
+            // 4. Get the current draw and verify it's active
+            let mut current_draw = self.draws.entry(current_draw_id).read();
+            assert(current_draw.isActive, 'Draw is not active');
+
+            // 5. Get addresses and create token dispatcher
+            let contributor = get_caller_address();
+            let vault_address = self.strkPlayVaultContractAddress.read();
+            let token_dispatcher = IERC20Dispatcher {
+                contract_address: self.strkPlayContractAddress.read(),
+            };
+
+            // 6. Validate contributor has sufficient balance
+            let contributor_balance = token_dispatcher.balance_of(contributor);
+            assert(contributor_balance >= amount, 'Insufficient balance');
+
+            // 7. Validate contributor has approved the contract
+            let allowance = token_dispatcher.allowance(contributor, get_contract_address());
+            assert(allowance >= amount, 'Insufficient allowance');
+
+            // 8. Transfer tokens from contributor to vault
+            let transfer_success = token_dispatcher
+                .transfer_from(contributor, vault_address, amount);
+            assert(transfer_success, 'Transfer failed');
+
+            // 9. Update current draw's jackpot only
+            // Note: We don't update global accumulatedPrize here
+            // It will be recalculated from vault balance when creating new draws
+            let _previous_draw_jackpot = current_draw.accumulatedPrize;
+            current_draw.accumulatedPrize = current_draw.accumulatedPrize + amount;
+            self.draws.entry(current_draw_id).write(current_draw);
+
+            // 10. Emit event for transparency
+            self
+                .emit(
+                    Event::ExternalFundsAdded(
+                        ExternalFundsAdded {
+                            contributor,
+                            drawId: current_draw_id,
+                            amount,
+                            new_jackpot: current_draw.accumulatedPrize,
+                            timestamp: get_block_timestamp(),
                         },
                     ),
                 );
