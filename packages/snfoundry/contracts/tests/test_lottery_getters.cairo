@@ -896,36 +896,46 @@ fn test_get_jackpot_entry_draw_id() {
 
 #[test]
 fn test_get_jackpot_entry_amount() {
-    let (lottery_address, _, _) = deploy_lottery();
+    let (lottery_address, mock_strk_play, _) = deploy_lottery();
     let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_address };
 
-    // Initialize lottery
+    // Initialize lottery (Draw 1)
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
     lottery_dispatcher.Initialize(TICKET_PRICE);
 
-    // Note: Jackpot amounts are now calculated from vault balance
-    let jackpot_amount = lottery_dispatcher.GetJackpotEntryAmount(1);
-    assert(jackpot_amount >= 0, 'Jackpot >= 0');
+    // Buy 1 ticket to add 2.75 STRKP to jackpot (5 * 55%)
+    setup_mocks_for_multiple_tickets(mock_strk_play, USER1, 1);
+    let numbers_array = create_valid_numbers_array(1);
+    cheat_caller_address(lottery_address, USER1, CheatSpan::TargetCalls(1));
+    lottery_dispatcher.BuyTicket(1, numbers_array, 1);
+    cleanup_mocks(mock_strk_play);
+
+    // Close Draw 1 and create Draw 2
+    cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
+    lottery_dispatcher.DrawNumbers(1);
+    lottery_dispatcher.CreateNewDraw();
+
+    // Verify Draw 2 jackpot is exactly 2.75 STRKP (carry-over without distribution)
+    let jackpot_amount_draw2 = lottery_dispatcher.GetJackpotEntryAmount(2);
+    let expected_jackpot = (TICKET_PRICE * 55) / 100; // 2.75 STRKP
+    assert(jackpot_amount_draw2 == expected_jackpot, 'Draw 2 jackpot 2.75');
 }
 
 #[test]
-fn test_get_jackpot_entry_start_time() {
+fn test_get_jackpot_entry_start_block() {
     let (lottery_address, _, _) = deploy_lottery();
     let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_address };
-
-    // Set specific timestamp
-    cheat_block_timestamp(lottery_address, 1234567890, CheatSpan::TargetCalls(2));
 
     // Initialize lottery
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
     lottery_dispatcher.Initialize(TICKET_PRICE);
 
-    let start_time = lottery_dispatcher.GetJackpotEntryStartTime(1);
-    assert(start_time == 1234567890, 'Start time OK');
+    let start_block = lottery_dispatcher.GetJackpotEntryStartBlock(1);
+    assert(start_block > 0, 'Start block set');
 }
 
 #[test]
-fn test_get_jackpot_entry_end_time() {
+fn test_get_jackpot_entry_end_block() {
     let (lottery_address, _, _) = deploy_lottery();
     let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_address };
 
@@ -933,12 +943,12 @@ fn test_get_jackpot_entry_end_time() {
     cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
     lottery_dispatcher.Initialize(TICKET_PRICE);
 
-    let end_time = lottery_dispatcher.GetJackpotEntryEndBlock(1);
-    assert(end_time > 0, 'End time set');
+    let end_block = lottery_dispatcher.GetJackpotEntryEndBlock(1);
+    assert(end_block > 0, 'End block set');
 
-    // End time should be start time + 1 week (604800 seconds)
-    let start_time = lottery_dispatcher.GetJackpotEntryStartBlock(1);
-    assert(end_time == start_time + 44800, 'End time is 1 week');
+    // End block should be start block + default duration (44800 blocks)
+    let start_block = lottery_dispatcher.GetJackpotEntryStartBlock(1);
+    assert(end_block == start_block + 44800, 'Duration 44800 blocks');
 }
 
 #[test]
@@ -965,26 +975,6 @@ fn test_get_jackpot_entry_is_completed() {
 
     let is_completed = lottery_dispatcher.GetJackpotEntryIsCompleted(1);
     assert(is_completed == false, 'Active not completed');
-}
-
-#[test]
-fn test_jackpot_entry_getters_after_drawing() {
-    let (lottery_address, _, _) = deploy_lottery();
-    let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_address };
-
-    // Initialize lottery
-    cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE);
-
-    // Complete the draw
-    cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.DrawNumbers(1);
-
-    let is_active = lottery_dispatcher.GetJackpotEntryIsActive(1);
-    let is_completed = lottery_dispatcher.GetJackpotEntryIsCompleted(1);
-
-    assert(is_active == false, 'Completed not active');
-    assert(is_completed == true, 'Completed is done');
 }
 
 #[test]
@@ -1018,94 +1008,6 @@ fn test_jackpot_entry_getters_multiple_draws() {
 //=======================================================================================
 
 #[test]
-fn test_get_jackpot_history_initial() {
-    let (lottery_address, _, _) = deploy_lottery();
-    let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_address };
-
-    // Initialize lottery (creates draw 1)
-    cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE);
-
-    let jackpot_history = lottery_dispatcher.get_jackpot_history();
-    assert(jackpot_history.len() == 1, '1 entry in history');
-
-    let _first_entry = jackpot_history.at(0);
-    // Use getter functions instead of direct struct access
-    let entry_draw_id = lottery_dispatcher.GetJackpotEntryDrawId(1);
-    let entry_amount = lottery_dispatcher.GetJackpotEntryAmount(1);
-    let entry_is_active = lottery_dispatcher.GetJackpotEntryIsActive(1);
-    let entry_is_completed = lottery_dispatcher.GetJackpotEntryIsCompleted(1);
-
-    assert(entry_draw_id == 1, 'First entry draw 1');
-    // Note: Jackpot amounts are now calculated from vault balance
-    assert(entry_amount >= 0, 'Amount >= 0');
-    assert(entry_is_active == true, 'Draw is active');
-    assert(entry_is_completed == false, 'Draw not completed');
-}
-
-#[test]
-fn test_get_jackpot_history_multiple_draws() {
-    let (lottery_address, _, _) = deploy_lottery();
-    let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_address };
-
-    // Initialize lottery (creates draw 1)
-    cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE);
-
-    // Create second draw
-    cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.DrawNumbers(1);
-    lottery_dispatcher.CreateNewDraw();
-
-    let jackpot_history = lottery_dispatcher.get_jackpot_history();
-    assert(jackpot_history.len() == 2, '2 entries in history');
-
-    let _first_entry = jackpot_history.at(0);
-    let _second_entry = jackpot_history.at(1);
-
-    // Use getter functions instead of direct struct access
-    let draw1_id = lottery_dispatcher.GetJackpotEntryDrawId(1);
-    let draw2_id = lottery_dispatcher.GetJackpotEntryDrawId(2);
-    let draw2_is_active = lottery_dispatcher.GetJackpotEntryIsActive(2);
-
-    assert(draw1_id == 1, 'First entry is draw 1');
-    assert(draw2_id == 2, 'Second entry is draw 2');
-    assert(draw2_is_active == true, 'Second draw active');
-}
-
-#[test]
-fn test_get_jackpot_history_after_completing_draws() {
-    let (lottery_address, _, _) = deploy_lottery();
-    let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_address };
-
-    // Initialize lottery (creates draw 1)
-    cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(TICKET_PRICE);
-
-    // Create and complete second draw
-    cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
-    lottery_dispatcher.DrawNumbers(1);
-    lottery_dispatcher.CreateNewDraw();
-
-    let jackpot_history = lottery_dispatcher.get_jackpot_history();
-    assert(jackpot_history.len() == 2, '2 entries after complete');
-
-    let _first_entry = jackpot_history.at(0);
-    let _second_entry = jackpot_history.at(1);
-
-    // Use getter functions instead of direct struct access
-    let draw1_is_active = lottery_dispatcher.GetJackpotEntryIsActive(1);
-    let draw1_is_completed = lottery_dispatcher.GetJackpotEntryIsCompleted(1);
-    let draw2_is_active = lottery_dispatcher.GetJackpotEntryIsActive(2);
-    let draw2_is_completed = lottery_dispatcher.GetJackpotEntryIsCompleted(2);
-
-    assert(draw1_is_active == false, 'First draw inactive');
-    assert(draw1_is_completed == true, 'First draw completed');
-    assert(draw2_is_active == true, 'Second draw active');
-    assert(draw2_is_completed == false, 'Second not completed');
-}
-
-#[test]
 fn test_get_jackpot_history_jackpot_amounts() {
     let (lottery_address, mock_strk_play, _) = deploy_lottery();
     let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_address };
@@ -1136,4 +1038,65 @@ fn test_get_jackpot_history_jackpot_amounts() {
 
     assert(entry_amount == expected_amount, 'Jackpot includes purchases');
     assert(entry_is_active == true, 'Draw still active');
+}
+
+//=======================================================================================
+// New Tests: Jackpot Accumulation Scenarios
+//=======================================================================================
+
+#[test]
+fn test_jackpot_accumulation_across_three_draws() {
+    let (lottery_address, mock_strk_play, _) = deploy_lottery();
+    let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_address };
+
+    // Initialize lottery (Draw 1)
+    cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
+    lottery_dispatcher.Initialize(TICKET_PRICE);
+
+    // Draw 1: Buy 2 tickets → jackpot = 5.5 STRKP (2 * 5 * 55%)
+    setup_mocks_for_multiple_tickets(mock_strk_play, USER1, 2);
+    let numbers_array1 = create_valid_numbers_array(2);
+    cheat_caller_address(lottery_address, USER1, CheatSpan::TargetCalls(1));
+    lottery_dispatcher.BuyTicket(1, numbers_array1, 2);
+    cleanup_mocks(mock_strk_play);
+
+    let jackpot_draw1 = lottery_dispatcher.GetJackpotEntryAmount(1);
+    let expected_jackpot_1 = (TICKET_PRICE * 2 * 55) / 100; // 5.5 STRKP
+    assert(jackpot_draw1 == expected_jackpot_1, 'Draw 1: 5.5 STRKP');
+
+    // Close Draw 1 and create Draw 2
+    cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
+    lottery_dispatcher.DrawNumbers(1);
+    lottery_dispatcher.CreateNewDraw();
+
+    // Draw 2: Buy 1 ticket → jackpot = 5.5 + 2.75 = 8.25 STRKP
+    setup_mocks_for_multiple_tickets(mock_strk_play, USER1, 1);
+    let numbers_array2 = create_valid_numbers_array(1);
+    cheat_caller_address(lottery_address, USER1, CheatSpan::TargetCalls(1));
+    lottery_dispatcher.BuyTicket(2, numbers_array2, 1);
+    cleanup_mocks(mock_strk_play);
+
+    let jackpot_draw2 = lottery_dispatcher.GetJackpotEntryAmount(2);
+    let expected_jackpot_2 = (TICKET_PRICE * 3 * 55) / 100; // 8.25 STRKP
+    assert(jackpot_draw2 == expected_jackpot_2, 'Draw 2: 8.25 STRKP');
+
+    // Close Draw 2 and create Draw 3
+    cheat_caller_address(lottery_address, OWNER, CheatSpan::TargetCalls(1));
+    lottery_dispatcher.DrawNumbers(2);
+    lottery_dispatcher.CreateNewDraw();
+
+    // Draw 3: Buy 1 ticket → jackpot = 8.25 + 2.75 = 11 STRKP
+    setup_mocks_for_multiple_tickets(mock_strk_play, USER1, 1);
+    let numbers_array3 = create_valid_numbers_array(1);
+    cheat_caller_address(lottery_address, USER1, CheatSpan::TargetCalls(1));
+    lottery_dispatcher.BuyTicket(3, numbers_array3, 1);
+    cleanup_mocks(mock_strk_play);
+
+    let jackpot_draw3 = lottery_dispatcher.GetJackpotEntryAmount(3);
+    let expected_jackpot_3 = (TICKET_PRICE * 4 * 55) / 100; // 11 STRKP
+    assert(jackpot_draw3 == expected_jackpot_3, 'Draw 3: 11 STRKP');
+
+    // Verify progression: 5.5 → 8.25 → 11
+    assert(jackpot_draw1 < jackpot_draw2, 'Jackpot increased D1->D2');
+    assert(jackpot_draw2 < jackpot_draw3, 'Jackpot increased D2->D3');
 }

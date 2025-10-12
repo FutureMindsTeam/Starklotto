@@ -14,18 +14,18 @@ pub trait IRandomnessLottery<TContractState> {
 //=======================================================================================
 #[derive(Drop, Copy, Serde, starknet::Store)]
 //serde for serialization and deserialization
-struct Ticket {
-    player: ContractAddress,
-    number1: u16,
-    number2: u16,
-    number3: u16,
-    number4: u16,
-    number5: u16,
-    claimed: bool,
-    drawId: u64,
-    timestamp: u64,
-    prize_amount: u256,
-    prize_assigned: bool,
+pub struct Ticket {
+    pub player: ContractAddress,
+    pub number1: u16,
+    pub number2: u16,
+    pub number3: u16,
+    pub number4: u16,
+    pub number5: u16,
+    pub claimed: bool,
+    pub drawId: u64,
+    pub timestamp: u64,
+    pub prize_amount: u256,
+    pub prize_assigned: bool,
 }
 
 #[derive(Drop, Copy, Serde, starknet::Store)]
