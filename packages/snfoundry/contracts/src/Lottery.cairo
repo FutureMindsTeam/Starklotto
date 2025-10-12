@@ -503,7 +503,8 @@ pub mod Lottery {
 
             // Update the specific draw's accumulated prize
             // Note: We only update the draw's jackpot, not the global accumulatedPrize
-            // The global accumulatedPrize is recalculated from vault balance when creating new draws
+            // The global accumulatedPrize is recalculated from vault balance when creating new
+            // draws
             let mut current_draw = self.draws.entry(drawId).read();
             let previous_draw_jackpot = current_draw.accumulatedPrize;
             current_draw.accumulatedPrize = current_draw.accumulatedPrize + jackpot_contribution;
@@ -786,23 +787,27 @@ pub mod Lottery {
             }
 
             // Calculate jackpot for new draw
-            // The jackpot calculation depends on whether prizes were distributed in the previous draw
+            // The jackpot calculation depends on whether prizes were distributed in the previous
+            // draw
             let vault_balance = self.GetVaultBalance();
             let mut prizes_distributed: u256 = 0;
-            
+
             let calculated_jackpot = if current_id > 0 {
                 let previous_draw = self.draws.entry(current_id).read();
-                
+
                 // Check if prizes were distributed in the previous draw
                 if previous_draw.distribution_done {
                     // Prizes were distributed and assigned (but not yet claimed/transferred)
                     // The jackpot should continue from the previous draw's jackpot
                     // minus the prizes that were assigned
                     prizes_distributed = self.totalPrizesDistributed.entry(current_id).read();
-                    
+
                     // Safety check: previous jackpot must have enough to cover assigned prizes
-                    assert(previous_draw.accumulatedPrize >= prizes_distributed, 'Insufficient jackpot');
-                    
+                    assert(
+                        previous_draw.accumulatedPrize >= prizes_distributed,
+                        'Insufficient jackpot',
+                    );
+
                     // Available jackpot = previous jackpot - prizes assigned
                     previous_draw.accumulatedPrize - prizes_distributed
                 } else {
@@ -819,7 +824,7 @@ pub mod Lottery {
             let current_timestamp = get_block_timestamp();
             let current_block = get_block_number();
             let end_block = current_block + duration_blocks;
-            
+
             let newDraw = Draw {
                 drawId,
                 accumulatedPrize: calculated_jackpot,
@@ -837,7 +842,7 @@ pub mod Lottery {
             };
             self.draws.entry(drawId).write(newDraw);
             self.currentDrawId.write(drawId);
-            
+
             // Update global accumulated prize
             self.accumulatedPrize.write(calculated_jackpot);
 
@@ -1331,10 +1336,10 @@ pub mod Lottery {
 
         /// Adds external funds (donations or investments) to the lottery jackpot
         /// Only the owner (administrator) can call this function
-        /// 
+        ///
         /// # Arguments
         /// * `amount` - The amount of tokens to add to the jackpot
-        /// 
+        ///
         /// # Requirements
         /// * Caller must be the contract owner
         /// * Caller must have approved the lottery contract to transfer tokens
