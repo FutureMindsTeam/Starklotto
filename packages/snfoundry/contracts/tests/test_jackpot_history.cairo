@@ -3,8 +3,8 @@ use contracts::StarkPlayERC20::IMintableDispatcher;
 use contracts::StarkPlayVault::IStarkPlayVaultDispatcher;
 use core::array::ArrayTrait;
 use snforge_std::{
-    ContractClassTrait, DeclareResultTrait, declare, start_cheat_caller_address,
-    stop_cheat_caller_address, start_mock_call, stop_mock_call,
+    ContractClassTrait, DeclareResultTrait, declare, start_cheat_caller_address, start_mock_call,
+    stop_cheat_caller_address, stop_mock_call,
 };
 use starknet::ContractAddress;
 
@@ -84,7 +84,7 @@ fn create_valid_numbers_array(quantity: u8) -> Array<Array<u16>> {
         ticket_numbers.append(base + 20);
         numbers_array.append(ticket_numbers);
         i += 1;
-    };
+    }
     numbers_array
 }
 
@@ -315,11 +315,11 @@ fn test_progressive_jackpot_five_draws() {
     stop_cheat_caller_address(lottery_dispatcher.contract_address);
 
     let mut expected_jackpots: Array<u256> = array![
-        (TICKET_PRICE * 55) / 100,       // Draw 1: 2.75 STRKP
-        (TICKET_PRICE * 2 * 55) / 100,   // Draw 2: 5.5 STRKP
-        (TICKET_PRICE * 3 * 55) / 100,   // Draw 3: 8.25 STRKP
-        (TICKET_PRICE * 4 * 55) / 100,   // Draw 4: 11 STRKP
-        (TICKET_PRICE * 5 * 55) / 100,   // Draw 5: 13.75 STRKP
+        (TICKET_PRICE * 55) / 100, // Draw 1: 2.75 STRKP
+        (TICKET_PRICE * 2 * 55) / 100, // Draw 2: 5.5 STRKP
+        (TICKET_PRICE * 3 * 55) / 100, // Draw 3: 8.25 STRKP
+        (TICKET_PRICE * 4 * 55) / 100, // Draw 4: 11 STRKP
+        (TICKET_PRICE * 5 * 55) / 100 // Draw 5: 13.75 STRKP
     ];
 
     let mut draw_id: u64 = 1;
@@ -396,12 +396,12 @@ fn test_jackpot_after_prize_distribution() {
     // This test documents the expected behavior
     start_cheat_caller_address(lottery_dispatcher.contract_address, OWNER());
     lottery_dispatcher.DrawNumbers(1);
-    
+
     // DistributePrizes would assign prizes based on matches
     // Expected: if there are winners, prizes_distributed > 0
     // For simplicity, we test the flow continues correctly
     lottery_dispatcher.DistributePrizes(1);
-    
+
     // Create Draw 2
     lottery_dispatcher.CreateNewDraw();
     stop_cheat_caller_address(lottery_dispatcher.contract_address);
@@ -423,7 +423,7 @@ fn test_external_funds_addition_to_jackpot() {
 
     // Note: AddExternalFunds would require proper ERC20 setup with allowances
     // This test documents the intended behavior even if we can't fully test it with mocks
-    // 
+    //
     // Expected flow:
     // 1. Draw 1: Buy 1 ticket → jackpot = 2.75 STRKP
     // 2. Owner calls AddExternalFunds(10 STRKP) → jackpot = 12.75 STRKP
@@ -443,13 +443,12 @@ fn test_external_funds_addition_to_jackpot() {
     let jackpot_before_external = get_jackpot_entry_amount(lottery_dispatcher, 1);
     let expected = (TICKET_PRICE * 55) / 100; // 2.75 STRKP
     assert!(jackpot_before_external == expected, "Initial jackpot 2.75");
-
     // Note: Full test with AddExternalFunds would be:
-    // setup_mocks_for_buy_ticket(mock_strk_play, OWNER(), 10 STRKP, 10 STRKP, true);
-    // start_cheat_caller_address(lottery_dispatcher.contract_address, OWNER());
-    // lottery_dispatcher.AddExternalFunds(10 STRKP);
-    // let new_jackpot = get_jackpot_entry_amount(lottery_dispatcher, 1);
-    // assert!(new_jackpot == 12.75 STRKP, "Jackpot after external funds");
+// setup_mocks_for_buy_ticket(mock_strk_play, OWNER(), 10 STRKP, 10 STRKP, true);
+// start_cheat_caller_address(lottery_dispatcher.contract_address, OWNER());
+// lottery_dispatcher.AddExternalFunds(10 STRKP);
+// let new_jackpot = get_jackpot_entry_amount(lottery_dispatcher, 1);
+// assert!(new_jackpot == 12.75 STRKP, "Jackpot after external funds");
 }
 
 #[test]
@@ -472,9 +471,8 @@ fn test_vault_balance_matches_jackpot_allocation() {
     let jackpot = get_jackpot_entry_amount(lottery_dispatcher, 1);
     let expected_jackpot = (TICKET_PRICE * 3 * 55) / 100; // 8.25 STRKP
     assert!(jackpot == expected_jackpot, "Jackpot is 8.25 STRKP");
-
     // Note: Fees (45%) = 6.75 STRKP remain in vault
-    // Total vault should be >= jackpot
-    // (We can't directly check vault balance without proper setup, but logic is verified)
+// Total vault should be >= jackpot
+// (We can't directly check vault balance without proper setup, but logic is verified)
 }
 
