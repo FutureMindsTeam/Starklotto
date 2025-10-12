@@ -785,25 +785,35 @@ pub mod Lottery {
                 assert(!last_draw.isActive, 'Active draw exists');
             }
 
-            // Calculate jackpot automatically from vault balance
-            // The jackpot for the new draw is calculated as:
-            // remaining_funds = vault_balance - prizes_distributed_in_previous_draw
-            // This ensures the remaining funds after prize distribution carry over to the next draw
+            // Calculate jackpot for new draw
+            // The jackpot calculation depends on whether prizes were distributed in the previous draw
             let vault_balance = self.GetVaultBalance();
+            let mut prizes_distributed: u256 = 0;
             
-            // Get prizes distributed in the previous draw (if exists)
-            // This value is set by DistributePrizes function when prizes are assigned to winners
-            let prizes_distributed = if current_id > 0 {
-                self.totalPrizesDistributed.entry(current_id).read()
+            let calculated_jackpot = if current_id > 0 {
+                let previous_draw = self.draws.entry(current_id).read();
+                
+                // Check if prizes were distributed in the previous draw
+                if previous_draw.distribution_done {
+                    // Prizes were distributed and assigned (but not yet claimed/transferred)
+                    // The jackpot should continue from the previous draw's jackpot
+                    // minus the prizes that were assigned
+                    prizes_distributed = self.totalPrizesDistributed.entry(current_id).read();
+                    
+                    // Safety check: previous jackpot must have enough to cover assigned prizes
+                    assert(previous_draw.accumulatedPrize >= prizes_distributed, 'Insufficient jackpot');
+                    
+                    // Available jackpot = previous jackpot - prizes assigned
+                    previous_draw.accumulatedPrize - prizes_distributed
+                } else {
+                    // Prizes NOT distributed yet, so carry over the previous draw's jackpot
+                    // This preserves the 55% allocation without counting the full vault
+                    previous_draw.accumulatedPrize
+                }
             } else {
-                0
+                // First draw: use full vault balance as jackpot
+                vault_balance
             };
-
-            // Calculate the jackpot: remaining funds after previous prize distribution
-            // Formula: vault_balance - prizes_distributed = funds_available_for_new_draw
-            // Note: calculated_jackpot can be 0 if vault is empty; it will grow as tickets are purchased
-            assert(vault_balance >= prizes_distributed, 'Insufficient vault balance');
-            let calculated_jackpot = vault_balance - prizes_distributed;
 
             let drawId = self.currentDrawId.read() + 1;
             let current_timestamp = get_block_timestamp();
