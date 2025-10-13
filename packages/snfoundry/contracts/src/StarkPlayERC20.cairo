@@ -37,7 +37,7 @@ pub trait IBurnable<TContractState> {
 
 #[starknet::interface]
 pub trait IPrizeToken<TContractState> {
-    fn assign_prize_tokens(ref self: TContractState, recipient: ContractAddress, amount: u256);
+    fn mark_as_prize(ref self: TContractState, recipient: ContractAddress, amount: u256);
     fn get_prize_balance(self: @TContractState, account: ContractAddress) -> u256;
     fn grant_prize_assigner_role(ref self: TContractState, assigner: ContractAddress);
     fn revoke_prize_assigner_role(ref self: TContractState, assigner: ContractAddress);
@@ -328,12 +328,11 @@ pub mod StarkPlayERC20 {
 
     #[abi(embed_v0)]
     impl PrizeTokenImpl of IPrizeToken<ContractState> {
-        fn assign_prize_tokens(ref self: ContractState, recipient: ContractAddress, amount: u256) {
+        fn mark_as_prize(ref self: ContractState, recipient: ContractAddress, amount: u256) {
             self.pausable.assert_not_paused();
             self.accesscontrol.assert_only_role(PRIZE_ASSIGNER_ROLE);
             let current_prize_balance = self.prize_balances.entry(recipient).read();
             self.prize_balances.entry(recipient).write(current_prize_balance + amount);
-            self.erc20.mint(recipient, amount);
             self.emit(PrizeTokensAssigned { recipient, amount });
         }
 

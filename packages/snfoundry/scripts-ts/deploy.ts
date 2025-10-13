@@ -168,7 +168,12 @@ const deployScript = async (): Promise<void> => {
     const burn_allowance = 1_000_000_000n * 1000000000000000000n; // 1B tokens with 18 decimals
     await starkPlayTokenContract.set_burner_allowance(starkPlayVaultAddress, burn_allowance);
 
+    // Owner (deployer) assigns PRIZE_ASSIGNER_ROLE to Lottery contract
+    console.log("Granting PRIZE_ASSIGNER_ROLE to Lottery...");
+    await starkPlayTokenContract.grant_prize_assigner_role(lotteryAddress);
+
     console.log("StarkPlayVault roles assigned successfully by owner");
+    console.log("Lottery PRIZE_ASSIGNER_ROLE assigned successfully");
   } catch (error) {
     console.error("Failed to assign vault roles:", error);
     throw new Error(`Vault role assignment failed: ${error}`);

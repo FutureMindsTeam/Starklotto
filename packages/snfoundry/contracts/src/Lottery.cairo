@@ -113,6 +113,9 @@ pub trait ILottery<TContractState> {
     fn GetUserTickets(
         ref self: TContractState, drawId: u64, player: ContractAddress,
     ) -> Array<Ticket>;
+    fn GetUserWinningTickets(
+        self: @TContractState, drawId: u64, player: ContractAddress,
+    ) -> Array<Ticket>;
     fn GetUserTicketsCount(self: @TContractState, drawId: u64, player: ContractAddress) -> u32;
     fn GetTicketInfo(
         self: @TContractState, drawId: u64, ticketId: felt252, player: ContractAddress,
@@ -171,6 +174,7 @@ pub mod Lottery {
         Draw, ILottery, IRandomnessLotteryDispatcher, IRandomnessLotteryDispatcherTrait,
         JackpotEntry, Ticket,
     };
+    use contracts::StarkPlayERC20::{IPrizeTokenDispatcher, IPrizeTokenDispatcherTrait};
 
     // ownable component by openzeppelin
     component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
@@ -686,19 +690,23 @@ pub mod Lottery {
                 contract_address: token_address,
             };
 
-            // Note: transfer_from will revert if it fails (no need to check return value)
-            // The vault must have previously approved this contract
             token_dispatcher.transfer_from(
                 vault_address,
                 caller,
                 ticket.prize_amount
             );
 
-            // 7. Mark ticket as claimed
+            // 7. Mark transferred tokens as prize tokens
+            let prize_dispatcher = IPrizeTokenDispatcher {
+                contract_address: token_address,
+            };
+            prize_dispatcher.mark_as_prize(caller, ticket.prize_amount);
+
+            // 8. Mark ticket as claimed
             ticket.claimed = true;
             self.tickets.entry((drawId, ticketId)).write(ticket);
 
-            // 8. Emit event with correct prize amount
+            // 9. Emit event with correct prize amount
             self.emit(
                 PrizeClaimed {
                     drawId,
@@ -708,7 +716,7 @@ pub mod Lottery {
                 },
             );
 
-            // 9. Release reentrancy guard
+            // 10. Release reentrancy guard
             self.reentrancy_guard.end();
         }
 
@@ -967,6 +975,33 @@ pub mod Lottery {
 
             self.emit(UserTicketsInfo { player, drawId, tickets: user_tickets_data.clone() });
             user_tickets_data
+        }
+
+        //=======================================================================================
+        fn GetUserWinningTickets(
+            self: @ContractState, drawId: u64, player: ContractAddress,
+        ) -> Array<Ticket> {
+            // Validate that draw exists (need to create snapshot for immutable self)
+           
+            let draw = self.draws.entry(drawId).read();
+            assert(draw.drawId > 0, 'Draw does not exist');
+
+            let ticket_ids = self.GetUserTicketIds(drawId, player);
+            let mut winning_tickets = ArrayTrait::new();
+            let mut i: usize = 0;
+            
+            while i != ticket_ids.len() {
+                let ticket_id = *ticket_ids.at(i);
+                let ticket = self.tickets.entry((drawId, ticket_id)).read();
+                
+                // Filter: prize_assigned=true AND prize_amount>0 AND NOT claimed
+                if ticket.prize_assigned && ticket.prize_amount > 0 && !ticket.claimed {
+                    winning_tickets.append(ticket);
+                }
+                i += 1;
+            };
+
+            winning_tickets
         }
 
         //=======================================================================================

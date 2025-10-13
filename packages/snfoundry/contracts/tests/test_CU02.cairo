@@ -111,26 +111,26 @@ fn deploy_vault_contract() -> (IStarkPlayVaultDispatcher, IMintableDispatcher) {
     starkplay_token.set_minter_allowance(vault_address, EXCEEDS_MINT_LIMIT().into() * 10);
     starkplay_token_burn.grant_burner_role(vault_address);
     stop_cheat_caller_address(starkplay_token.contract_address);
-    // ✅ VERIFICAR que el rol se asignó correctamente
+    // ✅ Verify that the role was assigned correctly
     let starkplay_access = IAccessControlDispatcher {
         contract_address: starkplay_token.contract_address,
     };
     let burner_role = selector!("BURNER_ROLE");
     assert(starkplay_access.has_role(burner_role, vault_address), 'Vault should have BURNER_ROLE');
 
-    // 🏆 ASIGNAR PRIZE_ASSIGNER_ROLE al OWNER (no al vault)
+    // 🏆 Assign PRIZE_ASSIGNER_ROLE to OWNER (not to vault)
     let prize_dispatcher = IPrizeTokenDispatcher { contract_address: starkplay_address };
     start_cheat_caller_address(prize_dispatcher.contract_address, OWNER());
     prize_dispatcher.grant_prize_assigner_role(vault_address);
     stop_cheat_caller_address(prize_dispatcher.contract_address);
-    // 🏆 MINTEAR StarkPlay tokens a USER1
+    // 🏆 Mint StarkPlay tokens to USER1
     start_cheat_caller_address(starkplay_token.contract_address, vault_address);
     starkplay_token
         .mint(USER1(), 1000_000_000_000_000_000_000_u256); // 1000 tokens with 18 decimals
 
-    // 🏆 REGISTRAR esos tokens como premios usando assign_prize_tokens
+    // 🏆 Mark those tokens as prizes using mark_as_prize (without additional minting)
     prize_dispatcher
-        .assign_prize_tokens(
+        .mark_as_prize(
             USER1(), 1000_000_000_000_000_000_000_u256,
         ); // 1000 tokens with 18 decimals
     stop_cheat_caller_address(starkplay_token.contract_address);
@@ -168,7 +168,7 @@ fn setup_user_balance(
 }
 
 fn setup_vault_strk_balance(vault_address: ContractAddress, amount: u256) {
-    // Set up vault with STRK balance usando OWNER() como en test_CU01.cairo
+    // Set up vault with STRK balance using OWNER() as in test_CU01.cairo
     let strk_token = IMintableDispatcher {
         contract_address: 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
             .try_into()
@@ -221,7 +221,7 @@ fn test_convert_to_strk_burn_limit_validation() {
     // Verify burn limit was set
     assert(vault.get_burn_limit() == small_burn_limit, 'Burn limit should be set');
 
-    // Set up vault with STRK balance (para dar cambio)
+    // Set up vault with STRK balance (to provide change)
     setup_vault_strk_balance(
         vault.contract_address, 1000_000_000_000_000_000_000_u256,
     ); // 1000 tokens
@@ -278,7 +278,7 @@ fn test_convert_to_strk_exceeds_burn_limit() {
     vault.setBurnLimit(burn_limit);
     stop_cheat_caller_address(vault.contract_address);
 
-    // Set up vault with STRK balance (para dar cambio)
+    // Set up vault with STRK balance (to provide change)
     setup_vault_strk_balance(
         vault.contract_address, 1000_000_000_000_000_000_000_u256,
     ); // 1000 tokens
