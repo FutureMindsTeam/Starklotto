@@ -657,41 +657,59 @@ pub mod Lottery {
         }
         //=======================================================================================
         fn ClaimPrize(ref self: ContractState, drawId: u64, ticketId: felt252) {
-            // Validate that draw exists
+            // 1. Start reentrancy protection
+            self.reentrancy_guard.start();
+
+            // 2. Validate that draw exists
             self.AssertDrawExists(drawId, 'ClaimPrize');
 
+            // 3. Get draw and validate state
             let draw = self.draws.entry(drawId).read();
-            let ticket = self.tickets.entry((drawId, ticketId)).read();
-            assert(!ticket.claimed, 'Prize already claimed');
             assert(!draw.isActive, 'Draw still active');
+            assert(draw.distribution_done, 'Distribution not done');
 
-            let matches = self
-                .CheckMatches(
-                    drawId,
-                    ticket.number1,
-                    ticket.number2,
-                    ticket.number3,
-                    ticket.number4,
-                    ticket.number5,
-                );
-            let prize = self.GetFixedPrize(drawId, matches);
+            // 4. Get ticket and validate ownership and prize
+            let mut ticket = self.tickets.entry((drawId, ticketId)).read();
+            let caller = get_caller_address();
+            
+            assert(ticket.player == caller, 'Not ticket owner');
+            assert(!ticket.claimed, 'Prize already claimed');
+            assert(ticket.prize_assigned, 'No prize assigned');
+            assert(ticket.prize_amount > 0, 'No prize amount');
 
-            let mut ticket = ticket;
+            // 5. Get contract addresses
+            let vault_address = self.strkPlayVaultContractAddress.read();
+            let token_address = self.strkPlayContractAddress.read();
+            
+            // 6. Transfer tokens from vault to player
+            let token_dispatcher = IERC20Dispatcher {
+                contract_address: token_address,
+            };
+
+            // Note: transfer_from will revert if it fails (no need to check return value)
+            // The vault must have previously approved this contract
+            token_dispatcher.transfer_from(
+                vault_address,
+                caller,
+                ticket.prize_amount
+            );
+
+            // 7. Mark ticket as claimed
             ticket.claimed = true;
             self.tickets.entry((drawId, ticketId)).write(ticket);
 
-            if prize > 0 {
-                //TODO: We need to process the payment of the prize
+            // 8. Emit event with correct prize amount
+            self.emit(
+                PrizeClaimed {
+                    drawId,
+                    player: caller,
+                    ticketId,
+                    prizeAmount: ticket.prize_amount,
+                },
+            );
 
-                self
-                    .emit(
-                        PrizeClaimed {
-                            drawId, player: ticket.player, ticketId, prizeAmount: prize,
-                        },
-                    );
-            } else {
-                self.emit(PrizeClaimed { drawId, player: ticket.player, ticketId, prizeAmount: 0 });
-            }
+            // 9. Release reentrancy guard
+            self.reentrancy_guard.end();
         }
 
         //=======================================================================================
