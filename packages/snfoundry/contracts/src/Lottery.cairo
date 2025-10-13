@@ -157,6 +157,7 @@ pub trait ILottery<TContractState> {
 //=======================================================================================
 #[starknet::contract]
 pub mod Lottery {
+    use contracts::StarkPlayERC20::{IPrizeTokenDispatcher, IPrizeTokenDispatcherTrait};
     use core::array::{Array, ArrayTrait};
     use core::dict::{Felt252Dict, Felt252DictTrait};
     use core::traits::TryInto;
@@ -174,7 +175,6 @@ pub mod Lottery {
         Draw, ILottery, IRandomnessLotteryDispatcher, IRandomnessLotteryDispatcherTrait,
         JackpotEntry, Ticket,
     };
-    use contracts::StarkPlayERC20::{IPrizeTokenDispatcher, IPrizeTokenDispatcherTrait};
 
     // ownable component by openzeppelin
     component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
@@ -675,7 +675,7 @@ pub mod Lottery {
             // 4. Get ticket and validate ownership and prize
             let mut ticket = self.tickets.entry((drawId, ticketId)).read();
             let caller = get_caller_address();
-            
+
             assert(ticket.player == caller, 'Not ticket owner');
             assert(!ticket.claimed, 'Prize already claimed');
             assert(ticket.prize_assigned, 'No prize assigned');
@@ -684,22 +684,14 @@ pub mod Lottery {
             // 5. Get contract addresses
             let vault_address = self.strkPlayVaultContractAddress.read();
             let token_address = self.strkPlayContractAddress.read();
-            
-            // 6. Transfer tokens from vault to player
-            let token_dispatcher = IERC20Dispatcher {
-                contract_address: token_address,
-            };
 
-            token_dispatcher.transfer_from(
-                vault_address,
-                caller,
-                ticket.prize_amount
-            );
+            // 6. Transfer tokens from vault to player
+            let token_dispatcher = IERC20Dispatcher { contract_address: token_address };
+
+            token_dispatcher.transfer_from(vault_address, caller, ticket.prize_amount);
 
             // 7. Mark transferred tokens as prize tokens
-            let prize_dispatcher = IPrizeTokenDispatcher {
-                contract_address: token_address,
-            };
+            let prize_dispatcher = IPrizeTokenDispatcher { contract_address: token_address };
             prize_dispatcher.mark_as_prize(caller, ticket.prize_amount);
 
             // 8. Mark ticket as claimed
@@ -707,14 +699,12 @@ pub mod Lottery {
             self.tickets.entry((drawId, ticketId)).write(ticket);
 
             // 9. Emit event with correct prize amount
-            self.emit(
-                PrizeClaimed {
-                    drawId,
-                    player: caller,
-                    ticketId,
-                    prizeAmount: ticket.prize_amount,
-                },
-            );
+            self
+                .emit(
+                    PrizeClaimed {
+                        drawId, player: caller, ticketId, prizeAmount: ticket.prize_amount,
+                    },
+                );
 
             // 10. Release reentrancy guard
             self.reentrancy_guard.end();
@@ -982,24 +972,24 @@ pub mod Lottery {
             self: @ContractState, drawId: u64, player: ContractAddress,
         ) -> Array<Ticket> {
             // Validate that draw exists (need to create snapshot for immutable self)
-           
+
             let draw = self.draws.entry(drawId).read();
             assert(draw.drawId > 0, 'Draw does not exist');
 
             let ticket_ids = self.GetUserTicketIds(drawId, player);
             let mut winning_tickets = ArrayTrait::new();
             let mut i: usize = 0;
-            
+
             while i != ticket_ids.len() {
                 let ticket_id = *ticket_ids.at(i);
                 let ticket = self.tickets.entry((drawId, ticket_id)).read();
-                
+
                 // Filter: prize_assigned=true AND prize_amount>0 AND NOT claimed
                 if ticket.prize_assigned && ticket.prize_amount > 0 && !ticket.claimed {
                     winning_tickets.append(ticket);
                 }
                 i += 1;
-            };
+            }
 
             winning_tickets
         }

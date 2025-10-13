@@ -130,9 +130,7 @@ fn deploy_vault_contract() -> (IStarkPlayVaultDispatcher, IMintableDispatcher) {
 
     // 🏆 Mark those tokens as prizes using mark_as_prize (without additional minting)
     prize_dispatcher
-        .mark_as_prize(
-            USER1(), 1000_000_000_000_000_000_000_u256,
-        ); // 1000 tokens with 18 decimals
+        .mark_as_prize(USER1(), 1000_000_000_000_000_000_000_u256); // 1000 tokens with 18 decimals
     stop_cheat_caller_address(starkplay_token.contract_address);
     start_cheat_caller_address(starkplay_token.contract_address, OWNER());
     // Set a large allowance for the vault to mint and burn tokens
