@@ -27,7 +27,7 @@ export default function Hero({ variant = "casinoGlitz" }: HeroProps) {
   const options = particlePresets[variant];
 
   const goToDapp = () => {
-    navigation.push("/dapp");
+    navigation.push("/dapp/dashboard");
   };
 
   return (

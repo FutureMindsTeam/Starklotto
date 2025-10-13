@@ -7,7 +7,7 @@ const deployedContracts = {
   devnet: {
     StarkPlayERC20: {
       address:
-        "0x5ae170a5f7a6865bf12fa8224a32c02acd3dc6e55413ea32b0ae44def275377",
+        "0x5183c0e5ae2579f5c541c6c5d69d89d7d71b80fe583a90bb1e41c383adadbc1",
       abi: [
         {
           type: "impl",
@@ -1189,7 +1189,7 @@ const deployedContracts = {
     },
     StarkPlayVault: {
       address:
-        "0x25ef073cf5fd8d454802699d6712a79a456746ecf66f521e9c02d2c3c0fd063",
+        "0x621b858ef40bbc6a8716025f6be83e2334647069aaf10d98b567ea26414c691",
       abi: [
         {
           type: "impl",
@@ -2077,7 +2077,7 @@ const deployedContracts = {
     },
     Lottery: {
       address:
-        "0x334f06afd7b2dae710821e3d39a9a8d7bf32874ae23cdb6309927ea8eb6d890",
+        "0x6e9f2cc499c9a1ce19be05a0373e1a4f7f6f44400d37bffb128a37cef58d08f",
       abi: [
         {
           type: "impl",
@@ -2152,6 +2152,14 @@ const deployedContracts = {
               name: "timestamp",
               type: "core::integer::u64",
             },
+            {
+              name: "prize_amount",
+              type: "core::integer::u256",
+            },
+            {
+              name: "prize_assigned",
+              type: "core::bool",
+            },
           ],
         },
         {
@@ -2202,10 +2210,6 @@ const deployedContracts = {
               inputs: [
                 {
                   name: "ticketPrice",
-                  type: "core::integer::u256",
-                },
-                {
-                  name: "accumulatedPrize",
                   type: "core::integer::u256",
                 },
               ],
@@ -2299,12 +2303,7 @@ const deployedContracts = {
             {
               type: "function",
               name: "CreateNewDraw",
-              inputs: [
-                {
-                  name: "accumulatedPrize",
-                  type: "core::integer::u256",
-                },
-              ],
+              inputs: [],
               outputs: [],
               state_mutability: "external",
             },
@@ -2312,10 +2311,6 @@ const deployedContracts = {
               type: "function",
               name: "CreateNewDrawWithDuration",
               inputs: [
-                {
-                  name: "accumulatedPrize",
-                  type: "core::integer::u256",
-                },
                 {
                   name: "duration_blocks",
                   type: "core::integer::u64",
@@ -2388,7 +2383,42 @@ const deployedContracts = {
             },
             {
               type: "function",
+              name: "DistributePrizes",
+              inputs: [
+                {
+                  name: "drawId",
+                  type: "core::integer::u64",
+                },
+              ],
+              outputs: [],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "AddExternalFunds",
+              inputs: [
+                {
+                  name: "amount",
+                  type: "core::integer::u256",
+                },
+              ],
+              outputs: [],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
               name: "GetTicketPrice",
+              inputs: [],
+              outputs: [
+                {
+                  type: "core::integer::u256",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "GetVaultBalance",
               inputs: [],
               outputs: [
                 {
@@ -2412,6 +2442,10 @@ const deployedContracts = {
               type: "function",
               name: "GetFixedPrize",
               inputs: [
+                {
+                  name: "drawId",
+                  type: "core::integer::u64",
+                },
                 {
                   name: "matches",
                   type: "core::integer::u8",
@@ -3245,6 +3279,119 @@ const deployedContracts = {
         },
         {
           type: "event",
+          name: "contracts::Lottery::Lottery::JackpotCalculated",
+          kind: "struct",
+          members: [
+            {
+              name: "draw_id",
+              type: "core::integer::u64",
+              kind: "key",
+            },
+            {
+              name: "vault_balance",
+              type: "core::integer::u256",
+              kind: "data",
+            },
+            {
+              name: "prizes_distributed",
+              type: "core::integer::u256",
+              kind: "data",
+            },
+            {
+              name: "calculated_jackpot",
+              type: "core::integer::u256",
+              kind: "data",
+            },
+            {
+              name: "timestamp",
+              type: "core::integer::u64",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "contracts::Lottery::Lottery::PrizeAssigned",
+          kind: "struct",
+          members: [
+            {
+              name: "drawId",
+              type: "core::integer::u64",
+              kind: "key",
+            },
+            {
+              name: "ticketId",
+              type: "core::felt252",
+              kind: "key",
+            },
+            {
+              name: "level",
+              type: "core::integer::u8",
+              kind: "data",
+            },
+            {
+              name: "amount",
+              type: "core::integer::u256",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "contracts::Lottery::Lottery::PrizesDistributed",
+          kind: "struct",
+          members: [
+            {
+              name: "drawId",
+              type: "core::integer::u64",
+              kind: "key",
+            },
+            {
+              name: "winners_total",
+              type: "core::integer::u32",
+              kind: "data",
+            },
+            {
+              name: "total_distributed",
+              type: "core::integer::u256",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "contracts::Lottery::Lottery::ExternalFundsAdded",
+          kind: "struct",
+          members: [
+            {
+              name: "contributor",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+            {
+              name: "drawId",
+              type: "core::integer::u64",
+              kind: "key",
+            },
+            {
+              name: "amount",
+              type: "core::integer::u256",
+              kind: "data",
+            },
+            {
+              name: "new_jackpot",
+              type: "core::integer::u256",
+              kind: "data",
+            },
+            {
+              name: "timestamp",
+              type: "core::integer::u64",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
           name: "contracts::Lottery::Lottery::Event",
           kind: "enum",
           variants: [
@@ -3308,11 +3455,31 @@ const deployedContracts = {
               type: "contracts::Lottery::Lottery::DrawClosed",
               kind: "nested",
             },
+            {
+              name: "JackpotCalculated",
+              type: "contracts::Lottery::Lottery::JackpotCalculated",
+              kind: "nested",
+            },
+            {
+              name: "PrizeAssigned",
+              type: "contracts::Lottery::Lottery::PrizeAssigned",
+              kind: "nested",
+            },
+            {
+              name: "PrizesDistributed",
+              type: "contracts::Lottery::Lottery::PrizesDistributed",
+              kind: "nested",
+            },
+            {
+              name: "ExternalFundsAdded",
+              type: "contracts::Lottery::Lottery::ExternalFundsAdded",
+              kind: "nested",
+            },
           ],
         },
       ],
       classHash:
-        "0x5462f3a1c3b87ea9d38b448c523e04dea9119861d38c08b53037f90fdeedc80",
+        "0x7dbe308ba32779b910b9ab4400caf084dc545c476eb36be6f65f98307a6c088",
     },
   },
 } as const;

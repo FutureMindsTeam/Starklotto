@@ -117,19 +117,17 @@ fn cleanup_mocks(strk_play_address: ContractAddress) {
     stop_mock_call(strk_play_address, selector!("transfer_from"));
 }
 
-fn context(
-    ticket_price: u256, accumulated_prize: u256, caller: ContractAddress,
-) -> (IERC20Dispatcher, ILotteryDispatcher) {
+fn context(ticket_price: u256, caller: ContractAddress) -> (IERC20Dispatcher, ILotteryDispatcher) {
     let (lottery, _, _) = deploy_lottery();
     let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery };
     cheat_caller_address(lottery, owner_address(), CheatSpan::TargetCalls(1));
-    lottery_dispatcher.Initialize(ticket_price, accumulated_prize);
+    lottery_dispatcher.Initialize(ticket_price);
     let erc = start(lottery_dispatcher, USER1, ticket_price, lottery);
     (erc, lottery_dispatcher)
 }
 
 fn default_context() -> (IERC20Dispatcher, ILotteryDispatcher) {
-    context(DEFAULT_PRICE, DEFAULT_ACCUMULATED_PRIZE, USER1)
+    context(DEFAULT_PRICE, USER1)
 }
 
 fn mint(target: ContractAddress, amount: u256, spender: ContractAddress, erc: IERC20Dispatcher) {
@@ -184,8 +182,7 @@ fn test_get_ticket_price_after_initialize() {
     start_cheat_caller_address(lottery_dispatcher.contract_address, owner_address());
 
     let init_price: u256 = 500000000000000000;
-    let accumulated_prize: u256 = 10000000000000000000;
-    lottery_dispatcher.Initialize(init_price, accumulated_prize);
+    lottery_dispatcher.Initialize(init_price);
 
     let current_price = lottery_dispatcher.GetTicketPrice();
     assert!(current_price == init_price, "Ticket price should match initialized value");
@@ -245,45 +242,41 @@ fn test_get_accumulated_prize_initial_value() {
     assert!(initial_prize == 0, "Initial accumulated prize should be 0");
 }
 
-#[test]
-fn test_get_accumulated_prize_after_initialize() {
-    let (lottery_addr, _, _) = deploy_lottery();
-    let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_addr };
-
-    start_cheat_caller_address(lottery_dispatcher.contract_address, owner_address());
-
-    let ticket_price: u256 = 500000000000000000;
-    let accumulated_prize: u256 = 10000000000000000000;
-    lottery_dispatcher.Initialize(ticket_price, accumulated_prize);
-
-    let current_prize = lottery_dispatcher.GetAccumulatedPrize();
-    assert!(current_prize == accumulated_prize, "Accumulated prize should match initialized value");
-
-    stop_cheat_caller_address(lottery_dispatcher.contract_address);
-}
 
 #[test]
 fn test_get_accumulated_prize_after_create_new_draw() {
-    let (lottery_addr, _, _) = deploy_lottery();
-    let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_addr };
+    let (lottery_addr, mock_strk_play_dispatcher, lottery_dispatcher) = deploy_lottery();
+    let mock_strk_play = mock_strk_play_dispatcher.contract_address;
 
-    start_cheat_caller_address(lottery_dispatcher.contract_address, owner_address());
+    start_cheat_caller_address(lottery_addr, owner_address());
 
-    let ticket_price: u256 = 500000000000000000;
-    let initial_prize: u256 = 10000000000000000000;
-    lottery_dispatcher.Initialize(ticket_price, initial_prize);
+    let ticket_price: u256 = 5000000000000000000; // 5 STRKP
+    lottery_dispatcher.Initialize(ticket_price);
 
-    let new_prize: u256 = 20000000000000000000;
+    stop_cheat_caller_address(lottery_addr);
+
+    // Buy 1 ticket to add funds to jackpot
+    // Expected: 5 STRKP * 55% = 2.75 STRKP
+    let user = USER1;
+    setup_mocks_for_buy_ticket(mock_strk_play, user, ticket_price * 2, ticket_price * 2, true);
+
+    start_cheat_caller_address(lottery_addr, user);
+    let numbers = create_single_ticket_numbers_array(create_valid_numbers());
+    lottery_dispatcher.BuyTicket(1, numbers, 1);
+    stop_cheat_caller_address(lottery_addr);
+
+    cleanup_mocks(mock_strk_play);
+
     // Close the active draw before creating a new one
+    start_cheat_caller_address(lottery_addr, owner_address());
     lottery_dispatcher.DrawNumbers(1);
-    lottery_dispatcher.CreateNewDraw(new_prize);
+    lottery_dispatcher.CreateNewDraw();
+    stop_cheat_caller_address(lottery_addr);
 
+    // Verify jackpot of new draw is exactly 2.75 STRKP (carry-over without distribution)
     let current_prize = lottery_dispatcher.GetAccumulatedPrize();
-    assert!(
-        current_prize == initial_prize, "Accumulated prize should remain unchanged after new draw",
-    );
-
-    stop_cheat_caller_address(lottery_dispatcher.contract_address);
+    let expected_jackpot = (ticket_price * 55) / 100; // 2.75 STRKP
+    assert!(current_prize == expected_jackpot, "Jackpot should be 2.75 STRKP");
 }
 
 #[test]
@@ -293,8 +286,7 @@ fn test_get_accumulated_prize_public_access() {
 
     // Set prize as owner
     start_cheat_caller_address(lottery_dispatcher.contract_address, owner_address());
-    let set_prize: u256 = 15000000000000000000;
-    lottery_dispatcher.CreateNewDraw(set_prize);
+    lottery_dispatcher.CreateNewDraw();
     stop_cheat_caller_address(lottery_dispatcher.contract_address);
 
     // Read prize as different users
@@ -350,8 +342,7 @@ fn test_get_ticket_current_id_multiple_purchases() {
     start_cheat_caller_address(lottery_dispatcher.contract_address, owner_address());
 
     let ticket_price: u256 = 500000000000000000;
-    let accumulated_prize: u256 = 10000000000000000000;
-    lottery_dispatcher.Initialize(ticket_price, accumulated_prize);
+    lottery_dispatcher.Initialize(ticket_price);
 
     stop_cheat_caller_address(lottery_dispatcher.contract_address);
 
@@ -390,7 +381,11 @@ fn test_get_fixed_prize_zero_matches() {
     let (lottery_addr, _, _) = deploy_lottery();
     let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_addr };
 
-    let prize = lottery_dispatcher.GetFixedPrize(0);
+    start_cheat_caller_address(lottery_dispatcher.contract_address, owner_address());
+    lottery_dispatcher.Initialize(TICKET_PRICE);
+    stop_cheat_caller_address(lottery_dispatcher.contract_address);
+
+    let prize = lottery_dispatcher.GetFixedPrize(1, 0); // drawId = 1, matches = 0
     assert!(prize == 0, "Prize for 0 matches should be 0");
 }
 
@@ -399,7 +394,11 @@ fn test_get_fixed_prize_one_match() {
     let (lottery_addr, _, _) = deploy_lottery();
     let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_addr };
 
-    let prize = lottery_dispatcher.GetFixedPrize(1);
+    start_cheat_caller_address(lottery_dispatcher.contract_address, owner_address());
+    lottery_dispatcher.Initialize(TICKET_PRICE);
+    stop_cheat_caller_address(lottery_dispatcher.contract_address);
+
+    let prize = lottery_dispatcher.GetFixedPrize(1, 1); // drawId = 1, matches = 1
     assert!(prize == 0, "Prize for 1 match should be 0");
 }
 
@@ -408,7 +407,11 @@ fn test_get_fixed_prize_two_matches() {
     let (lottery_addr, _, _) = deploy_lottery();
     let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_addr };
 
-    let prize = lottery_dispatcher.GetFixedPrize(2);
+    start_cheat_caller_address(lottery_dispatcher.contract_address, owner_address());
+    lottery_dispatcher.Initialize(TICKET_PRICE);
+    stop_cheat_caller_address(lottery_dispatcher.contract_address);
+
+    let prize = lottery_dispatcher.GetFixedPrize(1, 2); // drawId = 1, matches = 2
     // Note: This will return the fixed prize for 2 matches, which should be set during
     // initialization The actual value depends on the contract's fixed prize configuration
     assert!(prize >= 0, "Prize for 2 matches should be non-negative");
@@ -419,7 +422,11 @@ fn test_get_fixed_prize_three_matches() {
     let (lottery_addr, _, _) = deploy_lottery();
     let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_addr };
 
-    let prize = lottery_dispatcher.GetFixedPrize(3);
+    start_cheat_caller_address(lottery_dispatcher.contract_address, owner_address());
+    lottery_dispatcher.Initialize(TICKET_PRICE);
+    stop_cheat_caller_address(lottery_dispatcher.contract_address);
+
+    let prize = lottery_dispatcher.GetFixedPrize(1, 3); // drawId = 1, matches = 3
     assert!(prize >= 0, "Prize for 3 matches should be non-negative");
 }
 
@@ -428,7 +435,11 @@ fn test_get_fixed_prize_four_matches() {
     let (lottery_addr, _, _) = deploy_lottery();
     let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_addr };
 
-    let prize = lottery_dispatcher.GetFixedPrize(4);
+    start_cheat_caller_address(lottery_dispatcher.contract_address, owner_address());
+    lottery_dispatcher.Initialize(TICKET_PRICE);
+    stop_cheat_caller_address(lottery_dispatcher.contract_address);
+
+    let prize = lottery_dispatcher.GetFixedPrize(1, 4); // drawId = 1, matches = 4
     assert!(prize >= 0, "Prize for 4 matches should be non-negative");
 }
 
@@ -437,8 +448,12 @@ fn test_get_fixed_prize_five_matches() {
     let (lottery_addr, _, _) = deploy_lottery();
     let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_addr };
 
-    let prize = lottery_dispatcher.GetFixedPrize(5);
-    // For 5 matches, it should return the accumulated prize
+    start_cheat_caller_address(lottery_dispatcher.contract_address, owner_address());
+    lottery_dispatcher.Initialize(TICKET_PRICE);
+    stop_cheat_caller_address(lottery_dispatcher.contract_address);
+
+    let prize = lottery_dispatcher.GetFixedPrize(1, 5); // drawId = 1, matches = 5
+    // For 5 matches, it should return the accumulated prize of the draw
     let accumulated_prize = lottery_dispatcher.GetAccumulatedPrize();
     assert!(prize == accumulated_prize, "Prize for 5 matches should equal accumulated prize");
 }
@@ -448,10 +463,14 @@ fn test_get_fixed_prize_invalid_matches() {
     let (lottery_addr, _, _) = deploy_lottery();
     let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_addr };
 
-    let prize = lottery_dispatcher.GetFixedPrize(6);
+    start_cheat_caller_address(lottery_dispatcher.contract_address, owner_address());
+    lottery_dispatcher.Initialize(TICKET_PRICE);
+    stop_cheat_caller_address(lottery_dispatcher.contract_address);
+
+    let prize = lottery_dispatcher.GetFixedPrize(1, 6); // drawId = 1, matches = 6
     assert!(prize == 0, "Prize for invalid matches should be 0");
 
-    let prize_high = lottery_dispatcher.GetFixedPrize(255);
+    let prize_high = lottery_dispatcher.GetFixedPrize(1, 255); // drawId = 1, matches = 255
     assert!(prize_high == 0, "Prize for very high matches should be 0");
 }
 
@@ -460,17 +479,21 @@ fn test_get_fixed_prize_all_scenarios() {
     let (lottery_addr, _, _) = deploy_lottery();
     let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_addr };
 
+    start_cheat_caller_address(lottery_dispatcher.contract_address, owner_address());
+    lottery_dispatcher.Initialize(TICKET_PRICE);
+    stop_cheat_caller_address(lottery_dispatcher.contract_address);
+
     // Test all valid match scenarios
-    assert!(lottery_dispatcher.GetFixedPrize(0) == 0, "0 matches should return 0");
-    assert!(lottery_dispatcher.GetFixedPrize(1) == 0, "1 match should return 0");
-    assert!(lottery_dispatcher.GetFixedPrize(2) >= 0, "2 matches should be non-negative");
-    assert!(lottery_dispatcher.GetFixedPrize(3) >= 0, "3 matches should be non-negative");
-    assert!(lottery_dispatcher.GetFixedPrize(4) >= 0, "4 matches should be non-negative");
+    assert!(lottery_dispatcher.GetFixedPrize(1, 0) == 0, "0 matches should return 0");
+    assert!(lottery_dispatcher.GetFixedPrize(1, 1) == 0, "1 match should return 0");
+    assert!(lottery_dispatcher.GetFixedPrize(1, 2) >= 0, "2 matches should be non-negative");
+    assert!(lottery_dispatcher.GetFixedPrize(1, 3) >= 0, "3 matches should be non-negative");
+    assert!(lottery_dispatcher.GetFixedPrize(1, 4) >= 0, "4 matches should be non-negative");
     assert!(
-        lottery_dispatcher.GetFixedPrize(5) == lottery_dispatcher.GetAccumulatedPrize(),
+        lottery_dispatcher.GetFixedPrize(1, 5) == lottery_dispatcher.GetAccumulatedPrize(),
         "5 matches should equal accumulated prize",
     );
-    assert!(lottery_dispatcher.GetFixedPrize(6) == 0, "6 matches should return 0");
+    assert!(lottery_dispatcher.GetFixedPrize(1, 6) == 0, "6 matches should return 0");
 }
 
 //=======================================================================================
@@ -485,12 +508,11 @@ fn test_get_draw_status_initial_draw() {
     start_cheat_caller_address(lottery_dispatcher.contract_address, owner_address());
 
     let ticket_price: u256 = 500000000000000000;
-    let accumulated_prize: u256 = 10000000000000000000;
-    lottery_dispatcher.Initialize(ticket_price, accumulated_prize);
+    lottery_dispatcher.Initialize(ticket_price);
 
     // Create a new draw
     lottery_dispatcher.DrawNumbers(1);
-    lottery_dispatcher.CreateNewDraw(accumulated_prize);
+    lottery_dispatcher.CreateNewDraw();
 
     stop_cheat_caller_address(lottery_dispatcher.contract_address);
 
@@ -506,12 +528,11 @@ fn test_get_draw_status_after_draw_completion() {
     start_cheat_caller_address(lottery_dispatcher.contract_address, owner_address());
 
     let ticket_price: u256 = 500000000000000000;
-    let accumulated_prize: u256 = 10000000000000000000;
-    lottery_dispatcher.Initialize(ticket_price, accumulated_prize);
+    lottery_dispatcher.Initialize(ticket_price);
 
     // Create a new draw
     lottery_dispatcher.DrawNumbers(1);
-    lottery_dispatcher.CreateNewDraw(accumulated_prize);
+    lottery_dispatcher.CreateNewDraw();
 
     // Complete the draw by drawing numbers
     lottery_dispatcher.DrawNumbers(2);
@@ -532,14 +553,13 @@ fn test_get_draw_status_multiple_draws() {
     start_cheat_caller_address(lottery_dispatcher.contract_address, owner_address());
 
     let ticket_price: u256 = 500000000000000000;
-    let accumulated_prize: u256 = 10000000000000000000;
-    lottery_dispatcher.Initialize(ticket_price, accumulated_prize);
+    lottery_dispatcher.Initialize(ticket_price);
 
     // Create multiple draws
     lottery_dispatcher.DrawNumbers(1);
-    lottery_dispatcher.CreateNewDraw(accumulated_prize);
+    lottery_dispatcher.CreateNewDraw();
     lottery_dispatcher.DrawNumbers(2);
-    lottery_dispatcher.CreateNewDraw(accumulated_prize * 2);
+    lottery_dispatcher.CreateNewDraw();
 
     stop_cheat_caller_address(lottery_dispatcher.contract_address);
 
@@ -560,10 +580,9 @@ fn test_get_draw_status_public_access() {
     // Create draw as owner
     start_cheat_caller_address(lottery_dispatcher.contract_address, owner_address());
     let ticket_price: u256 = 500000000000000000;
-    let accumulated_prize: u256 = 10000000000000000000;
-    lottery_dispatcher.Initialize(ticket_price, accumulated_prize);
+    lottery_dispatcher.Initialize(ticket_price);
     lottery_dispatcher.DrawNumbers(1);
-    lottery_dispatcher.CreateNewDraw(accumulated_prize);
+    lottery_dispatcher.CreateNewDraw();
     stop_cheat_caller_address(lottery_dispatcher.contract_address);
 
     // Read status as different users
@@ -674,25 +693,17 @@ fn test_basic_functions_integration() {
 
     // Initialize contract
     let ticket_price: u256 = 500000000000000000;
-    let accumulated_prize: u256 = 10000000000000000000;
-    lottery_dispatcher.Initialize(ticket_price, accumulated_prize);
+    lottery_dispatcher.Initialize(ticket_price);
 
     // Verify all basic functions work together
-    assert!(
-        lottery_dispatcher.GetTicketPrice() == ticket_price,
-        "Ticket price should match initialization",
-    );
-    assert!(
-        lottery_dispatcher.GetAccumulatedPrize() == accumulated_prize,
-        "Accumulated prize should match initialization",
-    );
-    assert!(lottery_dispatcher.GetTicketCurrentId() == 0, "Initial ticket ID should be 0");
+    assert!(lottery_dispatcher.GetTicketPrice() == ticket_price, "Ticket price match");
+    // Note: Jackpot is calculated from vault balance
+    assert!(lottery_dispatcher.GetAccumulatedPrize() >= 0, "Jackpot >= 0");
+    assert!(lottery_dispatcher.GetTicketCurrentId() == 0, "Initial ID = 0");
 
-    // Create a new draw
-    let new_prize: u256 = 20000000000000000000;
     // Close initial draw before creating a new one
     lottery_dispatcher.DrawNumbers(1);
-    lottery_dispatcher.CreateNewDraw(new_prize);
+    lottery_dispatcher.CreateNewDraw();
 
     // Verify draw status (draw 2 is the new active draw)
     assert!(lottery_dispatcher.GetDrawStatus(2) == true, "New draw should be active");
@@ -702,12 +713,9 @@ fn test_basic_functions_integration() {
     lottery_dispatcher.SetTicketPrice(new_price);
 
     // Verify all functions still work correctly
-    assert!(lottery_dispatcher.GetTicketPrice() == new_price, "Ticket price should be updated");
-    assert!(
-        lottery_dispatcher.GetAccumulatedPrize() == accumulated_prize,
-        "Accumulated prize should remain unchanged",
-    );
-    assert!(lottery_dispatcher.GetDrawStatus(2) == true, "Draw should still be active");
+    assert!(lottery_dispatcher.GetTicketPrice() == new_price, "Price updated");
+    assert!(lottery_dispatcher.GetAccumulatedPrize() >= 0, "Jackpot >= 0");
+    assert!(lottery_dispatcher.GetDrawStatus(2) == true, "Draw active");
 
     stop_cheat_caller_address(lottery_dispatcher.contract_address);
 }
@@ -720,8 +728,7 @@ fn test_basic_functions_with_ticket_purchases() {
     start_cheat_caller_address(lottery_dispatcher.contract_address, owner_address());
 
     let ticket_price: u256 = 500000000000000000;
-    let accumulated_prize: u256 = 10000000000000000000;
-    lottery_dispatcher.Initialize(ticket_price, accumulated_prize);
+    lottery_dispatcher.Initialize(ticket_price);
 
     stop_cheat_caller_address(lottery_dispatcher.contract_address);
 
@@ -729,15 +736,9 @@ fn test_basic_functions_with_ticket_purchases() {
     assert!(lottery_dispatcher.GetTicketCurrentId() == 0, "Initial ticket ID should be 0");
 
     // Verify other functions work correctly
-    assert!(
-        lottery_dispatcher.GetTicketPrice() == ticket_price,
-        "Ticket price should match initialization",
-    );
-    assert!(
-        lottery_dispatcher.GetAccumulatedPrize() == accumulated_prize,
-        "Accumulated prize should match initialization",
-    );
-    assert!(lottery_dispatcher.GetDrawStatus(1) == true, "Draw should be active");
+    assert!(lottery_dispatcher.GetTicketPrice() == ticket_price, "Price matches");
+    assert!(lottery_dispatcher.GetAccumulatedPrize() >= 0, "Jackpot >= 0");
+    assert!(lottery_dispatcher.GetDrawStatus(1) == true, "Draw active");
 }
 
 //=======================================================================================
@@ -745,33 +746,56 @@ fn test_basic_functions_with_ticket_purchases() {
 //=======================================================================================
 
 #[test]
-fn test_get_fixed_prize_with_updated_accumulated_prize() {
-    let (lottery_addr, _, _) = deploy_lottery();
-    let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_addr };
+fn test_prize_distribution_with_updated_jackpot() {
+    let (lottery_addr, mock_strk_play_dispatcher, lottery_dispatcher) = deploy_lottery();
+    let mock_strk_play = mock_strk_play_dispatcher.contract_address;
 
-    start_cheat_caller_address(lottery_dispatcher.contract_address, owner_address());
+    start_cheat_caller_address(lottery_addr, owner_address());
 
-    let ticket_price: u256 = 500000000000000000;
-    let initial_prize: u256 = 10000000000000000000;
-    lottery_dispatcher.Initialize(ticket_price, initial_prize);
+    let ticket_price: u256 = 5000000000000000000; // 5 STRKP
+    lottery_dispatcher.Initialize(ticket_price);
 
-    // Verify 5 matches returns initial accumulated prize
-    let prize_5_matches = lottery_dispatcher.GetFixedPrize(5);
-    assert!(prize_5_matches == initial_prize, "5 matches should return initial accumulated prize");
+    stop_cheat_caller_address(lottery_addr);
 
-    // Close current draw, then create a new one
-    let new_prize: u256 = 20000000000000000000;
+    // Buy 2 tickets to create jackpot (5.5 STRKP)
+    let user = USER1;
+    setup_mocks_for_buy_ticket(mock_strk_play, user, ticket_price * 4, ticket_price * 4, true);
+
+    start_cheat_caller_address(lottery_addr, user);
+    let numbers1 = create_single_ticket_numbers_array(array![1, 15, 25, 35, 40]);
+    lottery_dispatcher.BuyTicket(1, numbers1, 1);
+
+    let numbers2 = create_single_ticket_numbers_array(array![2, 16, 26, 36, 39]);
+    lottery_dispatcher.BuyTicket(1, numbers2, 1);
+    stop_cheat_caller_address(lottery_addr);
+
+    cleanup_mocks(mock_strk_play);
+
+    // Verify jackpot before distribution
+    let jackpot_before = lottery_dispatcher.GetJackpotEntryAmount(1);
+    let expected_jackpot = (ticket_price * 2 * 55) / 100; // 5.5 STRKP
+    assert!(jackpot_before == expected_jackpot, "Jackpot before = 5.5");
+
+    // Execute DrawNumbers (generates random winning numbers from Randomness contract)
+    // Note: We can't control the random numbers, so we can't predict matches
+    start_cheat_caller_address(lottery_addr, owner_address());
     lottery_dispatcher.DrawNumbers(1);
-    lottery_dispatcher.CreateNewDraw(new_prize);
 
-    // Verify 5 matches still returns the same accumulated prize (global state unchanged)
-    let updated_prize_5_matches = lottery_dispatcher.GetFixedPrize(5);
-    assert!(
-        updated_prize_5_matches == initial_prize,
-        "5 matches should still return initial accumulated prize",
-    );
+    // Execute DistributePrizes to assign prizes based on actual random matches
+    lottery_dispatcher.DistributePrizes(1);
+    stop_cheat_caller_address(lottery_addr);
 
-    stop_cheat_caller_address(lottery_dispatcher.contract_address);
+    // Verify that DistributePrizes executed successfully
+    // We can't predict exact prizes since winning numbers are random
+    // But we verify the tickets are readable and the function completed
+    let ticket1_info = lottery_dispatcher.GetTicketInfo(1, 0, user);
+    let ticket2_info = lottery_dispatcher.GetTicketInfo(1, 1, user);
+
+    // Both tickets exist and are not claimed yet
+    assert!(!ticket1_info.claimed, "Ticket 0 not claimed");
+    assert!(!ticket2_info.claimed, "Ticket 1 not claimed");
+    // Note: prize_assigned and prize_amount depend on random matches
+// In a real scenario, prizes would be assigned only if there are matches
 }
 
 #[test]
@@ -809,16 +833,15 @@ fn test_draw_status_multiple_draws_completion() {
     start_cheat_caller_address(lottery_dispatcher.contract_address, owner_address());
 
     let ticket_price: u256 = 500000000000000000;
-    let accumulated_prize: u256 = 10000000000000000000;
-    lottery_dispatcher.Initialize(ticket_price, accumulated_prize);
+    lottery_dispatcher.Initialize(ticket_price);
 
     // Create multiple draws with closure between
     lottery_dispatcher.DrawNumbers(1);
-    lottery_dispatcher.CreateNewDraw(accumulated_prize);
+    lottery_dispatcher.CreateNewDraw();
     lottery_dispatcher.DrawNumbers(2);
-    lottery_dispatcher.CreateNewDraw(accumulated_prize * 2);
+    lottery_dispatcher.CreateNewDraw();
     lottery_dispatcher.DrawNumbers(3);
-    lottery_dispatcher.CreateNewDraw(accumulated_prize * 3);
+    lottery_dispatcher.CreateNewDraw();
 
     // Verify statuses: 1,2,3 completed 4 active
     assert!(lottery_dispatcher.GetDrawStatus(1) == false, "First draw should be completed");

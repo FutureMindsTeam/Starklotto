@@ -140,9 +140,9 @@ fn setup_test_environment() -> (ContractAddress, ContractAddress, ContractAddres
     let lottery_address = deploy_lottery_contract(token_address, vault_address);
     let lottery_dispatcher = ILotteryDispatcher { contract_address: lottery_address };
 
-    // Initialize lottery with ticket price and accumulated prize
+    // Initialize lottery with ticket price
     start_cheat_caller_address(lottery_address, owner_address());
-    lottery_dispatcher.Initialize(TICKET_PRICE, INITIAL_ACCUMULATED_PRIZE);
+    lottery_dispatcher.Initialize(TICKET_PRICE);
     stop_cheat_caller_address(lottery_address);
 
     // Mint tokens to users for testing
@@ -350,7 +350,7 @@ fn test_tickets_across_different_draws() {
     // Complete draw 1 and create draw 2
     start_cheat_caller_address(lottery_address, owner_address());
     lottery_dispatcher.DrawNumbers(1);
-    lottery_dispatcher.CreateNewDraw(INITIAL_ACCUMULATED_PRIZE);
+    lottery_dispatcher.CreateNewDraw();
     stop_cheat_caller_address(lottery_address);
 
     // Purchase ticket in draw 2

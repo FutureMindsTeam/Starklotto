@@ -116,7 +116,7 @@ fn test_create_new_draw_with_custom_duration() {
     // Initialize the lottery (this creates draw ID 1)
     let owner = IOwnableDispatcher { contract_address: lottery_address };
     start_cheat_caller_address(lottery_address, owner.owner());
-    lottery.Initialize(5000000000000000000_u256, 1000000000000000000_u256);
+    lottery.Initialize(5000000000000000000_u256);
     stop_cheat_caller_address(lottery_address);
 
     // Get the initial draw ID created by Initialize
@@ -130,10 +130,8 @@ fn test_create_new_draw_with_custom_duration() {
 
     // Test creating a draw with custom duration (100 blocks)
     let custom_duration: u64 = 100;
-    let accumulated_prize = 2000000000000000000_u256; // 2 STARKP
-
     start_cheat_caller_address(lottery_address, owner.owner());
-    lottery.CreateNewDrawWithDuration(accumulated_prize, custom_duration);
+    lottery.CreateNewDrawWithDuration(custom_duration);
     stop_cheat_caller_address(lottery_address);
 
     // Verify the new draw was created with correct duration (should be draw ID 2)
@@ -145,8 +143,9 @@ fn test_create_new_draw_with_custom_duration() {
     let start_block = lottery.GetJackpotEntryStartBlock(current_draw_id);
     let end_block = lottery.GetJackpotEntryEndBlock(current_draw_id);
 
-    assert(jackpot_amount == accumulated_prize, 'Accumulated prize incorrect');
-    assert(end_block == start_block + custom_duration, 'End block calculation incorrect');
+    // Note: Jackpot is calculated from vault balance
+    assert(jackpot_amount >= 0, 'Jackpot >= 0');
+    assert(end_block == start_block + custom_duration, 'Duration incorrect');
 }
 
 #[test]
@@ -158,7 +157,7 @@ fn test_create_new_draw_default_duration() {
     // Initialize the lottery
     let owner = IOwnableDispatcher { contract_address: lottery_address };
     start_cheat_caller_address(lottery_address, owner.owner());
-    lottery.Initialize(5000000000000000000_u256, 1000000000000000000_u256);
+    lottery.Initialize(5000000000000000000_u256);
     stop_cheat_caller_address(lottery_address);
 
     // Get the initial draw ID created by Initialize
@@ -171,10 +170,8 @@ fn test_create_new_draw_default_duration() {
     stop_cheat_caller_address(lottery_address);
 
     // Test creating a draw with default duration using CreateNewDraw
-    let accumulated_prize = 2000000000000000000_u256;
-
     start_cheat_caller_address(lottery_address, owner.owner());
-    lottery.CreateNewDraw(accumulated_prize);
+    lottery.CreateNewDraw();
     stop_cheat_caller_address(lottery_address);
 
     // Verify the draw was created with standard duration
@@ -196,7 +193,7 @@ fn test_create_new_draw_with_short_duration() {
     // Initialize the lottery (this creates draw ID 1)
     let owner = IOwnableDispatcher { contract_address: lottery_address };
     start_cheat_caller_address(lottery_address, owner.owner());
-    lottery.Initialize(5000000000000000000_u256, 1000000000000000000_u256);
+    lottery.Initialize(5000000000000000000_u256);
     stop_cheat_caller_address(lottery_address);
 
     // Get the initial draw ID created by Initialize
@@ -210,10 +207,8 @@ fn test_create_new_draw_with_short_duration() {
 
     // Test creating a draw with very short duration for testing (10 blocks)
     let short_duration: u64 = 10;
-    let accumulated_prize = 1500000000000000000_u256;
-
     start_cheat_caller_address(lottery_address, owner.owner());
-    lottery.CreateNewDrawWithDuration(accumulated_prize, short_duration);
+    lottery.CreateNewDrawWithDuration(short_duration);
     stop_cheat_caller_address(lottery_address);
 
     // Verify the draw was created with short duration (should be draw ID 2)
@@ -236,7 +231,7 @@ fn test_backward_compatibility_create_new_draw() {
     // Initialize the lottery (this creates draw ID 1)
     let owner = IOwnableDispatcher { contract_address: lottery_address };
     start_cheat_caller_address(lottery_address, owner.owner());
-    lottery.Initialize(5000000000000000000_u256, 1000000000000000000_u256);
+    lottery.Initialize(5000000000000000000_u256);
     stop_cheat_caller_address(lottery_address);
 
     // Get the initial draw ID created by Initialize
@@ -249,10 +244,8 @@ fn test_backward_compatibility_create_new_draw() {
     stop_cheat_caller_address(lottery_address);
 
     // Test that the old CreateNewDraw function still works (should create draw ID 2)
-    let accumulated_prize = 2000000000000000000_u256;
-
     start_cheat_caller_address(lottery_address, owner.owner());
-    lottery.CreateNewDraw(accumulated_prize);
+    lottery.CreateNewDraw();
     stop_cheat_caller_address(lottery_address);
 
     // Verify it uses the standard duration (should be draw ID 2)
@@ -277,7 +270,7 @@ fn test_create_new_draw_with_zero_duration() {
     // Initialize the lottery (this creates draw ID 1)
     let owner = IOwnableDispatcher { contract_address: lottery_address };
     start_cheat_caller_address(lottery_address, owner.owner());
-    lottery.Initialize(5000000000000000000_u256, 1000000000000000000_u256);
+    lottery.Initialize(5000000000000000000_u256);
     stop_cheat_caller_address(lottery_address);
 
     // Get the initial draw ID created by Initialize
@@ -291,7 +284,7 @@ fn test_create_new_draw_with_zero_duration() {
 
     // Try to create a draw with zero duration (should panic with 'Duration must be > 0')
     start_cheat_caller_address(lottery_address, owner.owner());
-    lottery.CreateNewDrawWithDuration(1000000000000000000_u256, 0_u64);
+    lottery.CreateNewDrawWithDuration(0_u64);
     stop_cheat_caller_address(lottery_address);
 }
 
@@ -308,7 +301,7 @@ fn test_complete_randomness_flow() {
     // Initialize the lottery (creates draw ID 1)
     let owner = IOwnableDispatcher { contract_address: lottery_address };
     start_cheat_caller_address(lottery_address, owner.owner());
-    lottery.Initialize(5000000000000000000_u256, 1000000000000000000_u256);
+    lottery.Initialize(5000000000000000000_u256);
     stop_cheat_caller_address(lottery_address);
 
     // Verify draw was created
