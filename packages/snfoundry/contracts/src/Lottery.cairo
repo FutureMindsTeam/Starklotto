@@ -113,6 +113,9 @@ pub trait ILottery<TContractState> {
     fn GetUserTickets(
         ref self: TContractState, drawId: u64, player: ContractAddress,
     ) -> Array<Ticket>;
+    fn GetUserWinningTickets(
+        self: @TContractState, drawId: u64, player: ContractAddress,
+    ) -> Array<Ticket>;
     fn GetUserTicketsCount(self: @TContractState, drawId: u64, player: ContractAddress) -> u32;
     fn GetTicketInfo(
         self: @TContractState, drawId: u64, ticketId: felt252, player: ContractAddress,
@@ -154,6 +157,7 @@ pub trait ILottery<TContractState> {
 //=======================================================================================
 #[starknet::contract]
 pub mod Lottery {
+    use contracts::StarkPlayERC20::{IPrizeTokenDispatcher, IPrizeTokenDispatcherTrait};
     use core::array::{Array, ArrayTrait};
     use core::dict::{Felt252Dict, Felt252DictTrait};
     use core::traits::TryInto;
@@ -657,41 +661,53 @@ pub mod Lottery {
         }
         //=======================================================================================
         fn ClaimPrize(ref self: ContractState, drawId: u64, ticketId: felt252) {
-            // Validate that draw exists
+            // 1. Start reentrancy protection
+            self.reentrancy_guard.start();
+
+            // 2. Validate that draw exists
             self.AssertDrawExists(drawId, 'ClaimPrize');
 
+            // 3. Get draw and validate state
             let draw = self.draws.entry(drawId).read();
-            let ticket = self.tickets.entry((drawId, ticketId)).read();
-            assert(!ticket.claimed, 'Prize already claimed');
             assert(!draw.isActive, 'Draw still active');
+            assert(draw.distribution_done, 'Distribution not done');
 
-            let matches = self
-                .CheckMatches(
-                    drawId,
-                    ticket.number1,
-                    ticket.number2,
-                    ticket.number3,
-                    ticket.number4,
-                    ticket.number5,
-                );
-            let prize = self.GetFixedPrize(drawId, matches);
+            // 4. Get ticket and validate ownership and prize
+            let mut ticket = self.tickets.entry((drawId, ticketId)).read();
+            let caller = get_caller_address();
 
-            let mut ticket = ticket;
+            assert(ticket.player == caller, 'Not ticket owner');
+            assert(!ticket.claimed, 'Prize already claimed');
+            assert(ticket.prize_assigned, 'No prize assigned');
+            assert(ticket.prize_amount > 0, 'No prize amount');
+
+            // 5. Get contract addresses
+            let vault_address = self.strkPlayVaultContractAddress.read();
+            let token_address = self.strkPlayContractAddress.read();
+
+            // 6. Transfer tokens from vault to player
+            let token_dispatcher = IERC20Dispatcher { contract_address: token_address };
+
+            token_dispatcher.transfer_from(vault_address, caller, ticket.prize_amount);
+
+            // 7. Mark transferred tokens as prize tokens
+            let prize_dispatcher = IPrizeTokenDispatcher { contract_address: token_address };
+            prize_dispatcher.mark_as_prize(caller, ticket.prize_amount);
+
+            // 8. Mark ticket as claimed
             ticket.claimed = true;
             self.tickets.entry((drawId, ticketId)).write(ticket);
 
-            if prize > 0 {
-                //TODO: We need to process the payment of the prize
+            // 9. Emit event with correct prize amount
+            self
+                .emit(
+                    PrizeClaimed {
+                        drawId, player: caller, ticketId, prizeAmount: ticket.prize_amount,
+                    },
+                );
 
-                self
-                    .emit(
-                        PrizeClaimed {
-                            drawId, player: ticket.player, ticketId, prizeAmount: prize,
-                        },
-                    );
-            } else {
-                self.emit(PrizeClaimed { drawId, player: ticket.player, ticketId, prizeAmount: 0 });
-            }
+            // 10. Release reentrancy guard
+            self.reentrancy_guard.end();
         }
 
         //=======================================================================================
@@ -949,6 +965,33 @@ pub mod Lottery {
 
             self.emit(UserTicketsInfo { player, drawId, tickets: user_tickets_data.clone() });
             user_tickets_data
+        }
+
+        //=======================================================================================
+        fn GetUserWinningTickets(
+            self: @ContractState, drawId: u64, player: ContractAddress,
+        ) -> Array<Ticket> {
+            // Validate that draw exists (need to create snapshot for immutable self)
+
+            let draw = self.draws.entry(drawId).read();
+            assert(draw.drawId > 0, 'Draw does not exist');
+
+            let ticket_ids = self.GetUserTicketIds(drawId, player);
+            let mut winning_tickets = ArrayTrait::new();
+            let mut i: usize = 0;
+
+            while i != ticket_ids.len() {
+                let ticket_id = *ticket_ids.at(i);
+                let ticket = self.tickets.entry((drawId, ticket_id)).read();
+
+                // Filter: prize_assigned=true AND prize_amount>0 AND NOT claimed
+                if ticket.prize_assigned && ticket.prize_amount > 0 && !ticket.claimed {
+                    winning_tickets.append(ticket);
+                }
+                i += 1;
+            }
+
+            winning_tickets
         }
 
         //=======================================================================================

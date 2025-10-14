@@ -7,7 +7,7 @@ const deployedContracts = {
   devnet: {
     StarkPlayERC20: {
       address:
-        "0x5183c0e5ae2579f5c541c6c5d69d89d7d71b80fe583a90bb1e41c383adadbc1",
+        "0x67c92804c52bf84d814b5ca866e3e6b9ed21634b15bc64234d2ffc1458c8d47",
       abi: [
         {
           type: "impl",
@@ -234,7 +234,7 @@ const deployedContracts = {
           items: [
             {
               type: "function",
-              name: "assign_prize_tokens",
+              name: "mark_as_prize",
               inputs: [
                 {
                   name: "recipient",
@@ -1185,11 +1185,11 @@ const deployedContracts = {
         },
       ],
       classHash:
-        "0x1db26668046de7c00fed257f34a0dad314a19a1fc8cc6816381ab7defec22b0",
+        "0x6f7fbd824c9dcff98cf62eba37adcbb8698a9aef6e034181a91d5f0e508bb0f",
     },
     StarkPlayVault: {
       address:
-        "0x621b858ef40bbc6a8716025f6be83e2334647069aaf10d98b567ea26414c691",
+        "0x5308b4f0dbca99d7692f951e4c30682a54acf1c2c49aad5d2f6853127bbbfc2",
       abi: [
         {
           type: "impl",
@@ -2077,7 +2077,7 @@ const deployedContracts = {
     },
     Lottery: {
       address:
-        "0x6e9f2cc499c9a1ce19be05a0373e1a4f7f6f44400d37bffb128a37cef58d08f",
+        "0x4fc81e6d7f3b7b05f40547a96312287104b173c12218468caab4bcdf64c601a",
       abi: [
         {
           type: "impl",
@@ -2545,6 +2545,26 @@ const deployedContracts = {
                 },
               ],
               state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "GetUserWinningTickets",
+              inputs: [
+                {
+                  name: "drawId",
+                  type: "core::integer::u64",
+                },
+                {
+                  name: "player",
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::array::Array::<contracts::Lottery::Ticket>",
+                },
+              ],
+              state_mutability: "view",
             },
             {
               type: "function",
@@ -3479,7 +3499,7 @@ const deployedContracts = {
         },
       ],
       classHash:
-        "0x7dbe308ba32779b910b9ab4400caf084dc545c476eb36be6f65f98307a6c088",
+        "0x72bd355d5c5afa59f8372d324cee47f5e7e4ae679c9de99ab07973a07412b27",
     },
   },
 } as const;
