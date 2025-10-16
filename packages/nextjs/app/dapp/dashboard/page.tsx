@@ -47,7 +47,6 @@ export default function DashboardPage() {
   const { timeRemainingFromBlocks, blocksRemaining, currentBlock } =
     useDrawInfo({ drawId: currentDrawId });
 
-
   // Get STRKP contract address from Lottery
   const { data: strkpContractAddress, isLoading: loadingStrkpAddress } =
     useScaffoldReadContract({
