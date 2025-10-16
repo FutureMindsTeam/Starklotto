@@ -63,12 +63,12 @@ export default function DashboardPage() {
   } = useScaffoldReadContract({
     contractName: "StarkPlayERC20",
     functionName: "balanceOf",
-    args: address ? [address] : undefined,
+    //always provide a tuple
+    args: (address ? [address] : [undefined]) as readonly [string | undefined],
     enabled: !!address && isConnected,
   });
 
-  // For STRK balance, i use Scaffold-Stark's balance reading
-  // This uses the native STRK token balance via getBalance
+  // Read STRK balance
   const { data: strkBalanceRaw, isLoading: loadingStrkBalance } =
     useScaffoldReadContract({
       contractName: "StarkPlayVault",
@@ -77,18 +77,34 @@ export default function DashboardPage() {
       enabled: !!address && isConnected,
     });
 
-  // Update state when balances change
+  // Safely handle Starknet typed return values (u256 arrays, etc.)
   useEffect(() => {
     if (strkpBalanceRaw) {
-      const formatted = formatBalance(strkpBalanceRaw as bigint, 18, 2);
-      setStrkpBalance(formatted);
+      try {
+        const raw = strkpBalanceRaw as unknown;
+        const value = Array.isArray(raw)
+          ? BigInt((raw as any)[0]?.value ?? 0)
+          : BigInt(raw as bigint);
+        const formatted = formatBalance(value, 18, 2);
+        setStrkpBalance(formatted);
+      } catch {
+        setStrkpBalance(0);
+      }
     }
   }, [strkpBalanceRaw]);
 
   useEffect(() => {
     if (strkBalanceRaw) {
-      const formatted = formatBalance(strkBalanceRaw as bigint, 18, 2);
-      setStrkBalance(formatted);
+      try {
+        const raw = strkBalanceRaw as unknown;
+        const value = Array.isArray(raw)
+          ? BigInt((raw as any)[0]?.value ?? 0)
+          : BigInt(raw as bigint);
+        const formatted = formatBalance(value, 18, 2);
+        setStrkBalance(formatted);
+      } catch {
+        setStrkBalance(0);
+      }
     }
   }, [strkBalanceRaw]);
 
