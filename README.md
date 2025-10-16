@@ -2,6 +2,23 @@
 
 StarkLotto is a decentralized lottery game built on **Starknet**, designed to offer secure and efficient transactions on the blockchain. It leverages **Cairo** technology and a modular architecture in **TypeScript** for a fluid and innovative experience.
 
+<!-- 🎥 Hackathon Video -->
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=Lra23dFcTMw">
+    <img src="https://img.youtube.com/vi/Lra23dFcTMw/maxresdefault.jpg" alt="StarkLotto Hackathon Video" width="720">
+  </a>
+</p>
+
+<p align="center">
+  ▶️ <a href="https://www.youtube.com/watch?v=Lra23dFcTMw"><b>Watch the Hackathon Video</b></a>
+</p>
+
+---
+
+🌐 **Testnet Version:**  
+👉 [https://starklotto-eta.vercel.app/](https://starklotto-eta.vercel.app/)
+
+
 ## 🚀 Features
 
 - Decentralized lottery with smart contracts on **Cairo**.
