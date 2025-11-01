@@ -3995,7 +3995,7 @@ __metadata:
     "@types/react-dom": latest
     "@types/three": ^0
     "@vitejs/plugin-react": ^4.3.4
-    "@vitest/coverage-istanbul": ^2.1.1
+    "@vitest/coverage-istanbul": ^4.0.6
     "@vitest/coverage-v8": ^2.1.1
     abi-wan-kanabi: ^2.2.2
     autoprefixer: ^10.0.1
@@ -5768,23 +5768,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vitest/coverage-istanbul@npm:^2.1.1":
-  version: 2.1.9
-  resolution: "@vitest/coverage-istanbul@npm:2.1.9"
+"@vitest/coverage-istanbul@npm:^4.0.6":
+  version: 4.0.6
+  resolution: "@vitest/coverage-istanbul@npm:4.0.6"
   dependencies:
     "@istanbuljs/schema": ^0.1.3
-    debug: ^4.3.7
+    debug: ^4.4.3
     istanbul-lib-coverage: ^3.2.2
     istanbul-lib-instrument: ^6.0.3
     istanbul-lib-report: ^3.0.1
     istanbul-lib-source-maps: ^5.0.6
-    istanbul-reports: ^3.1.7
+    istanbul-reports: ^3.2.0
     magicast: ^0.3.5
-    test-exclude: ^7.0.1
-    tinyrainbow: ^1.2.0
+    tinyrainbow: ^3.0.3
   peerDependencies:
-    vitest: 2.1.9
-  checksum: b41a0b7f9eb9a6cd285e09b53df0aaf46d7a13e7268fac99157ff2f45dab4a5560313893361e502a01b8d983b56e5b79255583688b53a28afe46f5952c54255d
+    vitest: 4.0.6
+  checksum: 7b7da9f52e076b9142b2abc5edf6dfb2d77ff31f5e7f1a4f756e2669bc5f851cb2b0783fbb817b6c9260f085ecf5066b78af32bc73c918780df39d06fbed0a9e
   languageName: node
   linkType: hard
 
@@ -7577,6 +7576,18 @@ __metadata:
   dependencies:
     ms: ^2.1.1
   checksum: b3d8c5940799914d30314b7c3304a43305fd0715581a919dacb8b3176d024a782062368405b47491516d2091d6462d4d11f2f4974a405048094f8bfebfa3071c
+  languageName: node
+  linkType: hard
+
+"debug@npm:^4.4.3":
+  version: 4.4.3
+  resolution: "debug@npm:4.4.3"
+  dependencies:
+    ms: ^2.1.3
+  peerDependenciesMeta:
+    supports-color:
+      optional: true
+  checksum: 4805abd570e601acdca85b6aa3757186084a45cff9b2fa6eee1f3b173caa776b45f478b2a71a572d616d2010cea9211d0ac4a02a610e4c18ac4324bde3760834
   languageName: node
   linkType: hard
 
@@ -10240,6 +10251,16 @@ __metadata:
     html-escaper: ^2.0.0
     istanbul-lib-report: ^3.0.0
   checksum: 2072db6e07bfbb4d0eb30e2700250636182398c1af811aea5032acb219d2080f7586923c09fa194029efd6b92361afb3dcbe1ebcc3ee6651d13340f7c6c4ed95
+  languageName: node
+  linkType: hard
+
+"istanbul-reports@npm:^3.2.0":
+  version: 3.2.0
+  resolution: "istanbul-reports@npm:3.2.0"
+  dependencies:
+    html-escaper: ^2.0.0
+    istanbul-lib-report: ^3.0.0
+  checksum: 72b4c8525276147908d28b0917bc675b1019836b638e50875521ca3b8ec63672681aa98dbab88a6f49ef798c08fe041d428abdcf84f4f3fcff5844eee54af65a
   languageName: node
   linkType: hard
 
@@ -14026,6 +14047,13 @@ __metadata:
   version: 2.0.0
   resolution: "tinyrainbow@npm:2.0.0"
   checksum: 26360631d97e43955a07cfb70fe40a154ce4e2bcd14fa3d37ce8e2ed8f4fa9e5ba00783e4906bbfefe6dcabef5d3510f5bee207cb693bee4e4e7553f5454bef1
+  languageName: node
+  linkType: hard
+
+"tinyrainbow@npm:^3.0.3":
+  version: 3.0.3
+  resolution: "tinyrainbow@npm:3.0.3"
+  checksum: e1de26bd599703a6ee5c69e8b66384fa1ef05b26cbb005ad438169f1858d199c98946fb5ec4b7862313bfcf9affd9fb8aaf8c0a42cc953acba8bbcbe739b016c
   languageName: node
   linkType: hard
 

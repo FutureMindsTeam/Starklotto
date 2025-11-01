@@ -84,7 +84,7 @@
     "@types/react-dom": "latest",
     "@types/three": "^0",
     "@vitejs/plugin-react": "^4.3.4",
-    "@vitest/coverage-istanbul": "^2.1.1",
+    "@vitest/coverage-istanbul": "^4.0.6",
     "@vitest/coverage-v8": "^2.1.1",
     "autoprefixer": "^10.0.1",
     "eslint": "^8",
