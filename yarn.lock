@@ -4033,7 +4033,7 @@ __metadata:
     starknet: ^7.1.0
     tailwind-merge: ^3.3.1
     tailwindcss: ^3.3.0
-    three: ^0.178.0
+    three: ^0.181.0
     tsparticles: ^3.8.1
     type-fest: ^4.6.0
     typescript: ^5
@@ -5097,8 +5097,8 @@ __metadata:
   linkType: hard
 
 "@types/three@npm:^0":
-  version: 0.178.1
-  resolution: "@types/three@npm:0.178.1"
+  version: 0.181.0
+  resolution: "@types/three@npm:0.181.0"
   dependencies:
     "@dimforge/rapier3d-compat": ~0.12.0
     "@tweenjs/tween.js": ~23.1.3
@@ -5106,8 +5106,8 @@ __metadata:
     "@types/webxr": "*"
     "@webgpu/types": "*"
     fflate: ~0.8.2
-    meshoptimizer: ~0.18.1
-  checksum: 04441915b19592344ad45ad9bc3c4248edbdfee758e5f9bc816dc620236f2ae91330fba4c44fe90de8c19e9d64e0accf0bfde138ce70878b7f57a7dfe7d2536d
+    meshoptimizer: ~0.22.0
+  checksum: 2cda27e664d866eb50ccea6b5013be974e8adf1c0acd5899e729068c0a16c292f1bc1b968612d19163e5842caf31f61f356435feeae6ce86ba1ce37c76f234f3
   languageName: node
   linkType: hard
 
@@ -10834,10 +10834,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"meshoptimizer@npm:~0.18.1":
-  version: 0.18.1
-  resolution: "meshoptimizer@npm:0.18.1"
-  checksum: 101dbed8abd4cf167cdb7a0bc13db90dd0743332c689e43b18cc5254d238f0766750752432401fa63dc7e9e32399ef68daacf48f0d89db1484042c1761c7362d
+"meshoptimizer@npm:~0.22.0":
+  version: 0.22.0
+  resolution: "meshoptimizer@npm:0.22.0"
+  checksum: ee5cab07941f9866fca394ac7507f936542c2073c702293e588f4480d0bbcc85750be85f780da3127532bc00b40a07b7e06df31e6c519ad752e63f099935104d
   languageName: node
   linkType: hard
 
@@ -13940,10 +13940,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"three@npm:^0.178.0":
-  version: 0.178.0
-  resolution: "three@npm:0.178.0"
-  checksum: 027aa4d1a95bc664b7a92020eb9f7db76ecb679ff6fee6032b7f48a79b1774f9edd634fea9bdcfb763aa393f8ae7b3ffe0cbb6f9af77b65a78989d4f2146a06b
+"three@npm:^0.181.0":
+  version: 0.181.0
+  resolution: "three@npm:0.181.0"
+  checksum: 0aabd96aa16ba0a688479fa02b7668a2666f408af868b0782b0b5c17a59707e0bbff7a357a20c8cd1f51e95a31ab90d536e164f5e3b9b30129b5395bbe43d008
   languageName: node
   linkType: hard
 
