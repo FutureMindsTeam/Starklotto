@@ -20,12 +20,14 @@ import LastDrawResultsCard from "~~/components/dashboard/dashboard/LastDrawResul
 
 import { useDrawInfo } from "~~/hooks/scaffold-stark/useDrawInfo";
 import { useCurrentDrawId } from "~~/hooks/scaffold-stark/useCurrentDrawId";
+import { useScaffoldReadContract } from "~~/hooks/scaffold-stark/useScaffoldReadContract";
 import { fetchDashboardMock, type DashboardMock } from "~~/lib/mocks/dashboard";
+import { formatBalance } from "~~/utils/formatBalance";
 
 export default function DashboardPage() {
   const navigate = useRouter();
   const { scrollY } = useScroll();
-  const { status } = useAccount();
+  const { address, isConnected } = useAccount();
 
   const heroY = useTransform(scrollY, [0, 500], [0, -100]);
   const prizeDistributionY = useTransform(scrollY, [0, 2000], [0, -50]);
@@ -36,9 +38,80 @@ export default function DashboardPage() {
   const [selectedNumbers, setSelectedNumbers] = useState<number[]>([]);
   const [data, setData] = useState<DashboardMock | null>(null);
 
+  // State for balances
+  const [strkBalance, setStrkBalance] = useState<number>(0);
+  const [strkpBalance, setStrkpBalance] = useState<number>(0);
+  const [isLoadingBalances, setIsLoadingBalances] = useState(false);
+
   const { currentDrawId } = useCurrentDrawId();
   const { timeRemainingFromBlocks, blocksRemaining, currentBlock } =
     useDrawInfo({ drawId: currentDrawId });
+
+  // Get STRKP contract address from Lottery
+  const { data: strkpContractAddress, isLoading: loadingStrkpAddress } =
+    useScaffoldReadContract({
+      contractName: "Lottery",
+      functionName: "GetStarkPlayContractAddress",
+      args: [],
+    });
+
+  // Read STRKP balance
+  const {
+    data: strkpBalanceRaw,
+    isLoading: loadingStrkpBalance,
+    error: strkpError,
+  } = useScaffoldReadContract({
+    contractName: "StarkPlayERC20",
+    functionName: "balanceOf",
+    //always provide a tuple
+    args: (address ? [address] : [undefined]) as readonly [string | undefined],
+    enabled: !!address && isConnected,
+  });
+
+  // Read STRK balance
+  const { data: strkBalanceRaw, isLoading: loadingStrkBalance } =
+    useScaffoldReadContract({
+      contractName: "StarkPlayVault",
+      functionName: "get_total_strk_stored",
+      args: [],
+      enabled: !!address && isConnected,
+    });
+
+  // Safely handle Starknet typed return values (u256 arrays, etc.)
+  useEffect(() => {
+    if (strkpBalanceRaw) {
+      try {
+        const raw = strkpBalanceRaw as unknown;
+        const value = Array.isArray(raw)
+          ? BigInt((raw as any)[0]?.value ?? 0)
+          : BigInt(raw as bigint);
+        const formatted = formatBalance(value, 18, 2);
+        setStrkpBalance(formatted);
+      } catch {
+        setStrkpBalance(0);
+      }
+    }
+  }, [strkpBalanceRaw]);
+
+  useEffect(() => {
+    if (strkBalanceRaw) {
+      try {
+        const raw = strkBalanceRaw as unknown;
+        const value = Array.isArray(raw)
+          ? BigInt((raw as any)[0]?.value ?? 0)
+          : BigInt(raw as bigint);
+        const formatted = formatBalance(value, 18, 2);
+        setStrkBalance(formatted);
+      } catch {
+        setStrkBalance(0);
+      }
+    }
+  }, [strkBalanceRaw]);
+
+  // Track loading state
+  useEffect(() => {
+    setIsLoadingBalances(loadingStrkpBalance || loadingStrkBalance);
+  }, [loadingStrkpBalance, loadingStrkBalance]);
 
   const jackpot = 250295;
   const targetDate = new Date();
@@ -110,7 +183,12 @@ export default function DashboardPage() {
         </div>
 
         <div className="space-y-4">
-          <BalancesCard {...data.balances} />
+          {/* Pass real balances instead of mock data */}
+          <BalancesCard
+            strkp={strkpBalance}
+            strk={strkBalance}
+            loading={isLoadingBalances}
+          />
           <NotificationsCard list={data.notifications} />
         </div>
 
